@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@/types'
@@ -34,8 +34,16 @@ export function TopNav({
   onToggleSidebar: () => void
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const initials = (user.full_name || user.email || 'U').slice(0, 2).toUpperCase()
   const [hasNew, setHasNew] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   useEffect(() => {
     const checkNew = async () => {
@@ -103,13 +111,73 @@ export function TopNav({
           )}
         </Link>
 
-        {/* Avatar */}
-        <Link href="/profile" className="avatar-btn" title={user.full_name || user.email || 'Profil'}>
-          {user.avatar_url
-            ? <img src={user.avatar_url} alt="" />
-            : initials
-          }
-        </Link>
+        {/* Avatar avec Dropdown */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            className="avatar-btn" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            title={user.full_name || user.email || 'Profil'}
+          >
+            {user.avatar_url
+              ? <img src={user.avatar_url} alt="" />
+              : initials
+            }
+          </button>
+
+          {menuOpen && (
+            <>
+              <div 
+                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                onClick={() => setMenuOpen(false)} 
+              />
+              <div className="profile-dropdown">
+                <div className="dropdown-header">
+                  <div className="av-large">{initials}</div>
+                  <div className="u-info">
+                    <div className="u-name">{user.full_name || 'Utilisateur'}</div>
+                    <div className="u-email">{user.email}</div>
+                  </div>
+                </div>
+
+                <div className="dropdown-divider" />
+
+                <Link href="/profile" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Profil
+                </Link>
+
+                <Link href="/settings?tab=plan" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  Abonnements
+                </Link>
+
+                <Link href="/settings?tab=notifications" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  Language et notifications
+                </Link>
+
+                <div className="dropdown-divider" />
+
+                <Link href="/settings?tab=general" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+                  Réglages
+                </Link>
+
+                <Link href="/settings?tab=privacy" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+                  Confidentialité
+                </Link>
+
+                <div className="dropdown-divider" />
+
+                <button className="dropdown-item logout" onClick={handleLogout}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Se déconnecter
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

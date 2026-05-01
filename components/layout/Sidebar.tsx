@@ -102,15 +102,6 @@ export function Sidebar({ user, open }: { user: User; open: boolean }) {
           <span className="v2tag">V2</span>
         </span>
 
-        <div className="ns">Compte</div>
-
-        <Link href="/settings" className={ni('/settings')} title="Paramètres">
-          <span className="sb-icon">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-          </span>
-          <span className="sb-label">Paramètres</span>
-        </Link>
-
         {/* Upgrade Card - Inspired by user screenshot */}
         {user.plan === 'free' && open && (
           <div className="upgrade-card-sidebar">
