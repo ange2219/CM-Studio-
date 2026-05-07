@@ -65,7 +65,6 @@ export async function GET(req: NextRequest) {
       platform: 'facebook',
       platform_user_id: fbId,
       platform_username: fbName,
-      platform_avatar_url: fbAvatar,
       access_token: encryptToken(fbToken),
       token_expires_at: tokenExpiresAt.toISOString(),
       connected_via: 'meta_direct',
