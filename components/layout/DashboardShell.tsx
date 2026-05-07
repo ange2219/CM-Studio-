@@ -62,7 +62,7 @@ export function DashboardShell({ user, children }: {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
       <Sidebar user={user} open={open} />
       <div className="main">
         <TopNav user={user} sidebarOpen={open} onToggleSidebar={() => setOpen(o => !o)} />

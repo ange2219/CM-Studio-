@@ -146,7 +146,9 @@ body {
 .logo-ai{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text2);max-width:0;overflow:hidden;opacity:0;transition:max-width .35s cubic-bezier(.4,0,.2,1) .08s,opacity .25s ease .08s;white-space:nowrap;}
 .sidebar.open .logo-rest{max-width:90px;opacity:1;}
 .sidebar.open .logo-ai{max-width:40px;opacity:1;}
-.sb-nav{flex:1;padding:10px 0;overflow:hidden;}
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto;overflow-x:hidden;}
+.sb-nav::-webkit-scrollbar{width:4px;}
+.sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.05);border-radius:2px;}
 .ns{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:10px 0 4px 20px;font-weight:600;max-width:0;overflow:hidden;opacity:0;transition:max-width .3s ease .05s,opacity .2s ease .05s;white-space:nowrap;}
 .sidebar.open .ns{max-width:200px;opacity:1;}
 .ni{display:flex;align-items:center;height:44px;padding:0 0 0 20px;color:var(--text3);text-decoration:none;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap;overflow:hidden;position:relative;}
@@ -738,14 +740,15 @@ tbody td{padding:10px;font-size:12px;color:var(--text);}
 
 /* ── Upgrade Card Sidebar ── */
 .upgrade-card-sidebar {
-  margin: 1.5rem 1rem;
+  margin: 1rem .75rem;
   background: linear-gradient(135deg, #2563eb, #7c3aed);
   border-radius: 16px;
-  padding: 1.25rem;
+  padding: 1rem;
   color: #fff;
   position: relative;
   overflow: hidden;
   box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3);
+  flex-shrink: 0;
 }
 
 .upgrade-card-sidebar::before {
