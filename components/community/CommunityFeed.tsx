@@ -126,26 +126,41 @@ export function CommunityFeed({
   async function fetchComments(postId: string) {
     setLoadingComments(prev => ({ ...prev, [postId]: true }))
     
-    // On récupère les commentaires et leurs likes
-    const [commentsRes, likesRes] = await Promise.all([
-      supabase
-        .from('community_comments')
-        .select(`
-          id, content, created_at, user_id, parent_id,
-          users:user_id (full_name, avatar_url, plan)
-        `)
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true }),
-      supabase
-        .from('community_comment_likes')
-        .select('comment_id')
-        .eq('user_id', currentUserId)
-    ])
+    try {
+      // On récupère les commentaires et leurs likes
+      const [commentsRes, likesRes] = await Promise.all([
+        supabase
+          .from('community_comments')
+          .select(`
+            id, content, created_at, user_id, parent_id,
+            users:user_id (full_name, avatar_url, plan)
+          `)
+          .eq('post_id', postId)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('community_comment_likes')
+          .select('comment_id')
+          .eq('user_id', currentUserId)
+      ])
 
-    if (!commentsRes.error && commentsRes.data) {
-      // Pour chaque commentaire, on compte les likes séparément (ou via jointure si vue existante)
-      const { data: counts } = await supabase.rpc('get_comment_likes_counts', { post_id_val: postId })
-      const countMap = (counts || []).reduce((acc: any, curr: any) => ({ ...acc, [curr.comment_id]: curr.count }), {})
+      if (commentsRes.error) {
+        console.error("Erreur chargement commentaires:", commentsRes.error)
+        // Fallback si le RPC échoue ou n'existe pas encore
+        setCommentsByPost(prev => ({ ...prev, [postId]: [] }))
+        setLoadingComments(prev => ({ ...prev, [postId]: false }))
+        return
+      }
+
+      // Tentative de récupération des comptes de likes via RPC
+      let countMap: Record<string, number> = {}
+      try {
+        const { data: counts, error: rpcError } = await supabase.rpc('get_comment_likes_counts', { post_id_val: postId })
+        if (!rpcError && counts) {
+          countMap = counts.reduce((acc: any, curr: any) => ({ ...acc, [curr.comment_id]: curr.count }), {})
+        }
+      } catch (e) {
+        console.warn("RPC get_comment_likes_counts non disponible, les likes seront à 0.")
+      }
 
       const formatted = (commentsRes.data as any[]).map(c => ({
         id: c.id,
@@ -153,18 +168,24 @@ export function CommunityFeed({
         created_at: c.created_at,
         user_id: c.user_id,
         parent_id: c.parent_id,
-        full_name: c.users?.full_name,
+        full_name: c.users?.full_name || 'Utilisateur',
         avatar_url: c.users?.avatar_url,
         plan: c.users?.plan,
         likes_count: countMap[c.id] || 0
       }))
+
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
       
       const liked = new Set(commentLikes)
-      likesRes.data?.forEach(l => liked.add(l.comment_id))
+      if (likesRes.data) {
+        likesRes.data.forEach(l => liked.add(l.comment_id))
+      }
       setCommentLikes(liked)
+    } catch (err) {
+      console.error("Erreur critique fetchComments:", err)
+    } finally {
+      setLoadingComments(prev => ({ ...prev, [postId]: false }))
     }
-    setLoadingComments(prev => ({ ...prev, [postId]: false }))
   }
 
   async function handleCommentSubmit(postId: string) {
