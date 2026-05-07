@@ -92,7 +92,6 @@ function SettingsContent() {
   }
 
   return (
-  return (
     <div style={{ minHeight: '100%', padding: '1rem' }}>
       {/* Contenu principal centré */}
       <main style={{ maxWidth: '800px', margin: '0 auto', padding: '1.5rem 0' }}>
