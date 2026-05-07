@@ -36,8 +36,29 @@ export function CommunityFeed({
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
   const [newCommentText, setNewCommentText] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  
+  // Nouveaux états V2
+  const [replyingTo, setReplyingTo] = useState<{ id: string, name: string, postId: string } | null>(null)
+  const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set()) // commentIds likés par l'user
 
   const supabase = createClient()
+
+  // Charger les notifications (badge TopNav) si nécessaire, mais ici on gère surtout l'envoi
+  async function createNotification(params: {
+    userId: string, // destinataire
+    type: 'post_like' | 'comment_like' | 'comment_reply',
+    postId?: string,
+    commentId?: string
+  }) {
+    if (params.userId === currentUserId) return // pas de notification pour soi-même
+    await supabase.from('notifications').insert({
+      user_id: params.userId,
+      actor_id: currentUserId,
+      type: params.type,
+      post_id: params.postId,
+      comment_id: params.commentId
+    })
+  }
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
@@ -67,28 +88,32 @@ export function CommunityFeed({
     setIsPosting(false)
   }
 
-  async function toggleLike(postId: string) {
-    const isLiked = likedIds.has(postId)
+  async function toggleLike(post: any) {
+    const isLiked = likedIds.has(post.id)
     const newLikedIds = new Set(likedIds)
-    if (isLiked) newLikedIds.delete(postId)
-    else newLikedIds.add(postId)
+    if (isLiked) newLikedIds.delete(post.id)
+    else {
+      newLikedIds.add(post.id)
+      createNotification({ userId: post.user_id, type: 'post_like', postId: post.id })
+    }
     setLikedIds(newLikedIds)
 
     setPosts(posts.map(p => {
-      if (p.id === postId) return { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) }
+      if (p.id === post.id) return { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) }
       return p
     }))
 
     if (isLiked) {
-      await supabase.from('community_likes').delete().match({ post_id: postId, user_id: currentUserId })
+      await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUserId })
     } else {
-      await supabase.from('community_likes').insert({ post_id: postId, user_id: currentUserId })
+      await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUserId })
     }
   }
 
   async function toggleComments(postId: string) {
     if (expandedPostId === postId) {
       setExpandedPostId(null)
+      setReplyingTo(null)
       return
     }
 
@@ -101,26 +126,43 @@ export function CommunityFeed({
   async function fetchComments(postId: string) {
     setLoadingComments(prev => ({ ...prev, [postId]: true }))
     
-    // Jointure manuelle ou via vue si disponible, ici on simule la jointure avec users
-    const { data, error } = await supabase
-      .from('community_comments')
-      .select(`
-        id, content, created_at, user_id,
-        users:user_id (full_name, avatar_url, plan)
-      `)
-      .eq('post_id', postId)
-      .order('created_at', { ascending: true })
+    // On récupère les commentaires et leurs likes
+    const [commentsRes, likesRes] = await Promise.all([
+      supabase
+        .from('community_comments')
+        .select(`
+          id, content, created_at, user_id, parent_id,
+          users:user_id (full_name, avatar_url, plan)
+        `)
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('community_comment_likes')
+        .select('comment_id')
+        .eq('user_id', currentUserId)
+    ])
 
-    if (!error && data) {
-      const formatted = (data as any[]).map(c => ({
+    if (!commentsRes.error && commentsRes.data) {
+      // Pour chaque commentaire, on compte les likes séparément (ou via jointure si vue existante)
+      const { data: counts } = await supabase.rpc('get_comment_likes_counts', { post_id_val: postId })
+      const countMap = (counts || []).reduce((acc: any, curr: any) => ({ ...acc, [curr.comment_id]: curr.count }), {})
+
+      const formatted = (commentsRes.data as any[]).map(c => ({
         id: c.id,
         content: c.content,
         created_at: c.created_at,
+        user_id: c.user_id,
+        parent_id: c.parent_id,
         full_name: c.users?.full_name,
         avatar_url: c.users?.avatar_url,
-        plan: c.users?.plan
+        plan: c.users?.plan,
+        likes_count: countMap[c.id] || 0
       }))
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
+      
+      const liked = new Set(commentLikes)
+      likesRes.data?.forEach(l => liked.add(l.comment_id))
+      setCommentLikes(liked)
     }
     setLoadingComments(prev => ({ ...prev, [postId]: false }))
   }
@@ -129,40 +171,81 @@ export function CommunityFeed({
     if (!newCommentText.trim() || isSubmittingComment) return
     setIsSubmittingComment(true)
 
+    const payload: any = {
+      post_id: postId,
+      user_id: currentUserId,
+      content: newCommentText.trim()
+    }
+    if (replyingTo && replyingTo.postId === postId) {
+      payload.parent_id = replyingTo.id
+    }
+
     const { data, error } = await supabase
       .from('community_comments')
-      .insert({
-        post_id: postId,
-        user_id: currentUserId,
-        content: newCommentText.trim()
-      })
+      .insert(payload)
       .select('id, created_at')
       .single()
 
     if (!error && data) {
-      // Update local comments
       const newComment = {
         id: data.id,
         content: newCommentText.trim(),
         created_at: data.created_at,
+        user_id: currentUserId,
+        parent_id: payload.parent_id || null,
         full_name: 'Moi',
         avatar_url: null,
-        plan: null
+        plan: null,
+        likes_count: 0
       }
+      
       setCommentsByPost(prev => ({
         ...prev,
         [postId]: [...(prev[postId] || []), newComment]
       }))
       
-      // Update post comment count
+      // Notifications
+      if (payload.parent_id) {
+        // Notifier l'auteur du commentaire parent
+        const parentComment = commentsByPost[postId].find(c => c.id === payload.parent_id)
+        if (parentComment) createNotification({ userId: parentComment.user_id, type: 'comment_reply', postId, commentId: data.id })
+      } else {
+        // Notifier l'auteur du post
+        const post = posts.find(p => p.id === postId)
+        if (post) createNotification({ userId: post.user_id, type: 'comment_reply', postId, commentId: data.id })
+      }
+
       setPosts(posts.map(p => {
         if (p.id === postId) return { ...p, comments_count: p.comments_count + 1 }
         return p
       }))
       
       setNewCommentText('')
+      setReplyingTo(null)
     }
     setIsSubmittingComment(false)
+  }
+
+  async function toggleCommentLike(comment: any) {
+    const isLiked = commentLikes.has(comment.id)
+    const newLiked = new Set(commentLikes)
+    
+    if (isLiked) {
+      newLiked.delete(comment.id)
+      await supabase.from('community_comment_likes').delete().match({ comment_id: comment.id, user_id: currentUserId })
+    } else {
+      newLiked.add(comment.id)
+      createNotification({ userId: comment.user_id, type: 'comment_like', postId: expandedPostId!, commentId: comment.id })
+      await supabase.from('community_comment_likes').insert({ comment_id: comment.id, user_id: currentUserId })
+    }
+    
+    setCommentLikes(newLiked)
+    setCommentsByPost(prev => ({
+      ...prev,
+      [expandedPostId!]: prev[expandedPostId!].map(c => 
+        c.id === comment.id ? { ...c, likes_count: c.likes_count + (isLiked ? -1 : 1) } : c
+      )
+    }))
   }
 
   return (
@@ -210,8 +293,16 @@ export function CommunityFeed({
           posts.map(post => {
             const isLiked = likedIds.has(post.id)
             const isExpanded = expandedPostId === post.id
-            const comments = commentsByPost[post.id] || []
+            const allComments = commentsByPost[post.id] || []
             const isLoading = loadingComments[post.id]
+
+            // Organiser les commentaires (parents en premier, puis leurs réponses)
+            const rootComments = allComments.filter(c => !c.parent_id)
+            const repliesMap = allComments.filter(c => c.parent_id).reduce((acc: any, c) => {
+              if (!acc[c.parent_id]) acc[c.parent_id] = []
+              acc[c.parent_id].push(c)
+              return acc
+            }, {})
 
             return (
               <div key={post.id} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
@@ -238,7 +329,7 @@ export function CommunityFeed({
 
                   <div style={{ display: 'flex', gap: '2rem', borderTop: '1px solid var(--b1)', paddingTop: '1rem' }}>
                     <button 
-                      onClick={() => toggleLike(post.id)}
+                      onClick={() => toggleLike(post)}
                       style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '.5rem', color: isLiked ? '#ef4444' : 'var(--t2)', cursor: 'pointer', transition: '0.2s' }}>
                       <Heart size={20} fill={isLiked ? '#ef4444' : 'none'} />
                       <span style={{ fontWeight: 600, fontSize: '.95rem' }}>{post.likes_count}</span>
@@ -256,52 +347,129 @@ export function CommunityFeed({
                 {isExpanded && (
                   <div style={{ background: 'var(--bg)', borderTop: '1px solid var(--b1)', padding: '1.25rem' }}>
                     {/* List */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' }}>
                       {isLoading ? (
                         <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--t3)', fontSize: '.9rem' }}>Chargement des commentaires...</div>
-                      ) : comments.length === 0 ? (
+                      ) : rootComments.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--t3)', fontSize: '.9rem' }}>Aucun commentaire. Soyez le premier à répondre !</div>
                       ) : (
-                        comments.map(c => (
-                          <div key={c.id} style={{ display: 'flex', gap: '.75rem' }}>
-                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                              {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : <span style={{ fontSize: '.75rem', fontWeight: 600 }}>{(c.full_name || 'U').slice(0, 1).toUpperCase()}</span>}
-                            </div>
-                            <div style={{ flex: 1, background: 'var(--card)', padding: '.75rem 1rem', borderRadius: '12px', border: '1px solid var(--b1)' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '.25rem' }}>
-                                <span style={{ fontWeight: 700, fontSize: '.85rem', color: 'var(--t1)' }}>{c.full_name || 'Utilisateur'}</span>
-                                <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(c.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                        rootComments.map(c => {
+                          const replies = repliesMap[c.id] || []
+                          const isCommentLiked = commentLikes.has(c.id)
+                          return (
+                            <div key={c.id}>
+                              {/* Parent Comment */}
+                              <div style={{ display: 'flex', gap: '.75rem' }}>
+                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                                  {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : <span style={{ fontSize: '.75rem', fontWeight: 600 }}>{(c.full_name || 'U').slice(0, 1).toUpperCase()}</span>}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                      <span style={{ fontWeight: 700, fontSize: '.85rem', color: 'var(--t1)', marginRight: '.5rem' }}>{c.full_name || 'Utilisateur'}</span>
+                                      <p style={{ fontSize: '.9rem', color: 'var(--t1)', margin: '.25rem 0', lineHeight: 1.4 }}>{c.content}</p>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '.25rem' }}>
+                                        <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                                        <button 
+                                          onClick={() => setReplyingTo({ id: c.id, name: c.full_name || 'Utilisateur', postId: post.id })}
+                                          style={{ background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>
+                                          Répondre
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <button 
+                                      onClick={() => toggleCommentLike(c)}
+                                      style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', color: isCommentLiked ? '#ef4444' : 'var(--t3)', cursor: 'pointer', padding: '0 4px' }}>
+                                      <Heart size={14} fill={isCommentLiked ? '#ef4444' : 'none'} />
+                                      <span style={{ fontSize: '.65rem', fontWeight: 600, marginTop: '2px' }}>{c.likes_count > 0 ? c.likes_count : ''}</span>
+                                    </button>
+                                  </div>
+
+                                  {/* Replies */}
+                                  {replies.length > 0 && (
+                                    <div style={{ marginTop: '1rem', borderLeft: '2px solid var(--b1)', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                      {replies.map((r: any) => {
+                                        const isReplyLiked = commentLikes.has(r.id)
+                                        return (
+                                          <div key={r.id} style={{ display: 'flex', gap: '.75rem' }}>
+                                            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                                              {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : <span style={{ fontSize: '.6rem', fontWeight: 600 }}>{(r.full_name || 'U').slice(0, 1).toUpperCase()}</span>}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div>
+                                                  <span style={{ fontWeight: 700, fontSize: '.8rem', color: 'var(--t1)', marginRight: '.5rem' }}>{r.full_name || 'Utilisateur'}</span>
+                                                  <p style={{ fontSize: '.85rem', color: 'var(--t1)', margin: '.2rem 0', lineHeight: 1.4 }}>{r.content}</p>
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '.2rem' }}>
+                                                    <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                                                    <button 
+                                                      onClick={() => setReplyingTo({ id: c.id, name: r.full_name || 'Utilisateur', postId: post.id })}
+                                                      style={{ background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>
+                                                      Répondre
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                                <button 
+                                                  onClick={() => toggleCommentLike(r)}
+                                                  style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', color: isReplyLiked ? '#ef4444' : 'var(--t3)', cursor: 'pointer', padding: '0 4px' }}>
+                                                  <Heart size={12} fill={isReplyLiked ? '#ef4444' : 'none'} />
+                                                  <span style={{ fontSize: '.6rem', fontWeight: 600, marginTop: '2px' }}>{r.likes_count > 0 ? r.likes_count : ''}</span>
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <p style={{ fontSize: '.9rem', color: 'var(--t1)', margin: 0, lineHeight: 1.4 }}>{c.content}</p>
                             </div>
-                          </div>
-                        ))
+                          )
+                        })
                       )}
                     </div>
 
-                    {/* Input */}
-                    <div style={{ display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}>
-                      <input 
-                        value={newCommentText}
-                        onChange={e => setNewCommentText(e.target.value)}
-                        placeholder="Votre réponse..."
-                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(post.id) } }}
-                        style={{ 
-                          flex: 1, background: 'var(--card)', border: '1px solid var(--b1)', 
-                          borderRadius: '20px', padding: '.5rem 1.25rem', color: 'var(--t1)', outline: 'none',
-                          fontSize: '.9rem'
-                        }}
-                      />
-                      <button 
-                        onClick={() => handleCommentSubmit(post.id)}
-                        disabled={isSubmittingComment || !newCommentText.trim()}
-                        style={{ 
-                          background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '50%', 
-                          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1
-                        }}>
-                        <Send size={16} />
-                      </button>
+                    {/* Input Container */}
+                    <div style={{ position: 'relative' }}>
+                      {replyingTo && replyingTo.postId === post.id && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-light)', padding: '.4rem 1rem', borderRadius: '10px 10px 0 0', marginBottom: '-1px', border: '1px solid var(--b1)', borderBottom: 'none' }}>
+                          <span style={{ fontSize: '.75rem', color: 'var(--accent)', fontWeight: 600 }}>En réponse à {replyingTo.name}</span>
+                          <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer' }}>✕</button>
+                        </div>
+                      )}
+                      <div style={{ 
+                        display: 'flex', gap: '.75rem', alignItems: 'center', 
+                        background: 'var(--card)', border: '1px solid var(--b1)', 
+                        borderRadius: replyingTo && replyingTo.postId === post.id ? '0 0 25px 25px' : '25px', 
+                        padding: '.25rem .5rem .25rem 1.25rem' 
+                      }}>
+                        <input 
+                          value={newCommentText}
+                          onChange={e => setNewCommentText(e.target.value)}
+                          placeholder={replyingTo ? "Ajouter une réponse..." : "Ajouter un commentaire..."}
+                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(post.id) } }}
+                          style={{ 
+                            flex: 1, background: 'transparent', border: 'none', 
+                            color: 'var(--t1)', outline: 'none', fontSize: '.95rem',
+                            padding: '.5rem 0'
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '.5rem', color: 'var(--t3)' }}>
+                          <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>@</button>
+                          <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>☺</button>
+                        </div>
+                        <button 
+                          onClick={() => handleCommentSubmit(post.id)}
+                          disabled={isSubmittingComment || !newCommentText.trim()}
+                          style={{ 
+                            background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '50%', 
+                            width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1
+                          }}>
+                          <Send size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
