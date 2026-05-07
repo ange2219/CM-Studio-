@@ -94,13 +94,6 @@ export function Sidebar({ user, open }: { user: User; open: boolean }) {
 
         <div className="ns">Contenu</div>
 
-        <span className="ni" title="Motion Studio" style={{ opacity: .45, pointerEvents: 'none' }}>
-          <span className="sb-icon">
-            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-          </span>
-          <span className="sb-label">Motion Studio</span>
-          <span className="v2tag">V2</span>
-        </span>
 
         {/* Upgrade Card - Inspired by user screenshot */}
         {user.plan === 'free' && open && (

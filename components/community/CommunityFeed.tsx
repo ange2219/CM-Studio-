@@ -132,8 +132,8 @@ export function CommunityFeed({
         supabase
           .from('community_comments')
           .select(`
-            id, content, created_at, user_id, parent_id,
-            users:user_id (full_name, avatar_url, plan)
+            *,
+            users(full_name, avatar_url, plan)
           `)
           .eq('post_id', postId)
           .order('created_at', { ascending: true }),
@@ -145,7 +145,6 @@ export function CommunityFeed({
 
       if (commentsRes.error) {
         console.error("Erreur chargement commentaires:", commentsRes.error)
-        // Fallback si le RPC échoue ou n'existe pas encore
         setCommentsByPost(prev => ({ ...prev, [postId]: [] }))
         setLoadingComments(prev => ({ ...prev, [postId]: false }))
         return
@@ -159,20 +158,23 @@ export function CommunityFeed({
           countMap = counts.reduce((acc: any, curr: any) => ({ ...acc, [curr.comment_id]: curr.count }), {})
         }
       } catch (e) {
-        console.warn("RPC get_comment_likes_counts non disponible, les likes seront à 0.")
+        console.warn("RPC get_comment_likes_counts non disponible.")
       }
 
-      const formatted = (commentsRes.data as any[]).map(c => ({
-        id: c.id,
-        content: c.content,
-        created_at: c.created_at,
-        user_id: c.user_id,
-        parent_id: c.parent_id,
-        full_name: c.users?.full_name || 'Utilisateur',
-        avatar_url: c.users?.avatar_url,
-        plan: c.users?.plan,
-        likes_count: countMap[c.id] || 0
-      }))
+      const formatted = (commentsRes.data as any[]).map(c => {
+        const author = Array.isArray(c.users) ? c.users[0] : c.users // Supabase peut retourner un tableau ou un objet selon la relation
+        return {
+          id: c.id,
+          content: c.content,
+          created_at: c.created_at,
+          user_id: c.user_id,
+          parent_id: c.parent_id,
+          full_name: author?.full_name || 'Utilisateur',
+          avatar_url: author?.avatar_url,
+          plan: author?.plan,
+          likes_count: countMap[c.id] || 0
+        }
+      })
 
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
       
