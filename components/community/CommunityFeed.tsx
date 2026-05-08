@@ -44,14 +44,14 @@ export function CommunityFeed({
 
   const supabase = createClient()
 
-  // Charger les notifications (badge TopNav) si nécessaire, mais ici on gère surtout l'envoi
+  // Charger les notifications (badge TopNav)
   async function createNotification(params: {
     userId: string, // destinataire
     type: 'post_like' | 'comment_like' | 'comment_reply',
     postId?: string,
     commentId?: string
   }) {
-    if (params.userId === currentUserId) return // pas de notification pour soi-même
+    if (params.userId === currentUserId) return 
     await supabase.from('notifications').insert({
       user_id: params.userId,
       actor_id: currentUserId,
@@ -124,7 +124,61 @@ export function CommunityFeed({
     }
   }
 
-  // ... fetchComments reste inchangé ...
+  async function fetchComments(postId: string) {
+    setLoadingComments(prev => ({ ...prev, [postId]: true }))
+    try {
+      const { data: comments, error } = await supabase
+        .from('community_comments')
+        .select(`
+          *,
+          users (full_name, avatar_url, plan)
+        `)
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+
+      // Likes globaux via RPC
+      let countMap: Record<string, number> = {}
+      try {
+        const { data: counts } = await supabase.rpc('get_comment_likes_counts', { post_id_val: postId })
+        if (counts) {
+          countMap = counts.reduce((acc: any, curr: any) => ({ ...acc, [curr.comment_id]: curr.count }), {})
+        }
+      } catch (e) {}
+
+      // Likes de l'user courant
+      const { data: userLikes } = await supabase
+        .from('community_comment_likes')
+        .select('comment_id')
+        .eq('user_id', currentUserId)
+
+      const formatted = (comments || []).map(c => {
+        const u = Array.isArray(c.users) ? c.users[0] : c.users
+        return {
+          id: c.id,
+          content: c.content,
+          created_at: c.created_at,
+          user_id: c.user_id,
+          parent_id: c.parent_id,
+          full_name: u?.full_name || 'Utilisateur',
+          avatar_url: u?.avatar_url,
+          plan: u?.plan,
+          likes_count: countMap[c.id] || 0
+        }
+      })
+
+      setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
+      const liked = new Set<string>()
+      if (userLikes) userLikes.forEach(l => liked.add(l.comment_id))
+      setCommentLikes(liked)
+    } catch (err) {
+      console.error("Fetch error:", err)
+      setCommentsByPost(prev => ({ ...prev, [postId]: [] }))
+    } finally {
+      setLoadingComments(prev => ({ ...prev, [postId]: false }))
+    }
+  }
 
   async function handleCommentSubmit(postId: string) {
     if (!newCommentText.trim() || isSubmittingComment) return
