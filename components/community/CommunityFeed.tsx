@@ -219,7 +219,7 @@ export function CommunityFeed({
       
       // Notifications
       if (payload.parent_id) {
-        const parentComment = commentsByPost[postId].find(c => c.id === payload.parent_id)
+        const parentComment = (commentsByPost[postId] || []).find(c => c.id === payload.parent_id)
         if (parentComment) createNotification({ userId: parentComment.user_id, type: 'comment_reply', postId, commentId: data.id })
       } else {
         const post = posts.find(p => p.id === postId)
@@ -253,7 +253,7 @@ export function CommunityFeed({
     setCommentLikes(newLiked)
     setCommentsByPost(prev => ({
       ...prev,
-      [expandedPostId!]: prev[expandedPostId!].map(c => 
+      [expandedPostId!]: (prev[expandedPostId!] || []).map(c => 
         c.id === comment.id ? { ...c, likes_count: c.likes_count + (isLiked ? -1 : 1) } : c
       )
     }))
