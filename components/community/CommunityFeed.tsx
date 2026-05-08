@@ -113,6 +113,12 @@ export function CommunityFeed({
 
   async function toggleComments(postId: string) {
     if (expandedPostId === postId) {
+      // Réinitialiser l'affichage des réponses de ce post à la fermeture
+      const commentsOfPost = commentsByPost[postId] || []
+      const newVisible = { ...visibleReplies }
+      commentsOfPost.forEach(c => { if (newVisible[c.id]) delete newVisible[c.id] })
+      setVisibleReplies(newVisible)
+      
       setExpandedPostId(null)
       setReplyingTo(null)
       return
@@ -392,17 +398,38 @@ export function CommunityFeed({
                                               <p style={{ fontSize: '.85rem', margin: '2px 0' }}>{r.content}</p>
                                               <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
                                             </div>
-                                            <button onClick={() => toggleCommentLike(r)} style={{ background: 'none', border: 'none', color: commentLikes.has(r.id) ? '#ef4444' : 'var(--t3)', cursor: 'pointer' }}>
+                                            <button onClick={() => toggleCommentLike(r)} style={{ background: 'none', border: 'none', color: commentLikes.has(r.id) ? '#ef4444' : 'var(--t3)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                               <Heart size={12} fill={commentLikes.has(r.id) ? '#ef4444' : 'none'} />
+                                              <span style={{ fontSize: '.6rem', fontWeight: 600 }}>{r.likes_count || ''}</span>
                                             </button>
                                           </div>
                                         </div>
                                       </div>
                                     ))}
                                     
-                                    {remaining > 0 && (
+                                    {showCount > 0 && (
+                                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                        {remaining > 0 && (
+                                          <button 
+                                            onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 3 }))}
+                                            style={{ background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '30px', height: '1px', background: 'var(--b1)' }}></div>
+                                            Afficher {remaining} réponse{remaining > 1 ? 's' : ''} ∨
+                                          </button>
+                                        )}
+                                        <button 
+                                          onClick={() => setVisibleReplies(prev => {
+                                            const n = { ...prev }; delete n[c.id]; return n;
+                                          })}
+                                          style={{ background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer', padding: '10px 0' }}>
+                                          Masquer
+                                        </button>
+                                      </div>
+                                    )}
+
+                                    {showCount === 0 && remaining > 0 && (
                                       <button 
-                                        onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 3 }))}
+                                        onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: 3 }))}
                                         style={{ background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <div style={{ width: '30px', height: '1px', background: 'var(--b1)' }}></div>
                                         Afficher {remaining} réponse{remaining > 1 ? 's' : ''} ∨
