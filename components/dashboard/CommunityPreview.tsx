@@ -43,9 +43,20 @@ export function CommunityPreview({ topPosts }: { topPosts: any[] }) {
           return (
             <div key={post.id || i} className="sugg-item" style={{ opacity: isPlaceholder ? 0.7 : 1 }}>
               {/* Avatar initiales colorées — même style que l'icône IA */}
-              <div className="sugg-avatar" style={{ background: bg, color }}>
-                {getInitials(post.full_name || 'U')}
-              </div>
+              <div style={{ 
+              width: 44, height: 44, borderRadius: '50%', 
+              background: bg, display: 'flex', 
+              alignItems: 'center', justifyContent: 'center',
+              fontWeight: 600, color: color, flexShrink: 0,
+              border: '1px solid var(--b1)',
+              overflow: 'hidden'
+            }}>
+              {post.avatar_url ? (
+                <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+              ) : (
+                getInitials(post.full_name || 'U')
+              )}
+            </div>
               <div className="sugg-info">
                 <div className="sugg-name" style={{ fontWeight: 600 }}>
                   {post.full_name || 'Utilisateur'}
