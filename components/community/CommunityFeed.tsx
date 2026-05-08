@@ -44,70 +44,166 @@ export function CommunityFeed({
 
   const supabase = createClient()
 
-  // ... (fonctions createNotification, handlePost, toggleLike, toggleComments inchangées)
+  // Charger les notifications (badge TopNav) si nécessaire, mais ici on gère surtout l'envoi
+  async function createNotification(params: {
+    userId: string, // destinataire
+    type: 'post_like' | 'comment_like' | 'comment_reply',
+    postId?: string,
+    commentId?: string
+  }) {
+    if (params.userId === currentUserId) return // pas de notification pour soi-même
+    await supabase.from('notifications').insert({
+      user_id: params.userId,
+      actor_id: currentUserId,
+      type: params.type,
+      post_id: params.postId,
+      comment_id: params.commentId
+    })
+  }
 
-  async function fetchComments(postId: string) {
-    setLoadingComments(prev => ({ ...prev, [postId]: true }))
-    
-    try {
-      const { data: comments, error } = await supabase
-        .from('community_comments')
-        .select(`
-          *,
-          users (full_name, avatar_url, plan)
-        `)
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true })
+  async function handlePost(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newPostContent.trim() || isPosting) return
 
-      if (error) {
-        console.error("Erreur comments:", error)
-        setCommentsByPost(prev => ({ ...prev, [postId]: [] }))
-        return
-      }
+    setIsPosting(true)
+    const { data, error } = await supabase
+      .from('community_posts')
+      .insert({ content: newPostContent.trim(), user_id: currentUserId })
+      .select('id, created_at')
+      .single()
 
-      // Récupération des likes (RPC)
-      let countMap: Record<string, number> = {}
-      try {
-        const { data: counts } = await supabase.rpc('get_comment_likes_counts', { post_id_val: postId })
-        if (counts) {
-          countMap = counts.reduce((acc: any, curr: any) => ({ ...acc, [curr.comment_id]: curr.count }), {})
-        }
-      } catch (e) {}
+    if (!error && data) {
+      setPosts([{
+        id: data.id,
+        user_id: currentUserId,
+        content: newPostContent.trim(),
+        created_at: data.created_at,
+        full_name: 'Moi',
+        avatar_url: null,
+        plan: null,
+        likes_count: 0,
+        comments_count: 0
+      }, ...posts])
+      setNewPostContent('')
+    }
+    setIsPosting(false)
+  }
 
-      // Récupération des likes de l'utilisateur
-      const { data: userLikes } = await supabase
-        .from('community_comment_likes')
-        .select('comment_id')
-        .eq('user_id', currentUserId)
+  async function toggleLike(post: any) {
+    const isLiked = likedIds.has(post.id)
+    const newLikedIds = new Set(likedIds)
+    if (isLiked) newLikedIds.delete(post.id)
+    else {
+      newLikedIds.add(post.id)
+      createNotification({ userId: post.user_id, type: 'post_like', postId: post.id })
+    }
+    setLikedIds(newLikedIds)
 
-      const formatted = (comments || []).map(c => {
-        const u = Array.isArray(c.users) ? c.users[0] : c.users
-        return {
-          id: c.id,
-          content: c.content,
-          created_at: c.created_at,
-          user_id: c.user_id,
-          parent_id: c.parent_id,
-          full_name: u?.full_name || 'Utilisateur',
-          avatar_url: u?.avatar_url,
-          plan: u?.plan,
-          likes_count: countMap[c.id] || 0
-        }
-      })
+    setPosts(posts.map(p => {
+      if (p.id === post.id) return { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) }
+      return p
+    }))
 
-      setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
-      
-      const liked = new Set<string>()
-      if (userLikes) userLikes.forEach(l => liked.add(l.comment_id))
-      setCommentLikes(liked)
-    } catch (err) {
-      console.error("Fetch error:", err)
-    } finally {
-      setLoadingComments(prev => ({ ...prev, [postId]: false }))
+    if (isLiked) {
+      await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUserId })
+    } else {
+      await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUserId })
     }
   }
 
-  // ... (handleCommentSubmit et toggleCommentLike inchangées)
+  async function toggleComments(postId: string) {
+    if (expandedPostId === postId) {
+      setExpandedPostId(null)
+      setReplyingTo(null)
+      return
+    }
+
+    setExpandedPostId(postId)
+    if (!commentsByPost[postId]) {
+      fetchComments(postId)
+    }
+  }
+
+  // ... fetchComments reste inchangé ...
+
+  async function handleCommentSubmit(postId: string) {
+    if (!newCommentText.trim() || isSubmittingComment) return
+    setIsSubmittingComment(true)
+
+    const payload: any = {
+      post_id: postId,
+      user_id: currentUserId,
+      content: newCommentText.trim()
+    }
+    if (replyingTo && replyingTo.postId === postId) {
+      payload.parent_id = replyingTo.id
+    }
+
+    const { data, error } = await supabase
+      .from('community_comments')
+      .insert(payload)
+      .select('id, created_at')
+      .single()
+
+    if (!error && data) {
+      const newComment = {
+        id: data.id,
+        content: newCommentText.trim(),
+        created_at: data.created_at,
+        user_id: currentUserId,
+        parent_id: payload.parent_id || null,
+        full_name: 'Moi',
+        avatar_url: null,
+        plan: null,
+        likes_count: 0
+      }
+      
+      setCommentsByPost(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), newComment]
+      }))
+      
+      // Notifications
+      if (payload.parent_id) {
+        const parentComment = commentsByPost[postId].find(c => c.id === payload.parent_id)
+        if (parentComment) createNotification({ userId: parentComment.user_id, type: 'comment_reply', postId, commentId: data.id })
+      } else {
+        const post = posts.find(p => p.id === postId)
+        if (post) createNotification({ userId: post.user_id, type: 'comment_reply', postId, commentId: data.id })
+      }
+
+      setPosts(posts.map(p => {
+        if (p.id === postId) return { ...p, comments_count: p.comments_count + 1 }
+        return p
+      }))
+      
+      setNewCommentText('')
+      setReplyingTo(null)
+    }
+    setIsSubmittingComment(false)
+  }
+
+  async function toggleCommentLike(comment: any) {
+    const isLiked = commentLikes.has(comment.id)
+    const newLiked = new Set(commentLikes)
+    
+    if (isLiked) {
+      newLiked.delete(comment.id)
+      await supabase.from('community_comment_likes').delete().match({ comment_id: comment.id, user_id: currentUserId })
+    } else {
+      newLiked.add(comment.id)
+      createNotification({ userId: comment.user_id, type: 'comment_like', postId: expandedPostId!, commentId: comment.id })
+      await supabase.from('community_comment_likes').insert({ comment_id: comment.id, user_id: currentUserId })
+    }
+    
+    setCommentLikes(newLiked)
+    setCommentsByPost(prev => ({
+      ...prev,
+      [expandedPostId!]: prev[expandedPostId!].map(c => 
+        c.id === comment.id ? { ...c, likes_count: c.likes_count + (isLiked ? -1 : 1) } : c
+      )
+    }))
+  }
 
   return (
     <div className="community-feed" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
