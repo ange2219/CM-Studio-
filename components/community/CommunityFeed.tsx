@@ -81,6 +81,24 @@ export function CommunityFeed({
     else await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUserId })
   }
 
+  async function toggleCommentLike(commentId: string, postId: string) {
+    const isLiked = commentLikes.has(commentId)
+    const newCommentLikes = new Set(commentLikes)
+    if (isLiked) newCommentLikes.delete(commentId)
+    else newCommentLikes.add(commentId)
+    setCommentLikes(newCommentLikes)
+    
+    setCommentsByPost(prev => {
+      const updated = { ...prev }
+      if (updated[postId]) {
+        updated[postId] = updated[postId].map(c => 
+          c.id === commentId ? { ...c, likes_count: c.likes_count + (isLiked ? -1 : 1) } : c
+        )
+      }
+      return updated
+    })
+  }
+
   async function toggleComments(postId: string) {
     if (expandedPostId === postId) {
       setExpandedPostId(null)
@@ -103,7 +121,7 @@ export function CommunityFeed({
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
       
       const initialVisible: Record<string, number> = {}
-      formatted.filter(c => !c.parent_id).forEach(c => initialVisible[c.id] = 2)
+      formatted.filter(c => !c.parent_id).forEach(c => initialVisible[c.id] = 0)
       setVisibleReplies(prev => ({ ...prev, ...initialVisible }))
     } catch (err) {
       setCommentsByPost(prev => ({ ...prev, [postId]: [] }))
@@ -124,6 +142,10 @@ export function CommunityFeed({
       setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       setNewCommentText('')
       setReplyingTo(null)
+      
+      if (payload.parent_id) {
+        setVisibleReplies(prev => ({ ...prev, [payload.parent_id]: (prev[payload.parent_id] || 0) + 1 }))
+      }
     }
     setIsSubmittingComment(false)
   }
@@ -195,77 +217,100 @@ export function CommunityFeed({
                 <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
               </div>
 
-              {/* SCROLLABLE COMMENTS SECTION (Fixed Constraint) */}
+              {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
               {isExpanded && (
                 <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div className="sb-scroll" style={{ flex: 1, maxHeight: '400px', overflowY: 'auto', padding: '16px' }}>
+                  <div className="sb-scroll" style={{ flex: 1, maxHeight: '350px', overflowY: 'auto', padding: '16px 16px 0 16px' }}>
                     {isLoading ? (
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>Chargement...</div>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingBottom: '16px' }}>Chargement...</div>
                     ) : postComments.length === 0 ? (
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>Aucun commentaire.</div>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingBottom: '16px' }}>Aucun commentaire.</div>
                     ) : (
                       postComments.filter(c => !c.parent_id).map(c => {
                         const replies = postComments.filter(r => r.parent_id === c.id)
                         const showCount = visibleReplies[c.id] || 0
-                        const isExpandedReplies = showCount > 0
+                        const isLiked = commentLikes.has(c.id)
 
                         return (
-                          <div key={c.id} style={{ marginBottom: '20px' }}>
+                          <div key={c.id} style={{ marginBottom: '16px' }}>
+                            {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
                                 {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1)}
                               </div>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{c.full_name}</div>
-                                    <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4, margin: '2px 0' }}>{c.content}</div>
-                                    <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
-                                      <button onClick={() => setReplyingTo({ id: c.id, name: c.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>Répondre</button>
-                                      {replies.length > 0 && (
-                                        <button 
-                                          onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: isExpandedReplies ? 0 : replies.length }))}
-                                          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
-                                        >
-                                          {isExpandedReplies ? 'Masquer les réponses' : `Voir les ${replies.length} réponses`}
-                                        </button>
-                                      )}
-                                    </div>
+                              <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{c.full_name}</div>
+                                  <div style={{ fontSize: '0.9rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{c.content}</div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>17 h</span>
+                                    <button onClick={() => setReplyingTo({ id: c.id, name: c.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
                                   </div>
-                                  <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '0 4px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <Heart size={14} />
-                                    <span style={{ fontSize: '0.65rem' }}>{c.likes_count || ''}</span>
-                                  </button>
                                 </div>
-
-                                {/* Threaded Replies */}
-                                {isExpandedReplies && replies.map(r => (
-                                  <div key={r.id} style={{ display: 'flex', gap: '10px', marginTop: '12px', borderLeft: '2px solid rgba(255,255,255,0.06)', paddingLeft: '16px' }}>
-                                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#6366f1' }}>
-                                      {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1)}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div>
-                                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>{r.full_name}</div>
-                                          <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>{r.content}</div>
-                                        </div>
-                                        <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
-                                          <Heart size={12} />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
+                                <button onClick={() => toggleCommentLike(c.id, post.id)} style={{ background: 'none', border: 'none', color: isLiked ? '#ef4444' : 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '12px' }}>
+                                  <Heart size={16} fill={isLiked ? '#ef4444' : 'none'} />
+                                  {c.likes_count > 0 && <span style={{ fontSize: '0.65rem', marginTop: '2px' }}>{c.likes_count}</span>}
+                                </button>
                               </div>
                             </div>
+
+                            {/* Threaded Replies */}
+                            {showCount > 0 && replies.slice(0, showCount).map(r => {
+                              const isReplyLiked = commentLikes.has(r.id)
+                              return (
+                                <div key={r.id} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
+                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#6366f1' }}>
+                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1)}
+                                  </div>
+                                  <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1 }}>
+                                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{r.full_name}</div>
+                                      <div style={{ fontSize: '0.85rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{r.content}</div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>16 h</span>
+                                        <button onClick={() => setReplyingTo({ id: r.id, name: r.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
+                                      </div>
+                                    </div>
+                                    <button onClick={() => toggleCommentLike(r.id, post.id)} style={{ background: 'none', border: 'none', color: isReplyLiked ? '#ef4444' : 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '12px' }}>
+                                      <Heart size={14} fill={isReplyLiked ? '#ef4444' : 'none'} />
+                                      {r.likes_count > 0 && <span style={{ fontSize: '0.65rem', marginTop: '2px' }}>{r.likes_count}</span>}
+                                    </button>
+                                  </div>
+                                </div>
+                              )
+                            })}
+
+                            {/* View/Hide Replies Toggle - EXACT TIKTOK STYLE */}
+                            {replies.length > 0 && (
+                              <div style={{ paddingLeft: '44px', marginTop: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                  {showCount < replies.length && (
+                                    <button 
+                                      onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 3 }))}
+                                      style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                                    >
+                                      <div style={{ width: '24px', height: '1px', background: 'rgba(255,255,255,0.3)' }}></div>
+                                      Afficher {showCount === 0 ? (replies.length === 1 ? '1 réponse' : `${replies.length} de plus`) : `${replies.length - showCount} de plus`} ∨
+                                    </button>
+                                  )}
+                                  {showCount > 0 && (
+                                    <button 
+                                      onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: 0 }))}
+                                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                                    >
+                                      Masquer ∧
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )
                       })
                     )}
                   </div>
 
-                  {/* FIXED INPUT AT BOTTOM */}
+                  {/* FIXED INPUT AT BOTTOM - TikTok Style */}
                   <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                     {replyingTo && replyingTo.postId === post.id && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: '#6366f1' }}>
@@ -273,21 +318,33 @@ export function CommunityFeed({
                         <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer' }}>✕</button>
                       </div>
                     )}
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      <input 
-                        type="text" 
-                        placeholder={replyingTo ? "Ajouter une réponse..." : "Ajouter un commentaire..."}
-                        value={newCommentText}
-                        onChange={e => setNewCommentText(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(post.id) } }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
-                      />
-                      <button 
-                        onClick={() => handleCommentSubmit(post.id)}
-                        disabled={isSubmittingComment || !newCommentText.trim()}
-                        style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1 }}>
-                        <Send size={16} />
-                      </button>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
+                        U
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <input 
+                          type="text" 
+                          placeholder={replyingTo ? `Répondre à ${replyingTo.name}...` : "Ajouter un commentaire..."}
+                          value={newCommentText}
+                          onChange={e => setNewCommentText(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(post.id) } }}
+                          style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
+                        />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'rgba(255,255,255,0.6)', marginLeft: '8px' }}>
+                          <span style={{ cursor: 'pointer', fontSize: '1.1rem', fontWeight: 600 }}>@</span>
+                          <span style={{ cursor: 'pointer', fontSize: '1.1rem' }}>☺</span>
+                          <ImageIcon size={18} style={{ cursor: 'pointer' }} />
+                          {newCommentText.trim() ? (
+                            <button 
+                              onClick={() => handleCommentSubmit(post.id)}
+                              disabled={isSubmittingComment}
+                              style={{ background: 'none', border: 'none', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, marginLeft: '4px' }}>
+                              <Send size={18} />
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
