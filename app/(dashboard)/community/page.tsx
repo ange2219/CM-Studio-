@@ -14,8 +14,12 @@ export default async function CommunityPage() {
   let posts: any[] = []
   let likedPostIds = new Set<string>()
   let dbReady = true
+  let fullProfile = null
 
   try {
+    const { data: profileData } = await admin.from('users').select('*').eq('id', user.id).single()
+    fullProfile = profileData || { id: user.id }
+
     const { data: postsData } = await admin
       .from('vw_community_posts')
       .select('*')
@@ -51,7 +55,7 @@ export default async function CommunityPage() {
       ) : (
         <CommunityFeed
           initialPosts={posts}
-          currentUserId={user.id}
+          currentUser={fullProfile}
           initialLikedIds={Array.from(likedPostIds)}
         />
       )}
