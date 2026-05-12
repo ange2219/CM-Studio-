@@ -51,7 +51,7 @@ export function DashboardShell({ user: initialUser, children }: {
   }
 
   const ni = (href: string) => {
-    const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
+    const active = pathname === href || (href !== '/home' && pathname.startsWith(href))
     return {
       width: '48px',
       height: '48px',
@@ -94,12 +94,12 @@ export function DashboardShell({ user: initialUser, children }: {
           }}>C</div>
         </div>
 
-        <Link href="/dashboard" style={ni('/dashboard')} title="Accueil"><Home size={22} /></Link>
+        <Link href="/home" style={ni('/home')} title="Accueil"><Home size={22} /></Link>
         <Link href="/community" style={ni('/community')} title="Communauté"><Users size={22} /></Link>
         <Link href="/posts" style={ni('/posts')} title="Contenu"><Layout size={22} /></Link>
         <Link href="/calendar" style={ni('/calendar')} title="Planning"><Calendar size={22} /></Link>
         <Link href="/analytics" style={ni('/analytics')} title="Analytiques"><BarChart3 size={22} /></Link>
-        <Link href="/dashboard" style={ni('/dashboard')} title="Studio IA"><Sparkles size={22} /></Link>
+        <Link href="/home" style={ni('/home')} title="Studio IA"><Sparkles size={22} /></Link>
         
         <div style={{ flex: 1 }} />
         
@@ -135,10 +135,16 @@ export function DashboardShell({ user: initialUser, children }: {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <button className="h-btn">
+            <button style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t2)', cursor: 'pointer'
+            }}>
               <MessageCircle size={20} />
             </button>
-            <button className="h-btn">
+            <button style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t2)', cursor: 'pointer'
+            }}>
               <Bell size={20} />
             </button>
             <Link href="/settings?tab=profile" style={{ textDecoration: 'none' }}>
@@ -159,27 +165,6 @@ export function DashboardShell({ user: initialUser, children }: {
           {children}
         </div>
       </div>
-
-      <style jsx>{`
-        .h-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: var(--s2);
-          border: 1px solid var(--b1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--t2);
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .h-btn:hover {
-          border-color: var(--accent);
-          color: var(--accent);
-          background: var(--accent-light);
-        }
-      `}</style>
     </div>
   )
 }

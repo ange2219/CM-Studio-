@@ -314,7 +314,7 @@ export default function OnboardingPage() {
         body: JSON.stringify(data),
       })
       if (!res.ok) throw new Error()
-      router.push('/dashboard')
+      router.push('/home')
     } catch {
       toast('Erreur lors de la sauvegarde', 'error')
       setSaving(false)

@@ -28,7 +28,7 @@ export default function LoginPage() {
     setLoading(true); setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError('Email ou mot de passe incorrect'); setLoading(false) }
-    else router.push('/dashboard')
+    else router.push('/home')
   }
 
   async function handleForgotPassword() {

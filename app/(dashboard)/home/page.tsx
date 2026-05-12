@@ -3,18 +3,19 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
-import { WelcomeBanner } from '@/components/dashboard/WelcomeBanner'
-import { AiAssistantPanel } from '@/components/dashboard/AiAssistantPanel'
-import { PopularGroups } from '@/components/dashboard/PopularGroups'
-import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel'
-import { StoriesSection } from '@/components/dashboard/StoriesSection'
+import { WelcomeBanner } from '@/components/home/WelcomeBanner'
+import { AiAssistantPanel } from '@/components/home/AiAssistantPanel'
+import { PopularGroups } from '@/components/home/PopularGroups'
+import { NotificationsPanel } from '@/components/home/NotificationsPanel'
+import { StoriesSection } from '@/components/home/StoriesSection'
 
-export default function DashboardPage() {
+export default function HomePage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
+    document.title = 'Accueil — CM Studio'
     async function getUser() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (authUser) {
@@ -26,8 +27,17 @@ export default function DashboardPage() {
     getUser()
   }, [])
 
-  if (loading) return <div style={{ padding: '2rem', color: 'var(--t3)' }}>Chargement...</div>
-  if (!user) return null
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--t3)', fontSize: '0.9rem' }}>
+       Chargement de votre espace...
+    </div>
+  )
+  
+  if (!user) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--t3)', fontSize: '0.9rem' }}>
+       Erreur : Profil introuvable. Veuillez vous reconnecter.
+    </div>
+  )
 
   const firstName = user.full_name?.split(' ')[0] || 'Ami'
 
@@ -77,12 +87,6 @@ export default function DashboardPage() {
       </div>
 
       <WelcomeBanner firstName={firstName} />
-      
-      <style jsx>{`
-        @media (max-width: 1280px) {
-          .hidden.xl\:flex { display: none !important; }
-        }
-      `}</style>
     </div>
   )
 }

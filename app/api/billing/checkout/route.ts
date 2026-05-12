@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     email: userProfile?.email || user.email!,
     priceId: PLANS[plan as keyof typeof PLANS].priceId,
-    successUrl: `${appUrl}/dashboard?upgrade=success`,
+    successUrl: `${appUrl}/home?upgrade=success`,
     cancelUrl: `${appUrl}/settings?upgrade=canceled`,
   })
 

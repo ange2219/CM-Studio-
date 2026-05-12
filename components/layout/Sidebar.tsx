@@ -21,7 +21,7 @@ export function Sidebar({ user, open }: { user: User; open: boolean }) {
   }
 
   function ni(href: string) {
-    return pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
+    return pathname === href || (href !== '/home' && pathname.startsWith(href))
       ? 'ni on' : 'ni'
   }
 
@@ -53,7 +53,7 @@ export function Sidebar({ user, open }: { user: User; open: boolean }) {
 
       {/* Logo */}
       <div className="sb-logo">
-        <Link href="/dashboard" className="sb-logo-link">
+        <Link href="/home" className="sb-logo-link">
           <span className="logo-s">C</span>
           <span className="logo-rest">M</span>
           <span className="logo-ai">&nbsp;Studio</span>
@@ -64,7 +64,7 @@ export function Sidebar({ user, open }: { user: User; open: boolean }) {
       <nav className="sb-nav">
         <div className="ns">Principal</div>
 
-        <Link href="/dashboard" className={ni('/dashboard')} title="Accueil">
+        <Link href="/home" className={ni('/home')} title="Accueil">
           <span className="sb-icon">
             <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           </span>
@@ -101,14 +101,14 @@ export function Sidebar({ user, open }: { user: User; open: boolean }) {
           <span className="sb-label">Analytiques</span>
         </Link>
 
-        <Link href="/dashboard" className="ni" title="Studio IA">
+        <Link href="/home" className="ni" title="Studio IA">
           <span className="sb-icon">
             <svg viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           </span>
           <span className="sb-label">Studio IA</span>
         </Link>
 
-        <Link href="/dashboard" className="ni" title="Workspace IA">
+        <Link href="/home" className="ni" title="Workspace IA">
           <span className="sb-icon">
             <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
           </span>
