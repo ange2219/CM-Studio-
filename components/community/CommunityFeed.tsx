@@ -198,7 +198,7 @@ export function CommunityFeed({
           {['pour-vous', 'communaute', 'groupe'].map(tid => (
             <button key={tid} onClick={() => setActiveTab(tid)} style={{ background: 'none', border: 'none', padding: '12px 4px', fontSize: '0.9rem', fontWeight: activeTab === tid ? 700 : 500, color: activeTab === tid ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', position: 'relative', transition: 'all 0.2s' }}>
               {tid === 'pour-vous' ? 'Pour vous' : tid === 'communaute' ? 'Communauté' : 'Groupe'}
-              {activeTab === tid && <div style={{ position: 'absolute', bottom: '-1px', left: 0, right: 0, height: '2px', background: '#6366f1', borderRadius: '2px' }} />}
+              {activeTab === tid && <div style={{ position: 'absolute', bottom: '-1px', left: 0, right: 0, height: '2px', background: 'var(--accent)', borderRadius: '2px' }} />}
             </button>
           ))}
         </div>
@@ -208,7 +208,7 @@ export function CommunityFeed({
       {/* CREATE POST */}
       <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: '#6366f1' }}>U</div>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--accent)' }}>U</div>
           <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -216,7 +216,7 @@ export function CommunityFeed({
             <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>Image</span></button>
             <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
           </div>
-          <button onClick={handlePost} disabled={!newPostContent.trim() || isPosting} style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: !newPostContent.trim() ? 0.5 : 1 }}>Publier</button>
+          <button onClick={handlePost} disabled={!newPostContent.trim() || isPosting} style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-secondary))', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: !newPostContent.trim() ? 0.5 : 1 }}>Publier</button>
         </div>
       </div>
 
@@ -232,8 +232,8 @@ export function CommunityFeed({
             <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
               {/* Post Header */}
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : <span style={{ color: '#6366f1', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>{post.full_name || 'Utilisateur'}</div>
@@ -246,8 +246,8 @@ export function CommunityFeed({
 
               {/* Post Actions */}
               <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? '#6366f1' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Heart size={18} fill={isLiked ? '#6366f1' : 'none'} /> {post.likes_count + (isLiked ? 1 : 0)}</button>
-                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? '#6366f1' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
+                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count + (isLiked ? 1 : 0)}</button>
+                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
                 <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
               </div>
 
@@ -269,7 +269,7 @@ export function CommunityFeed({
                           <div key={c.id} style={{ marginBottom: '16px' }}>
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
-                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
                                 {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1) || 'U'}
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -297,7 +297,7 @@ export function CommunityFeed({
                               
                               return (
                                 <div key={r.id} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
-                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#6366f1' }}>
+                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)' }}>
                                     {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1) || 'U'}
                                   </div>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -359,13 +359,13 @@ export function CommunityFeed({
                   {/* FIXED INPUT AT BOTTOM - TikTok Style */}
                   <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
                     {replyingTo && replyingTo.postId === post.id && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: '#6366f1' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: 'var(--accent)' }}>
                         <span>En réponse à <b>{replyingTo.name}</b></span>
-                        <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer' }}>✕</button>
+                        <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer' }}>✕</button>
                       </div>
                     )}
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
                         {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : currentUser?.full_name?.slice(0, 1) || 'U'}
                       </div>
                       <form 
@@ -382,7 +382,7 @@ export function CommunityFeed({
                         <button 
                           type="submit"
                           disabled={isSubmittingComment || !newCommentText.trim()}
-                          style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isSubmittingComment || !newCommentText.trim()) ? 'not-allowed' : 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1, marginLeft: '8px' }}>
+                          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isSubmittingComment || !newCommentText.trim()) ? 'not-allowed' : 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1, marginLeft: '8px' }}>
                           <Send size={16} />
                         </button>
                       </form>

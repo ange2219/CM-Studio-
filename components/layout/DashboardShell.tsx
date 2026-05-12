@@ -71,7 +71,7 @@ export function DashboardShell({ user: initialUser, children }: {
       {/* Sidebar - Clean Version */}
       <div className="sb-scroll" style={{ width: '260px', background: 'var(--sidebar-bg)', borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto', transition: 'background 0.3s' }}>
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--accent), var(--accent-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
           <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
         </div>
 
@@ -110,8 +110,8 @@ export function DashboardShell({ user: initialUser, children }: {
               <button 
                 onClick={() => setProfileOpen(!profileOpen)}
                 style={{ 
-                  width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', border: '2px solid rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6366f1', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden'
+                  width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', border: '2px solid rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden'
                 }}
               >
                 {user?.avatar_url ? <img src={user.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : initials}
