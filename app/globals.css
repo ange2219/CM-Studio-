@@ -64,15 +64,7 @@ body {
     radial-gradient(ellipse 55% 45% at 88% 108%, rgba(59,130,246,.08) 0%, transparent 55%),
     var(--bg);
 }
-/* Subtle grid overlay — dark mode only */
-[data-theme="dark"] body::before {
-  content:'';position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(30,87,205,0.02) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(30,87,205,0.02) 1px,transparent 1px);
-  background-size:40px 40px;
-  pointer-events:none;z-index:0;
-}
+/* Grille supprimée selon la demande de l'utilisateur */
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

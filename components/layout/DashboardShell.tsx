@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, BarChart3, Users, MessageCircle, Search, Plus, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle, Moon, Sun
 } from 'lucide-react'
 
 export function DashboardShell({ user: initialUser, children }: { 
@@ -18,7 +18,12 @@ export function DashboardShell({ user: initialUser, children }: {
   const supabase = createClient()
   const [user, setUser] = useState<any>(initialUser)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [theme, setTheme] = useState('dark')
   const profileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
 
   useEffect(() => {
     if (!initialUser) {
@@ -58,26 +63,25 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Workspace', icon: Layout, href: '/posts' },
     { label: 'Analytics', icon: BarChart3, href: '/analytics' },
     { label: 'Community', icon: Users, href: '/community' },
-    { label: 'Messages', icon: MessageCircle, href: '/messages' },
   ]
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#070709', color: '#fff', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
       
       {/* Sidebar - Clean Version */}
-      <div className="sb-scroll" style={{ width: '260px', background: '#0D0D1A', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
+      <div className="sb-scroll" style={{ width: '260px', background: 'var(--sidebar-bg)', borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto', transition: 'background 0.3s' }}>
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
-          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>CM Studio</span>
+          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
         </div>
 
         <div style={{ flex: 1, padding: '0 12px' }}>
-          <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px' }}>Navigation</div>
+          <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px' }}>Navigation</div>
           {navItems.map(item => {
             const active = pathname === item.href
             return (
-              <Link key={item.label} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: active ? '#fff' : 'rgba(255,255,255,0.5)', background: active ? 'rgba(99, 102, 241, 0.1)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s' }}>
-                <item.icon size={18} color={active ? '#6366f1' : 'currentColor'} />
+              <Link key={item.label} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s' }}>
+                <item.icon size={18} color={active ? 'var(--accent)' : 'currentColor'} />
                 <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500 }}>{item.label}</span>
               </Link>
             )
@@ -89,16 +93,18 @@ export function DashboardShell({ user: initialUser, children }: {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         
         {/* Header - Fixed & Centered Search */}
-        <header style={{ height: '72px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: '32px', flexShrink: 0 }}>
+        <header style={{ height: '72px', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: '32px', flexShrink: 0 }}>
           <div style={{ position: 'relative', flex: 1, maxWidth: '500px', margin: '0 auto' }}>
-            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
-            <input type="text" placeholder="Rechercher sur CM Studio..." style={{ width: '100%', height: '44px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '0 16px 0 48px', color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
+            <input type="text" placeholder="Rechercher sur CM Studio..." style={{ width: '100%', height: '44px', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '0 16px 0 48px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }} />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={20} /></button>
-            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={20} /></button>
-            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={20} /></button>
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={20} /></button>
+            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={20} /></button>
             
             <div ref={profileRef} style={{ position: 'relative', marginLeft: '8px' }}>
               <button 
