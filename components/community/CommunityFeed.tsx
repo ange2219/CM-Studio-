@@ -279,16 +279,6 @@ export function CommunityFeed({
                 {post.content}
               </div>
 
-              {/* Post Image (Fake for mockup look) */}
-              <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="https://images.unsplash.com/photo-1551288049-bbbda546697a?auto=format&fit=crop&q=80&w=1200" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.4))' }} />
-                <div style={{ position: 'absolute', bottom: '20px', left: '20px', color: '#fff' }}>
-                  <div style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '4px' }}>Engagement</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>+162%</div>
-                  <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>en 30 jours</div>
-                </div>
-              </div>
 
               {/* Stats Row */}
               <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>

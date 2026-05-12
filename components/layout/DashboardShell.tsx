@@ -133,7 +133,7 @@ export function DashboardShell({ user: initialUser, children }: {
           
           <div style={categoryLabel}>Navigation</div>
           <Link href="/home" style={ni('/home')}><Home size={18} /> {expanded && 'Home'}</Link>
-          <Link href="/workspace" style={ni('/workspace')}><Monitor size={18} /> {expanded && 'Workspace'}</Link>
+          <Link href="/posts" style={ni('/posts')}><Monitor size={18} /> {expanded && 'Workspace'}</Link>
           <Link href="/analytics" style={ni('/analytics')}><BarChart3 size={18} /> {expanded && 'Analytics'}</Link>
           <Link href="/community" style={ni('/community')}><Users size={18} /> {expanded && 'Community'}</Link>
           <Link href="/messages" style={ni('/messages')}><MessageCircle size={18} /> {expanded && 'Messages'}</Link>
@@ -204,7 +204,7 @@ export function DashboardShell({ user: initialUser, children }: {
             <button style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}>
               <Plus size={18} />
             </button>
-            <Link href="/settings?tab=profile" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <Link href="/settings?tab=general" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
               <div style={{ 
                 width: '36px', height: '36px', borderRadius: '50%', 
                 background: 'var(--accent-light)', display: 'flex', 
