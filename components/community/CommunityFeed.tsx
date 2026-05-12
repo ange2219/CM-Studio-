@@ -19,6 +19,22 @@ type Post = {
   is_community?: boolean
 }
 
+function getShortTimeAgo(dateStr: string | null | undefined) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return "à l'instant";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes} min`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} h`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays} j`;
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  return `${diffInWeeks} sem`;
+}
+
 export function CommunityFeed({ 
   initialPosts, 
   currentUser,
@@ -237,7 +253,7 @@ export function CommunityFeed({
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>{post.full_name || 'Utilisateur'}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{post.group_name || 'Général'} • Il y a 2h</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{post.group_name || 'Général'} • {getShortTimeAgo(post.created_at)}</div>
                 </div>
               </div>
 
@@ -277,7 +293,7 @@ export function CommunityFeed({
                                   <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{c.full_name}</div>
                                   <div style={{ fontSize: '0.9rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{c.content}</div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
-                                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>17 h</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{getShortTimeAgo(c.created_at)}</span>
                                     <button onClick={() => setReplyingTo({ id: c.id, name: c.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
                                   </div>
                                 </div>
@@ -313,7 +329,7 @@ export function CommunityFeed({
                                       </div>
                                       <div style={{ fontSize: '0.85rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{r.content}</div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>16 h</span>
+                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{getShortTimeAgo(r.created_at)}</span>
                                         <button onClick={() => setReplyingTo({ id: r.id, name: r.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
                                       </div>
                                     </div>
