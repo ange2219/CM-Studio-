@@ -333,29 +333,24 @@ export function CommunityFeed({
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
                         {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : currentUser?.full_name?.slice(0, 1) || 'U'}
                       </div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <form 
+                        onSubmit={e => { e.preventDefault(); handleCommentSubmit(post.id) }}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid rgba(255,255,255,0.08)' }}
+                      >
                         <input 
                           type="text" 
                           placeholder={replyingTo ? `Répondre à ${replyingTo.name}...` : "Ajouter un commentaire..."}
                           value={newCommentText}
                           onChange={e => setNewCommentText(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(post.id) } }}
                           style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
                         />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'rgba(255,255,255,0.6)', marginLeft: '8px' }}>
-                          <span style={{ cursor: 'pointer', fontSize: '1.1rem', fontWeight: 600 }}>@</span>
-                          <span style={{ cursor: 'pointer', fontSize: '1.1rem' }}>☺</span>
-                          <ImageIcon size={18} style={{ cursor: 'pointer' }} />
-                          {newCommentText.trim() ? (
-                            <button 
-                              onClick={() => handleCommentSubmit(post.id)}
-                              disabled={isSubmittingComment}
-                              style={{ background: 'none', border: 'none', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, marginLeft: '4px' }}>
-                              <Send size={18} />
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
+                        <button 
+                          type="submit"
+                          disabled={isSubmittingComment || !newCommentText.trim()}
+                          style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isSubmittingComment || !newCommentText.trim()) ? 'not-allowed' : 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1, marginLeft: '8px' }}>
+                          <Send size={16} />
+                        </button>
+                      </form>
                     </div>
                   </div>
                 </div>
