@@ -4,13 +4,13 @@ import { PWAInstall } from '@/components/PWAInstall'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'Social IA — Assistant Community Manager',
-  description: 'Gérez tous vos réseaux sociaux avec l\'intelligence artificielle.',
+  title: 'CM Studio — Plateforme Community Management',
+  description: 'Gérez vos réseaux sociaux et votre communauté avec intelligence.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Social IA',
+    title: 'CM Studio',
   },
   icons: {
     apple: '/icons/apple-touch-icon.svg',
@@ -25,7 +25,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#4646FF',
+  themeColor: '#1E57CD',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

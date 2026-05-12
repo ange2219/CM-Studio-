@@ -283,7 +283,7 @@ export function CommunityFeed({
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid var(--b1)', paddingTop: '1rem' }}>
             <span style={{ fontSize: '.8rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-              <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Restez bienveillant.
+              <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Partagez votre expertise.
             </span>
             <button 
               type="submit" 
@@ -325,7 +325,7 @@ export function CommunityFeed({
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: 'var(--t1)', display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.9rem' }}>
                       {post.full_name || 'Utilisateur'}
-                      {post.plan && <span style={{ fontSize: '.6rem', background: 'var(--accent-light)', color: 'var(--accent)', padding: '.1rem .5rem', borderRadius: '10px', fontWeight: 700 }}>{post.plan.toUpperCase()}</span>}
+                      {post.plan && <span style={{ fontSize: '.6rem', background: 'var(--accent-light)', color: 'var(--accent)', padding: '2px 8px', borderRadius: '10px', fontWeight: 800 }}>{post.plan.toUpperCase()}</span>}
                     </div>
                     <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{new Date(post.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
                   </div>

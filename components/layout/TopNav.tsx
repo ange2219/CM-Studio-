@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@/types'
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Tableau de bord',
-  '/posts': 'Mes Posts',
-  '/calendar': 'Calendrier',
+  '/dashboard': 'Accueil',
+  '/posts': 'Gestion de Contenu',
+  '/calendar': 'Planification',
   '/analytics': 'Analytiques',
   '/community': 'Communauté',
   '/settings': 'Paramètres',
@@ -65,7 +65,7 @@ export function TopNav({
   const pageTitle =
     PAGE_TITLES[pathname] ||
     Object.entries(PAGE_TITLES).find(([k]) => k !== '/dashboard' && pathname.startsWith(k))?.[1] ||
-    'Tableau de bord'
+    'Accueil'
 
   return (
     <div className="topnav">

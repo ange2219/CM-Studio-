@@ -103,7 +103,7 @@ function SettingsContent() {
             <div style={{ padding: '1.5rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 4px 20px var(--shadow)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '1rem', fontWeight: 600 }}>Plan actuel</div>
-                <span style={{ padding: '.4rem 1rem', borderRadius: '999px', fontSize: '.8rem', fontWeight: 700, background: 'var(--purple-light)', color: 'var(--purple)' }}>
+                <span style={{ padding: '.4rem 1rem', borderRadius: '999px', fontSize: '.8rem', fontWeight: 700, background: 'var(--accent-light)', color: 'var(--accent)' }}>
                   {userPlan.toUpperCase()}
                 </span>
               </div>
@@ -113,7 +113,7 @@ function SettingsContent() {
             </div>
             {userPlan === 'free' && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                <PlanCard name="Premium" price="29€/mois" features={['IA illimitée', '5 plateformes', 'Support 24/7']} color="var(--purple)" onUpgrade={() => handleUpgrade('premium')} />
+                <PlanCard name="Premium" price="29€/mois" features={['IA illimitée', '5 plateformes', 'Support 24/7']} color="var(--accent)" onUpgrade={() => handleUpgrade('premium')} />
                 <PlanCard name="Business" price="79€/mois" features={['Equipe (3 pers.)', 'Analytiques Pro', 'API Access']} color="#FBBF24" onUpgrade={() => handleUpgrade('business')} />
               </div>
             )}
@@ -149,11 +149,11 @@ function SettingsContent() {
               <div style={{ display: 'flex', gap: '1rem' }}>
                 {(['dark', 'light'] as const).map(t => (
                   <button key={t} onClick={() => { setTheme(t); localStorage.setItem('theme', t); document.documentElement.setAttribute('data-theme', t) }} style={{ 
-                    flex: 1, padding: '1.25rem', borderRadius: '12px', border: `2px solid ${theme === t ? 'var(--purple)' : 'var(--border)'}`, 
-                    background: theme === t ? 'var(--purple-light)' : 'transparent', cursor: 'pointer', transition: '0.2s',
+                    flex: 1, padding: '1.25rem', borderRadius: '12px', border: `2px solid ${theme === t ? 'var(--accent)' : 'var(--border)'}`, 
+                    background: theme === t ? 'var(--accent-light)' : 'transparent', cursor: 'pointer', transition: '0.2s',
                     boxShadow: theme === t ? '0 8px 24px var(--shadow)' : 'none'
                   }}>
-                    <div style={{ fontWeight: 700, color: theme === t ? 'var(--purple)' : 'var(--text2)', fontSize: '.9rem' }}>{t === 'dark' ? 'Mode Sombre' : 'Mode Clair'}</div>
+                    <div style={{ fontWeight: 700, color: theme === t ? 'var(--accent)' : 'var(--text2)', fontSize: '.9rem' }}>{t === 'dark' ? 'Mode Sombre' : 'Mode Clair'}</div>
                   </button>
                 ))}
               </div>
@@ -207,7 +207,7 @@ function SettingsContent() {
         {/* PRIVACY */}
         {active === 'privacy' && (
           <div className="anim-fade-up" style={{ textAlign: 'center', padding: '6rem 0', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
-            <Shield size={48} style={{ color: 'var(--purple)', marginBottom: '1.5rem', opacity: 0.3 }} />
+            <Shield size={48} style={{ color: 'var(--accent)', marginBottom: '1.5rem', opacity: 0.3 }} />
             <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.75rem' }}>Confidentialité</h2>
             <p style={{ color: 'var(--text3)', fontSize: '.95rem', maxWidth: '400px', margin: '0 auto' }}>Vos réglages de confidentialité et de sécurité des données seront bientôt gérables ici.</p>
           </div>
@@ -241,7 +241,7 @@ function SettingRow({ label, desc, children }: { label: string; desc: string; ch
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button onClick={() => onChange(!value)} style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', background: value ? 'var(--purple)' : 'var(--border)', cursor: 'pointer', position: 'relative', transition: '0.2s' }}>
+    <button onClick={() => onChange(!value)} style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', background: value ? 'var(--accent)' : 'var(--border)', cursor: 'pointer', position: 'relative', transition: '0.2s' }}>
       <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '3px', left: value ? '23px' : '3px', transition: '0.2s' }} />
     </button>
   )

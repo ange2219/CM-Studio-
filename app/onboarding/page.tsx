@@ -112,7 +112,7 @@ const STEP_META = [
   { motivation: 'Cette étape permet à l\'IA de vous représenter fidèlement', title: 'Votre marque', subtitle: 'Quelques infos pour personnaliser chaque post' },
   { motivation: 'Cette étape aide l\'IA à cibler parfaitement vos abonnés', title: 'Votre audience', subtitle: 'Définissez à qui vous parlez et quel ton adopter' },
   { motivation: 'Cette étape oriente chaque contenu vers vos vrais objectifs', title: 'Vos objectifs', subtitle: 'Choisissez ce que vous voulez accomplir sur les réseaux' },
-  { motivation: 'Cette étape connecte Social IA à vos comptes', title: 'Vos réseaux', subtitle: 'Publiez directement — vous pouvez aussi le faire plus tard' },
+  { motivation: 'Cette étape connecte CM Studio à vos comptes', title: 'Vos réseaux', subtitle: 'Publiez directement — vous pouvez aussi le faire plus tard' },
 ]
 
 const fieldStyle: React.CSSProperties = {
@@ -141,9 +141,9 @@ function ChipGrid({ options, selected, onToggle, max }: {
             onClick={() => !disabled && onToggle(opt)}
             style={{
               padding: '.38rem .85rem', borderRadius: '20px', fontSize: '.82rem', fontWeight: 500,
-              border: sel ? '1.5px solid #7B5CF5' : '1px solid var(--b1)',
-              background: sel ? 'rgba(123,92,245,0.12)' : 'var(--s2)',
-              color: sel ? '#7B5CF5' : disabled ? 'var(--t3)' : 'var(--t2)',
+              border: sel ? '1.5px solid var(--accent)' : '1px solid var(--b1)',
+              background: sel ? 'rgba(30,87,205,0.12)' : 'var(--s2)',
+              color: sel ? 'var(--accent)' : disabled ? 'var(--t3)' : 'var(--t2)',
               cursor: disabled ? 'not-allowed' : 'pointer',
               transition: 'all 0.15s', opacity: disabled ? 0.45 : 1,
             }}
@@ -340,7 +340,7 @@ export default function OnboardingPage() {
         }
       </button>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '3px', background: 'rgba(255,255,255,0.06)', zIndex: 100 }}>
-        <div style={{ height: '100%', background: 'linear-gradient(90deg,#7B5CF5,#A855F7)', width: `${progress}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 0 8px rgba(123,92,245,0.6)' }} />
+        <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--accent),var(--accent2))', width: `${progress}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 0 8px rgba(30,87,205,0.6)' }} />
       </div>
 
       <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '3rem 1.5rem 2rem', position: 'relative', overflow: 'hidden' }}>
@@ -348,7 +348,7 @@ export default function OnboardingPage() {
         <div style={{ position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse at center,rgba(123,92,245,0.09) 0%,transparent 65%)', pointerEvents: 'none' }} />
 
         <div style={{ marginBottom: '2.5rem', position: 'relative', zIndex: 1 }}>
-          <span style={{ fontFamily: "'Syne',sans-serif", fontSize: '1.5rem', fontWeight: 800, background: 'linear-gradient(135deg,#7B5CF5,#A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Social IA</span>
+          <span style={{ fontFamily: "'Syne',sans-serif", fontSize: '1.5rem', fontWeight: 800, background: 'linear-gradient(135deg,var(--accent),var(--accent2))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>CM Studio</span>
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '1.25rem', maxWidth: '460px', position: 'relative', zIndex: 1 }}>
@@ -587,7 +587,7 @@ export default function OnboardingPage() {
               </button>
             ) : (
               <button type="button" onClick={handleFinish} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: saving ? 'rgba(255,255,255,0.06)' : 'var(--blue)', color: saving ? 'var(--t3)' : '#fff', border: 'none', borderRadius: '8px', padding: '.55rem 1.2rem', fontSize: '.875rem', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
-                {saving ? 'Finalisation...' : <><Check size={15} style={{ marginRight: '.2rem' }} /> Accéder au dashboard</>}
+                {saving ? 'Finalisation...' : <><Check size={15} style={{ marginRight: '.2rem' }} /> Accéder à CM Studio</>}
               </button>
             )}
           </div>

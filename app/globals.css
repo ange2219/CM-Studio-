@@ -5,36 +5,38 @@
 @tailwind utilities;
 
 :root {
-  --radius: 10px;
+  --radius: 12px;
   /* ── Palette base — Light ── */
-  --bg:#F5F3FF;--white:#fff;--purple:#7B5CF5;--purple2:#A855F7;--purple-light:rgba(123,92,245,0.08);
+  --bg:#FEF9F2;--white:#fff;--accent:#1E57CD;--accent-secondary:#3B82F6;--accent-light:rgba(30,87,205,0.08);
   --teal:#06B6D4;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--gold:#F59E0B;
-  --text:#0D0D1A;--text2:#6B7280;--text3:#9CA3AF;--border:rgba(123,92,245,0.15);
-  --sidebar-bg:rgba(255,255,255,0.92);--nav-bg:#FFFFFF;
-  --card-bg:#FFFFFF;--table-head:#F9F7FF;--row-hover:rgba(123,92,245,0.05);
-  --input-bg:#F9F7FF;--shadow:rgba(123,92,245,.08);
+  --text:#0D0D1A;--text2:#4B5563;--text3:#9CA3AF;--border:rgba(30,87,205,0.12);
+  --sidebar-bg:rgba(255,255,255,0.95);--nav-bg:#FFFFFF;
+  --card-bg:#FFFFFF;--table-head:#F9FAFB;--row-hover:rgba(30,87,205,0.04);
+  --input-bg:#F9FAFB;--shadow:rgba(30,87,205,.06);
   /* ── Aliases pour les composants ── */
   --t1:var(--text);--t2:var(--text2);--t3:var(--text3);
   --s1:var(--card-bg);--card:var(--card-bg);--s2:var(--input-bg);
-  --s3:var(--table-head);--b1:var(--border);--b2:rgba(123,92,245,0.30);
-  --accent:var(--purple);--accent-hover:#6a4ce0;--accent-rgb:123 92 245;
+  --s3:var(--table-head);--b1:var(--border);--b2:rgba(30,87,205,0.25);
+  --accent-hover:#1648af;--accent-rgb:30 87 205;
   /* ── Legacy aliases ── */
-  --blue:var(--purple);--blue-light:var(--purple-light);
+  --blue:var(--accent);--blue-light:var(--accent-light);
+  --purple:var(--accent);--purple2:var(--accent-secondary);
 }
 [data-theme="dark"] {
-  --bg:#09090F;--white:#111120;--purple:#7B5CF5;--purple2:#A855F7;--purple-light:rgba(123,92,245,0.12);
+  --bg:#070709;--white:#0F0F1A;--accent:#1E57CD;--accent-secondary:#3B82F6;--accent-light:rgba(30,87,205,0.12);
   --teal:#06B6D4;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--gold:#F59E0B;
-  --text:#F1F5F9;--text2:#94A3B8;--text3:#4B5563;--border:rgba(123,92,245,0.15);
-  --sidebar-bg:rgba(13,13,26,0.95);--nav-bg:#0D0D1A;
-  --card-bg:#16162A;--table-head:#1E1E38;--row-hover:rgba(123,92,245,0.05);
-  --input-bg:#0D0D1A;--shadow:rgba(0,0,0,.5);
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#4B5563;--border:rgba(255,255,255,0.08);
+  --sidebar-bg:rgba(10,10,15,0.96);--nav-bg:#0A0A0F;
+  --card-bg:#12121A;--table-head:#181825;--row-hover:rgba(255,255,255,0.03);
+  --input-bg:#0A0A0F;--shadow:rgba(0,0,0,.6);
   /* ── Aliases ── */
   --t1:var(--text);--t2:var(--text2);--t3:var(--text3);
   --s1:var(--card-bg);--card:var(--card-bg);--s2:var(--input-bg);
-  --s3:var(--table-head);--b1:var(--border);--b2:rgba(255,255,255,0.10);
-  --accent:var(--purple);--accent-hover:#6a4ce0;--accent-rgb:123 92 245;
+  --s3:var(--table-head);--b1:var(--border);--b2:rgba(255,255,255,0.12);
+  --accent-hover:#1648af;--accent-rgb:30 87 205;
   /* ── Legacy aliases ── */
-  --blue:var(--purple);--blue-light:var(--purple-light);
+  --blue:var(--accent);--blue-light:var(--accent-light);
+  --purple:var(--accent);--purple2:var(--accent-secondary);
 }
 
 * { box-sizing: border-box; }
@@ -48,8 +50,8 @@ html, body {
 
 body {
   background:
-    radial-gradient(ellipse 70% 55% at 15% -5%, rgba(123,92,245,.08) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 88% 108%, rgba(168,85,247,.06) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 15% -5%, rgba(30,87,205,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 88% 108%, rgba(59,130,246,.03) 0%, transparent 55%),
     var(--bg);
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
@@ -58,16 +60,16 @@ body {
 }
 [data-theme="dark"] body {
   background:
-    radial-gradient(ellipse 70% 55% at 15% -5%, rgba(123,92,245,.15) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 88% 108%, rgba(168,85,247,.10) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 15% -5%, rgba(30,87,205,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 88% 108%, rgba(59,130,246,.08) 0%, transparent 55%),
     var(--bg);
 }
 /* Subtle grid overlay — dark mode only */
 [data-theme="dark"] body::before {
   content:'';position:fixed;inset:0;
   background-image:
-    linear-gradient(rgba(123,92,245,0.03) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(123,92,245,0.03) 1px,transparent 1px);
+    linear-gradient(rgba(30,87,205,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(30,87,205,0.02) 1px,transparent 1px);
   background-size:40px 40px;
   pointer-events:none;z-index:0;
 }
