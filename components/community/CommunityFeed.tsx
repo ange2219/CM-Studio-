@@ -21,11 +21,11 @@ type Post = {
 
 export function CommunityFeed({ 
   initialPosts, 
-  currentUserId,
+  currentUser,
   initialLikedIds,
 }: { 
   initialPosts: Post[]
-  currentUserId: string
+  currentUser: any
   initialLikedIds: string[]
 }) {
   const [posts, setPosts] = useState(initialPosts)
@@ -50,16 +50,16 @@ export function CommunityFeed({
     e.preventDefault()
     if (!newPostContent.trim() || isPosting) return
     setIsPosting(true)
-    const { data, error } = await supabase.from('community_posts').insert({ content: newPostContent.trim(), user_id: currentUserId, is_community: activeTab === 'communaute' }).select('id, created_at').single()
+    const { data, error } = await supabase.from('community_posts').insert({ content: newPostContent.trim(), user_id: currentUser.id, is_community: activeTab === 'communaute' }).select('id, created_at').single()
     if (!error && data) {
       setPosts([{ 
         id: data.id, 
-        user_id: currentUserId, 
+        user_id: currentUser.id, 
         content: newPostContent.trim(), 
         created_at: data.created_at, 
-        full_name: 'Ulrich H.', 
-        avatar_url: null, 
-        plan: 'Premium', 
+        full_name: currentUser.full_name || 'Utilisateur', 
+        avatar_url: currentUser.avatar_url, 
+        plan: currentUser.plan || 'Free', 
         likes_count: 0, 
         comments_count: 0, 
         group_name: activeTab === 'communaute' ? 'Communauté' : 'Général',
@@ -77,8 +77,8 @@ export function CommunityFeed({
     else newLikedIds.add(post.id)
     setLikedIds(newLikedIds)
     setPosts(posts.map(p => p.id === post.id ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) } : p))
-    if (isLiked) await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUserId })
-    else await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUserId })
+    if (isLiked) await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUser.id })
+    else await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUser.id })
   }
 
   async function toggleCommentLike(commentId: string, postId: string) {
@@ -112,10 +112,15 @@ export function CommunityFeed({
   async function fetchComments(postId: string) {
     setLoadingComments(prev => ({ ...prev, [postId]: true }))
     try {
-      const { data: comments, error } = await supabase.from('community_comments').select(`*, users (full_name, avatar_url, plan)`).eq('post_id', postId).order('created_at', { ascending: true })
+      const { data: comments, error } = await supabase.from('community_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true })
       if (error) throw error
+      
+      const userIds = [...new Set((comments || []).map(c => c.user_id))]
+      const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, plan').in('id', userIds)
+      const usersMap = Object.fromEntries((usersData || []).map(u => [u.id, u]))
+
       const formatted = (comments || []).map(c => {
-        const u = Array.isArray(c.users) ? c.users[0] : c.users
+        const u = usersMap[c.user_id]
         return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: u?.plan, likes_count: 0 }
       })
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
@@ -133,11 +138,11 @@ export function CommunityFeed({
   async function handleCommentSubmit(postId: string) {
     if (!newCommentText.trim() || isSubmittingComment) return
     setIsSubmittingComment(true)
-    const payload: any = { post_id: postId, user_id: currentUserId, content: newCommentText.trim() }
+    const payload: any = { post_id: postId, user_id: currentUser.id, content: newCommentText.trim() }
     if (replyingTo && replyingTo.postId === postId) payload.parent_id = replyingTo.id
     const { data, error } = await supabase.from('community_comments').insert(payload).select('id, created_at').single()
     if (!error && data) {
-      const newComment = { id: data.id, content: newCommentText.trim(), created_at: data.created_at, user_id: currentUserId, parent_id: payload.parent_id || null, full_name: 'Ulrich H.', avatar_url: null, plan: 'Premium', likes_count: 0 }
+      const newComment = { id: data.id, content: newCommentText.trim(), created_at: data.created_at, user_id: currentUser.id, parent_id: payload.parent_id || null, full_name: currentUser.full_name || 'Utilisateur', avatar_url: currentUser.avatar_url, plan: currentUser.plan || 'Free', likes_count: 0 }
       setCommentsByPost(prev => ({ ...prev, [postId]: [...(prev[postId] || []), newComment] }))
       setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       setNewCommentText('')
@@ -151,7 +156,7 @@ export function CommunityFeed({
   }
 
   const filteredPosts = posts.filter(post => {
-    if (activeTab === 'communaute') return post.is_community || post.group_name === 'Communauté'
+    if (activeTab === 'communaute') return true // On affiche tout dans communauté pour l'instant pour éviter qu'il soit vide
     if (activeTab === 'groupe') return post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté'
     return true
   })
@@ -320,7 +325,7 @@ export function CommunityFeed({
                     )}
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
-                        U
+                        {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : currentUser?.full_name?.slice(0, 1) || 'U'}
                       </div>
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.08)' }}>
                         <input 

@@ -98,10 +98,8 @@ export default function HomePage() {
         
         <CommunityFeed 
           initialPosts={initialPosts} 
-          currentUserId={user.id} 
+          currentUser={user} 
           initialLikedIds={initialLikedIds}
-          userId={user.id} 
-          userRole={user.role} 
         />
       </div>
 
