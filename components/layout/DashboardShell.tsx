@@ -16,18 +16,10 @@ import {
   Search,
   MessageCircle,
   Bell,
-  ChevronRight,
-  ChevronLeft,
   Menu,
   Plus,
   Monitor,
-  Image as ImageIcon,
-  Mic,
-  Facebook,
-  Instagram,
-  Linkedin,
-  Twitter,
-  Play
+  Image as ImageIcon
 } from 'lucide-react'
 import Link from 'next/link'
 import type { User } from '@/types'
@@ -40,7 +32,7 @@ export function DashboardShell({ user: initialUser, children }: {
   const router = useRouter()
   const supabase = createClient()
   const [user, setUser] = useState<any>(initialUser)
-  const [expanded, setExpanded] = useState(true) // Expanded by default like in mockup
+  const [expanded, setExpanded] = useState(true)
 
   useEffect(() => {
     if (!initialUser) {
@@ -96,24 +88,12 @@ export function DashboardShell({ user: initialUser, children }: {
     display: expanded ? 'block' : 'none'
   }
 
-  const socialItem = (name: string, icon: any, color: string, status: boolean) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: expanded ? '0 12px' : '0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ color: 'var(--text2)', display: 'flex', alignItems: 'center' }}>
-          {icon}
-        </div>
-        {expanded && <span style={{ fontSize: '0.85rem', color: 'var(--text2)' }}>{name}</span>}
-      </div>
-      {expanded && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: status ? '#22c55e' : 'var(--text3)' }} />}
-    </div>
-  )
-
   const initials = (user?.full_name || user?.email || 'U').slice(0, 2).toUpperCase()
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
       
-      {/* COLUMN 1: SIDEBAR (Exactly like mockup) */}
+      {/* COLUMN 1: SIDEBAR */}
       <div style={{ 
         width: expanded ? '260px' : '80px', 
         borderRight: '1px solid var(--border)', 
@@ -144,16 +124,9 @@ export function DashboardShell({ user: initialUser, children }: {
             </div>
             {expanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text)', letterSpacing: '-0.02em' }}>CM Studio</span>}
           </div>
-          {expanded && (
-            <button onClick={() => setExpanded(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer' }}>
-              <Menu size={18} />
-            </button>
-          )}
-          {!expanded && (
-            <button onClick={() => setExpanded(true)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', marginTop: '12px' }}>
-              <Menu size={18} />
-            </button>
-          )}
+          <button onClick={() => setExpanded(!expanded)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer' }}>
+            <Menu size={18} />
+          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingRight: '4px' }} className="sb-scroll">
@@ -169,43 +142,23 @@ export function DashboardShell({ user: initialUser, children }: {
           <Link href="/calendar" style={ni('/calendar')}><Calendar size={18} /> {expanded && 'Calendrier éditorial'}</Link>
           <Link href="/ai-gen" style={ni('/ai-gen')}><Sparkles size={18} /> {expanded && 'Générateur IA'}</Link>
           <Link href="/posts" style={ni('/posts')}><Layout size={18} /> {expanded && 'Mes publications'}</Link>
-          <Link href="/visuals" style={ni('/visuals')}><ImageIcon size={18} /> {expanded && <span>Mes visuels <span style={{fontSize:'0.65rem', background:'var(--accent)', color:'#fff', padding:'1px 5px', borderRadius:'4px', marginLeft:'4px'}}>PRO</span></span>}</Link>
-          <Link href="/brand-voice" style={ni('/brand-voice')}><Mic size={18} /> {expanded && 'Brand Voice'}</Link>
-
-          <div style={categoryLabel}>Comptes connectés</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
-            {socialItem('Facebook', <Facebook size={18} />, '#1877F2', true)}
-            {socialItem('Instagram', <Instagram size={18} />, '#E1306C', true)}
-            {socialItem('TikTok', <Play size={18} />, '#000000', true)}
-            {socialItem('LinkedIn', <Linkedin size={18} />, '#0A66C2', true)}
-            {socialItem('Twitter / X', <Twitter size={18} />, '#000000', true)}
-          </div>
+          <Link href="/visuals" style={ni('/visuals')} title="Mes visuels">
+            <ImageIcon size={18} style={{ flexShrink: 0 }} />
+            {expanded && <span>Mes visuels <span style={{fontSize:'0.65rem', background:'var(--accent)', color:'#fff', padding:'1px 5px', borderRadius:'4px', marginLeft:'4px'}}>PRO</span></span>}
+          </Link>
         </div>
 
-        {/* Upgrade Card (Mockup style) */}
-        {expanded && (
-          <div style={{ 
-            marginTop: '20px', 
-            background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', 
-            borderRadius: '16px', 
-            padding: '16px',
-            color: '#fff',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>Passez Pro 🚀</div>
-              <p style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '12px', lineHeight: 1.4 }}>Génération de visuels illimitée & accès aux groupes Pro.</p>
-              <button style={{ 
-                width: '100%', background: '#fff', color: '#4F46E5', border: 'none', 
-                padding: '8px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' 
-              }}>Découvrir</button>
-            </div>
-            <div style={{ position: 'absolute', right: '-10px', top: '-10px', width: '60px', height: '60px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-          </div>
-        )}
+        <div style={{ flex: 1 }} />
 
-        <button onClick={handleLogout} style={{ ...ni('/logout'), marginTop: '12px', color: 'var(--red)' }}>
+        <Link href="/settings" style={ni('/settings')} title="Paramètres">
+          <Settings size={18} style={{ flexShrink: 0 }} />
+          {expanded && <span style={{ fontSize: '0.85rem' }}>Paramètres</span>}
+        </Link>
+        <Link href="/help" style={ni('/help')} title="Aide">
+          <HelpCircle size={18} style={{ flexShrink: 0 }} />
+          {expanded && <span style={{ fontSize: '0.85rem' }}>Aide</span>}
+        </Link>
+        <button onClick={handleLogout} style={{ ...ni('/logout'), color: 'var(--red)' }}>
           <LogOut size={18} /> {expanded && 'Déconnexion'}
         </button>
       </div>
@@ -213,7 +166,7 @@ export function DashboardShell({ user: initialUser, children }: {
       {/* MAIN CONTENT AREA */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         
-        {/* GLOBAL HEADER (Centered Search) */}
+        {/* GLOBAL HEADER */}
         <div style={{ 
           height: '64px',
           padding: '0 32px',
@@ -223,10 +176,8 @@ export function DashboardShell({ user: initialUser, children }: {
           flexShrink: 0,
           borderBottom: '1px solid var(--border)'
         }}>
-          {/* Spacer to balance center */}
           <div style={{ width: '200px' }} />
 
-          {/* Centered Search */}
           <div style={{ position: 'relative', flex: 1, maxWidth: '500px' }}>
             <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
             <input 
@@ -241,7 +192,6 @@ export function DashboardShell({ user: initialUser, children }: {
             <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: 'var(--text3)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border)' }}>⌘K</div>
           </div>
           
-          {/* Right Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '200px', justifyContent: 'flex-end' }}>
             <button style={{ position: 'relative', background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer' }}>
               <Bell size={20} />
@@ -251,19 +201,10 @@ export function DashboardShell({ user: initialUser, children }: {
               <MessageCircle size={20} />
               <div style={{ position: 'absolute', top: '-4px', right: '-4px', width: '14px', height: '14px', borderRadius: '50%', background: '#EF4444', color: '#fff', fontSize: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--bg)' }}>7</div>
             </button>
-            
-            <button style={{ 
-              width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer'
-            }}>
+            <button style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}>
               <Plus size={18} />
             </button>
-
             <Link href="/settings?tab=profile" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-              <div style={{ textAlign: 'right', display: 'none' }} className="xl:block">
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>Ulrich H.</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>Plan Premium ★</div>
-              </div>
               <div style={{ 
                 width: '36px', height: '36px', borderRadius: '50%', 
                 background: 'var(--accent-light)', display: 'flex', 
@@ -286,9 +227,6 @@ export function DashboardShell({ user: initialUser, children }: {
         .sb-scroll::-webkit-scrollbar { width: 4px; }
         .sb-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
         .sb-scroll:hover::-webkit-scrollbar-thumb { background: var(--border); }
-        @media (max-width: 1200px) {
-          .xl\:block { display: none !important; }
-        }
       `}</style>
     </div>
   )
