@@ -293,6 +293,7 @@ export function CommunityFeed({
                               const isReplyLiked = commentLikes.has(r.id)
                               const isDeepReply = r.parent_id !== c.id
                               const parentComment = isDeepReply ? postComments.find(p => p.id === r.parent_id) : null
+                              const showDeepReplyIndicator = isDeepReply && parentComment && r.user_id !== parentComment.user_id
                               
                               return (
                                 <div key={r.id} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
@@ -303,7 +304,7 @@ export function CommunityFeed({
                                     <div style={{ flex: 1 }}>
                                       <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         {r.full_name}
-                                        {isDeepReply && parentComment && (
+                                        {showDeepReplyIndicator && (
                                           <>
                                             <span style={{ fontSize: '0.65rem' }}>▸</span>
                                             <span>{parentComment.full_name}</span>
