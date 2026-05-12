@@ -112,11 +112,20 @@ export function CommunityFeed({
   async function fetchComments(postId: string) {
     setLoadingComments(prev => ({ ...prev, [postId]: true }))
     try {
-      const { data: comments, error } = await supabase.from('community_comments').select(`*, users (full_name, avatar_url, plan)`).eq('post_id', postId).order('created_at', { ascending: true })
+      const { data: comments, error } = await supabase.from('community_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true })
       if (error) throw error
       
+      let usersMap: Record<string, any> = {}
+      if (comments && comments.length > 0) {
+        const userIds = [...new Set(comments.map(c => c.user_id))]
+        const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, plan').in('id', userIds)
+        if (usersData) {
+          usersMap = Object.fromEntries(usersData.map(u => [u.id, u]))
+        }
+      }
+
       const formatted = (comments || []).map(c => {
-        const u = Array.isArray(c.users) ? c.users[0] : c.users
+        const u = usersMap[c.user_id]
         return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: u?.plan, likes_count: 0 }
       })
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
@@ -125,6 +134,7 @@ export function CommunityFeed({
       formatted.filter(c => !c.parent_id).forEach(c => initialVisible[c.id] = 0)
       setVisibleReplies(prev => ({ ...prev, ...initialVisible }))
     } catch (err) {
+      console.error("Erreur lors de la récupération des commentaires:", err)
       setCommentsByPost(prev => ({ ...prev, [postId]: [] }))
     } finally {
       setLoadingComments(prev => ({ ...prev, [postId]: false }))
