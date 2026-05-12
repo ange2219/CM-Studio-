@@ -607,11 +607,11 @@ export default function PostsPage() {
               </div>
             ) : isDraft ? (
               <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.5rem', padding: '1.5rem', background: 'var(--bg)', border: '1px dashed var(--b1)', cursor: 'pointer', transition: '.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = '#4646FF')}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--b1)')}
               >
                 {uploadingMedia
-                  ? <div style={{ width: '20px', height: '20px', border: '2px solid rgba(59,123,246,.3)', borderTopColor: '#4646FF', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
+                  ? <div style={{ width: '20px', height: '20px', border: '2px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
                   : <Upload size={20} color="#3f3f46" />
                 }
                 <span style={{ fontSize: '.78rem', color: 'var(--t3)' }}>{uploadingMedia ? 'Upload en cours...' : 'Ajouter une image ou vidéo'}</span>
@@ -688,7 +688,7 @@ export default function PostsPage() {
                     <button
                       onClick={() => restorePost(selectedPost.id)}
                       disabled={restoring === selectedPost.id}
-                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', padding: '.6rem', borderRadius: '8px', border: '1px solid rgba(59,123,246,.4)', background: 'rgba(59,123,246,.1)', color: '#4646FF', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600 }}
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', padding: '.6rem', borderRadius: '8px', border: '1px solid rgba(59,123,246,.4)', background: 'rgba(var(--accent-rgb),.1)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600 }}
                     >
                       <RotateCcw size={14} /> {restoring === selectedPost.id ? 'Restauration...' : 'Restaurer en brouillon'}
                     </button>
@@ -807,7 +807,7 @@ export default function PostsPage() {
                                   <button
                                     onClick={() => sendReply(platform, c.id)}
                                     disabled={!replyTexts[c.id]?.trim() || replying === c.id}
-                                    style={{ padding: '.3rem .6rem', borderRadius: '6px', border: 'none', background: '#4646FF', color: '#fff', cursor: 'pointer', fontSize: '.72rem', fontWeight: 600, opacity: !replyTexts[c.id]?.trim() ? .4 : 1, flexShrink: 0 }}
+                                    style={{ padding: '.3rem .6rem', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.72rem', fontWeight: 600, opacity: !replyTexts[c.id]?.trim() ? .4 : 1, flexShrink: 0 }}
                                   >
                                     {replying === c.id ? '...' : 'Envoyer'}
                                   </button>
@@ -999,8 +999,8 @@ export default function PostsPage() {
               <button key={f} onClick={() => setFilter(f)} style={{
                 padding: '.3rem .75rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
                 border: filter === f ? '1px solid #4646FF' : '1px solid var(--b1)',
-                background: filter === f ? 'rgba(59,123,246,.12)' : 'var(--card)',
-                color: filter === f ? '#4646FF' : 'var(--t3)', transition: '.15s',
+                background: filter === f ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
+                color: filter === f ? 'var(--accent)' : 'var(--t3)', transition: '.15s',
                 display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
               }}>
                 {f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? `Brouillons${draftCount > 0 ? ` (${draftCount})` : ''}` : 'Programmés'}
@@ -1016,8 +1016,8 @@ export default function PostsPage() {
                 style={{
                   padding: '.3rem .75rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
                   border: platformFilter ? '1px solid #4646FF' : '1px solid var(--b1)',
-                  background: platformFilter ? 'rgba(59,123,246,.12)' : 'var(--card)',
-                  color: platformFilter ? '#4646FF' : 'var(--t3)', transition: '.15s',
+                  background: platformFilter ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
+                  color: platformFilter ? 'var(--accent)' : 'var(--t3)', transition: '.15s',
                   display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
                 }}
               >
@@ -1059,8 +1059,8 @@ export default function PostsPage() {
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem',
                         padding: '.45rem .65rem', borderRadius: '7px', border: 'none',
-                        background: platformFilter === p ? 'rgba(59,123,246,.1)' : 'transparent',
-                        color: platformFilter === p ? '#4646FF' : 'var(--t1)',
+                        background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent',
+                        color: platformFilter === p ? 'var(--accent)' : 'var(--t1)',
                         cursor: 'pointer', fontSize: '.78rem',
                       }}
                       onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }}
@@ -1081,8 +1081,8 @@ export default function PostsPage() {
             <button key={v} onClick={() => setView(v)} style={{
               padding: '.3rem .5rem', borderRadius: '6px',
               border: view === v ? '1px solid #4646FF' : '1px solid var(--b1)',
-              background: view === v ? 'rgba(59,123,246,.12)' : 'var(--card)',
-              color: view === v ? '#4646FF' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center',
+              background: view === v ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
+              color: view === v ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center',
             }}>
               {v === 'grid' ? <Grid3X3 size={14} /> : <List size={14} />}
             </button>
@@ -1120,9 +1120,9 @@ export default function PostsPage() {
                   return (
                   <div key={post.id}
                     onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? '#4646FF' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative' }}
+                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative' }}
                     onMouseEnter={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = '#4646FF'
+                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
                       const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
                       if (overlay) overlay.style.opacity = '1'
                     }}
@@ -1137,7 +1137,7 @@ export default function PostsPage() {
                       style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}
                     >
                       {isSelected
-                        ? <CheckSquare size={18} color="#4646FF" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
+                        ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
                         : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
                       }
                     </div>
@@ -1172,9 +1172,9 @@ export default function PostsPage() {
                         {(post.status === 'draft' || post.status === 'failed') && (
                           <div style={{ display: 'flex', gap: '.25rem' }} onClick={e => e.stopPropagation()}>
                             <button onClick={() => publishPost(post)} disabled={publishing === post.id} title="Publier"
-                              style={{ background: 'rgba(59,123,246,.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '5px', padding: '.2rem .35rem', cursor: 'pointer', color: '#4646FF', display: 'flex', alignItems: 'center' }}>
+                              style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '5px', padding: '.2rem .35rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>
                               {publishing === post.id
-                                ? <div style={{ width: '10px', height: '10px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: '#4646FF', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
+                                ? <div style={{ width: '10px', height: '10px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
                                 : <Send size={10} />}
                             </button>
                           </div>
@@ -1200,15 +1200,15 @@ export default function PostsPage() {
                   return (
                   <div key={post.id}
                     onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? '#4646FF' : 'var(--b1)'}`, borderRadius: '8px', padding: '.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = '#4646FF' }}
+                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '8px', padding: '.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)' }}
                     onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)' }}
                   >
                     <div
                       onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
                       style={{ flexShrink: 0, cursor: 'pointer' }}
                     >
-                      {isSelected ? <CheckSquare size={17} color="#4646FF" /> : <Square size={17} color="#52525C" />}
+                      {isSelected ? <CheckSquare size={17} color="var(--accent)" /> : <Square size={17} color="#52525C" />}
                     </div>
                     <div style={{ width: '44px', height: '44px', borderRadius: '6px', background: 'var(--s2)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {post.media_urls?.[0]
@@ -1248,9 +1248,9 @@ export default function PostsPage() {
                       <span className={stClass(post.status)} style={{ fontSize: '.68rem' }}>{stLabel(post.status)}</span>
                       {(post.status === 'draft' || post.status === 'failed') && (
                         <button onClick={() => publishPost(post)} disabled={publishing === post.id}
-                          style={{ background: 'rgba(59,123,246,.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '6px', padding: '.3rem .6rem', cursor: 'pointer', color: '#4646FF', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.72rem', fontWeight: 500 }}>
+                          style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '6px', padding: '.3rem .6rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.72rem', fontWeight: 500 }}>
                           {publishing === post.id
-                            ? <div style={{ width: '11px', height: '11px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: '#4646FF', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
+                            ? <div style={{ width: '11px', height: '11px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
                             : <Send size={11} />} Publier
                         </button>
                       )}

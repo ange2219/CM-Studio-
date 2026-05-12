@@ -4,7 +4,7 @@ import { Users, ChevronRight, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 const MOCK_GROUPS = [
-  { id: 1, name: 'Community Managers France', members: '12.4K', type: 'Public', color: '#1E57CD' },
+  { id: 1, name: 'Community Managers France', members: '12.4K', type: 'Public', color: 'var(--accent)' },
   { id: 2, name: 'Social Media Pro', members: '8.7K', type: 'Privé', color: '#10B981' },
 ]
 

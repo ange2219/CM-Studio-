@@ -34,7 +34,7 @@ export function WelcomeBanner({ firstName }: { firstName: string }) {
     }}>
       <div style={{
         width: 34, height: 34, borderRadius: '9px',
-        background: 'linear-gradient(135deg, var(--accent), #7c3aed)',
+        background: 'var(--accent)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">

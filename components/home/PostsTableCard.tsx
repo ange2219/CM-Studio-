@@ -55,7 +55,7 @@ const AI_SUGGESTIONS = [
   { icon: '✨', color: 'rgba(245,158,11,.12)', textColor: 'var(--gold)',   title: 'Publier 3×/semaine',      sub: 'Doublez votre engagement',         pct: 80, bar: 'var(--blue)' },
   { icon: '🕐', color: 'var(--blue-light)',     textColor: 'var(--blue)',   title: 'Publier entre 18h–20h',   sub: 'Meilleure heure d\'engagement',    pct: 65, bar: '#93c5fd' },
   { icon: '🖼️', color: 'rgba(34,197,94,.12)',  textColor: 'var(--green)',  title: 'Ajouter plus de visuels', sub: '+40% de portée organique',         pct: 45, bar: '#bfdbfe' },
-  { icon: '💬', color: 'rgba(139,92,246,.12)', textColor: '#8b5cf6',        title: 'Poser une question',      sub: 'Les questions génèrent 2× plus de commentaires', pct: 55, bar: '#c4b5fd' },
+  { icon: '💬', color: 'rgba(139,92,246,.12)', textColor: 'var(--accent)',        title: 'Poser une question',      sub: 'Les questions génèrent 2× plus de commentaires', pct: 55, bar: '#c4b5fd' },
 ]
 
 // ─── Score /240 ───────────────────────────────────────────────────────────────

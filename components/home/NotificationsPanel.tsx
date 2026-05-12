@@ -4,7 +4,7 @@ import { Bell, Heart, MessageSquare, Share2, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 const MOCK_NOTIFS = [
-  { id: 1, type: 'post_like', user: 'Aicha B.', text: 'a publié un nouveau post dans Community Managers France', time: 'il y a 1 h', icon: <Bell size={14} />, color: '#1E57CD' },
+  { id: 1, type: 'post_like', user: 'Aicha B.', text: 'a publié un nouveau post dans Community Managers France', time: 'il y a 1 h', icon: <Bell size={14} />, color: 'var(--accent)' },
   { id: 2, type: 'comment', user: 'David K.', text: 'a commenté votre post dans Social Media Pro', time: 'il y a 2 h', icon: <MessageSquare size={14} />, color: '#10B981' },
 ]
 
