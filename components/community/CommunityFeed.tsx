@@ -45,7 +45,6 @@ export function CommunityFeed({
   
   const [replyingTo, setReplyingTo] = useState<{ id: string, name: string, postId: string } | null>(null)
   const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set())
-  const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({})
 
   const supabase = createClient()
 
@@ -146,26 +145,26 @@ export function CommunityFeed({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '2px' }}>
         <div style={{ display: 'flex', gap: '24px' }}>
           {tabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: 'none', border: 'none', padding: '12px 4px', fontSize: '0.9rem', fontWeight: activeTab === tab.id ? 700 : 500, color: activeTab === tab.id ? '#fff' : 'var(--text3)', cursor: 'pointer', position: 'relative', transition: 'all 0.2s' }}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: 'none', border: 'none', padding: '12px 4px', fontSize: '0.9rem', fontWeight: activeTab === tab.id ? 700 : 500, color: activeTab === tab.id ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', position: 'relative', transition: 'all 0.2s' }}>
               {tab.label}{activeTab === tab.id && <div style={{ position: 'absolute', bottom: '-1px', left: 0, right: 0, height: '2px', background: 'var(--accent)', borderRadius: '2px' }} />}
             </button>
           ))}
         </div>
-        <button style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', padding: '8px' }}><SlidersHorizontal size={18} /></button>
+        <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '8px' }}><SlidersHorizontal size={18} /></button>
       </div>
 
       {/* CREATE POST */}
-      <div style={{ background: 'var(--card)', borderRadius: '16px', padding: '16px', border: '1px solid var(--border)' }}>
+      <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent-light)', flexShrink: 0 }} />
-          <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0 }} />
+          <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>Image</span></button>
-            <button style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
+            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>Image</span></button>
+            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
           </div>
-          <button onClick={handlePost} disabled={!newPostContent.trim() || isPosting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: !newPostContent.trim() ? 0.5 : 1 }}>Publier</button>
+          <button onClick={handlePost} disabled={!newPostContent.trim() || isPosting} style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: !newPostContent.trim() ? 0.5 : 1 }}>Publier</button>
         </div>
       </div>
 
@@ -178,77 +177,112 @@ export function CommunityFeed({
           const isLoading = loadingComments[post.id]
 
           return (
-            <div key={post.id} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent-light)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : <span style={{ color: '#6366f1', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{post.full_name || 'Utilisateur'}</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>{post.full_name || 'Utilisateur'}</span>
                       {post.plan && <span style={{ fontSize: '0.65rem', background: '#F59E0B', color: '#000', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>{post.plan.toUpperCase()}</span>}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text3)' }}>Publication dans le groupe {post.group_name || 'Général'} • Il y a 2h</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Publication dans le groupe {post.group_name || 'Général'} • Il y a 2h</div>
                   </div>
                 </div>
               </div>
-              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.5 }}>{post.content}</div>
+              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>{post.content}</div>
 
-              <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', borderTop: '1px solid var(--border)' }}>
+              <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Heart size={10} fill="#fff" color="#fff" /></div><span style={{ fontSize: '0.8rem', color: 'var(--text3)' }}>{post.likes_count + (isLiked ? 1 : 0)}</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Heart size={10} fill="#fff" color="#fff" /></div><span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{post.likes_count + (isLiked ? 1 : 0)}</span></div>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text3)', display: 'flex', gap: '12px' }}><span>{post.comments_count} commentaires</span><span>32 partages</span></div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', display: 'flex', gap: '12px' }}><span>{post.comments_count} commentaires</span><span>32 partages</span></div>
               </div>
 
               <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> J&apos;aime</button>
-                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><MessageCircle size={18} /> Commentaire</button>
-                <button style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><Share2 size={18} /> Partager</button>
-                <button style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><Bookmark size={18} /> Enregistrer</button>
+                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? '#6366f1' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><Heart size={18} fill={isLiked ? '#6366f1' : 'none'} /> J&apos;aime</button>
+                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? '#6366f1' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><MessageCircle size={18} /> Commentaire</button>
+                <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><Share2 size={18} /> Partager</button>
+                <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600, padding: '8px' }}><Bookmark size={18} /> Enregistrer</button>
               </div>
 
               {isExpanded && (
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderTop: '1px solid var(--border)' }}>
-                  {/* List of comments */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.01)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  {/* List of comments (Restored original threaded style) */}
+                  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {isLoading ? (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text3)', textAlign: 'center' }}>Chargement...</div>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>Chargement...</div>
                     ) : postComments.length === 0 ? (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text3)', textAlign: 'center' }}>Aucun commentaire.</div>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>Aucun commentaire.</div>
                     ) : (
-                      postComments.map(c => (
-                        <div key={c.id} style={{ display: 'flex', gap: '10px' }}>
-                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent-light)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent)' }}>
-                            {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1)}
+                      postComments.filter(c => !c.parent_id).map(c => {
+                        const replies = postComments.filter(r => r.parent_id === c.id)
+                        return (
+                          <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
+                              {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1)}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{c.full_name}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>Il y a 1h</span>
+                              </div>
+                              <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>{c.content}</div>
+                              <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
+                                <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>J&apos;aime</button>
+                                <button onClick={() => setReplyingTo({ id: c.id, name: c.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>Répondre</button>
+                              </div>
+
+                              {/* Replies */}
+                              {replies.length > 0 && (
+                                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', borderLeft: '2px solid rgba(255,255,255,0.06)', paddingLeft: '16px' }}>
+                                  {replies.map(r => (
+                                    <div key={r.id} style={{ display: 'flex', gap: '10px' }}>
+                                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#6366f1' }}>
+                                        {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1)}
+                                      </div>
+                                      <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>{r.full_name}</span>
+                                          <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>Il y a 30m</span>
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>{r.content}</div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div style={{ flex: 1, background: 'var(--s2)', padding: '8px 12px', borderRadius: '12px' }}>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', marginBottom: '2px' }}>{c.full_name}</div>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.4 }}>{c.content}</div>
-                          </div>
-                        </div>
-                      ))
+                        )
+                      })
                     )}
                   </div>
 
-                  {/* Input area */}
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-light)', flexShrink: 0 }} />
-                    <div style={{ flex: 1, display: 'flex', gap: '8px', background: 'var(--s2)', borderRadius: '10px', padding: '4px 8px', border: '1px solid var(--border)' }}>
+                  {/* Input area (Original fixed style) */}
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                    {replyingTo && replyingTo.postId === post.id && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: '#6366f1' }}>
+                        <span>En réponse à <b>{replyingTo.name}</b></span>
+                        <button onClick={() => setReplyingTo(null)} style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <input 
                         type="text" 
-                        placeholder="Votre commentaire..." 
+                        placeholder={replyingTo ? "Ajouter une réponse..." : "Ajouter un commentaire..."}
                         value={newCommentText}
                         onChange={e => setNewCommentText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleCommentSubmit(post.id)}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text)', fontSize: '0.85rem', outline: 'none' }}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCommentSubmit(post.id) } }}
+                        style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
                       />
                       <button 
                         onClick={() => handleCommentSubmit(post.id)}
                         disabled={isSubmittingComment || !newCommentText.trim()}
-                        style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1 }}>
-                        <Send size={14} />
+                        style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1 }}>
+                        <Send size={16} />
                       </button>
                     </div>
                   </div>
