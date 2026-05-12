@@ -200,7 +200,7 @@ export function GenerateButton({ compact }: { compact?: boolean } = {}) {
           onClick={startGen}
           className="upgrade-btn"
           title="Générer des posts IA"
-          style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-secondary))' }}
+          style={{ background: 'var(--accent)' }}
         >
           <svg viewBox="0 0 24 24" style={{ width: 10, height: 10, stroke: '#fff', fill: 'none', strokeWidth: 2.5, strokeLinecap: 'round' }}>
             <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>

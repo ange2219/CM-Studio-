@@ -71,7 +71,7 @@ export function DashboardShell({ user: initialUser, children }: {
       {/* Sidebar - Clean Version */}
       <div className="sb-scroll" style={{ width: '260px', background: 'var(--sidebar-bg)', borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto', transition: 'background 0.3s' }}>
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--accent), var(--accent-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
           <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
         </div>
 
