@@ -83,3 +83,15 @@ JOIN public.users u ON u.id = p.user_id;
 CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON public.community_posts (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_community_likes_post_id    ON public.community_likes (post_id);
 CREATE INDEX IF NOT EXISTS idx_community_comments_post_id ON public.community_comments (post_id);
+
+-- 6. [IMPORTANT] Correction des relations pour l'API REST Supabase (Jointure automatique des profils)
+-- Exécutez ceci pour lier correctement les posts, likes et commentaires à la table des profils publics
+ALTER TABLE public.community_posts DROP CONSTRAINT IF EXISTS community_posts_user_id_fkey;
+ALTER TABLE public.community_posts ADD CONSTRAINT community_posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.community_likes DROP CONSTRAINT IF EXISTS community_likes_user_id_fkey;
+ALTER TABLE public.community_likes ADD CONSTRAINT community_likes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.community_comments DROP CONSTRAINT IF EXISTS community_comments_user_id_fkey;
+ALTER TABLE public.community_comments ADD CONSTRAINT community_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
