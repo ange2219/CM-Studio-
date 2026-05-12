@@ -50,7 +50,7 @@ export function CommunityFeed({
     e.preventDefault()
     if (!newPostContent.trim() || isPosting) return
     setIsPosting(true)
-    const { data, error } = await supabase.from('community_posts').insert({ content: newPostContent.trim(), user_id: currentUser.id, is_community: activeTab === 'communaute' }).select('id, created_at').single()
+    const { data, error } = await supabase.from('community_posts').insert({ content: newPostContent.trim(), user_id: currentUser.id }).select('id, created_at').single()
     if (!error && data) {
       setPosts([{ 
         id: data.id, 
@@ -66,6 +66,8 @@ export function CommunityFeed({
         is_community: activeTab === 'communaute'
       }, ...posts])
       setNewPostContent('')
+    } else if (error) {
+      console.error("Erreur lors de la publication:", error)
     }
     setIsPosting(false)
   }
