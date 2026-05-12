@@ -6,8 +6,6 @@ import Link from 'next/link'
 const MOCK_GROUPS = [
   { id: 1, name: 'Community Managers France', members: '12.4K', type: 'Public', color: '#1E57CD' },
   { id: 2, name: 'Social Media Pro', members: '8.7K', type: 'Privé', color: '#10B981' },
-  { id: 3, name: 'IA & Contenu Créatif', members: '5.2K', type: 'Pro', color: '#F59E0B' },
-  { id: 4, name: 'Freelances CM', members: '9.1K', type: 'Public', color: '#EF4444' },
 ]
 
 export function PopularGroups() {
@@ -34,11 +32,10 @@ export function PopularGroups() {
               <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>Groupe {group.type}</span>
                 <span>•</span>
-                <span>{group.members} membres</span>
+                <span>{group.members}</span>
               </div>
             </div>
             <div style={{ width: '32px', height: '16px', flexShrink: 0 }}>
-                {/* Petit graph de tendance simplifié */}
                 <TrendingUp size={14} style={{ color: group.color, opacity: 0.6 }} />
             </div>
           </div>

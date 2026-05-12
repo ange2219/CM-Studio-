@@ -79,10 +79,27 @@ export function TopNav({
         <span className="ham-line" />
       </button>
 
-      <span className="page-title">{pageTitle}</span>
+      <div className="flex items-center gap-4 flex-1 max-w-xl ml-4">
+        <div className="relative w-full">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-var(--t3)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input 
+            type="text" 
+            placeholder="Rechercher des groupes, publications..." 
+            className="w-full bg-var(--s2) border border-var(--b1) rounded-xl py-2 pl-10 pr-4 text-sm outline-none focus:border-var(--accent) transition-all"
+          />
+        </div>
+      </div>
+
       <div className="topnav-spacer" />
 
       <div className="topnav-right">
+        {/* Messages */}
+        <Link href="/messages" className="icon-btn" title="Messages" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </Link>
+
         {/* Dark mode toggle */}
         <button className="toggle-btn" onClick={toggleTheme} title="Changer le thème">
           <svg className="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">

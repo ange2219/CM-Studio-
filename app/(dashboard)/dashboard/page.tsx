@@ -61,8 +61,8 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Right Column: Widgets */}
-      <div style={{ width: '340px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '20px' }} className="hidden xl:flex">
+      {/* Right Column: Widgets (Fixed/Sticky) */}
+      <div style={{ width: '340px', flexShrink: 0, position: 'sticky', top: '24px', height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', paddingRight: '4px' }} className="hidden xl:flex">
         <NotificationsPanel />
         <PopularGroups />
         <AiAssistantPanel firstName={firstName} />

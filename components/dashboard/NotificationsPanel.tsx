@@ -6,8 +6,6 @@ import Link from 'next/link'
 const MOCK_NOTIFS = [
   { id: 1, type: 'post_like', user: 'Aicha B.', text: 'a publié un nouveau post dans Community Managers France', time: 'il y a 1 h', icon: <Bell size={14} />, color: '#1E57CD' },
   { id: 2, type: 'comment', user: 'David K.', text: 'a commenté votre post dans Social Media Pro', time: 'il y a 2 h', icon: <MessageSquare size={14} />, color: '#10B981' },
-  { id: 3, type: 'reaction', user: 'Mamadou T.', text: 'a réagi à votre post dans IA & Contenu Créatif', time: 'il y a 3 h', icon: <Heart size={14} />, color: '#F59E0B' },
-  { id: 4, type: 'share', user: 'Christelle P.', text: 'a partagé un conseil dans Freelances CM', time: 'il y a 4 h', icon: <Share2 size={14} />, color: '#EF4444' },
 ]
 
 export function NotificationsPanel() {
@@ -16,7 +14,7 @@ export function NotificationsPanel() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--t1)' }}>Notifications</span>
-          <div style={{ background: 'var(--red)', color: '#fff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>4</div>
+          <div style={{ background: 'var(--red)', color: '#fff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>2</div>
         </div>
         <Link href="/notifications" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
            Voir tout <ChevronRight size={12} />
