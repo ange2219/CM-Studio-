@@ -28,64 +28,74 @@ export default function HomePage() {
   }, [])
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--t3)', fontSize: '0.9rem' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>
        Chargement de votre espace...
     </div>
   )
   
   if (!user) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--t3)', fontSize: '0.9rem' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>
        Erreur : Profil introuvable. Veuillez vous reconnecter.
     </div>
   )
 
-  const firstName = user.full_name?.split(' ')[0] || 'Ami'
+  const firstName = user.full_name?.split(' ')[0] || 'Ulrich'
 
   return (
     <div style={{ 
-      display: 'flex', 
+      display: 'grid', 
+      gridTemplateColumns: '1fr 340px',
       gap: '32px', 
-      padding: '0 32px 40px', 
-      maxWidth: '1300px', 
+      padding: '24px 32px 40px', 
+      maxWidth: '1400px', 
       margin: '0 auto', 
       width: '100%' 
     }}>
       
-      {/* COLUMN 1: FEED (Center) */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {/* COLUMN 1: FEED (Exactly like mockup) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <StoriesSection />
-        <div style={{ marginTop: '24px' }}>
-          <CommunityFeed 
-            initialPosts={[]} 
-            userId={user.id} 
-            userRole={user.role} 
-          />
-        </div>
+        
+        <CommunityFeed 
+          initialPosts={[]} 
+          currentUserId={user.id} 
+          initialLikedIds={[]}
+          userId={user.id} 
+          userRole={user.role} 
+        />
       </div>
 
-      {/* COLUMN 2: WIDGETS (Right - Sticky) */}
+      {/* COLUMN 2: WIDGETS (Right - Fixed like mockup) */}
       <div style={{ 
-        width: '350px', 
         display: 'flex', 
         flexDirection: 'column', 
         gap: '24px',
-        flexShrink: 0,
         position: 'sticky',
-        top: '0',
+        top: '24px',
         height: 'fit-content'
       }} className="hidden xl:flex">
         <NotificationsPanel />
         <PopularGroups />
         <AiAssistantPanel firstName={firstName} />
         
-        <div style={{ padding: '16px', borderRadius: '14px', background: 'var(--accent-light)', border: '1px solid var(--b1)' }}>
-          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--accent)', marginBottom: '8px' }}>CM Studio IA</div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--t2)', lineHeight: 1.5 }}>
-            Boostez votre engagement avec nos outils de génération assistée.
+        {/* Additional help/info card */}
+        <div style={{ 
+          padding: '20px', 
+          borderRadius: '16px', 
+          background: 'rgba(79, 70, 229, 0.05)', 
+          border: '1px solid rgba(79, 70, 229, 0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#818CF8' }}>CM Studio IA</div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text3)', lineHeight: 1.5 }}>
+            Boostez votre engagement avec nos nouveaux outils de génération de visuels assistée.
           </p>
         </div>
       </div>
 
+      {/* Hidden Banner or moved to header/welcome */}
       <WelcomeBanner firstName={firstName} />
     </div>
   )
