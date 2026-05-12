@@ -157,10 +157,31 @@ export function CommunityFeed({
       setReplyingTo(null)
       
       if (payload.parent_id) {
-        setVisibleReplies(prev => ({ ...prev, [payload.parent_id]: (prev[payload.parent_id] || 0) + 1 }))
+        // Find the root parent ID to increment the correct visibleReplies counter
+        let rootId = payload.parent_id
+        const postComments = commentsByPost[postId] || []
+        let curr = postComments.find(x => x.id === rootId)
+        while (curr && curr.parent_id) {
+          rootId = curr.parent_id
+          curr = postComments.find(x => x.id === rootId)
+        }
+        setVisibleReplies(prev => ({ ...prev, [rootId]: (prev[rootId] || 0) + 1 }))
       }
     }
     setIsSubmittingComment(false)
+  }
+
+  const getFlattenedReplies = (rootId: string, allComments: any[]) => {
+    const descendants: any[] = []
+    const collect = (parentId: string) => {
+      const children = allComments.filter(c => c.parent_id === parentId)
+      for (const child of children) {
+        descendants.push(child)
+        collect(child.id)
+      }
+    }
+    collect(rootId)
+    return descendants.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
   }
 
   const filteredPosts = posts.filter(post => {
@@ -240,7 +261,7 @@ export function CommunityFeed({
                       <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingBottom: '16px' }}>Aucun commentaire.</div>
                     ) : (
                       postComments.filter(c => !c.parent_id).map(c => {
-                        const replies = postComments.filter(r => r.parent_id === c.id)
+                        const replies = getFlattenedReplies(c.id, postComments)
                         const showCount = visibleReplies[c.id] || 0
                         const isLiked = commentLikes.has(c.id)
 
@@ -249,7 +270,7 @@ export function CommunityFeed({
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
-                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1)}
+                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1) || 'U'}
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -270,14 +291,25 @@ export function CommunityFeed({
                             {/* Threaded Replies */}
                             {showCount > 0 && replies.slice(0, showCount).map(r => {
                               const isReplyLiked = commentLikes.has(r.id)
+                              const isDeepReply = r.parent_id !== c.id
+                              const parentComment = isDeepReply ? postComments.find(p => p.id === r.parent_id) : null
+                              
                               return (
                                 <div key={r.id} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
                                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#6366f1' }}>
-                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1)}
+                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1) || 'U'}
                                   </div>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>
-                                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{r.full_name}</div>
+                                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        {r.full_name}
+                                        {isDeepReply && parentComment && (
+                                          <>
+                                            <span style={{ fontSize: '0.65rem' }}>▸</span>
+                                            <span>{parentComment.full_name}</span>
+                                          </>
+                                        )}
+                                      </div>
                                       <div style={{ fontSize: '0.85rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{r.content}</div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
                                         <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>16 h</span>
