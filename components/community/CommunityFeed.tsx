@@ -209,28 +209,28 @@ export function CommunityFeed({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* TABS & FILTER */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '2px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--b1)', paddingBottom: '2px' }}>
         <div style={{ display: 'flex', gap: '24px' }}>
           {['pour-vous', 'communaute', 'groupe'].map(tid => (
-            <button key={tid} onClick={() => setActiveTab(tid)} style={{ background: 'none', border: 'none', padding: '12px 4px', fontSize: '0.9rem', fontWeight: activeTab === tid ? 700 : 500, color: activeTab === tid ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', position: 'relative', transition: 'all 0.2s' }}>
+            <button key={tid} onClick={() => setActiveTab(tid)} style={{ background: 'none', border: 'none', padding: '12px 4px', fontSize: '0.9rem', fontWeight: activeTab === tid ? 700 : 500, color: activeTab === tid ? '#fff' : 'var(--t3)', cursor: 'pointer', position: 'relative', transition: 'all 0.2s' }}>
               {tid === 'pour-vous' ? 'Pour vous' : tid === 'communaute' ? 'Communauté' : 'Groupe'}
               {activeTab === tid && <div style={{ position: 'absolute', bottom: '-1px', left: 0, right: 0, height: '2px', background: 'var(--accent)', borderRadius: '2px' }} />}
             </button>
           ))}
         </div>
-        <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '8px' }}><SlidersHorizontal size={18} /></button>
+        <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '8px' }}><SlidersHorizontal size={18} /></button>
       </div>
 
       {/* CREATE POST */}
-      <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ background: 'var(--card)', borderRadius: '16px', padding: '16px', border: '1px solid var(--b1)' }}>
         <div style={{ display: 'flex', gap: '12px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--accent)' }}>U</div>
-          <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
+          <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--b1)' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>Image</span></button>
-            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
+            <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>Image</span></button>
+            <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
           </div>
           <button onClick={handlePost} disabled={!newPostContent.trim() || isPosting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: !newPostContent.trim() ? 0.5 : 1 }}>Publier</button>
         </div>
@@ -245,36 +245,36 @@ export function CommunityFeed({
           const isLoading = loadingComments[post.id]
 
           return (
-            <div key={post.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+            <div key={post.id} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
               {/* Post Header */}
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>{post.full_name || 'Utilisateur'}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{post.group_name || 'Général'} • {getShortTimeAgo(post.created_at)}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--t3)' }}>{post.group_name || 'Général'} • {getShortTimeAgo(post.created_at)}</div>
                 </div>
               </div>
 
               {/* Post Content */}
-              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>{post.content}</div>
+              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.5 }}>{post.content}</div>
 
               {/* Post Actions */}
-              <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count + (isLiked ? 1 : 0)}</button>
-                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
-                <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
+              <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--b1)' }}>
+                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count + (isLiked ? 1 : 0)}</button>
+                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
+                <button style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
               </div>
 
               {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
               {isExpanded && (
-                <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--card)', borderTop: '1px solid var(--b1)' }}>
                   <div className="sb-scroll" style={{ flex: 1, maxHeight: '350px', overflowY: 'auto', padding: '16px 16px 0 16px' }}>
                     {isLoading ? (
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingBottom: '16px' }}>Chargement...</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--t3)', textAlign: 'center', paddingBottom: '16px' }}>Chargement...</div>
                     ) : postComments.length === 0 ? (
-                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingBottom: '16px' }}>Aucun commentaire.</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--t3)', textAlign: 'center', paddingBottom: '16px' }}>Aucun commentaire.</div>
                     ) : (
                       postComments.filter(c => !c.parent_id).map(c => {
                         const replies = getFlattenedReplies(c.id, postComments)
@@ -290,14 +290,14 @@ export function CommunityFeed({
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{c.full_name}</div>
-                                  <div style={{ fontSize: '0.9rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{c.content}</div>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t2)' }}>{c.full_name}</div>
+                                  <div style={{ fontSize: '0.9rem', color: 'var(--t1)', lineHeight: 1.4, margin: '2px 0' }}>{c.content}</div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
-                                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{getShortTimeAgo(c.created_at)}</span>
-                                    <button onClick={() => setReplyingTo({ id: c.id, name: c.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--t3)' }}>{getShortTimeAgo(c.created_at)}</span>
+                                    <button onClick={() => setReplyingTo({ id: c.id, name: c.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'var(--t2)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
                                   </div>
                                 </div>
-                                <button onClick={() => toggleCommentLike(c.id, post.id)} style={{ background: 'none', border: 'none', color: isLiked ? '#ef4444' : 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '12px' }}>
+                                <button onClick={() => toggleCommentLike(c.id, post.id)} style={{ background: 'none', border: 'none', color: isLiked ? '#ef4444' : 'var(--t3)', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '12px' }}>
                                   <Heart size={16} fill={isLiked ? '#ef4444' : 'none'} />
                                   {c.likes_count > 0 && <span style={{ fontSize: '0.65rem', marginTop: '2px' }}>{c.likes_count}</span>}
                                 </button>
@@ -318,7 +318,7 @@ export function CommunityFeed({
                                   </div>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>
-                                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         {r.full_name}
                                         {showDeepReplyIndicator && (
                                           <>
@@ -327,13 +327,13 @@ export function CommunityFeed({
                                           </>
                                         )}
                                       </div>
-                                      <div style={{ fontSize: '0.85rem', color: '#fff', lineHeight: 1.4, margin: '2px 0' }}>{r.content}</div>
+                                      <div style={{ fontSize: '0.85rem', color: 'var(--t1)', lineHeight: 1.4, margin: '2px 0' }}>{r.content}</div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{getShortTimeAgo(r.created_at)}</span>
-                                        <button onClick={() => setReplyingTo({ id: r.id, name: r.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--t3)' }}>{getShortTimeAgo(r.created_at)}</span>
+                                        <button onClick={() => setReplyingTo({ id: r.id, name: r.full_name, postId: post.id })} style={{ background: 'none', border: 'none', color: 'var(--t2)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Répondre</button>
                                       </div>
                                     </div>
-                                    <button onClick={() => toggleCommentLike(r.id, post.id)} style={{ background: 'none', border: 'none', color: isReplyLiked ? '#ef4444' : 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '12px' }}>
+                                    <button onClick={() => toggleCommentLike(r.id, post.id)} style={{ background: 'none', border: 'none', color: isReplyLiked ? '#ef4444' : 'var(--t3)', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '12px' }}>
                                       <Heart size={14} fill={isReplyLiked ? '#ef4444' : 'none'} />
                                       {r.likes_count > 0 && <span style={{ fontSize: '0.65rem', marginTop: '2px' }}>{r.likes_count}</span>}
                                     </button>
@@ -349,16 +349,16 @@ export function CommunityFeed({
                                   {showCount < replies.length && (
                                     <button 
                                       onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 3 }))}
-                                      style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                                      style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--t2)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                                     >
-                                      <div style={{ width: '24px', height: '1px', background: 'rgba(255,255,255,0.3)' }}></div>
+                                      <div style={{ width: '24px', height: '1px', background: 'var(--b2)' }}></div>
                                       Afficher {showCount === 0 ? (replies.length === 1 ? '1 réponse' : `${replies.length} de plus`) : `${replies.length - showCount} de plus`} ∨
                                     </button>
                                   )}
                                   {showCount > 0 && (
                                     <button 
                                       onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: 0 }))}
-                                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                                      style={{ background: 'none', border: 'none', color: 'var(--t2)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                                     >
                                       Masquer ∧
                                     </button>
@@ -373,7 +373,7 @@ export function CommunityFeed({
                   </div>
 
                   {/* FIXED INPUT AT BOTTOM - TikTok Style */}
-                  <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid var(--b1)', background: 'var(--card)' }}>
                     {replyingTo && replyingTo.postId === post.id && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: 'var(--accent)' }}>
                         <span>En réponse à <b>{replyingTo.name}</b></span>

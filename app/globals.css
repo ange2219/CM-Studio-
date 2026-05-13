@@ -7,7 +7,7 @@
 :root {
   --radius: 12px;
   /* ── Palette base — Light ── */
-  --bg:#FEF9F2;--white:#fff;--accent:#004422;--accent-secondary:#F9FFE3;--accent-light:rgba(0,68,34,0.08);
+  --bg:#FAFAFA;--white:#fff;--accent:#004422;--accent-secondary:#F9FFE3;--accent-light:rgba(0,68,34,0.08);
   --teal:#06B6D4;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--gold:#F59E0B;
   --text:#0D0D1A;--text2:#4B5563;--text3:#9CA3AF;--border:rgba(0,68,34,0.12);
   --sidebar-bg:rgba(255,255,255,0.95);--nav-bg:#FFFFFF;
