@@ -26,29 +26,13 @@ export default function HomePage() {
 
         // 2. Get Posts
         const { data: posts } = await supabase
-          .from('community_posts')
-          .select(`
-            *,
-            users (full_name, avatar_url, plan),
-            likes_count:community_likes(count),
-            comments_count:community_comments(count)
-          `)
+          .from('vw_community_posts')
+          .select('*')
           .order('created_at', { ascending: false })
           .limit(20)
 
         if (posts) {
-          const formatted = posts.map(p => {
-            const u = Array.isArray(p.users) ? p.users[0] : p.users
-            return {
-              ...p,
-              full_name: u?.full_name || 'Utilisateur',
-              avatar_url: u?.avatar_url,
-              plan: u?.plan || 'Free',
-              likes_count: p.likes_count?.[0]?.count || 0,
-              comments_count: p.comments_count?.[0]?.count || 0
-            }
-          })
-          setInitialPosts(formatted)
+          setInitialPosts(posts)
         }
 
         // 3. Get User Likes
