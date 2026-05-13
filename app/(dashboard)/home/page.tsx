@@ -66,17 +66,17 @@ export default function HomePage() {
 
   return (
     <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: '1fr 340px',
+      display: 'flex', 
+      justifyContent: 'center',
       gap: '32px', 
       padding: '24px 32px 40px', 
-      maxWidth: '1400px', 
+      maxWidth: '1200px', 
       margin: '0 auto', 
       width: '100%' 
     }}>
       
       {/* COLUMN 1: FEED */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ flex: 1, maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <StoriesSection />
         
         <CommunityFeed 
@@ -87,7 +87,7 @@ export default function HomePage() {
       </div>
 
       {/* COLUMN 2: WIDGETS */}
-      <div className="hidden xl:block">
+      <div className="hidden xl:block" style={{ width: '340px', flexShrink: 0 }}>
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column', 
