@@ -265,6 +265,9 @@ function PlatformPopup({
                           <Check size={10} color={PLATFORM_COLORS[p]} />
                         </div>
                       )}
+                      {isSelected && localSelected[0] === p && localMode === 'unified' && (
+                        <div style={{ position: 'absolute', top: '3px', left: '4px', fontSize: '9px', color: '#F59E0B' }}>★</div>
+                      )}
                     </button>
                   )
                 })}
