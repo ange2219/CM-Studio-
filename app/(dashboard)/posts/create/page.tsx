@@ -581,14 +581,8 @@ export default function CreatePage() {
     } catch { /* ignore */ }
   }, [brief, params, objective, selectedPlatforms, distributionMode, variants, manualContent, aiUploadedUrl, generatedImageUrl])
 
-  // Pré-remplir params quand l'objectif change (seulement si c'est un objectif connu)
-  useEffect(() => {
-    if (objective && objective.toLowerCase() in OBJECTIVE_DEFAULTS) {
-      setParams(OBJECTIVE_DEFAULTS[objective.toLowerCase() as PostObjective])
-    }
-  }, [objective])
 
-  // Auto-détecter l'objectif à partir du brief (debounce 600ms)
+  // Auto-détecter l'objectif + paramètres optimaux à partir du brief (debounce 600ms)
   const [aiDetecting, setAiDetecting] = useState(false)
   useEffect(() => {
     if (brief.trim().length < 8) {
@@ -601,18 +595,21 @@ export default function CreatePage() {
         const res = await fetch('/api/ai/detect-objective', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brief: brief.trim() }),
+          body: JSON.stringify({ brief: brief.trim(), platforms: selectedPlatforms }),
         })
         const data = await res.json()
         if (res.ok && data.objective) {
           setObjective(data.objective as string)
+        }
+        if (res.ok && data.params) {
+          setParams(data.params)
         }
       } catch { /* silencieux */ }
       finally { setAiDetecting(false) }
     }, 600)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brief])
+  }, [brief, selectedPlatforms])
 
   // ──────────────────────────────────────────────────────────────────────────
 
