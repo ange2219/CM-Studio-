@@ -153,17 +153,11 @@ function ParamsPopup({
             <ChipGroup options={toneOptions} value={local.tone} onChange={v => setLocal(p => ({ ...p, tone: v }))} />
           </div>
 
-          {/* CTA */}
-          <div>
-            <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'var(--t2)', marginBottom: '.5rem' }}>CTA</label>
-            <ChipGroup options={ctaOptions} value={local.cta} onChange={v => setLocal(p => ({ ...p, cta: v }))} />
-          </div>
-
           {/* Note */}
           <div style={{ background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.7rem .9rem', display: 'flex', gap: '.5rem' }}>
             <span style={{ fontSize: '.85rem', flexShrink: 0 }}>ℹ️</span>
             <p style={{ fontSize: '.73rem', color: 'var(--t3)', lineHeight: 1.55, margin: 0 }}>
-              Ces paramètres sont définis selon votre objectif. Vous pouvez les ajuster selon vos préférences.
+              Ces paramètres sont pré-remplis par l&apos;IA selon votre brief. Le CTA est choisi automatiquement pour maximiser l&apos;efficacité du post.
             </p>
           </div>
 
