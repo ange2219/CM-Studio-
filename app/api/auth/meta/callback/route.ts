@@ -30,23 +30,34 @@ export async function GET(req: NextRequest) {
     let fbToken: string
     let fbAvatar: string | null = null
 
-    if (pages.length === 0) {
-      throw new Error('Aucune Page Facebook détectée. Assurez-vous d\'avoir coché une Page lors de la connexion, ou créez-en une si vous n\'en avez pas.')
+    if (pages.length > 0) {
+      const page = pages[0]
+      fbId = page.id
+      fbName = page.name
+      fbToken = page.access_token
+      
+      // Photo de la Page Facebook
+      try {
+        const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
+        if (picRes.ok) {
+          const picData = await picRes.json()
+          fbAvatar = picData?.data?.url || null
+        }
+      } catch { /* non critique */ }
+    } else {
+      const profile = await getPersonalProfile(longToken)
+      fbId = profile.id
+      fbName = profile.name
+      fbToken = longToken
+      // Photo profil personnel
+      try {
+        const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
+        if (picRes.ok) {
+          const picData = await picRes.json()
+          fbAvatar = picData?.data?.url || null
+        }
+      } catch { /* non critique */ }
     }
-
-    const page = pages[0]
-    fbId = page.id
-    fbName = page.name
-    fbToken = page.access_token
-    
-    // Photo de la Page Facebook
-    try {
-      const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
-      if (picRes.ok) {
-        const picData = await picRes.json()
-        fbAvatar = picData?.data?.url || null
-      }
-    } catch { /* non critique */ }
 
     const tokenExpiresAt = longTokenData.expires_at
     await admin.from('social_accounts').delete().eq('user_id', userId).eq('platform', 'facebook')
