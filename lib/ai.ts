@@ -28,6 +28,18 @@ const PLATFORM_CONSTRAINTS: Record<Platform, string> = {
   pinterest: 'Descriptif et inspirant. Mots-clés importants. Max 500 caractères.',
 }
 
+// ─── System prompts par plateforme (placeholders — à personnaliser) ────────────
+
+const PLATFORM_SYSTEM_PROMPTS: Record<Platform, string> = {
+  linkedin:  'Tu es un expert LinkedIn. Génère un post performant.',
+  instagram: 'Tu es un expert Instagram. Génère un post performant.',
+  facebook:  'Tu es un expert Facebook. Génère un post performant.',
+  twitter:   'Tu es un expert Twitter/X. Génère un post performant.',
+  tiktok:    'Tu es un expert TikTok. Génère un script de post performant.',
+  youtube:   'Tu es un expert YouTube. Génère une description de vidéo performante.',
+  pinterest: 'Tu es un expert Pinterest. Génère une description de pin performante.',
+}
+
 const TONE_INSTRUCTIONS: Record<string, string> = {
   professionnel: 'Adopte un ton professionnel, expert et crédible. Langage soigné, données et faits si pertinents.',
   decontracte:   'Ton décontracté, accessible et authentique. Parle directement à l\'audience, comme un ami.',
@@ -80,10 +92,10 @@ function buildBrandContext(req: GenerateRequest): string {
   return lines.join('\n')
 }
 
-function buildPrompt(req: GenerateRequest): string {
-  const isUnified = req.distributionMode === 'unified'
+function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
+  const platforms = targetPlatform ? [targetPlatform] : req.platforms
 
-  const platformInstructions = req.platforms
+  const platformInstructions = platforms
     .map(p => `**${p.toUpperCase()}**: ${PLATFORM_CONSTRAINTS[p]}`)
     .join('\n')
 
@@ -100,10 +112,6 @@ function buildPrompt(req: GenerateRequest): string {
   const ctaLine        = req.cta        ? CTA_INSTRUCTIONS[req.cta]               : ''
   // Le ton PostTone (professionnel/decontracte/emotionnel/expert) prime sur le GenerateTone si présent
   const toneLine       = TONE_INSTRUCTIONS[req.tone] || ''
-
-  const distributionNote = isUnified
-    ? `Mode de distribution : UNIFIÉ. Génère UN seul post adaptable à toutes les plateformes (le texte sera le même pour chaque variant, légèrement ajusté aux contraintes de chaque plateforme).`
-    : `Mode de distribution : PERSONNALISÉ. Génère un post DIFFÉRENT et spécifiquement optimisé pour chaque plateforme.`
 
   const contextLines = [objectiveLine, lengthLine, formatLine, toneLine, ctaLine]
     .filter(Boolean)
@@ -122,15 +130,13 @@ ${contextLines}
 
 RÈGLE ABSOLUE : Tout contenu généré DOIT être directement lié à l'activité et au secteur de la marque. Ne génère jamais de contenu hors-sujet (nature, animaux, citations sans rapport, statistiques génériques, etc.).
 
-${distributionNote}
-
 Contraintes par plateforme :
 ${platformInstructions}
 
 Réponds UNIQUEMENT en JSON valide avec ce format exact :
 {
   "variants": {
-    ${req.platforms.map(p => `"${p}": "texte du post"`).join(',\n    ')}
+    ${platforms.map(p => `"${p}": "texte du post"`).join(',\n    ')}
   }
 }
 
@@ -176,10 +182,15 @@ Aucun texte avant ou après le JSON.`
 
 // ─── Génération via GitHub Models (GPT-4o-mini) — plan gratuit ─────────────────
 
-async function generateWithGitHub(req: GenerateRequest): Promise<GenerateResponse> {
+async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
+  const messages: { role: 'system' | 'user'; content: string }[] = []
+  if (systemPrompt) messages.push({ role: 'system', content: systemPrompt })
+  messages.push({ role: 'user', content: buildPrompt(req, targetPlatform) })
+
   const response = await githubAI.chat.completions.create({
     model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: buildPrompt(req) }],
+    messages,
     max_tokens: 1500,
     temperature: 0.8,
     response_format: { type: 'json_object' },
@@ -191,11 +202,13 @@ async function generateWithGitHub(req: GenerateRequest): Promise<GenerateRespons
 
 // ─── Génération via Claude (Anthropic) — plans payants ────────────────────────
 
-async function generateWithClaude(req: GenerateRequest): Promise<GenerateResponse> {
+async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 2048,
-    messages: [{ role: 'user', content: buildPrompt(req) }],
+    system: systemPrompt || undefined,
+    messages: [{ role: 'user', content: buildPrompt(req, targetPlatform) }],
   })
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
@@ -297,30 +310,52 @@ export async function generateImage(prompt: string): Promise<string | null> {
 // ─── Export principal ──────────────────────────────────────────────────────────
 
 export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<GenerateResponse> {
-  let result: GenerateResponse
+  const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
 
-  if (plan === 'free' && process.env.GITHUB_TOKEN) {
-    try {
-      result = await generateWithGitHub(req)
-    } catch (err) {
-      console.error('[ai/generatePosts] GitHub Models failed, falling back to Claude:', err instanceof Error ? err.message : err)
-      result = await generateWithClaude(req)
-    }
-  } else {
-    result = await generateWithClaude(req)
-  }
-
-  // Mode unifié : même texte pour toutes les plateformes
-  if (req.distributionMode === 'unified' && result.variants) {
-    const firstValue = Object.values(result.variants).find(v => v && v.trim())
-    if (firstValue) {
-      for (const platform of req.platforms) {
-        result.variants[platform] = firstValue
+  async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
+    if (isFree) {
+      try {
+        return await generateWithGitHub(req, targetPlatform)
+      } catch (err) {
+        console.error('[ai/generatePosts] GitHub Models failed, falling back to Claude:', err instanceof Error ? err.message : err)
+        return await generateWithClaude(req, targetPlatform)
       }
     }
+    return await generateWithClaude(req, targetPlatform)
   }
 
-  return result
+  // Mode UNIFIÉ : 1 seul appel avec la plateforme principale, distribué sur toutes
+  if (req.distributionMode === 'unified') {
+    const mainPlatform = req.platforms[0]
+    const result = await callAI(mainPlatform)
+    // Distribuer le même texte sur toutes les plateformes
+    if (result.variants) {
+      const mainText = result.variants[mainPlatform] || Object.values(result.variants).find(v => v && v.trim())
+      if (mainText) {
+        for (const p of req.platforms) {
+          result.variants[p] = mainText
+        }
+      }
+    }
+    return result
+  }
+
+  // Mode PERSONNALISÉ : 1 appel par plateforme en parallèle
+  const results = await Promise.all(
+    req.platforms.map(async (platform) => {
+      const singleReq = { ...req, platforms: [platform] }
+      const result = await callAI(platform)
+      const text = result.variants?.[platform] || Object.values(result.variants || {}).find(v => v && v.trim()) || ''
+      return { platform, text }
+    })
+  )
+
+  const variants: Partial<Record<Platform, string>> = {}
+  for (const { platform, text } of results) {
+    variants[platform] = text
+  }
+
+  return { variants }
 }
 
 export async function generateWeekPosts(req: GenerateRequest, postsCount: number, plan: Plan): Promise<{ week: { day: number; topic: string; variants: Partial<Record<Platform, string>> }[] }> {

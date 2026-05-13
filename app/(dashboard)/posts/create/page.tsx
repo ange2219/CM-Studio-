@@ -655,7 +655,6 @@ export default function CreatePage() {
 
   // ── Paramètres IA ──
   const [objective, setObjective]           = useState<PostObjective | null>(null)
-  const [objectiveMenuOpen, setObjMenuOpen] = useState(false)
   const [brief, setBrief]                   = useState('')
   const [params, setParams]                 = useState<GenerationParams>({
     length: 'moyen', format: 'direct', tone: 'professionnel', cta: 'aucun',
@@ -750,12 +749,13 @@ export default function CreatePage() {
     if (objective) setParams(OBJECTIVE_DEFAULTS[objective])
   }, [objective])
 
-  // Auto-détecter l'objectif à partir du brief (debounce 1.4s)
+  // Auto-détecter l'objectif à partir du brief (debounce 600ms)
   const [aiDetecting, setAiDetecting] = useState(false)
-  const [autoDetected, setAutoDetected] = useState(false)
   useEffect(() => {
-    if (brief.trim().length < 8) return
-    if (objective && !autoDetected) return // objectif choisi manuellement → pas d'override
+    if (brief.trim().length < 8) {
+      setObjective(null)
+      return
+    }
     const timer = setTimeout(async () => {
       setAiDetecting(true)
       try {
@@ -765,26 +765,15 @@ export default function CreatePage() {
           body: JSON.stringify({ brief: brief.trim() }),
         })
         const data = await res.json()
-        if (res.ok && data.objective && data.objective !== objective) {
+        if (res.ok && data.objective) {
           setObjective(data.objective as PostObjective)
-          setAutoDetected(true)
         }
       } catch { /* silencieux */ }
       finally { setAiDetecting(false) }
-    }, 1400)
+    }, 600)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brief])
-
-  // Fermer le menu objectif si clic extérieur
-  useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (objMenuRef.current && !objMenuRef.current.contains(e.target as Node))
-        setObjMenuOpen(false)
-    }
-    if (objectiveMenuOpen) document.addEventListener('mousedown', handleOutside)
-    return () => document.removeEventListener('mousedown', handleOutside)
-  }, [objectiveMenuOpen])
 
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -1098,17 +1087,17 @@ export default function CreatePage() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
 
-              {/* Bouton Objectif */}
-              <div ref={objMenuRef} style={{ position: 'relative' }}>
-                <button
-                  onClick={() => { setObjMenuOpen(o => !o); setAutoDetected(false) }}
+              {/* Badge Objectif (auto-détecté par l'IA, lecture seule) */}
+              <div style={{ position: 'relative' }}>
+                <div
                   style={{
                     display: 'flex', alignItems: 'center', gap: '.5rem',
                     padding: '.45rem .85rem', borderRadius: '8px',
                     border: `1px solid ${objective ? 'var(--accent)' : 'var(--b1)'}`,
                     background: objective ? 'rgba(123,92,245,.1)' : 'var(--card)',
-                    color: objective ? 'var(--accent)' : 'var(--t2)',
-                    cursor: 'pointer', fontSize: '.82rem', fontWeight: 500, transition: 'all .18s',
+                    color: objective ? 'var(--accent)' : 'var(--t3)',
+                    fontSize: '.82rem', fontWeight: 500, transition: 'all .18s',
+                    cursor: 'default', userSelect: 'none',
                   }}
                 >
                   {aiDetecting ? (
@@ -1118,54 +1107,9 @@ export default function CreatePage() {
                   ) : (
                     <Target size={12} style={{ flexShrink: 0, opacity: .4 }} />
                   )}
-                  <span>{objectiveBtnLabel}</span>
-                  <ChevronDown size={13} style={{ transition: 'transform .18s', transform: objectiveMenuOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
-                </button>
-
-                {objectiveMenuOpen && (
-                  <div className="anim-fade-down" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.3rem', minWidth: '210px', boxShadow: '0 8px 32px rgba(0,0,0,.2)', zIndex: 60 }}>
-                    {/* Aucun */}
-                    <button
-                      onClick={() => { setObjective(null); setAutoDetected(false); setObjMenuOpen(false) }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
-                        padding: '.5rem .75rem', borderRadius: '7px', border: 'none',
-                        background: objective === null ? 'rgba(123,92,245,.08)' : 'transparent',
-                        color: objective === null ? 'var(--accent)' : 'var(--t3)',
-                        cursor: 'pointer', fontSize: '.82rem', textAlign: 'left', transition: 'background .1s',
-                        fontStyle: 'italic',
-                      }}
-                      onMouseEnter={e => { if (objective !== null) e.currentTarget.style.background = 'var(--s2)' }}
-                      onMouseLeave={e => { if (objective !== null) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <div style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px dashed var(--t3)', flexShrink: 0 }} />
-                      <span style={{ flex: 1 }}>Aucun</span>
-                      {objective === null && <Check size={12} style={{ flexShrink: 0, opacity: .7 }} />}
-                    </button>
-                    <div style={{ borderTop: '1px solid var(--b1)', margin: '.2rem 0' }} />
-                    {(Object.entries(OBJECTIVE_LABELS) as [PostObjective, string][]).map(([key, label]) => (
-                      <button
-                        key={key}
-                        onClick={() => { setObjective(key); setAutoDetected(false); setObjMenuOpen(false) }}
-                        style={{
-                          width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
-                          padding: '.5rem .75rem', borderRadius: '7px', border: 'none',
-                          background: objective === key ? 'rgba(123,92,245,.1)' : 'transparent',
-                          color: objective === key ? 'var(--accent)' : 'var(--t1)',
-                          cursor: 'pointer', fontSize: '.82rem', textAlign: 'left', transition: 'background .1s',
-                        }}
-                        onMouseEnter={e => { if (objective !== key) e.currentTarget.style.background = 'var(--s2)' }}
-                        onMouseLeave={e => { if (objective !== key) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <ObjIcon objective={key} active={objective === key} />
-                        <span style={{ flex: 1 }}>{label}</span>
-                        {objective === key && <Check size={12} style={{ flexShrink: 0, opacity: .7 }} />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {/* Hint sous le bouton quand aucun objectif */}
-                {!objective && !objectiveMenuOpen && (
+                  <span>{objective ? OBJECTIVE_LABELS[objective].split(' ')[0] : 'Objectif'}</span>
+                </div>
+                {!objective && !aiDetecting && (
                   <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, fontSize: '.68rem', color: 'var(--t3)', whiteSpace: 'nowrap', fontStyle: 'italic', pointerEvents: 'none' }}>
                     L&apos;IA le devinera pour vous
                   </div>
