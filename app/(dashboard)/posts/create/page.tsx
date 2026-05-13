@@ -337,167 +337,6 @@ function PlatformPopup({
 
 // ─── Panneau aperçu live ───────────────────────────────────────────────────────
 
-function LivePreviewPanel({
-  objective, params, selectedPlatforms, distributionMode, brief, onClose,
-}: {
-  objective: string | null
-  params: GenerationParams
-  selectedPlatforms: Platform[]
-  distributionMode: DistributionMode
-  brief: string
-  onClose: () => void
-}) {
-  const [reformulation, setReformulation] = useState<string | null>(null)
-  const [reformulating, setReformulating] = useState(false)
-
-  useEffect(() => {
-    if (brief.trim().length < 8) { setReformulation(null); return }
-    const timer = setTimeout(async () => {
-      setReformulating(true)
-      try {
-        const res = await fetch('/api/ai/reformulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brief: brief.trim() }),
-        })
-        const data = await res.json()
-        if (res.ok && data.reformulation) setReformulation(data.reformulation)
-      } catch { /* silencieux */ }
-      finally { setReformulating(false) }
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [brief])
-
-  const quotas = distributionMode === 'unified' ? 1 : selectedPlatforms.length
-
-  const sep = (
-    <div style={{ borderTop: '1px solid var(--b1)', margin: '.1rem 0' }} />
-  )
-
-  return (
-    <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', overflow: 'hidden', position: 'sticky', top: '80px' }}>
-      {/* Titre */}
-      <div style={{ padding: '.9rem 1.1rem', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-        <Zap size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-        <span style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--t2)', flex: 1 }}>Aperçu en direct</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: '2px' }}>
-          <X size={15} />
-        </button>
-      </div>
-
-      <div style={{ padding: '.85rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.9rem' }}>
-
-        {/* Objectif auto-détecté */}
-        {objective && (
-          <div>
-            <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.35rem' }}>Objectif</div>
-            <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--accent)' }}>{objective}</div>
-          </div>
-        )}
-
-        {objective && sep}
-
-        {/* Plateformes */}
-        <div>
-          <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.4rem' }}>Plateformes</div>
-          {selectedPlatforms.length === 0 ? (
-            <div style={{ fontSize: '.75rem', color: 'var(--t3)', fontStyle: 'italic' }}>Aucune sélectionnée</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-              {selectedPlatforms.map(p => {
-                const info = PLATFORM_CONSTRAINTS_INFO[p]
-                return (
-                  <div key={p} style={{ display: 'flex', alignItems: 'flex-start', gap: '.5rem' }}>
-                    <div style={{ flexShrink: 0, marginTop: '1px' }}>
-                      <PlatformIcon platform={p} size={14} />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--t1)' }}>{PLATFORM_NAMES[p]}</span>
-                      {info && (
-                        <span style={{ fontSize: '.67rem', color: 'var(--t3)', marginLeft: '.4rem' }}>
-                          {info.limit} · {info.hashtags} · {info.tone}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {sep}
-
-        {/* Distribution + quotas */}
-        <div>
-          <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.35rem' }}>Distribution</div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <span style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--t1)' }}>
-                {distributionMode === 'unified' ? 'Unifié' : 'Personnalisé'}
-              </span>
-              <div style={{ fontSize: '.68rem', color: 'var(--t3)', marginTop: '.1rem' }}>
-                {distributionMode === 'unified' ? 'Même post pour toutes les plateformes' : 'Post adapté par plateforme'}
-              </div>
-            </div>
-            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--accent)' }}>{quotas}</div>
-              <div style={{ fontSize: '.62rem', color: 'var(--t3)' }}>quota{quotas > 1 ? 's' : ''}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Paramètres actifs — seulement si objectif choisi */}
-        {objective && (
-          <>
-            {sep}
-            <div>
-              <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.4rem' }}>Paramètres</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.3rem' }}>
-                {[
-                  { label: LENGTH_LABELS[params.length], color: '#7B5CF5' },
-                  { label: FORMAT_LABELS[params.format], color: '#06B6D4' },
-                  { label: POSTTONE_LABELS[params.tone],  color: '#10B981' },
-                  { label: CTA_LABELS[params.cta],        color: '#F59E0B' },
-                ].map(tag => (
-                  <span key={tag.label} style={{
-                    fontSize: '.67rem', fontWeight: 500, padding: '.2rem .55rem', borderRadius: '5px',
-                    background: tag.color + '15', color: tag.color, border: `1px solid ${tag.color}30`,
-                  }}>
-                    {tag.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Brief reformulé */}
-        {(brief.trim().length >= 8 || reformulating) && (
-          <>
-            {sep}
-            <div>
-              <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.35rem', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
-                Contexte IA
-                {reformulating && (
-                  <div style={{ width: '8px', height: '8px', border: '1.5px solid rgba(123,92,245,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                )}
-              </div>
-              {reformulating ? (
-                <div style={{ display: 'flex', gap: '.35rem', alignItems: 'center' }}>
-                  <span style={{ fontSize: '.72rem', color: 'var(--t3)', fontStyle: 'italic' }}>Analyse du brief…</span>
-                </div>
-              ) : reformulation ? (
-                <p style={{ fontSize: '.73rem', color: 'var(--t2)', lineHeight: 1.6, margin: 0 }}>{reformulation}</p>
-              ) : null}
-            </div>
-          </>
-        )}
-
-      </div>
-    </div>
-  )
-}
 
 // ─── Modal action post (mode manuel) ─────────────────────────────────────────
 
@@ -663,7 +502,7 @@ export default function CreatePage() {
   // ── Popups ──
   const [showParamsPopup,   setShowParamsPopup]   = useState(false)
   const [showPlatformPopup, setShowPlatformPopup] = useState(false)
-  const [showLive,          setShowLive]          = useState(false)
+
 
   // ── Résultats IA ──
   const [variants,           setVariants]          = useState<Partial<Record<Platform, string>>>({})
@@ -1116,23 +955,7 @@ export default function CreatePage() {
                 )}
               </div>
 
-              {/* Bouton Live — après Objectif, visible seulement si objectif ou brief */}
-              {(objective || brief.trim()) && (
-                <button
-                  onClick={() => setShowLive(v => !v)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '.4rem',
-                    padding: '.45rem .75rem', borderRadius: '8px',
-                    border: `1px solid ${showLive ? 'rgba(16,185,129,.5)' : 'var(--b1)'}`,
-                    background: showLive ? 'rgba(16,185,129,.1)' : 'var(--card)',
-                    color: showLive ? '#10B981' : 'var(--t3)',
-                    cursor: 'pointer', fontSize: '.78rem', fontWeight: 500, transition: 'all .18s',
-                  }}
-                >
-                  <Zap size={12} />
-                  Live
-                </button>
-              )}
+
 
               </div>{/* fin flex boutons */}
             </div>
@@ -1214,19 +1037,7 @@ export default function CreatePage() {
 
           </div>
 
-          {/* ── Colonne droite : aperçu live (seulement si activé) ── */}
-          {showLive && (objective || brief.trim()) && (
-            <div className="anim-fade-right w-full lg:w-[360px] shrink-0">
-              <LivePreviewPanel
-                objective={objective}
-                params={params}
-                selectedPlatforms={selectedPlatforms}
-                distributionMode={distributionMode}
-                brief={brief}
-                onClose={() => setShowLive(false)}
-              />
-            </div>
-          )}
+
 
         </div>
       )}
