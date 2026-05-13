@@ -348,7 +348,7 @@ function LivePreviewPanel({
   const [reformulating, setReformulating] = useState(false)
 
   useEffect(() => {
-    if (!brief.trim()) { setReformulation(null); return }
+    if (brief.trim().length < 8) { setReformulation(null); return }
     const timer = setTimeout(async () => {
       setReformulating(true)
       try {
@@ -384,20 +384,15 @@ function LivePreviewPanel({
 
       <div style={{ padding: '.85rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '.9rem' }}>
 
-        {/* Objectif */}
-        <div>
-          <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.35rem' }}>Objectif</div>
-          {objective ? (
-            <div>
-              <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '.15rem' }}>{OBJECTIVE_LABELS[objective]}</div>
-              <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.5 }}>{OBJECTIVE_DESCRIPTIONS[objective]}</div>
-            </div>
-          ) : (
-            <div style={{ fontSize: '.75rem', color: 'var(--t3)', fontStyle: 'italic' }}>Non défini — cliquez sur «&nbsp;Objectif&nbsp;»</div>
-          )}
-        </div>
+        {/* Objectif auto-détecté */}
+        {objective && (
+          <div>
+            <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.35rem' }}>Objectif</div>
+            <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--accent)' }}>{objective}</div>
+          </div>
+        )}
 
-        {sep}
+        {objective && sep}
 
         {/* Plateformes */}
         <div>
@@ -475,7 +470,7 @@ function LivePreviewPanel({
         )}
 
         {/* Brief reformulé */}
-        {(brief.trim() || reformulating) && (
+        {(brief.trim().length >= 8 || reformulating) && (
           <>
             {sep}
             <div>
