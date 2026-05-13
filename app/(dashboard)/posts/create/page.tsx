@@ -337,7 +337,7 @@ function PlatformPopup({
 function LivePreviewPanel({
   objective, params, selectedPlatforms, distributionMode, brief, onClose,
 }: {
-  objective: PostObjective | null
+  objective: string | null
   params: GenerationParams
   selectedPlatforms: Platform[]
   distributionMode: DistributionMode
@@ -833,7 +833,7 @@ export default function CreatePage() {
       }))
       setBrief('')
       setObjective(null)
-      setAutoDetected(false)
+
       sessionStorage.removeItem('social_ia_create_draft')
       router.push('/posts/results')
     })
@@ -934,7 +934,7 @@ export default function CreatePage() {
   const hasVariants = Object.keys(variants).length > 0
 
   // ── Label bouton objectif ──
-  const objectiveBtnLabel = objective ? OBJECTIVE_LABELS[objective] : 'Objectif'
+  const objectiveBtnLabel = objective || 'Objectif'
 
   return (
     <div className="pc" style={{ maxWidth: '1200px' }}>
