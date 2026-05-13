@@ -69,35 +69,42 @@ export default function HomePage() {
       display: 'flex', 
       justifyContent: 'center',
       gap: '32px', 
-      padding: '24px 32px 40px', 
+      height: 'calc(100vh - 72px - 64px)',
       maxWidth: '1200px', 
       margin: '0 auto', 
-      width: '100%' 
+      width: '100%',
+      overflow: 'hidden'
     }}>
       
-      {/* COLUMN 1: FEED */}
-      <div style={{ flex: 1, maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <StoriesSection />
-        
-        <CommunityFeed 
-          initialPosts={initialPosts} 
-          currentUser={user} 
-          initialLikedIds={initialLikedIds}
-        />
+      {/* COLUMN 1: FEED — only this scrolls */}
+      <div className="sb-scroll" style={{ 
+        flex: 1, 
+        maxWidth: '680px', 
+        overflowY: 'auto', 
+        padding: '24px 0 40px'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <StoriesSection />
+          
+          <CommunityFeed 
+            initialPosts={initialPosts} 
+            currentUser={user} 
+            initialLikedIds={initialLikedIds}
+          />
+        </div>
       </div>
 
-      {/* COLUMN 2: WIDGETS */}
-      <div className="hidden xl:block" style={{ width: '340px', flexShrink: 0 }}>
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '24px',
-          position: 'sticky',
-          top: '24px'
-        }}>
-          <NotificationsPanel />
-          <PopularGroups />
-        </div>
+      {/* COLUMN 2: WIDGETS — stays fixed, never scrolls */}
+      <div className="hidden xl:flex" style={{ 
+        width: '340px', 
+        flexShrink: 0, 
+        flexDirection: 'column', 
+        gap: '24px',
+        padding: '24px 0 40px',
+        overflowY: 'hidden'
+      }}>
+        <NotificationsPanel />
+        <PopularGroups />
       </div>
 
       <WelcomeBanner firstName={firstName} />
