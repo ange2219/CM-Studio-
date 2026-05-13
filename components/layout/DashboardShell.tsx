@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, BarChart3, Users, MessageCircle, Search, Plus, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle, Moon, Sun
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle, Moon, Sun, Menu
 } from 'lucide-react'
 
 export function DashboardShell({ user: initialUser, children }: { 
@@ -19,6 +19,7 @@ export function DashboardShell({ user: initialUser, children }: {
   const [user, setUser] = useState<any>(initialUser)
   const [profileOpen, setProfileOpen] = useState(false)
   const [theme, setTheme] = useState('dark')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const profileRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export function DashboardShell({ user: initialUser, children }: {
   const navItems = [
     { label: 'Home', icon: Home, href: '/home' },
     { label: 'Workspace', icon: Layout, href: '/posts' },
+    { label: 'Messagerie', icon: MessageCircle, href: '/messages' },
     { label: 'Analytics', icon: BarChart3, href: '/analytics' },
     { label: 'Community', icon: Users, href: '/community' },
   ]
@@ -69,7 +71,7 @@ export function DashboardShell({ user: initialUser, children }: {
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
       
       {/* Sidebar - Clean Version */}
-      <div className="sb-scroll" style={{ width: '260px', background: 'var(--sidebar-bg)', borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto', transition: 'background 0.3s' }}>
+      <div className="sb-scroll" style={{ width: sidebarOpen ? '260px' : '0px', opacity: sidebarOpen ? 1 : 0, background: 'var(--sidebar-bg)', borderRight: sidebarOpen ? '1px solid var(--b1)' : 'none', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', transition: 'all 0.3s ease' }}>
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
           <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
@@ -93,7 +95,11 @@ export function DashboardShell({ user: initialUser, children }: {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         
         {/* Header - Fixed & Centered Search */}
-        <header style={{ height: '72px', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: '32px', flexShrink: 0 }}>
+        <header style={{ height: '72px', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: '24px', flexShrink: 0 }}>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '8px', transition: '0.2s' }}>
+            <Menu size={22} />
+          </button>
+
           <div style={{ position: 'relative', flex: 1, maxWidth: '500px', margin: '0 auto' }}>
             <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
             <input type="text" placeholder="Rechercher sur CM Studio..." style={{ width: '100%', height: '44px', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '0 16px 0 48px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }} />
