@@ -45,18 +45,13 @@ export async function GET(req: NextRequest) {
         }
       } catch { /* non critique */ }
     } else {
-      const profile = await getPersonalProfile(longToken)
-      fbId = profile.id
-      fbName = profile.name
+      // DEBUG: Au lieu de prendre le profil perso, on met la réponse brute de Facebook dans le nom
+      const debugRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${longToken}`)
+      const debugText = await debugRes.text()
+      fbId = userId // Fallback ID
+      fbName = `[DEBUG] ${debugText.substring(0, 80)}`
       fbToken = longToken
-      // Photo profil personnel
-      try {
-        const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
-        if (picRes.ok) {
-          const picData = await picRes.json()
-          fbAvatar = picData?.data?.url || null
-        }
-      } catch { /* non critique */ }
+      fbAvatar = null
     }
 
     const tokenExpiresAt = longTokenData.expires_at
