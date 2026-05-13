@@ -10,10 +10,10 @@ const MOCK_GROUPS = [
 
 export function PopularGroups() {
   return (
-    <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+    <div className="card" style={{ padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--t1)' }}>Groupes populaires</span>
-        <Link href="/community" style={{ fontSize: '0.72rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
+        <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--t1)' }}>Groupes populaires</span>
+        <Link href="/community" style={{ fontSize: '0.73rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
           Voir tout <ChevronRight size={12} />
         </Link>
       </div>
@@ -21,15 +21,15 @@ export function PopularGroups() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {MOCK_GROUPS.map(group => (
           <div key={group.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: `${group.color}15`, color: group.color, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
-              <Users size={16} style={{ margin: 'auto' }} />
-              <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '12px', height: '12px', borderRadius: '50%', background: 'var(--card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: `${group.color}15`, color: group.color, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
+              <Users size={17} style={{ margin: 'auto' }} />
+              <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '13px', height: '13px', borderRadius: '50%', background: 'var(--card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: group.color }} />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{group.name}</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{group.name}</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>Groupe {group.type}</span>
                 <span>•</span>
                 <span>{group.members}</span>
@@ -42,7 +42,7 @@ export function PopularGroups() {
         ))}
       </div>
 
-      <button className="act-btn" style={{ marginTop: '0.25rem', width: '100%', padding: '8px', borderRadius: '10px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--t2)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+      <button className="act-btn" style={{ marginTop: '0.25rem', width: '100%', padding: '9px', borderRadius: '10px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--t2)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
         Découvrir d'autres groupes
       </button>
     </div>
