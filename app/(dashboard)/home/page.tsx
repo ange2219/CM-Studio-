@@ -87,17 +87,17 @@ export default function HomePage() {
       </div>
 
       {/* COLUMN 2: WIDGETS */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '24px',
-        position: 'sticky',
-        top: '24px',
-        height: 'max-content',
-        alignSelf: 'start'
-      }} className="hidden xl:flex">
-        <NotificationsPanel />
-        <PopularGroups />
+      <div className="hidden xl:block">
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '24px',
+          position: 'sticky',
+          top: '24px'
+        }}>
+          <NotificationsPanel />
+          <PopularGroups />
+        </div>
       </div>
 
       <WelcomeBanner firstName={firstName} />
