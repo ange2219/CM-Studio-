@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import { z } from 'zod'
 
-const OBJECTIVES = ['vendre', 'engager', 'eduquer', 'inspirer', 'annoncer', 'fideliser'] as const
-
 const Schema = z.object({ brief: z.string().min(3).max(2000) })
 
 const githubAI = new OpenAI({
@@ -26,26 +24,25 @@ export async function POST(req: NextRequest) {
     const completion = await githubAI.chat.completions.create({
       model: 'gpt-4o-mini',
       temperature: 0,
-      max_tokens: 20,
+      max_tokens: 10,
       messages: [
         {
           role: 'system',
-          content: `Tu es un expert en stratégie social media. Analyse le brief ci-dessous et choisis l'objectif le plus adapté parmi ces 6 options :
-- vendre : vendre un produit ou service
-- engager : obtenir des interactions (likes, commentaires, partages)
-- eduquer : partager une connaissance, conseil, information
-- inspirer : créer de l'émotion, de la motivation, de l'aspiration
-- annoncer : communiquer une nouveauté, un événement, un lancement
-- fideliser : renforcer le lien avec la communauté, montrer le côté humain
+          content: `Tu es un expert en stratégie social media. Analyse le brief ci-dessous et détermine l'objectif principal du post en UN SEUL MOT.
 
-Réponds UNIQUEMENT avec un seul mot parmi : vendre, engager, eduquer, inspirer, annoncer, fideliser`,
+Exemples de mots possibles : Vendre, Engager, Éduquer, Inspirer, Annoncer, Fidéliser, Recruter, Promouvoir, Informer, Divertir, Convertir, Sensibiliser, Témoigner, Lancer, Célébrer...
+
+Tu n'es PAS limité à cette liste. Choisis le mot le plus pertinent pour décrire l'intention du brief.
+
+Réponds UNIQUEMENT avec un seul mot, première lettre en majuscule.`,
         },
         { role: 'user', content: brief },
       ],
     })
 
-    const raw = completion.choices[0]?.message?.content?.trim().toLowerCase() ?? ''
-    const objective = OBJECTIVES.find(o => raw.includes(o)) ?? null
+    const raw = completion.choices[0]?.message?.content?.trim() ?? ''
+    // Prendre uniquement le premier mot, nettoyé
+    const objective = raw.split(/\s+/)[0]?.replace(/[^a-zA-ZÀ-ÿ]/g, '') || null
     return NextResponse.json({ objective })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Detection failed'
