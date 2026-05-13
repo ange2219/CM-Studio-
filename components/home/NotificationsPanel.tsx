@@ -10,36 +10,36 @@ const MOCK_NOTIFS = [
 
 export function NotificationsPanel() {
   return (
-    <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+    <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--t1)' }}>Notifications</span>
+          <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--t1)' }}>Notifications</span>
           <div style={{ background: 'var(--red)', color: '#fff', fontSize: '10px', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>2</div>
         </div>
-        <Link href="/notifications" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
+        <Link href="/notifications" style={{ fontSize: '0.72rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
            Voir tout <ChevronRight size={12} />
         </Link>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {MOCK_NOTIFS.map(notif => (
-          <div key={notif.id} style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--s2)', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '100%', height: '100%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'var(--accent)' }}>
+          <div key={notif.id} style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--s2)', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '100%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: 'var(--accent)' }}>
                 {notif.user.slice(0, 2).toUpperCase()}
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--t1)', lineHeight: 1.4 }}>
+              <div style={{ fontSize: '0.76rem', color: 'var(--t1)', lineHeight: 1.35 }}>
                 <span style={{ fontWeight: 700 }}>{notif.user}</span> {notif.text}
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--t3)', marginTop: '2px' }}>{notif.time}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--t3)', marginTop: '1px' }}>{notif.time}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <Link href="/notifications" style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', marginTop: '4px' }}>
+      <Link href="/notifications" style={{ textAlign: 'center', fontSize: '0.76rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
         Voir toutes les notifications
       </Link>
     </div>

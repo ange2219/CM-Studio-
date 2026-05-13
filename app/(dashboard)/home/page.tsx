@@ -94,14 +94,14 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* COLUMN 2: WIDGETS — stays fixed, never scrolls with feed */}
-      <div className="hidden xl:flex sb-scroll" style={{ 
+      {/* COLUMN 2: WIDGETS — stays fixed, no scroll */}
+      <div className="hidden xl:flex" style={{ 
         width: '340px', 
         flexShrink: 0, 
         flexDirection: 'column', 
-        gap: '24px',
-        padding: '24px 0 40px',
-        overflowY: 'auto'
+        gap: '16px',
+        padding: '24px 0 24px',
+        overflow: 'hidden'
       }}>
         <NotificationsPanel />
         <PopularGroups />
