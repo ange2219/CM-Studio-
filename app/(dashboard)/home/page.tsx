@@ -64,16 +64,24 @@ export default function HomePage() {
 
   const firstName = user.full_name?.split(' ')[0] || 'Ulrich'
 
+  const [isMobileHome, setIsMobileHome] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobileHome(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   return (
     <div style={{ 
       display: 'flex', 
       justifyContent: 'center',
-      gap: '32px', 
-      height: 'calc(100vh - 72px - 64px)',
+      gap: isMobileHome ? '0' : '32px', 
+      height: isMobileHome ? 'auto' : 'calc(100vh - 72px - 64px)',
       maxWidth: '1200px', 
       margin: '0 auto', 
       width: '100%',
-      overflow: 'hidden'
+      overflow: isMobileHome ? 'visible' : 'hidden'
     }}>
       
       {/* COLUMN 1: FEED — only this scrolls */}

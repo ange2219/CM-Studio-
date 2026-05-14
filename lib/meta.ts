@@ -95,10 +95,17 @@ export async function refreshFacebookLongLivedToken(currentToken: string): Promi
 
 /** Récupère les Pages Facebook de l'utilisateur */
 export async function getUserPages(accessToken: string) {
-  const res = await fetch(`${GRAPH}/me/accounts?access_token=${accessToken}&fields=id,name,access_token`)
-  if (!res.ok) return []
+  const url = `${GRAPH}/me/accounts?access_token=${accessToken}&fields=id,name,access_token`
+  const res = await fetch(url)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    console.error('[Meta] getUserPages FAILED:', res.status, JSON.stringify(err))
+    return []
+  }
   const data = await res.json()
-  return (data.data || []) as Array<{ id: string; name: string; access_token: string }>
+  const pages = (data.data || []) as Array<{ id: string; name: string; access_token: string }>
+  console.log(`[Meta] getUserPages: ${pages.length} page(s) trouvée(s)`, pages.map(p => ({ id: p.id, name: p.name })))
+  return pages
 }
 
 /** Récupère le profil personnel Facebook (/me) */

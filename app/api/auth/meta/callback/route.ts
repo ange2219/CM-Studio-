@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { exchangeCodeForToken, getLongLivedToken, getLongLivedTokenWithExpiry, getUserPages, getPersonalProfile, getFacebookPageStats } from '@/lib/meta'
+import { exchangeCodeForToken, getLongLivedTokenWithExpiry, getUserPages, getFacebookPageStats } from '@/lib/meta'
 import { encryptToken } from '@/lib/utils'
 
 export async function GET(req: NextRequest) {
@@ -25,39 +25,25 @@ export async function GET(req: NextRequest) {
     const pages = await getUserPages(longToken)
     const admin = createAdminClient()
 
-    let fbId: string
-    let fbName: string
-    let fbToken: string
-    let fbAvatar: string | null = null
-
-    if (pages.length > 0) {
-      const page = pages[0]
-      fbId = page.id
-      fbName = page.name
-      fbToken = page.access_token
-      
-      // Photo de la Page Facebook
-      try {
-        const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
-        if (picRes.ok) {
-          const picData = await picRes.json()
-          fbAvatar = picData?.data?.url || null
-        }
-      } catch { /* non critique */ }
-    } else {
-      const profile = await getPersonalProfile(longToken)
-      fbId = profile.id
-      fbName = profile.name
-      fbToken = longToken
-      // Photo profil personnel
-      try {
-        const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
-        if (picRes.ok) {
-          const picData = await picRes.json()
-          fbAvatar = picData?.data?.url || null
-        }
-      } catch { /* non critique */ }
+    if (pages.length === 0) {
+      console.error('[Meta] Aucune Page Facebook trouvée pour cet utilisateur')
+      return popupResponse({ error: 'Aucune Page Facebook trouvée. Assurez-vous d\'avoir une Page Facebook et d\'avoir autorisé l\'accès à votre Page lors de la connexion.' })
     }
+
+    const page = pages[0]
+    const fbId = page.id
+    const fbName = page.name
+    const fbToken = page.access_token
+    let fbAvatar: string | null = null
+      
+    // Photo de la Page Facebook
+    try {
+      const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
+      if (picRes.ok) {
+        const picData = await picRes.json()
+        fbAvatar = picData?.data?.url || null
+      }
+    } catch { /* non critique */ }
 
     const tokenExpiresAt = longTokenData.expires_at
     await admin.from('social_accounts').delete().eq('user_id', userId).eq('platform', 'facebook')

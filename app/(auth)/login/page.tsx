@@ -191,28 +191,52 @@ export default function LoginPage() {
 
         /* ── Responsive ── */
         @media (max-width: 900px) {
-          .login-page-wrap { flex-direction: column; }
+          .login-page-wrap { flex-direction: column; min-height: 100vh; }
           .login-left {
-            padding: 48px 24px 32px;
+            padding: 48px 24px 24px;
             order: 1;
+            flex: none;
           }
           .login-right {
             width: 100%;
             border-left: none;
             border-top: 1px solid var(--border);
-            padding: 40px 24px 48px;
+            padding: 32px 24px 48px;
             order: 2;
+            flex: none;
           }
-          .phone-illustration { width: 280px; margin-bottom: 24px; }
+          .phone-illustration { width: 240px; margin-bottom: 20px; }
           .login-tagline h1 { font-size: 24px; }
+          .login-tagline p { font-size: 13px; }
         }
         @media (max-width: 480px) {
-          .login-left { padding: 32px 16px 24px; }
-          .login-right { padding: 32px 20px 40px; }
-          .phone-illustration { width: 220px; }
-          .login-tagline h1 { font-size: 20px; }
-          .login-form h2 { font-size: 20px; }
-          .theme-toggle { top: 12px; right: 12px; }
+          .login-page-wrap { 
+            flex-direction: column; 
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            align-items: stretch;
+          }
+          .login-left { 
+            display: none;
+          }
+          .login-right { 
+            padding: 40px 20px 48px;
+            border: none;
+            flex: 1;
+            justify-content: flex-start;
+            padding-top: 60px;
+          }
+          .login-form h2 { font-size: 22px; }
+          .login-form p { font-size: 12px; margin-bottom: 20px; }
+          .login-logo { margin-bottom: 28px; }
+          .logo-mark { width: 34px; height: 34px; font-size: 12px; }
+          .logo-text { font-size: 18px; }
+          .form-input { padding: 11px 14px; font-size: 14px; border-radius: 10px; }
+          .btn-primary { padding: 13px; font-size: 14px; border-radius: 10px; }
+          .btn-social { padding: 11px; font-size: 13px; border-radius: 10px; }
+          .theme-toggle { top: 12px; right: 12px; width: 36px; height: 36px; }
+          .theme-toggle svg { width: 16px; height: 16px; }
         }
       `}</style>
 

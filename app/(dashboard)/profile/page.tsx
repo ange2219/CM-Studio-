@@ -202,75 +202,107 @@ export default function ProfilePage() {
 
   const initials = (fullName || email || 'U').slice(0, 2).toUpperCase()
 
+  const [isMobileProfile, setIsMobileProfile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobileProfile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   return (
-    <div style={{ display: 'flex', minHeight: '100%', margin: '-20px' }}>
-      {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <aside style={{
-        width: '220px', flexShrink: 0,
-        borderRight: '1px solid var(--b1)',
-        padding: '1.5rem 0',
-        position: 'sticky', top: 0, alignSelf: 'flex-start', maxHeight: '100vh', overflowY: 'auto',
-      }}>
-        {/* Avatar + nom */}
-        <div style={{ padding: '0 1.25rem', marginBottom: '1.5rem' }}>
-          <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
-            {avatarUrl
-              ? <img src={avatarUrl} alt="" style={{ width: '52px', height: '52px', borderRadius: '50%', objectFit: 'cover', display: 'block', border: '2px solid var(--b1)' }} />
-              : <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#4646FF22', border: '2px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: '#4646FF' }}>{initials}</div>
-            }
-            <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)', opacity: 0, transition: '.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '1')} onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
-              <Camera size={13} color="#fff" />
-            </div>
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f) }} />
-          </label>
-          <div style={{ marginTop: '.6rem' }}>
-            <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)' }}>{fullName || 'Mon compte'}</div>
-            <div style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
-            <div style={{ marginTop: '.45rem' }}>
-              {userPlan === 'free' && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 700, padding: '.18rem .5rem', borderRadius: '20px', background: 'rgba(150,150,150,0.12)', color: 'var(--t3)', border: '1px solid var(--b1)', letterSpacing: '.04em' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }} />GRATUIT
-                </span>
-              )}
-              {userPlan === 'premium' && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 700, padding: '.18rem .5rem', borderRadius: '20px', background: 'rgba(123,92,245,0.15)', color: '#7B5CF5', border: '1px solid rgba(123,92,245,0.35)', letterSpacing: '.04em' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7B5CF5', flexShrink: 0 }} />PRO
-                </span>
-              )}
-              {userPlan === 'business' && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 700, padding: '.18rem .5rem', borderRadius: '20px', background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.35)', letterSpacing: '.04em' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />BUSINESS
-                </span>
-              )}
-            </div>
+    <div style={{ display: 'flex', flexDirection: isMobileProfile ? 'column' : 'row', minHeight: '100%', margin: isMobileProfile ? '0' : '-20px' }}>
+      {/* ── Sidebar / Mobile Tabs ────────────────────────────────────────── */}
+      {isMobileProfile ? (
+        <div style={{ borderBottom: '1px solid var(--b1)', padding: '12px 0 0', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', padding: '0 12px', WebkitOverflowScrolling: 'touch' }}>
+            {NAV_ITEMS.map(item => {
+              const Icon = item.icon
+              const isActive = active === item.id
+              return (
+                <button key={item.id} onClick={() => setActive(item.id)} style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 14px', background: 'none', border: 'none',
+                  borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                  color: isActive ? 'var(--t1)' : 'var(--t3)',
+                  cursor: 'pointer', fontSize: '.78rem', fontWeight: isActive ? 600 : 400,
+                  transition: '.15s', whiteSpace: 'nowrap', flexShrink: 0,
+                }}>
+                  <Icon size={14} style={{ color: isActive ? 'var(--accent)' : 'var(--t3)' }} />
+                  {item.label}
+                </button>
+              )
+            })}
           </div>
         </div>
+      ) : (
+        <aside style={{
+          width: '220px', flexShrink: 0,
+          borderRight: '1px solid var(--b1)',
+          padding: '1.5rem 0',
+          position: 'sticky', top: 0, alignSelf: 'flex-start', maxHeight: '100vh', overflowY: 'auto',
+        }}>
+          {/* Avatar + nom */}
+          <div style={{ padding: '0 1.25rem', marginBottom: '1.5rem' }}>
+            <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
+              {avatarUrl
+                ? <img src={avatarUrl} alt="" style={{ width: '52px', height: '52px', borderRadius: '50%', objectFit: 'cover', display: 'block', border: '2px solid var(--b1)' }} />
+                : <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#4646FF22', border: '2px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: '#4646FF' }}>{initials}</div>
+              }
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)', opacity: 0, transition: '.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '1')} onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
+                <Camera size={13} color="#fff" />
+              </div>
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f) }} />
+            </label>
+            <div style={{ marginTop: '.6rem' }}>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)' }}>{fullName || 'Mon compte'}</div>
+              <div style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</div>
+              <div style={{ marginTop: '.45rem' }}>
+                {userPlan === 'free' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 700, padding: '.18rem .5rem', borderRadius: '20px', background: 'rgba(150,150,150,0.12)', color: 'var(--t3)', border: '1px solid var(--b1)', letterSpacing: '.04em' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }} />GRATUIT
+                  </span>
+                )}
+                {userPlan === 'premium' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 700, padding: '.18rem .5rem', borderRadius: '20px', background: 'rgba(123,92,245,0.15)', color: '#7B5CF5', border: '1px solid rgba(123,92,245,0.35)', letterSpacing: '.04em' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7B5CF5', flexShrink: 0 }} />PRO
+                  </span>
+                )}
+                {userPlan === 'business' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 700, padding: '.18rem .5rem', borderRadius: '20px', background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.35)', letterSpacing: '.04em' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />BUSINESS
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
-        {/* Nav */}
-        <nav>
-          {NAV_ITEMS.map(item => {
-            const Icon = item.icon
-            const isActive = active === item.id
-            return (
-              <button key={item.id} onClick={() => setActive(item.id)} style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
-                padding: '.55rem 1.25rem', background: 'none', border: 'none',
-                borderLeft: isActive ? '2px solid #4646FF' : '2px solid transparent',
-                color: isActive ? 'var(--t1)' : 'var(--t3)',
-                cursor: 'pointer', fontSize: '.83rem', fontWeight: isActive ? 600 : 400,
-                transition: '.15s', textAlign: 'left',
-              }}>
-                <Icon size={14} style={{ flexShrink: 0, color: isActive ? '#4646FF' : 'var(--t3)' }} />
-                {item.label}
-              </button>
-            )
-          })}
-        </nav>
-      </aside>
+          {/* Nav */}
+          <nav>
+            {NAV_ITEMS.map(item => {
+              const Icon = item.icon
+              const isActive = active === item.id
+              return (
+                <button key={item.id} onClick={() => setActive(item.id)} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
+                  padding: '.55rem 1.25rem', background: 'none', border: 'none',
+                  borderLeft: isActive ? '2px solid #4646FF' : '2px solid transparent',
+                  color: isActive ? 'var(--t1)' : 'var(--t3)',
+                  cursor: 'pointer', fontSize: '.83rem', fontWeight: isActive ? 600 : 400,
+                  transition: '.15s', textAlign: 'left',
+                }}>
+                  <Icon size={14} style={{ flexShrink: 0, color: isActive ? '#4646FF' : 'var(--t3)' }} />
+                  {item.label}
+                </button>
+              )
+            })}
+          </nav>
+        </aside>
+      )}
 
       {/* ── Contenu ──────────────────────────────────────────────────────────── */}
-      <main style={{ flex: 1, padding: '2rem 2.5rem', maxWidth: '680px' }}>
+      <main style={{ flex: 1, padding: isMobileProfile ? '1rem 0' : '2rem 2.5rem', maxWidth: '680px' }}>
 
         {/* ── Informations personnelles ─────────────────────────── */}
         {active === 'personal' && (
@@ -435,13 +467,21 @@ export default function ProfilePage() {
 // ── Composants locaux ──────────────────────────────────────────────────────────
 
 function Row({ label, desc, children }: { label: string; desc?: string; children: React.ReactNode }) {
+  const [isMobileRow, setIsMobileRow] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobileRow(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '1rem', alignItems: 'start', padding: '1rem 0', borderBottom: '1px solid var(--b1)' }}>
+    <div style={{ display: isMobileRow ? 'flex' : 'grid', flexDirection: 'column', gridTemplateColumns: '1fr 1.4fr', gap: isMobileRow ? '.5rem' : '1rem', alignItems: 'start', padding: '1rem 0', borderBottom: '1px solid var(--b1)' }}>
       <div>
         <div style={{ fontSize: '.83rem', fontWeight: 500, color: 'var(--t1)' }}>{label}</div>
         {desc && <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginTop: '.25rem', lineHeight: 1.5 }}>{desc}</div>}
       </div>
-      <div>{children}</div>
+      <div style={{ width: '100%' }}>{children}</div>
     </div>
   )
 }

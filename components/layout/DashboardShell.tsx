@@ -6,8 +6,19 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, BarChart3, Users, MessageCircle, Search, Plus, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle, Moon, Sun, Menu
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle, Moon, Sun, Menu, X, Calendar
 } from 'lucide-react'
+
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < breakpoint)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [breakpoint])
+  return isMobile
+}
 
 export function DashboardShell({ user: initialUser, children }: { 
   user: any
@@ -21,6 +32,18 @@ export function DashboardShell({ user: initialUser, children }: {
   const [theme, setTheme] = useState('dark')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const profileRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
+
+  // On mobile, sidebar is closed by default and acts as overlay
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false)
+    else setSidebarOpen(true)
+  }, [isMobile])
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false)
+  }, [pathname, isMobile])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -67,14 +90,58 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Community', icon: Users, href: '/community' },
   ]
 
+  const bottomNavItems = [
+    { label: 'Home', icon: Home, href: '/home' },
+    { label: 'Contenu', icon: Layout, href: '/posts' },
+    { label: 'Messages', icon: MessageCircle, href: '/messages' },
+    { label: 'Calendrier', icon: Calendar, href: '/calendar' },
+    { label: 'Profil', icon: User, href: '/profile' },
+  ]
+
   return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
       
-      {/* Sidebar - Clean Version */}
-      <div className="sb-scroll" style={{ width: sidebarOpen ? '260px' : '0px', opacity: sidebarOpen ? 1 : 0, background: 'var(--sidebar-bg)', borderRight: sidebarOpen ? '1px solid var(--b1)' : 'none', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', transition: 'all 0.3s ease' }}>
-        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
-          <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
+      {/* Mobile Overlay Backdrop */}
+      {isMobile && sidebarOpen && (
+        <div 
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(4px)', zIndex: 40,
+            animation: 'fadeIn 0.2s ease',
+          }} 
+        />
+      )}
+
+      {/* Sidebar */}
+      <div 
+        className="sb-scroll" 
+        style={{ 
+          width: (sidebarOpen || isMobile) ? '260px' : '0px', 
+          opacity: sidebarOpen ? 1 : 0,
+          background: 'var(--sidebar-bg)', 
+          borderRight: sidebarOpen ? '1px solid var(--b1)' : 'none', 
+          display: 'flex', flexDirection: 'column', flexShrink: 0, 
+          overflowY: 'auto', overflowX: 'hidden', 
+          transition: isMobile ? 'transform 0.3s ease' : 'all 0.3s ease',
+          ...(isMobile ? {
+            position: 'fixed', top: 0, left: 0, bottom: 0,
+            zIndex: 50, width: '280px', opacity: 1,
+            transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+            boxShadow: sidebarOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none',
+          } : {}),
+        }}
+      >
+        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
+            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
+          </div>
+          {isMobile && (
+            <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex' }}>
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         <div style={{ flex: 1, padding: '0 12px' }}>
@@ -92,32 +159,53 @@ export function DashboardShell({ user: initialUser, children }: {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: isMobile ? '64px' : 0 }}>
         
-        {/* Header - Fixed & Centered Search */}
-        <header style={{ height: '72px', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: '24px', flexShrink: 0 }}>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '8px', transition: '0.2s' }}>
-            <Menu size={22} />
+        {/* Header */}
+        <header style={{ 
+          height: isMobile ? '56px' : '72px', 
+          borderBottom: '1px solid var(--b1)', 
+          display: 'flex', alignItems: 'center', 
+          padding: isMobile ? '0 12px' : '0 32px', 
+          gap: isMobile ? '8px' : '24px', 
+          flexShrink: 0 
+        }}>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '8px', transition: '0.2s', flexShrink: 0 }}>
+            <Menu size={isMobile ? 20 : 22} />
           </button>
 
-          <div style={{ position: 'relative', flex: 1, maxWidth: '500px', margin: '0 auto' }}>
-            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
-            <input type="text" placeholder="Rechercher sur CM Studio..." style={{ width: '100%', height: '44px', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '0 16px 0 48px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }} />
-          </div>
+          {/* Search bar - hidden on mobile */}
+          {!isMobile && (
+            <div style={{ position: 'relative', flex: 1, maxWidth: '500px', margin: '0 auto' }}>
+              <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
+              <input type="text" placeholder="Rechercher sur CM Studio..." style={{ width: '100%', height: '44px', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '0 16px 0 48px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }} />
+            </div>
+          )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {/* Mobile: show page title */}
+          {isMobile && (
+            <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              CM Studio
+            </span>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px', flexShrink: 0 }}>
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} style={{ width: isMobile ? '34px' : '40px', height: isMobile ? '34px' : '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {theme === 'dark' ? <Sun size={isMobile ? 16 : 20} /> : <Moon size={isMobile ? 16 : 20} />}
             </button>
-            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={20} /></button>
-            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={20} /></button>
+            {!isMobile && (
+              <>
+                <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={20} /></button>
+                <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={20} /></button>
+              </>
+            )}
             
-            <div ref={profileRef} style={{ position: 'relative', marginLeft: '8px' }}>
+            <div ref={profileRef} style={{ position: 'relative', marginLeft: isMobile ? '0' : '8px' }}>
               <button 
                 onClick={() => setProfileOpen(!profileOpen)}
                 style={{ 
-                  width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', border: '2px solid rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden'
+                  width: isMobile ? '32px' : '38px', height: isMobile ? '32px' : '38px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', border: '2px solid rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0
                 }}
               >
                 {user?.avatar_url ? <img src={user.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : initials}
@@ -159,15 +247,43 @@ export function DashboardShell({ user: initialUser, children }: {
           </div>
         </header>
 
-        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 12px' : '32px' }}>
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          height: '64px', background: 'var(--sidebar-bg)',
+          borderTop: '1px solid var(--b1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+          zIndex: 30, padding: '0 4px',
+          backdropFilter: 'blur(12px)',
+        }}>
+          {bottomNavItems.map(item => {
+            const active = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href))
+            return (
+              <Link key={item.href} href={item.href} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '3px', flex: 1, padding: '6px 0',
+                textDecoration: 'none', color: active ? 'var(--accent)' : 'var(--text3)',
+                transition: 'color 0.15s',
+              }}>
+                <item.icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                <span style={{ fontSize: '0.6rem', fontWeight: active ? 600 : 500 }}>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      )}
 
       <style jsx>{`
         .sb-scroll::-webkit-scrollbar { width: 4px; }
         .sb-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
         .sb-scroll:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
     </div>
   )
