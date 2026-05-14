@@ -149,7 +149,13 @@ export function TopNav({
               />
               <div className="profile-dropdown">
                 <div className="dropdown-header">
-                  <div className="av-large">{initials}</div>
+                  <div className="av-large" style={{ overflow: 'hidden' }}>
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      initials
+                    )}
+                  </div>
                   <div className="u-info">
                     <div className="u-name">{user.full_name || 'Utilisateur'}</div>
                     <div className="u-email">{user.email}</div>
