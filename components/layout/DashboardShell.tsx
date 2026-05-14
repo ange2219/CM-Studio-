@@ -5,8 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { 
-  Home, Layout, BarChart3, Users, MessageCircle, Search, Plus, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, HelpCircle, Moon, Sun, Menu, X, Calendar
+  Home, Layout, BarChart3, Users, MessageCircle, Search, Bell,
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X, Calendar
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
