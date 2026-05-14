@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
     platform,
     is_active:            true,
     platform_username:    platformUsername,
+    platform_avatar_url:  platformAvatarUrl,
     connected_via:        connectedVia,
   }
   if (!hasMetaToken) {
