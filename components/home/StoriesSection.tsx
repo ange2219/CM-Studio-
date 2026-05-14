@@ -14,8 +14,7 @@ const MOCK_STORIES = [
 
 export function StoriesSection() {
   return (
-    <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-      <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+    <div className="scrollbar-hide" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
       
       {/* Ajouter Story */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0, cursor: 'pointer' }}>

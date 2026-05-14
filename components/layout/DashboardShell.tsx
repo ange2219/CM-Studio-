@@ -263,7 +263,7 @@ export function DashboardShell({ user: initialUser, children }: {
           backdropFilter: 'blur(12px)',
         }}>
           {bottomNavItems.map(item => {
-            const active = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href))
+            const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
             return (
               <Link key={item.href} href={item.href} style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
