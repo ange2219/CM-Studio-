@@ -49,6 +49,7 @@ CREATE TABLE public.social_accounts (
   platform            TEXT NOT NULL CHECK (platform IN ('instagram','facebook','tiktok','twitter','linkedin','youtube','pinterest')),
   platform_user_id    TEXT NOT NULL,
   platform_username   TEXT NOT NULL,
+  platform_avatar_url TEXT,
   access_token        TEXT,         -- chiffré
   refresh_token       TEXT,         -- chiffré
   token_expires_at    TIMESTAMPTZ,
