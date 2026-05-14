@@ -15,6 +15,15 @@ export default function HomePage() {
   const [initialLikedIds, setInitialLikedIds] = useState<string[]>([])
   const supabase = createClient()
 
+  const [isMobileHome, setIsMobileHome] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobileHome(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   useEffect(() => {
     document.title = 'Accueil — CM Studio'
     async function init() {
@@ -63,14 +72,6 @@ export default function HomePage() {
   )
 
   const firstName = user.full_name?.split(' ')[0] || 'Ulrich'
-
-  const [isMobileHome, setIsMobileHome] = useState(false)
-  useEffect(() => {
-    const check = () => setIsMobileHome(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
 
   return (
     <div style={{ 
