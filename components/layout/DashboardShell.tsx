@@ -85,8 +85,8 @@ export function DashboardShell({ user: initialUser, children }: {
   const navItems = [
     { label: 'Home', icon: Home, href: '/home' },
     { label: 'Workspace', icon: Layout, href: '/posts' },
+    { label: 'Notifications', icon: Bell, href: '/notifications' },
     { label: 'Messagerie', icon: MessageCircle, href: '/messages' },
-    { label: 'Analytics', icon: BarChart3, href: '/analytics' },
     { label: 'Community', icon: Users, href: '/community' },
   ]
 
@@ -193,12 +193,8 @@ export function DashboardShell({ user: initialUser, children }: {
             <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} style={{ width: isMobile ? '34px' : '40px', height: isMobile ? '34px' : '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {theme === 'dark' ? <Sun size={isMobile ? 16 : 20} /> : <Moon size={isMobile ? 16 : 20} />}
             </button>
-            {!isMobile && (
-              <>
-                <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageCircle size={20} /></button>
-                <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={20} /></button>
-              </>
-            )}
+            {/* Redundant message/notification icons removed as per user request */}
+            
             
             <div ref={profileRef} style={{ position: 'relative', marginLeft: isMobile ? '0' : '8px' }}>
               <button 
