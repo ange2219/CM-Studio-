@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown } from 'lucide-react'
+import { 
+  Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, 
+  RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, 
+  PenLine, ChevronDown, PenBox, Calendar, BarChart3, Lightbulb,
+  Search, Filter, Image as ImageIcon, Zap, FileText, Download, Settings,
+  MoreHorizontal, MessageCircle, Share2, Heart, TrendingUp, AlertCircle
+} from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 
@@ -15,21 +21,9 @@ function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number
     case 'linkedin': return <IconLinkedIn size={size} />
     case 'youtube': return <IconYouTube size={size} />
     case 'pinterest': return <IconPinterest size={size} />
-    default: return <span style={{ width: size, height: size, borderRadius: '4px', background: PLATFORM_COLORS[platform] || '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.5rem', fontWeight: 700, color: '#fff' }}>{platform.slice(0, 2).toUpperCase()}</span>
+    default: return <span style={{ width: size, height: size, borderRadius: '4px', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.5rem', fontWeight: 700, color: '#fff' }}>{platform.slice(0, 2).toUpperCase()}</span>
   }
 }
-
-const DELETE_COOLDOWN_MS = 5 * 60 * 1000
-
-const PLATFORM_COLORS: Record<string, string> = {
-  instagram: '#E1306C', facebook: '#1877F2', tiktok: '#000',
-  twitter: '#1DA1F2', linkedin: '#0077B5', youtube: '#FF0000', pinterest: '#E60023',
-}
-const PLATFORM_SHORT: Record<string, string> = {
-  instagram: 'IG', facebook: 'FB', tiktok: 'TK', twitter: 'X', linkedin: 'LI', youtube: 'YT', pinterest: 'PT',
-}
-const ALL_PLATFORMS = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
-const FREE_PLATFORMS = ['instagram', 'facebook']
 
 function stClass(s: string) {
   if (s === 'draft' || s === 'failed') return 'st st-p'
@@ -46,34 +40,6 @@ function stLabel(s: string) {
   if (s === 'partial')   return 'Partiel'
   if (s === 'deleted')   return 'Supprimé'
   return 'Brouillon'
-}
-
-function groupPostsByDate(posts: Post[]): { label: string; posts: Post[] }[] {
-  const now = new Date()
-  const today     = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const yesterday = new Date(today.getTime() - 86_400_000)
-  const weekAgo   = new Date(today.getTime() - 6 * 86_400_000)
-  const monthAgo  = new Date(today.getTime() - 30 * 86_400_000)
-
-  const groups: { label: string; posts: Post[] }[] = [
-    { label: "Aujourd'hui", posts: [] },
-    { label: 'Hier', posts: [] },
-    { label: 'Cette semaine', posts: [] },
-    { label: 'Ce mois', posts: [] },
-    { label: 'Plus ancien', posts: [] },
-  ]
-
-  for (const post of posts) {
-    const d   = new Date(post.created_at)
-    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-    if      (day >= today)     groups[0].posts.push(post)
-    else if (day >= yesterday) groups[1].posts.push(post)
-    else if (day >= weekAgo)   groups[2].posts.push(post)
-    else if (day >= monthAgo)  groups[3].posts.push(post)
-    else                       groups[4].posts.push(post)
-  }
-
-  return groups.filter(g => g.posts.length > 0)
 }
 
 interface PostAnalytics {
@@ -93,43 +59,193 @@ interface Post {
   created_at: string
   scheduled_at: string | null
   analytics: PostAnalytics | null
-  meta_post_ids?: Record<string, string> | null
-  platform_errors?: Record<string, string> | null
 }
 
-function InsightsBadge({ a }: { a: PostAnalytics | null }) {
-  const fmt = (n: number) => n > 1000 ? (n / 1000).toFixed(1) + 'K' : String(n)
+function QuickActionCard({ 
+  title, description, icon: Icon, color, btnLabel, onClick 
+}: { 
+  title: string; description: string; icon: any; color: string; btnLabel: string; onClick: () => void 
+}) {
   return (
     <div style={{
-      position: 'absolute', inset: 0,
-      background: 'rgba(0,0,0,.82)', backdropFilter: 'blur(4px)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: '.5rem', padding: '.75rem',
-      opacity: 0, transition: 'opacity .18s ease',
-      zIndex: 5,
-    }} className="insights-overlay">
-      {a ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.4rem .8rem', width: '100%' }}>
-          {[
-            { icon: '❤️', label: 'Likes',       val: fmt(a.likes) },
-            { icon: '💬', label: 'Commentaires', val: fmt(a.comments) },
-            { icon: '↗️', label: 'Partages',     val: fmt(a.shares) },
-            { icon: '👁️', label: 'Impressions',  val: fmt(a.impressions) },
-          ].map(item => (
-            <div key={item.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '.95rem' }}>{item.icon}</div>
-              <div style={{ fontSize: '.78rem', fontWeight: 700, color: 'var(--t1)', lineHeight: 1 }}>{item.val}</div>
-              <div style={{ fontSize: '.58rem', color: 'var(--t3)' }}>{item.label}</div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.2rem' }}>📊</div>
-          <div style={{ fontSize: '.68rem', color: 'var(--t3)' }}>Pas encore de données</div>
-        </div>
-      )}
+      background: 'var(--card)',
+      border: '1px solid var(--b1)',
+      borderRadius: '20px',
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      cursor: 'default',
+    }} className="hover-lift">
+      <div style={{
+        width: '48px',
+        height: '48px',
+        borderRadius: '12px',
+        background: `${color}15`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: color
+      }}>
+        <Icon size={24} />
+      </div>
+      <div>
+        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '4px', fontFamily: "'Syne', sans-serif" }}>{title}</h3>
+        <p style={{ fontSize: '0.82rem', color: 'var(--t3)', lineHeight: 1.5 }}>{description}</p>
+      </div>
+      <button 
+        onClick={onClick}
+        style={{
+          marginTop: 'auto',
+          background: `${color}10`,
+          border: `1px solid ${color}25`,
+          color: color,
+          padding: '12px 16px',
+          borderRadius: '12px',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          transition: 'all 0.2s',
+          fontFamily: "'DM Sans', sans-serif"
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = color;
+          e.currentTarget.style.color = '#fff';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = `${color}10`;
+          e.currentTarget.style.color = color;
+        }}
+      >
+        {btnLabel} <span style={{ fontSize: '1rem' }}>→</span>
+      </button>
     </div>
+  )
+}
+
+function PostCard({ post, onClick, onSelect, isSelected }: { post: Post; onClick: () => void; onSelect: () => void; isSelected: boolean }) {
+  const stats = post.analytics || { likes: 0, comments: 0, shares: 0 }
+  const hasImage = post.media_urls?.[0]
+  
+  return (
+    <div 
+      onClick={onClick}
+      style={{
+        background: 'var(--card)',
+        border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`,
+        borderRadius: '20px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        boxShadow: isSelected ? '0 0 0 1px var(--accent), 0 8px 24px var(--shadow)' : 'none'
+      }}
+      className="post-card-hover"
+    >
+      <div style={{ position: 'relative', height: '180px', background: 'var(--s2)' }}>
+        {hasImage ? (
+          <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t3)', opacity: 0.3 }}>
+            <ImageIcon size={40} />
+          </div>
+        )}
+        
+        {/* Checkbox Overlay */}
+        <div style={{ position: 'absolute', top: '14px', left: '14px' }} onClick={(e) => { e.stopPropagation(); onSelect(); }}>
+          <div style={{ 
+            width: '22px', height: '22px', borderRadius: '7px', 
+            background: isSelected ? 'var(--accent)' : 'rgba(0,0,0,0.35)', 
+            border: `1.5px solid ${isSelected ? 'var(--accent)' : 'rgba(255,255,255,0.45)'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(10px)', transition: 'all 0.2s'
+          }}>
+            {isSelected && <CheckSquare size={14} color="#fff" strokeWidth={3} />}
+          </div>
+        </div>
+
+        {/* Platform Icons Overlay */}
+        <div style={{ position: 'absolute', top: '14px', right: '14px' }}>
+          <div style={{ 
+            padding: '7px', borderRadius: '10px', 
+            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)',
+            display: 'flex', gap: '5px', border: '1px solid rgba(255,255,255,0.15)'
+          }}>
+            {post.platforms.map(p => <PlatformIcon key={p} platform={p} size={15} />)}
+          </div>
+        </div>
+
+        {/* Status Badge */}
+        <div style={{ position: 'absolute', bottom: '14px', left: '14px' }}>
+          <span className={stClass(post.status)} style={{ 
+            fontSize: '0.65rem', padding: '4px 10px', borderRadius: '7px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' 
+          }}>
+            {stLabel(post.status)}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <p style={{ 
+          fontSize: '0.88rem', color: 'var(--t1)', fontWeight: 600, lineHeight: 1.5,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+        }}>
+          {post.content || "Sans titre"}
+        </p>
+
+        <div style={{ marginTop: 'auto' }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--t3)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Calendar size={12} opacity={0.6} />
+            {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+            {post.scheduled_at && ` • ${new Date(post.scheduled_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--b1)', paddingTop: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: 'var(--t2)', fontWeight: 500 }}>
+              <Heart size={14} /> {stats.likes}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: 'var(--t2)', fontWeight: 500 }}>
+              <MessageCircle size={14} /> {stats.comments}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: 'var(--t2)', fontWeight: 500 }}>
+              <Share2 size={14} /> {stats.shares}
+            </div>
+            <div style={{ marginLeft: 'auto' }}>
+              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', padding: '4px' }}>
+                <MoreHorizontal size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ToolItem({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '12px',
+        padding: '12px 20px', borderRadius: '14px',
+        background: 'transparent', border: '1px solid transparent',
+        color: 'var(--t2)', fontSize: '0.88rem', cursor: 'pointer',
+        transition: 'all 0.2s', flex: 1, minWidth: '200px',
+        textAlign: 'left', fontWeight: 500
+      }}
+      className="tool-item-hover"
+    >
+      <Icon size={20} opacity={0.7} />
+      <span>{label}</span>
+    </button>
   )
 }
 
@@ -139,141 +255,16 @@ export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'scheduled'>('all')
+  const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'scheduled' | 'archived'>('all')
   const [view, setView] = useState<'grid' | 'list'>('grid')
-  const [publishing, setPublishing] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState<string | null>(null)
-  const [restoring, setRestoring] = useState<string | null>(null)
-  const [syncing, setSyncing] = useState(false)
-  const [userPlan, setUserPlan] = useState<'free' | 'premium' | 'business'>('free')
-  const [confirmId, setConfirmId] = useState<string | null>(null)
-  const [password, setPassword] = useState('')
-  const [showPw, setShowPw] = useState(false)
-  const [pwLoading, setPwLoading] = useState(false)
-  const lastDeletedAt = useRef<number | null>(null)
-
-  // Modal visualisation/édition
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
-  const [editContent, setEditContent] = useState('')
-  const [editPlatforms, setEditPlatforms] = useState<string[]>([])
-  const [editMediaUrl, setEditMediaUrl] = useState<string | null>(null)
-  const [uploadingMedia, setUploadingMedia] = useState(false)
-  const [saving, setSaving] = useState(false)
-
-  // Édition post publié (Facebook)
-  const [fbEditMode, setFbEditMode] = useState(false)
-  const [fbSaving, setFbSaving] = useState(false)
-
-  // Commentaires
-  const [showComments, setShowComments] = useState(false)
-  const [commentsData, setCommentsData] = useState<Array<{ platform: string; comments: any[] }>>([])
-  const [commentsLoading, setCommentsLoading] = useState(false)
-  const [commentsError, setCommentsError] = useState<string | null>(null)
-  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({})
-  const [replying, setReplying] = useState<string | null>(null)
-
-  // Multi-sélection (permanent checkboxes — no selectMode toggle needed)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkDeleting, setBulkDeleting] = useState(false)
-
-  // Dropdown menu "+"
-  const [plusMenuOpen, setPlusMenuOpen] = useState(false)
-  const plusMenuRef = useRef<HTMLDivElement>(null)
-
-  // Filtre par plateforme
-  const [platformFilter, setPlatformFilter] = useState<string | null>(null)
-  const [pfMenuOpen, setPfMenuOpen] = useState(false)
-  const pfMenuRef = useRef<HTMLDivElement>(null)
-
-  // Pending results banner
-  const [hasPendingResults, setHasPendingResults] = useState(false)
-
-  useEffect(() => {
-    function handleOutsideClick(e: MouseEvent) {
-      if (plusMenuRef.current && !plusMenuRef.current.contains(e.target as Node)) {
-        setPlusMenuOpen(false)
-      }
-    }
-    if (plusMenuOpen) document.addEventListener('mousedown', handleOutsideClick)
-    return () => document.removeEventListener('mousedown', handleOutsideClick)
-  }, [plusMenuOpen])
-
-  useEffect(() => {
-    function handleOutsidePf(e: MouseEvent) {
-      if (pfMenuRef.current && !pfMenuRef.current.contains(e.target as Node)) setPfMenuOpen(false)
-    }
-    if (pfMenuOpen) document.addEventListener('mousedown', handleOutsidePf)
-    return () => document.removeEventListener('mousedown', handleOutsidePf)
-  }, [pfMenuOpen])
-
-  function toggleSelect(id: string) {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
-  function toggleSelectAll() {
-    if (selectedIds.size === filtered.length) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(filtered.map(p => p.id)))
-    }
-  }
-
-  function clearSelection() {
-    setSelectedIds(new Set())
-  }
-
-  async function bulkDelete() {
-    if (selectedIds.size === 0) return
-    const needsPassword = !lastDeletedAt.current || Date.now() - lastDeletedAt.current >= DELETE_COOLDOWN_MS
-    if (needsPassword) {
-      setBulkConfirm(true)
-      setPassword('')
-      return
-    }
-    await doBulkDelete()
-  }
-
-  const [bulkConfirm, setBulkConfirm] = useState(false)
-
-  async function confirmBulkDelete() {
-    setPwLoading(true)
-    try {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user?.email) throw new Error('Non connecté')
-      const { error } = await supabase.auth.signInWithPassword({ email: user.email, password })
-      if (error) throw new Error('Mot de passe incorrect')
-      setBulkConfirm(false)
-      setPassword('')
-      await doBulkDelete()
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
-    } finally {
-      setPwLoading(false)
-    }
-  }
-
-  async function doBulkDelete() {
-    setBulkDeleting(true)
-    const ids = Array.from(selectedIds)
-    try {
-      await Promise.all(ids.map(id => fetch(`/api/posts/${id}`, { method: 'DELETE' })))
-      toast(`${ids.length} post${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`, 'success')
-      lastDeletedAt.current = Date.now()
-      setPosts(prev => prev.filter(p => !ids.includes(p.id)))
-      setTotal(prev => prev - ids.length)
-      clearSelection()
-    } catch {
-      toast('Erreur lors de la suppression', 'error')
-    } finally {
-      setBulkDeleting(false)
-    }
-  }
+  
+  // Logic for existing features
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   function loadPosts(): Promise<void> {
     setLoading(true)
@@ -283,58 +274,10 @@ export default function PostsPage() {
       .catch(() => setLoading(false))
   }
 
-  async function restorePost(id: string) {
-    setRestoring(id)
-    try {
-      const res = await fetch(`/api/posts/${id}`, { method: 'PATCH' })
-      if (!res.ok) throw new Error('Erreur restauration')
-      toast('Post restauré en brouillon', 'success')
-      setPosts(prev => prev.map(p => p.id === id ? { ...p, status: 'draft' } : p))
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
-    } finally {
-      setRestoring(null)
-    }
-  }
-
-  async function hardDelete(id: string) {
-    try {
-      await fetch(`/api/posts/${id}/destroy`, { method: 'DELETE' })
-      setPosts(prev => prev.filter(p => p.id !== id))
-      setTotal(prev => prev - 1)
-      if (selectedPost?.id === id) closePost()
-      toast('Post supprimé définitivement', 'success')
-    } catch { /* ignore */ }
-  }
-
-  async function syncPlatforms() {
-    setSyncing(true)
-    try {
-      const res = await fetch('/api/posts/sync', { method: 'POST' })
-      const d = await res.json()
-      if (d.updated > 0) toast(`${d.updated} post(s) mis à jour depuis les plateformes`, 'success')
-      else toast('Tout est à jour', 'success')
-      loadPosts()
-    } catch {
-      toast('Erreur de synchronisation', 'error')
-    } finally {
-      setSyncing(false)
-    }
-  }
-
   useEffect(() => {
     loadPosts().then(() => {
-      // Auto-sync analytics silently on first load
-      fetch('/api/posts/sync', { method: 'POST' })
-        .then(r => r.json())
-        .then(d => { if (d.updated > 0) loadPosts() })
-        .catch(() => {})
+      fetch('/api/posts/sync', { method: 'POST' }).catch(() => {})
     })
-    fetch('/api/auth/me').then(r => r.json()).then(d => { if (d) setUserPlan('business') }).catch(() => {})
-    // Check for pending generated results in sessionStorage
-    try {
-      if (sessionStorage.getItem('social_ia_results')) setHasPendingResults(true)
-    } catch {}
   }, [])
 
   function openPost(post: Post) {
@@ -364,36 +307,6 @@ export default function PostsPage() {
     }
     setSelectedPost(post)
     setEditContent(post.content)
-    setEditPlatforms([...post.platforms])
-    setEditMediaUrl(post.media_urls?.[0] || null)
-  }
-
-  function closePost() {
-    setSelectedPost(null)
-    setEditContent('')
-    setEditPlatforms([])
-    setEditMediaUrl(null)
-    setFbEditMode(false)
-    setShowComments(false)
-    setCommentsData([])
-    setCommentsError(null)
-    setReplyTexts({})
-  }
-
-  async function handleMediaUpload(file: File) {
-    setUploadingMedia(true)
-    try {
-      const fd = new FormData()
-      fd.append('file', file)
-      const res = await fetch('/api/upload', { method: 'POST', body: fd })
-      const d = await res.json()
-      if (!res.ok) throw new Error(d.error)
-      setEditMediaUrl(d.url)
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur upload', 'error')
-    } finally {
-      setUploadingMedia(false)
-    }
   }
 
   async function saveEdit() {
@@ -403,129 +316,16 @@ export default function PostsPage() {
       const res = await fetch(`/api/posts/${selectedPost.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: editContent, platforms: editPlatforms, media_urls: editMediaUrl ? [editMediaUrl] : [] }),
+        body: JSON.stringify({ content: editContent }),
       })
       if (!res.ok) throw new Error('Erreur de sauvegarde')
       toast('Brouillon mis à jour', 'success')
-      const updatedMediaUrls = editMediaUrl ? [editMediaUrl] : []
-      setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, content: editContent, platforms: editPlatforms, media_urls: updatedMediaUrls } : p))
-      setSelectedPost(prev => prev ? { ...prev, content: editContent, platforms: editPlatforms, media_urls: updatedMediaUrls } : null)
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
+      setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, content: editContent } : p))
+      setSelectedPost(null)
+    } catch (err: any) {
+      toast(err.message, 'error')
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function loadComments(postId: string) {
-    setCommentsLoading(true)
-    setCommentsError(null)
-    try {
-      const res = await fetch(`/api/posts/${postId}/comments`)
-      const d = await res.json()
-      setCommentsData(d.results || [])
-      // Surface first error from any platform
-      const firstError = (d.results || []).find((r: any) => r.error)?.error
-      if (firstError) setCommentsError(firstError)
-    } catch {
-      setCommentsError('Impossible de charger les commentaires')
-    } finally {
-      setCommentsLoading(false)
-    }
-  }
-
-  async function sendReply(platform: string, commentId: string) {
-    const msg = replyTexts[commentId]?.trim()
-    if (!msg || !selectedPost) return
-    setReplying(commentId)
-    try {
-      const res = await fetch(`/api/posts/${selectedPost.id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platform, commentId, message: msg }),
-      })
-      if (!res.ok) {
-        const d = await res.json()
-        throw new Error(d.error)
-      }
-      toast('Réponse envoyée', 'success')
-      setReplyTexts(prev => { const n = { ...prev }; delete n[commentId]; return n })
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
-    } finally {
-      setReplying(null)
-    }
-  }
-
-  async function editFbPost() {
-    if (!selectedPost) return
-    setFbSaving(true)
-    try {
-      const res = await fetch(`/api/posts/${selectedPost.id}/edit-published`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: editContent }),
-      })
-      const d = await res.json()
-      if (!res.ok) throw new Error(d.error)
-      toast('Post modifié sur Facebook', 'success')
-      setPosts(prev => prev.map(p => p.id === selectedPost.id ? { ...p, content: editContent } : p))
-      setSelectedPost(prev => prev ? { ...prev, content: editContent } : null)
-      setFbEditMode(false)
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
-    } finally {
-      setFbSaving(false)
-    }
-  }
-
-  async function publishPost(post: Post, closeModal = false) {
-    const effectiveMediaUrls = editMediaUrl ? [editMediaUrl] : post.media_urls
-    if (post.platforms.includes('instagram') && (!effectiveMediaUrls || effectiveMediaUrls.length === 0)) {
-      toast('Veuillez ajouter une image pour Instagram.', 'warning')
-      return
-    }
-    setPublishing(post.id)
-    try {
-      const res = await fetch(`/api/posts/${post.id}/publish`, { method: 'POST' })
-      const d = await res.json()
-      if (!res.ok) throw new Error(d.error)
-      toast('Post publié !', 'success')
-      if (closeModal) closePost()
-      loadPosts()
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur de publication', 'error')
-    } finally {
-      setPublishing(null)
-    }
-  }
-
-  function askDelete(id: string) {
-    if (lastDeletedAt.current && Date.now() - lastDeletedAt.current < DELETE_COOLDOWN_MS) {
-      doDelete(id)
-    } else {
-      setConfirmId(id)
-      setPassword('')
-    }
-  }
-
-  async function confirmDelete() {
-    if (!confirmId) return
-    setPwLoading(true)
-    try {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user?.email) throw new Error('Non connecté')
-      const { error } = await supabase.auth.signInWithPassword({ email: user.email, password })
-      if (error) throw new Error('Mot de passe incorrect')
-      await doDelete(confirmId)
-      setConfirmId(null)
-      setPassword('')
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
-    } finally {
-      setPwLoading(false)
     }
   }
 
@@ -535,733 +335,320 @@ export default function PostsPage() {
       const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Erreur suppression')
       toast('Post supprimé', 'success')
-      lastDeletedAt.current = Date.now()
       setPosts(prev => prev.filter(p => p.id !== id))
-      setTotal(prev => prev - 1)
-      if (selectedPost?.id === id) closePost()
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
+      setSelectedPost(null)
+    } catch (err: any) {
+      toast(err.message, 'error')
     } finally {
       setDeleting(null)
     }
   }
 
-  // Unique platforms across all loaded posts (for the platform filter dropdown)
-  const availablePlatforms = [...new Set(posts.flatMap(p => p.platforms))].sort()
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
-  // Failed posts appear under "Brouillons" filter; partial appears under "Publiés"
-  const baseFiltered =
-    filter === 'all'       ? posts.filter(p => p.status !== 'deleted') :
-    filter === 'draft'     ? posts.filter(p => p.status === 'draft' || p.status === 'failed') :
-    filter === 'published' ? posts.filter(p => p.status === 'published' || p.status === 'partial') :
-    posts.filter(p => p.status === filter)
+  async function bulkDelete() {
+    setBulkDeleting(true)
+    const ids = Array.from(selectedIds)
+    try {
+      await Promise.all(ids.map(id => fetch(`/api/posts/${id}`, { method: 'DELETE' })))
+      toast(`${ids.length} posts supprimés`, 'success')
+      setPosts(prev => prev.filter(p => !ids.includes(p.id)))
+      setSelectedIds(new Set())
+    } catch {
+      toast('Erreur suppression', 'error')
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
 
-  const filtered = platformFilter
-    ? baseFiltered.filter(p => p.platforms.includes(platformFilter))
-    : baseFiltered
-
-  const isDraft = selectedPost?.status === 'draft' || selectedPost?.status === 'failed'
-  const isDeleted = selectedPost?.status === 'deleted'
-  const draftCount = posts.filter(p => p.status === 'draft' || p.status === 'failed').length
-  const nonDeletedCount = posts.filter(p => p.status !== 'deleted').length
+  const filtered = posts.filter(p => {
+    if (filter === 'all') return p.status !== 'deleted'
+    if (filter === 'published') return p.status === 'published' || p.status === 'partial'
+    if (filter === 'draft') return p.status === 'draft' || p.status === 'failed'
+    if (filter === 'scheduled') return p.status === 'scheduled'
+    if (filter === 'archived') return p.status === 'deleted'
+    return true
+  })
 
   return (
-    <div style={{ padding: '1.5rem 2rem 3rem' }}>
+    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+      
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="anim-fade-down">
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '2.4rem', fontWeight: 800, color: 'var(--t1)', marginBottom: '6px', letterSpacing: '-0.03em' }}>Workspace</h1>
+          <p style={{ color: 'var(--t3)', fontSize: '1rem', fontWeight: 500 }}>Votre centre de création, de planification et d'analyse.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '14px' }}>
+          <div style={{ position: 'relative' }}>
+            <button style={{ 
+              background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', 
+              padding: '12px 20px', color: 'var(--t1)', fontSize: '0.9rem', fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
+              boxShadow: '0 4px 12px var(--shadow)'
+            }}>
+              <TrendingUp size={18} color="var(--accent)" /> Personnalisé <ChevronDown size={14} opacity={0.5} />
+            </button>
+          </div>
+        </div>
+      </div>
 
-      {/* ── Modal visualisation / édition ── */}
+      {/* ── Quick Actions ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+        <QuickActionCard 
+          title="Nouveau post" 
+          description="Créez ou générez du contenu avec ou sans IA." 
+          icon={PenBox} 
+          color="#3B82F6" 
+          btnLabel="Créer maintenant" 
+          onClick={() => router.push('/posts/create')} 
+        />
+        <QuickActionCard 
+          title="Calendrier" 
+          description="Planifiez et programmez vos publications." 
+          icon={Calendar} 
+          color="#8B5CF6" 
+          btnLabel="Ouvrir le calendrier" 
+          onClick={() => router.push('/calendar')} 
+        />
+        <QuickActionCard 
+          title="Analytique" 
+          description="Suivez vos performances et votre croissance." 
+          icon={BarChart3} 
+          color="#10B981" 
+          btnLabel="Voir les analyses" 
+          onClick={() => router.push('/posts/analytics')} 
+        />
+        <QuickActionCard 
+          title="Idées & Inspiration" 
+          description="Découvrez des idées de contenu tendance." 
+          icon={Lightbulb} 
+          color="#F59E0B" 
+          btnLabel="Explorer les idées" 
+          onClick={() => toast('Prochainement', 'info')} 
+        />
+      </div>
+
+      {/* ── Posts Section ── */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.4rem', fontWeight: 700, color: 'var(--t1)' }}>Vos posts existants</h2>
+            <span style={{ padding: '4px 12px', borderRadius: '20px', background: 'var(--accent-light)', color: 'var(--accent)', fontSize: '0.8rem', fontWeight: 700 }}>{total}</span>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ background: 'var(--s2)', borderRadius: '12px', padding: '5px', display: 'flex', gap: '2px', border: '1px solid var(--b1)' }}>
+              <button 
+                onClick={() => setView('grid')}
+                style={{ padding: '8px 12px', borderRadius: '10px', background: view === 'grid' ? 'var(--card)' : 'transparent', border: 'none', color: view === 'grid' ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', transition: '0.2s' }}
+              >
+                <Grid3X3 size={18} />
+              </button>
+              <button 
+                onClick={() => setView('list')}
+                style={{ padding: '8px 12px', borderRadius: '10px', background: view === 'list' ? 'var(--card)' : 'transparent', border: 'none', color: view === 'list' ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', transition: '0.2s' }}
+              >
+                <List size={18} />
+              </button>
+            </div>
+            <button style={{ 
+              padding: '12px 20px', borderRadius: '14px', background: 'var(--card)', border: '1px solid var(--b1)', 
+              color: 'var(--t1)', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'
+            }}>
+              <Filter size={18} /> Filtres
+            </button>
+          </div>
+        </div>
+
+        {/* Status Tabs */}
+        <div style={{ display: 'flex', gap: '2.5rem', borderBottom: '1px solid var(--b1)', marginBottom: '2.5rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {[
+            { id: 'all', label: 'Tous' },
+            { id: 'published', label: 'Publiés' },
+            { id: 'draft', label: 'Brouillons' },
+            { id: 'scheduled', label: 'Programmés' },
+            { id: 'archived', label: 'Archivés' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setFilter(tab.id as any)}
+              style={{
+                padding: '14px 4px',
+                background: 'none',
+                border: 'none',
+                borderBottom: `3px solid ${filter === tab.id ? 'var(--accent)' : 'transparent'}`,
+                color: filter === tab.id ? 'var(--t1)' : 'var(--t3)',
+                fontSize: '0.95rem',
+                fontWeight: filter === tab.id ? 700 : 600,
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content Area */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+            <RefreshCw size={32} className="spin" style={{ color: 'var(--accent)', opacity: 0.5 }} />
+            <p style={{ marginTop: '1rem', color: 'var(--t3)', fontWeight: 500 }}>Chargement de l'espace...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', padding: '8rem 2rem', background: 'var(--card)', 
+            border: '2px dashed var(--b1)', borderRadius: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center'
+          }}>
+            <div style={{ 
+              width: '80px', height: '80px', borderRadius: '50%', background: 'var(--s2)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', color: 'var(--t3)' 
+            }}>
+              <Search size={32} opacity={0.4} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '0.5rem' }}>Aucun post ici</h3>
+            <p style={{ color: 'var(--t3)', fontSize: '0.9rem', maxWidth: '300px', lineHeight: 1.5 }}>
+              Il semble que vous n'ayez pas encore de contenu dans cette catégorie.
+            </p>
+            <button 
+              onClick={() => router.push('/posts/create')}
+              style={{ 
+                marginTop: '1.5rem', background: 'var(--accent)', color: '#fff', border: 'none', 
+                padding: '12px 24px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' 
+              }}
+            >
+              Créer mon premier post
+            </button>
+          </div>
+        ) : (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: view === 'grid' ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr', 
+            gap: '1.5rem' 
+          }} className="anim-fade-up">
+            {filtered.map(post => (
+              <PostCard 
+                key={post.id} 
+                post={post} 
+                onClick={() => openPost(post)} 
+                isSelected={selectedIds.has(post.id)}
+                onSelect={() => toggleSelect(post.id)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <div style={{ 
+            position: 'fixed', bottom: '2.5rem', left: '50%', transform: 'translateX(-50%)',
+            background: 'var(--t1)', color: 'var(--bg)', padding: '14px 28px', borderRadius: '20px',
+            display: 'flex', alignItems: 'center', gap: '24px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+            zIndex: 1000, animation: 'slideUp 0.3s cubic-bezier(0.22,1,0.36,1)'
+          }}>
+            <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>{selectedIds.size} post(s) sélectionné(s)</span>
+            <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.2)' }} />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={bulkDelete}
+                disabled={bulkDeleting}
+                style={{ background: '#ff4d4d', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                {bulkDeleting ? '...' : 'Supprimer'}
+              </button>
+              <button 
+                onClick={() => setSelectedIds(new Set())}
+                style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Tools Footer ── */}
+      <div className="anim-fade-up" style={{ animationDelay: '0.2s' }}>
+        <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '1.25rem' }}>Outils et plus</h3>
+        <div style={{ 
+          display: 'flex', flexWrap: 'wrap', gap: '0.5rem', background: 'var(--card)', 
+          border: '1px solid var(--b1)', borderRadius: '24px', padding: '16px',
+          boxShadow: '0 4px 20px var(--shadow)'
+        }}>
+          <ToolItem icon={ImageIcon} label="Bibliothèque médias" onClick={() => toast('Prochainement', 'info')} />
+          <ToolItem icon={Sparkles} label="Générateur d'images" onClick={() => toast('Prochainement', 'info')} />
+          <ToolItem icon={Zap} label="Automatisation" onClick={() => toast('Prochainement', 'info')} />
+          <ToolItem icon={FileText} label="Rapports" onClick={() => toast('Prochainement', 'info')} />
+          <ToolItem icon={Download} label="Export de données" onClick={() => toast('Prochainement', 'info')} />
+          <ToolItem icon={Settings} label="Paramètres" onClick={() => router.push('/settings')} />
+        </div>
+      </div>
+
+      {/* ── Modal (Post details) ── */}
       {selectedPost && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.8)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
-          onClick={e => { if (e.target === e.currentTarget) closePost() }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.85)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          onClick={e => { if (e.target === e.currentTarget) setSelectedPost(null) }}
         >
-          <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', width: '100%', maxWidth: '560px', maxHeight: '90vh', overflow: 'auto' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.5rem', borderBottom: '1px solid #1C1C21' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-                <span className={stClass(selectedPost.status)} style={{ fontSize: '.72rem' }}>{stLabel(selectedPost.status)}</span>
-                {isDraft && (
-                  <span style={{ fontSize: '.72rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
-                    <Pencil size={11} /> Modifiable
-                  </span>
-                )}
+          <div className="anim-fade-scale" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '24px', width: '100%', maxWidth: '580px', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 2rem', borderBottom: '1px solid var(--b1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span className={stClass(selectedPost.status)} style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>{stLabel(selectedPost.status)}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--t3)', fontWeight: 500 }}>ID: {selectedPost.id.slice(0, 8)}</span>
               </div>
-              <button onClick={closePost} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: '4px' }}>
+              <button onClick={() => setSelectedPost(null)} style={{ background: 'var(--s2)', border: 'none', cursor: 'pointer', color: 'var(--t1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <X size={18} />
               </button>
             </div>
 
-            {/* Image */}
-            {editMediaUrl ? (
-              <div style={{ background: 'var(--bg)', position: 'relative' }}>
-                <img src={editMediaUrl} alt="" style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block' }} />
-                {isDraft && (
-                  <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', gap: '.4rem' }}>
-                    <label style={{ cursor: 'pointer', background: 'rgba(0,0,0,.7)', border: '1px solid rgba(255,255,255,.15)', borderRadius: '6px', padding: '.35rem .6rem', display: 'flex', alignItems: 'center', gap: '.35rem', fontSize: '.72rem', color: 'var(--t1)' }}>
-                      <Upload size={12} /> {uploadingMedia ? 'Upload...' : 'Changer'}
-                      <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleMediaUpload(f) }} />
-                    </label>
-                    <button onClick={() => setEditMediaUrl(null)} style={{ background: 'rgba(239,68,68,.7)', border: 'none', borderRadius: '6px', padding: '.35rem .5rem', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
-                      <X size={12} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : isDraft ? (
-              <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.5rem', padding: '1.5rem', background: 'var(--bg)', border: '1px dashed var(--b1)', cursor: 'pointer', transition: '.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--b1)')}
-              >
-                {uploadingMedia
-                  ? <div style={{ width: '20px', height: '20px', border: '2px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                  : <Upload size={20} color="#3f3f46" />
-                }
-                <span style={{ fontSize: '.78rem', color: 'var(--t3)' }}>{uploadingMedia ? 'Upload en cours...' : 'Ajouter une image ou vidéo'}</span>
-                <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleMediaUpload(f) }} />
-              </label>
-            ) : null}
-
-            <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {/* Contenu */}
-              <div>
-                <label className="label" style={{ marginBottom: '.4rem', display: 'block' }}>Contenu</label>
-                {isDraft || fbEditMode ? (
-                  <textarea
-                    className="input resize-none"
-                    rows={5}
-                    value={editContent}
-                    onChange={e => setEditContent(e.target.value)}
-                    style={{ width: '100%', lineHeight: 1.6 }}
-                  />
-                ) : (
-                  <div style={{ fontSize: '.85rem', color: 'var(--t1)', lineHeight: 1.7, background: 'var(--bg)', border: '1px solid #1C1C21', borderRadius: '8px', padding: '.75rem 1rem', whiteSpace: 'pre-wrap' }}>
-                    {selectedPost.content}
-                  </div>
-                )}
-              </div>
-
-              {/* Plateformes */}
-              <div>
-                <label className="label" style={{ marginBottom: '.5rem', display: 'block' }}>Plateformes</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
-                  {(isDraft ? ALL_PLATFORMS : selectedPost.platforms).map(p => {
-                    const isPlanLocked = isDraft && userPlan === 'free' && !FREE_PLATFORMS.includes(p)
-                    const active = isDraft ? editPlatforms.includes(p) : true
-                    const removed = !isDraft && selectedPost.platform_errors?.[p] === 'removed_externally'
-                    return (
-                      <button
-                        key={p}
-                        onClick={() => {
-                          if (!isDraft || isPlanLocked) return
-                          setEditPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
-                        }}
-                        title={removed ? `Supprimé directement de ${PLATFORM_SHORT[p]}` : isPlanLocked ? 'Plan Pro requis' : undefined}
-                        style={{
-                          padding: '.25rem .65rem', borderRadius: '6px', fontSize: '.73rem', fontWeight: 600,
-                          border: `1px solid ${isPlanLocked ? '#1E1E24' : removed ? 'rgba(239,68,68,.25)' : active ? PLATFORM_COLORS[p] + '60' : 'var(--b1)'}`,
-                          background: isPlanLocked ? 'transparent' : removed ? 'rgba(239,68,68,.06)' : active ? PLATFORM_COLORS[p] + '18' : 'transparent',
-                          color: isPlanLocked ? '#2a2a30' : removed ? '#6b6b75' : active ? PLATFORM_COLORS[p] : '#3f3f46',
-                          cursor: isPlanLocked ? 'not-allowed' : isDraft ? 'pointer' : 'default',
-                          transition: '.12s', position: 'relative',
-                          opacity: removed ? 0.55 : 1,
-                          filter: removed ? 'grayscale(.8)' : 'none',
-                          display: 'flex', alignItems: 'center', gap: '.25rem',
-                        }}
-                      >
-                        <PlatformIcon platform={p} size={14} />
-                        <span>{PLATFORM_SHORT[p]}</span>
-                        {isPlanLocked && <span style={{ fontSize: '.5rem', opacity: .6 }}>Pro</span>}
-                        {removed && <span style={{ fontSize: '.55rem', color: '#EF4444', opacity: .9 }}>✕</span>}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Date */}
-              <div style={{ fontSize: '.75rem', color: '#3f3f46' }}>
-                Créé le {new Date(selectedPost.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: '.6rem', paddingTop: '.25rem' }}>
-                {isDeleted ? (
-                  <>
-                    <button
-                      onClick={() => restorePost(selectedPost.id)}
-                      disabled={restoring === selectedPost.id}
-                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', padding: '.6rem', borderRadius: '8px', border: '1px solid rgba(59,123,246,.4)', background: 'rgba(var(--accent-rgb),.1)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600 }}
-                    >
-                      <RotateCcw size={14} /> {restoring === selectedPost.id ? 'Restauration...' : 'Restaurer en brouillon'}
-                    </button>
-                    <button
-                      onClick={() => hardDelete(selectedPost.id)}
-                      style={{ padding: '.6rem .8rem', borderRadius: '8px', border: '1px solid rgba(239,68,68,.3)', background: 'rgba(239,68,68,.08)', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem' }}
-                    >
-                      <Trash2 size={14} /> Supprimer définitivement
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {isDraft && (
-                      <button onClick={saveEdit} disabled={saving} className="btn-primary flex items-center gap-2" style={{ flex: 1, justifyContent: 'center', padding: '.6rem' }}>
-                        <Save size={14} /> {saving ? 'Sauvegarde...' : 'Sauvegarder'}
-                      </button>
-                    )}
-                    {isDraft && (
-                      <button onClick={() => publishPost(selectedPost, true)} disabled={publishing === selectedPost.id}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', padding: '.6rem', borderRadius: '8px', border: 'none', background: '#22C55E', color: '#fff', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600 }}>
-                        {publishing === selectedPost.id
-                          ? <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                          : <Send size={14} />} Publier
-                      </button>
-                    )}
-                    {/* Boutons modification pour posts publiés */}
-                    {!isDraft && selectedPost.status === 'published' && (
-                      selectedPost.platforms.includes('facebook') ? (
-                        fbEditMode ? (
-                          <>
-                            <button onClick={editFbPost} disabled={fbSaving}
-                              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', padding: '.6rem', borderRadius: '8px', border: 'none', background: '#1877F2', color: '#fff', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600, opacity: fbSaving ? .6 : 1 }}>
-                              <Save size={14} /> {fbSaving ? 'Sauvegarde...' : 'Sauvegarder sur Facebook'}
-                            </button>
-                            <button onClick={() => { setFbEditMode(false); setEditContent(selectedPost.content) }}
-                              style={{ padding: '.6rem .8rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.8rem' }}>
-                              Annuler
-                            </button>
-                          </>
-                        ) : (
-                          <button onClick={() => setFbEditMode(true)}
-                            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', padding: '.6rem', borderRadius: '8px', border: '1px solid rgba(24,119,242,.4)', background: 'rgba(24,119,242,.1)', color: '#1877F2', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600 }}>
-                            <Pencil size={14} /> Modifier sur Facebook
-                          </button>
-                        )
-                      ) : (
-                        <div style={{ flex: 1, fontSize: '.74rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.5rem .75rem', background: 'var(--bg)', borderRadius: '8px', border: '1px solid #1C1C21', lineHeight: 1.4 }}>
-                          <IconInstagram size={13} />
-                          <span>Instagram ne permet pas la modification après publication.</span>
-                        </div>
-                      )
-                    )}
-                    <button onClick={() => askDelete(selectedPost.id)} disabled={deleting === selectedPost.id}
-                      style={{ padding: '.6rem .8rem', borderRadius: '8px', border: '1px solid rgba(239,68,68,.3)', background: 'rgba(239,68,68,.08)', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                      <Trash2 size={15} />
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* ── Commentaires (posts publiés avec Meta IDs) ── */}
-              {!isDraft && !isDeleted && selectedPost.status === 'published' && selectedPost.meta_post_ids && Object.keys(selectedPost.meta_post_ids).length > 0 && (
-                <div style={{ borderTop: '1px solid #1C1C21', paddingTop: '.85rem' }}>
-                  <button
-                    onClick={() => {
-                      const next = !showComments
-                      setShowComments(next)
-                      if (next && commentsData.length === 0) loadComments(selectedPost.id)
-                    }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', fontSize: '.78rem', display: 'flex', alignItems: 'center', gap: '.35rem', padding: 0, marginBottom: showComments ? '.75rem' : 0 }}
-                  >
-                    <span style={{ fontSize: '.9rem' }}>💬</span>
-                    {showComments ? 'Masquer les commentaires' : 'Voir les commentaires'}
-                  </button>
-
-                  {showComments && (
-                    <div>
-                      {commentsLoading ? (
-                        <div style={{ textAlign: 'center', padding: '1rem 0', color: 'var(--t3)', fontSize: '.78rem' }}>Chargement...</div>
-                      ) : commentsError ? (
-                        <div style={{ padding: '.65rem .85rem', background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.18)', borderRadius: '8px', fontSize: '.75rem', color: '#ef4444', lineHeight: 1.5 }}>
-                          ⚠️ {commentsError}
-                        </div>
-                      ) : commentsData.length === 0 || commentsData.every(p => p.comments.length === 0) ? (
-                        <div style={{ textAlign: 'center', padding: '.75rem 0', color: '#3f3f46', fontSize: '.75rem' }}>Aucun commentaire pour le moment.</div>
-                      ) : (
-                        commentsData.map(({ platform, comments }) => (
-                          <div key={platform} style={{ marginBottom: '.75rem' }}>
-                            {commentsData.length > 1 && (
-                              <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.4rem', textTransform: 'uppercase', letterSpacing: '.05em' }}>
-                                {platform === 'facebook' ? '📘 Facebook' : '📸 Instagram'}
-                              </div>
-                            )}
-                            {comments.map((c: any) => (
-                              <div key={c.id} style={{ background: 'var(--bg)', border: '1px solid #1C1C21', borderRadius: '8px', padding: '.6rem .75rem', marginBottom: '.4rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.3rem' }}>
-                                  <span style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--t3)' }}>
-                                    {c.from?.name || 'Utilisateur'}
-                                  </span>
-                                  <span style={{ fontSize: '.62rem', color: '#3f3f46' }}>
-                                    {new Date(c.created_time).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                                <p style={{ fontSize: '.78rem', color: 'var(--t1)', margin: 0, lineHeight: 1.5 }}>{c.message}</p>
-                                {/* Zone de réponse */}
-                                <div style={{ marginTop: '.5rem', display: 'flex', gap: '.35rem' }}>
-                                  <input
-                                    type="text"
-                                    placeholder="Répondre..."
-                                    value={replyTexts[c.id] || ''}
-                                    onChange={e => setReplyTexts(prev => ({ ...prev, [c.id]: e.target.value }))}
-                                    onKeyDown={e => { if (e.key === 'Enter') sendReply(platform, c.id) }}
-                                    className="input"
-                                    style={{ flex: 1, padding: '.3rem .6rem', fontSize: '.73rem' }}
-                                  />
-                                  <button
-                                    onClick={() => sendReply(platform, c.id)}
-                                    disabled={!replyTexts[c.id]?.trim() || replying === c.id}
-                                    style={{ padding: '.3rem .6rem', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.72rem', fontWeight: 600, opacity: !replyTexts[c.id]?.trim() ? .4 : 1, flexShrink: 0 }}
-                                  >
-                                    {replying === c.id ? '...' : 'Envoyer'}
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
+            <div style={{ padding: '2rem' }}>
+              {selectedPost.media_urls?.[0] && (
+                <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '2rem', border: '1px solid var(--b1)' }}>
+                  <img src={selectedPost.media_urls[0]} alt="" style={{ width: '100%', maxHeight: '350px', objectFit: 'contain', background: 'black' }} />
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Modal confirmation suppression ── */}
-      {confirmId && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={e => { if (e.target === e.currentTarget) { setConfirmId(null); setPassword('') } }}
-        >
-          <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '360px' }}>
-            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: '.4rem' }}>Confirmer la suppression</div>
-            <div style={{ fontSize: '.82rem', color: 'var(--t3)', marginBottom: '1.25rem', lineHeight: 1.5 }}>Cette action est irréversible. Entrez votre mot de passe pour confirmer.</div>
-            <div style={{ position: 'relative', marginBottom: '1rem' }}>
-              <input type={showPw ? 'text' : 'password'} placeholder="Mot de passe" value={password}
-                onChange={e => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') confirmDelete() }}
-                autoFocus className="input" style={{ width: '100%', paddingRight: '2.5rem' }} />
-              <button onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex' }}>
-                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: '.6rem' }}>
-              <button onClick={() => { setConfirmId(null); setPassword('') }} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.83rem' }}>Annuler</button>
-              <button onClick={confirmDelete} disabled={!password || pwLoading} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: 'none', background: '#EF4444', color: '#fff', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600, opacity: !password || pwLoading ? .5 : 1 }}>
-                {pwLoading ? 'Vérification...' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Modal confirmation suppression bulk ── */}
-      {bulkConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={e => { if (e.target === e.currentTarget) { setBulkConfirm(false); setPassword('') } }}
-        >
-          <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '360px' }}>
-            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: '.4rem' }}>Supprimer {selectedIds.size} post{selectedIds.size > 1 ? 's' : ''}</div>
-            <div style={{ fontSize: '.82rem', color: 'var(--t3)', marginBottom: '1.25rem', lineHeight: 1.5 }}>Entrez votre mot de passe pour confirmer la suppression.</div>
-            <div style={{ position: 'relative', marginBottom: '1rem' }}>
-              <input type={showPw ? 'text' : 'password'} placeholder="Mot de passe" value={password}
-                onChange={e => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') confirmBulkDelete() }}
-                autoFocus className="input" style={{ width: '100%', paddingRight: '2.5rem' }} />
-              <button onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex' }}>
-                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: '.6rem' }}>
-              <button onClick={() => { setBulkConfirm(false); setPassword('') }} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.83rem' }}>Annuler</button>
-              <button onClick={confirmBulkDelete} disabled={!password || pwLoading} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: 'none', background: '#EF4444', color: '#fff', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600, opacity: !password || pwLoading ? .5 : 1 }}>
-                {pwLoading ? 'Vérification...' : 'Supprimer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Barre de sélection flottante ── */}
-      {selectedIds.size > 0 && (
-        <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 100, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 8px 32px rgba(0,0,0,.6)', backdropFilter: 'blur(8px)' }}>
-          <span style={{ fontSize: '.82rem', color: 'var(--t3)' }}>{selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''}</span>
-          <button onClick={toggleSelectAll}
-            style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.45rem .9rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600 }}>
-            {selectedIds.size === filtered.length ? 'Désélectionner tout' : 'Tout sélectionner'}
-          </button>
-          <button onClick={bulkDelete} disabled={bulkDeleting}
-            style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.45rem .9rem', borderRadius: '8px', border: 'none', background: '#EF4444', color: '#fff', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, opacity: bulkDeleting ? .6 : 1 }}>
-            <Trash2 size={13} /> {bulkDeleting ? 'Suppression...' : 'Supprimer'}
-          </button>
-          <button onClick={clearSelection} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: '4px' }}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* Pending results banner */}
-      {hasPendingResults && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: '.75rem', padding: '.6rem .9rem', marginBottom: '1rem',
-          background: 'rgba(123,92,245,.1)', border: '1px solid rgba(123,92,245,.25)',
-          borderRadius: '10px',
-          maxWidth: 480, marginLeft: 'auto', marginRight: 'auto',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-            <span style={{ fontSize: '.9rem' }}>✨</span>
-            <span style={{ fontSize: '.82rem', color: 'var(--t2)', fontWeight: 500 }}>
-              Vous avez des posts générés en attente
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '.4rem', flexShrink: 0 }}>
-            <button
-              onClick={() => router.push('/posts/results')}
-              style={{ padding: '.35rem .8rem', borderRadius: '7px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600 }}
-            >
-              Reprendre
-            </button>
-            <button
-              onClick={() => { try { sessionStorage.removeItem('social_ia_results') } catch {} setHasPendingResults(false) }}
-              style={{ padding: '.35rem .5rem', borderRadius: '7px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            >
-              <X size={14} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '.75rem' }}>
-        <div>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em' }}>Mes Posts</h1>
-          <p style={{ color: 'var(--t3)', fontSize: '.8rem', marginTop: '.15rem' }}>{nonDeletedCount} post{nonDeletedCount !== 1 ? 's' : ''} au total</p>
-        </div>
-        <div style={{ display: 'flex', gap: '.5rem' }}>
-          {/* Sync icon-only */}
-          <button onClick={syncPlatforms} disabled={syncing} title="Synchroniser les plateformes"
-            style={{ padding: '.5rem .6rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--card)', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <RefreshCw size={14} style={{ animation: syncing ? 'rot .7s linear infinite' : 'none' }} />
-          </button>
-
-          {/* + dropdown menu */}
-          <div ref={plusMenuRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setPlusMenuOpen(o => !o)}
-              className="btn-primary flex items-center gap-1.5"
-              style={{ padding: '.55rem .75rem', fontSize: '.82rem' }}
-            >
-              <Plus size={15} />
-              <ChevronDown size={13} style={{ opacity: .7, transition: 'transform .15s', transform: plusMenuOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
-            </button>
-
-            {plusMenuOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.3rem', minWidth: '168px', boxShadow: '0 8px 24px rgba(0,0,0,.5)', zIndex: 50 }}>
-                <button
-                  onClick={() => { setPlusMenuOpen(false); router.push('/posts/create') }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.55rem .75rem', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.82rem', textAlign: 'left' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--s2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <Sparkles size={14} style={{ color: 'var(--accent, #7B5CF5)', flexShrink: 0 }} />
-                  Générer
-                </button>
-                <button
-                  onClick={() => {
-                    setPlusMenuOpen(false)
-                    try {
-                      sessionStorage.setItem('social_ia_results', JSON.stringify({
-                        variants: { facebook: '' },
-                        platforms: ['facebook'],
-                        objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true,
-                        pageTitle: 'Créer un post',
-                        allowPlatformToggle: true,
-                      }))
-                    } catch {}
-                    router.push('/posts/results')
-                  }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.55rem .75rem', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.82rem', textAlign: 'left' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--s2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <PenLine size={14} style={{ color: 'var(--t2)', flexShrink: 0 }} />
-                  Créer
-                </button>
+              
+              <div style={{ marginBottom: '2rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Contenu du post</label>
+                <div style={{ fontSize: '1rem', color: 'var(--t1)', lineHeight: 1.6, background: 'var(--s2)', padding: '1.5rem', borderRadius: '16px', whiteSpace: 'pre-wrap', border: '1px solid var(--b1)' }}>
+                  {selectedPost.content}
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Filters + view toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '.5rem' }}>
-        {/* Statuts + filtre plateforme — le filtre plateforme est HORS du conteneur overflow:auto */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flex: 1, minWidth: 0 }}>
-          <div className="mob-scroll" style={{ display: 'flex', gap: '.4rem', overflowX: 'auto' }}>
-            {(['all', 'published', 'draft', 'scheduled'] as const).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{
-                padding: '.3rem .75rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                border: filter === f ? '1px solid #4646FF' : '1px solid var(--b1)',
-                background: filter === f ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                color: filter === f ? 'var(--accent)' : 'var(--t3)', transition: '.15s',
-                display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
-              }}>
-                {f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? `Brouillons${draftCount > 0 ? ` (${draftCount})` : ''}` : 'Programmés'}
-              </button>
-            ))}
-          </div>
-
-          {/* Filtre plateforme — en dehors du scroll pour que le dropdown ne soit pas coupé */}
-          {availablePlatforms.length > 0 && (
-            <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
-              <button
-                onClick={() => setPfMenuOpen(o => !o)}
-                style={{
-                  padding: '.3rem .75rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                  border: platformFilter ? '1px solid #4646FF' : '1px solid var(--b1)',
-                  background: platformFilter ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                  color: platformFilter ? 'var(--accent)' : 'var(--t3)', transition: '.15s',
-                  display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
-                }}
-              >
-                {platformFilter ? (
-                  <>
-                    <PlatformIcon platform={platformFilter} size={12} />
-                    {PLATFORM_SHORT[platformFilter] || platformFilter}
-                    <span
-                      onClick={e => { e.stopPropagation(); setPlatformFilter(null); setPfMenuOpen(false) }}
-                      style={{ marginLeft: '.15rem', opacity: .6, fontWeight: 700, lineHeight: 1, cursor: 'pointer' }}
-                    >×</span>
-                  </>
-                ) : 'Plateforme'}
-              </button>
-
-              {pfMenuOpen && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 5px)', left: 0, zIndex: 200,
-                  background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px',
-                  padding: '.3rem', minWidth: '150px', boxShadow: '0 8px 24px rgba(0,0,0,.5)',
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button onClick={() => doDelete(selectedPost.id)} disabled={deleting === selectedPost.id} style={{ 
+                  flex: 1, background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', 
+                  padding: '14px', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
                 }}>
-                  {platformFilter && (
-                    <>
-                      <button
-                        onClick={() => { setPlatformFilter(null); setPfMenuOpen(false) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.78rem', fontStyle: 'italic' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                      >
-                        Toutes les plateformes
-                      </button>
-                      <div style={{ borderTop: '1px solid var(--b1)', margin: '.2rem 0' }} />
-                    </>
-                  )}
-                  {availablePlatforms.map(p => (
-                    <button
-                      key={p}
-                      onClick={() => { setPlatformFilter(p); setPfMenuOpen(false) }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem',
-                        padding: '.45rem .65rem', borderRadius: '7px', border: 'none',
-                        background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent',
-                        color: platformFilter === p ? 'var(--accent)' : 'var(--t1)',
-                        cursor: 'pointer', fontSize: '.78rem',
-                      }}
-                      onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }}
-                      onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <PlatformIcon platform={p} size={14} />
-                      {PLATFORM_SHORT[p] || p}
-                    </button>
-                  ))}
-                </div>
-              )}
+                  <Trash2 size={18} /> {deleting === selectedPost.id ? '...' : 'Supprimer'}
+                </button>
+                <button onClick={() => setSelectedPost(null)} style={{ 
+                  flex: 2, background: 'var(--t1)', color: 'var(--bg)', border: 'none', 
+                  padding: '14px', borderRadius: '14px', fontWeight: 700, cursor: 'pointer'
+                }}>
+                  Fermer
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', gap: '.3rem', alignItems: 'center', flexShrink: 0 }}>
-          {(['grid', 'list'] as const).map(v => (
-            <button key={v} onClick={() => setView(v)} style={{
-              padding: '.3rem .5rem', borderRadius: '6px',
-              border: view === v ? '1px solid #4646FF' : '1px solid var(--b1)',
-              background: view === v ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-              color: view === v ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center',
-            }}>
-              {v === 'grid' ? <Grid3X3 size={14} /> : <List size={14} />}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>
-            </svg>
           </div>
-          <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>
-            {filter === 'all'       && 'Aucun post pour le moment'}
-            {filter === 'published' && 'Aucun post publié'}
-            {filter === 'draft'     && 'Aucun post dans les brouillons'}
-            {filter === 'scheduled' && 'Aucun post programmé'}
-          </div>
-        </div>
-      ) : view === 'grid' ? (
-        <div>
-          {groupPostsByDate(filtered).map(group => (
-            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.6rem', paddingLeft: '.1rem' }}>
-                {group.label}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '.6rem' }}>
-                {group.posts.map(post => {
-                  const isSelected = selectedIds.has(post.id)
-                  return (
-                  <div key={post.id}
-                    onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative' }}
-                    onMouseEnter={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
-                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
-                      if (overlay) overlay.style.opacity = '1'
-                    }}
-                    onMouseLeave={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)'
-                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
-                      if (overlay) overlay.style.opacity = '0'
-                    }}
-                  >
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
-                      style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}
-                    >
-                      {isSelected
-                        ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
-                        : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
-                      }
-                    </div>
-                    <div style={{ aspectRatio: '1', background: 'var(--s2)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.media_urls?.[0]
-                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        : <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                          </svg>
-                      }
-                      {post.status === 'published' && <InsightsBadge a={post.analytics} />}
-                      <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '3px', zIndex: 6 }}>
-                        {post.platforms.slice(0, 3).map(p => {
-                          const hasErr = !!post.platform_errors?.[p]
-                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                          return (
-                            <div key={p} title={title} style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                              <PlatformIcon platform={p} size={18} />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                    <div style={{ padding: '.55rem .6rem' }}>
-                      <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.45rem' }}>
-                        {post.content}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span className={stClass(post.status)} style={{ fontSize: '.62rem' }}>{stLabel(post.status)}</span>
-                        {(post.status === 'draft' || post.status === 'failed') && (
-                          <div style={{ display: 'flex', gap: '.25rem' }} onClick={e => e.stopPropagation()}>
-                            <button onClick={() => publishPost(post)} disabled={publishing === post.id} title="Publier"
-                              style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '5px', padding: '.2rem .35rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>
-                              {publishing === post.id
-                                ? <div style={{ width: '10px', height: '10px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                                : <Send size={10} />}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )})}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div>
-          {groupPostsByDate(filtered).map(group => (
-            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.5rem', paddingLeft: '.1rem' }}>
-                {group.label}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-                {group.posts.map(post => {
-                  const isSelected = selectedIds.has(post.id)
-                  return (
-                  <div key={post.id}
-                    onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '8px', padding: '.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)' }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)' }}
-                  >
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
-                      style={{ flexShrink: 0, cursor: 'pointer' }}
-                    >
-                      {isSelected ? <CheckSquare size={17} color="var(--accent)" /> : <Square size={17} color="#52525C" />}
-                    </div>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '6px', background: 'var(--s2)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.media_urls?.[0]
-                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <svg width="22" height="22" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                          </svg>
-                      }
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '.8rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.3rem' }}>
-                        {post.platforms.map(p => {
-                          const hasErr = !!post.platform_errors?.[p]
-                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                          return (
-                            <div key={p} title={title} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                              <PlatformIcon platform={p} size={16} />
-                            </div>
-                          )
-                        })}
-                        <span style={{ fontSize: '.7rem', color: '#3f3f46' }}>
-                          {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                      {post.analytics && post.status === 'published' && (
-                        <div style={{ display: 'flex', gap: '.6rem', fontSize: '.7rem', color: 'var(--t3)' }}>
-                          <span title="Likes">❤️ {post.analytics.likes}</span>
-                          <span title="Commentaires">💬 {post.analytics.comments}</span>
-                          <span title="Impressions">👁️ {post.analytics.impressions > 1000 ? (post.analytics.impressions/1000).toFixed(1)+'K' : post.analytics.impressions}</span>
-                        </div>
-                      )}
-                      <span className={stClass(post.status)} style={{ fontSize: '.68rem' }}>{stLabel(post.status)}</span>
-                      {(post.status === 'draft' || post.status === 'failed') && (
-                        <button onClick={() => publishPost(post)} disabled={publishing === post.id}
-                          style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '6px', padding: '.3rem .6rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.72rem', fontWeight: 500 }}>
-                          {publishing === post.id
-                            ? <div style={{ width: '11px', height: '11px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                            : <Send size={11} />} Publier
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )})}
-              </div>
-            </div>
-          ))}
         </div>
       )}
+
+      <style jsx>{`
+        .hover-lift:hover { transform: translateY(-6px); border-color: var(--accent) !important; box-shadow: 0 16px 32px var(--shadow); }
+        .post-card-hover:hover { transform: translateY(-4px); border-color: var(--accent) !important; box-shadow: 0 12px 32px var(--shadow); }
+        .tool-item-hover:hover { background: var(--accent-light) !important; color: var(--accent) !important; border-color: var(--accent) !important; }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
+
     </div>
   )
 }
