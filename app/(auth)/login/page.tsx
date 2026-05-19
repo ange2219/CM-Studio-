@@ -78,6 +78,11 @@ export default function LoginPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
+        html, body {
+          overflow: auto !important;
+          height: auto !important;
+        }
+
         .login-page-wrap {
           --bg: #F4F6F5; 
           --card: #FFFFFF; 
@@ -122,7 +127,6 @@ export default function LoginPage() {
           position: relative;
           z-index: 1;
           background: #FFFFFF;
-          overflow-y: auto;
           justify-content: space-between;
         }
         .login-left::before {
