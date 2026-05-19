@@ -121,7 +121,7 @@ export default function LoginPage() {
           padding: 60px 80px;
           position: relative;
           z-index: 1;
-          background: var(--bg);
+          background: #FFFFFF;
           overflow-y: auto;
           justify-content: space-between;
         }
@@ -186,7 +186,7 @@ export default function LoginPage() {
 
         .login-tagline {
           text-align: left;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
         .login-tagline h1 {
           font-size: 38px;
@@ -205,17 +205,20 @@ export default function LoginPage() {
 
         /* ── Illustration ── */
         .illustration-container {
-          width: 100%;
-          max-width: 580px;
-          margin: 0 auto 30px;
+          width: calc(100% + 160px);
+          margin-left: -80px;
+          margin-right: -80px;
+          margin-top: 15px;
+          margin-bottom: 25px;
           display: flex;
           justify-content: center;
           align-items: center;
+          overflow: hidden;
         }
         .illustration-img {
           width: 100%;
           height: auto;
-          max-height: 340px;
+          max-height: 440px;
           object-fit: contain;
           display: block;
         }
