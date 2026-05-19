@@ -524,7 +524,7 @@ export default function LoginPage() {
             </div>
             
             <div className="illustration-container">
-              <img src="/illustration.png" alt="CM Studio illustration" className="illustration-img" 
+              <img src="/cm-studio-phone.png" alt="CM Studio illustration" className="illustration-img" 
                    onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             </div>
 
