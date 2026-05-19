@@ -256,8 +256,8 @@ export default function LoginPage() {
           <div className="phone-illustration">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/social-ai-phone.png"
-              alt="Social AI illustration"
+              src="/cm-studio-phone.png"
+              alt="CM Studio illustration"
             />
           </div>
 
