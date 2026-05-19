@@ -1,5 +1,6 @@
 'use client'
 
+// CM Studio login page
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
