@@ -76,6 +76,8 @@ export default function LoginPage() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
         .login-page-wrap {
           --bg: #F8FAFC; 
           --card: #FFFFFF; 
@@ -89,7 +91,7 @@ export default function LoginPage() {
           --input-bg: #FFFFFF; 
           --input-border: #CBD5E1;
           --shadow: rgba(0, 0, 0, 0.05);
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Outfit', sans-serif;
           background: var(--card);
           color: var(--text);
           min-height: 100vh;
@@ -165,7 +167,7 @@ export default function LoginPage() {
           margin-bottom: 40px;
         }
         .login-tagline h1 {
-          font-family: 'Syne', sans-serif;
+          font-family: 'Outfit', sans-serif;
           font-size: 42px;
           font-weight: 800;
           color: var(--accent);
@@ -179,18 +181,16 @@ export default function LoginPage() {
           max-width: 500px;
         }
 
-        /* ── Illustration ── */
+        /* ── Illustration (Background) ── */
         .phone-illustration {
-          position: relative;
           width: 100%;
           max-width: 600px;
+          height: 380px;
           margin: 0 auto 40px;
-        }
-        .phone-illustration img {
-          width: 100%;
-          height: auto;
-          object-fit: contain;
-          display: block;
+          background-image: url('/illustration.jpg');
+          background-size: contain;
+          background-position: center;
+          background-repeat: no-repeat;
         }
 
         /* ── Features ── */
@@ -228,7 +228,7 @@ export default function LoginPage() {
         }
         .hashtag {
           color: #E84C3D;
-          font-weight: 700;
+          font-weight: 800;
           font-size: 15px;
           margin-top: 20px;
         }
@@ -241,14 +241,14 @@ export default function LoginPage() {
           justify-content: center;
         }
         .login-form h2 {
-          font-family: 'Syne', sans-serif;
-          font-size: 28px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 32px;
           font-weight: 700;
           margin-bottom: 8px;
           color: var(--accent);
         }
         .login-form p.subtitle {
-          font-size: 14px;
+          font-size: 15px;
           color: var(--text2);
           margin-bottom: 40px;
         }
@@ -256,7 +256,7 @@ export default function LoginPage() {
           margin-bottom: 20px;
         }
         .form-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: var(--text);
           display: block;
@@ -271,7 +271,7 @@ export default function LoginPage() {
           border-radius: 8px;
           padding: 14px 16px;
           color: var(--text);
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Outfit', sans-serif;
           font-size: 15px;
           outline: none;
           transition: border-color .2s, box-shadow .2s;
@@ -291,8 +291,8 @@ export default function LoginPage() {
           border: none;
           border-radius: 8px;
           padding: 16px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 16px;
           font-weight: 600;
           cursor: pointer;
           transition: background .2s;
@@ -312,7 +312,7 @@ export default function LoginPage() {
           gap: 12px;
           margin: 24px 0;
           color: var(--text3);
-          font-size: 12px;
+          font-size: 13px;
         }
         .divider::before, .divider::after {
           content: '';
@@ -328,8 +328,8 @@ export default function LoginPage() {
           border-radius: 8px;
           padding: 14px;
           color: var(--text);
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 15px;
           font-weight: 600;
           cursor: pointer;
           display: flex;
@@ -483,8 +483,6 @@ export default function LoginPage() {
             </div>
             
             <div className="phone-illustration">
-              <img src="/illustration.png" alt="CM Studio illustration" 
-                   onError={(e) => { e.currentTarget.src = '/cm-studio-phone.png' }} />
             </div>
 
             <div className="login-features">
