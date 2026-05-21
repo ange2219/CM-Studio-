@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -79,8 +80,10 @@ export default function LoginPage() {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
         html, body {
-          overflow: auto !important;
-          height: auto !important;
+          overflow: hidden !important;
+          height: 100vh !important;
+          margin: 0;
+          padding: 0;
         }
 
         .login-page-wrap {
@@ -99,10 +102,11 @@ export default function LoginPage() {
           font-family: 'Plus Jakarta Sans', sans-serif;
           background: var(--card);
           color: var(--text);
-          min-height: 100vh;
+          height: 100vh;
+          max-height: 100vh;
           display: flex;
           align-items: stretch;
-          overflow-x: hidden;
+          overflow: hidden;
         }
         [data-theme="dark"] .login-page-wrap {
           --bg: #0B100D; 
@@ -123,22 +127,36 @@ export default function LoginPage() {
           flex: 1.3;
           display: flex;
           flex-direction: column;
-          padding: 60px 80px;
+          justify-content: space-between;
+          padding: 35px 50px;
           position: relative;
           z-index: 1;
-          background: #FFFFFF;
-          justify-content: space-between;
+          background-color: #F9FFE3;
+          overflow: hidden;
         }
         .login-left::before {
-          content: '';
+          display: none;
+        }
+        .decor-top-circle-1 {
           position: absolute;
-          top: -20%;
-          right: -10%;
-          width: 800px;
-          height: 800px;
-          background: rgba(13, 81, 49, 0.04);
+          top: -140px;
+          left: 180px;
+          width: 380px;
+          height: 380px;
           border-radius: 50%;
-          z-index: -1;
+          background: #EFF1F4;
+          z-index: 0;
+          pointer-events: none;
+        }
+        .decor-top-circle-2 {
+          position: absolute;
+          top: -90px;
+          left: -90px;
+          width: 220px;
+          height: 220px;
+          border-radius: 50%;
+          background: rgba(13, 81, 49, 0.04);
+          z-index: 0;
           pointer-events: none;
         }
         
@@ -148,40 +166,16 @@ export default function LoginPage() {
           background: var(--card);
           display: flex;
           flex-direction: column;
-          padding: 60px 50px;
+          padding: 40px 50px;
           position: relative;
           z-index: 1;
           justify-content: space-between;
           border-left: 1px solid var(--border);
+          height: 100vh;
+          overflow-y: auto;
         }
 
         /* ── Left Content ── */
-        .login-logo-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-        .logo-box {
-          background: var(--accent);
-          color: #FFFFFF;
-          width: 32px;
-          height: 32px;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          font-size: 14px;
-        }
-        .logo-text {
-          font-weight: 800;
-          font-size: 20px;
-          color: #111827;
-        }
-        .logo-text span {
-          font-weight: 500;
-        }
         
         .login-content-left {
           width: 100%;
@@ -190,20 +184,23 @@ export default function LoginPage() {
 
         .login-tagline {
           text-align: left;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
+          position: relative;
+          z-index: 2;
+          margin-top: 75px;
         }
         .login-tagline h1 {
-          font-size: 38px;
+          font-size: 28px;
           font-weight: 800;
           color: var(--accent);
           line-height: 1.25;
-          margin-bottom: 16px;
+          margin-bottom: 8px;
           letter-spacing: -0.02em;
         }
         .login-tagline p {
-          font-size: 15px;
+          font-size: 13px;
           color: var(--text2);
-          line-height: 1.6;
+          line-height: 1.4;
           max-width: 520px;
         }
 
@@ -230,42 +227,59 @@ export default function LoginPage() {
         /* ── Features ── */
         .login-features {
           display: flex;
-          gap: 16px;
+          gap: 12px;
           justify-content: space-between;
-          margin-top: 20px;
+          margin-top: 10px;
+          position: relative;
+          z-index: 2;
         }
         .feature-item {
           flex: 1;
           text-align: center;
-          padding: 0 4px;
+          padding: 0 2px;
         }
         .feature-icon {
-          width: 44px;
-          height: 44px;
+          width: 42px;
+          height: 42px;
           border-radius: 50%;
           background: var(--accent-light);
           color: var(--accent);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto 12px;
+          margin: 0 auto 8px;
         }
         .feature-item h4 {
-          font-size: 13px;
+          font-size: 11px;
           font-weight: 700;
-          margin-bottom: 6px;
+          margin-bottom: 2px;
           color: var(--text);
         }
         .feature-item p {
-          font-size: 11px;
+          font-size: 9.5px;
           color: var(--text2);
-          line-height: 1.4;
+          line-height: 1.3;
         }
         .hashtag {
           color: #E84C3D;
           font-weight: 800;
           font-size: 14px;
           margin-top: 30px;
+        }
+
+        .login-logo {
+          position: absolute;
+          top: 35px;
+          left: 50px;
+          z-index: 2;
+          width: 60px;
+          height: 60px;
+        }
+
+        .form-logo {
+          display: none;
+          margin-bottom: 24px;
+          justify-content: center;
         }
 
         /* ── Form ── */
@@ -420,26 +434,7 @@ export default function LoginPage() {
           margin-bottom: 14px;
         }
         
-        .theme-toggle {
-          position: absolute;
-          top: 30px;
-          right: 30px;
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: transparent;
-          border: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all .2s;
-          color: var(--text);
-        }
-        .theme-toggle:hover {
-          background: var(--bg);
-          border-color: var(--text3);
-        }
+
         
         .password-wrap { position: relative; }
         .password-wrap .form-input { padding-right: 44px; }
@@ -501,89 +496,133 @@ export default function LoginPage() {
           .login-tagline h1 { font-size: 32px; }
           .login-features { flex-wrap: wrap; }
           .feature-item { min-width: 45%; margin-bottom: 16px; }
+          .login-logo { top: 40px; left: 40px; }
         }
         @media (max-width: 768px) {
           .login-page-wrap { flex-direction: column; }
           .login-left { display: none; }
           .login-right { width: 100%; min-height: 100vh; padding: 40px 24px; }
           .theme-toggle { top: 20px; right: 20px; }
+          .form-logo { display: flex; }
+        }
+        @media (max-height: 720px) {
+          .login-left {
+            padding: 20px 40px;
+          }
+          .login-logo {
+            top: 20px;
+            left: 40px;
+            width: 48px;
+            height: 48px;
+          }
+          .login-tagline {
+            margin-top: 55px;
+          }
+          .login-tagline h1 {
+            font-size: 24px;
+            line-height: 1.2;
+          }
+          .login-tagline p {
+            font-size: 11.5px;
+            margin-top: 4px;
+          }
+          .login-features {
+            margin-top: 5px;
+          }
+          .feature-icon {
+            width: 34px;
+            height: 34px;
+          }
+          .feature-item h4 {
+            font-size: 10.5px;
+          }
+          .feature-item p {
+            font-size: 9px;
+          }
         }
       `}</style>
 
       <div className="login-page-wrap">
         {/* Left — Brand & Illustration */}
         <div className="login-left">
-          <div className="login-logo-left">
-            <div className="logo-box">CM</div>
-            <div className="logo-text">CM <span>Studio</span></div>
+          <Image
+            src="/images/cmstudio-illustration.png"
+            alt="CM Studio"
+            fill
+            className="object-cover"
+            priority
+            style={{ zIndex: 1, transform: 'scale(0.90)' }}
+          />
+
+          {/* Decorative Top Circles */}
+          <div className="decor-top-circle-1"></div>
+          <div className="decor-top-circle-2"></div>
+
+          {/* Logo */}
+          <div className="login-logo">
+            <Image
+              src="/logo.png"
+              alt="CM Studio Logo"
+              fill
+              className="object-contain"
+              style={{ borderRadius: '8px' }}
+            />
           </div>
 
-          <div className="login-content-left">
-            <div className="login-tagline">
-              <h1>
-                Générez, planifiez et<br />
-                publiez vos contenus
-              </h1>
-              <p>La plateforme tout-en-un pour créer du contenu, le distribuer sur plusieurs réseaux et suivre vos performances.</p>
-            </div>
-            
-            <div className="illustration-container">
-              <img src="/cm-studio-phone.png" alt="CM Studio illustration" className="illustration-img" 
-                   onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-            </div>
-
-            <div className="login-features">
-              <div className="feature-item">
-                 <div className="feature-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                 </div>
-                 <h4>Générez du contenu</h4>
-                 <p>Créez des posts accrocheurs en quelques secondes avec l'IA.</p>
-              </div>
-              <div className="feature-item">
-                 <div className="feature-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                 </div>
-                 <h4>Planifiez</h4>
-                 <p>Programmez vos publications au meilleur moment.</p>
-              </div>
-              <div className="feature-item">
-                 <div className="feature-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                 </div>
-                 <h4>Publiez partout</h4>
-                 <p>Diffusez sur Facebook, Instagram, LinkedIn, TikTok et plus.</p>
-              </div>
-              <div className="feature-item">
-                 <div className="feature-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                 </div>
-                 <h4>Analysez & optimisez</h4>
-                 <p>Suivez les performances et améliorez vos résultats.</p>
-              </div>
-            </div>
+          <div className="login-tagline">
+            <h1>
+              Générez, planifiez et<br />
+              publiez vos contenus
+            </h1>
+            <p>La plateforme tout-en-un pour créer du contenu, le distribuer sur plusieurs réseaux et suivre vos performances.</p>
           </div>
-          
-          <div className="hashtag">
-            #servicepublicbj
+
+          <div className="login-features">
+            <div className="feature-item">
+               <div className="feature-icon">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+               </div>
+               <h4>Générez du contenu</h4>
+               <p>Créez des posts accrocheurs en quelques secondes avec l'IA.</p>
+            </div>
+            <div className="feature-item">
+               <div className="feature-icon">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+               </div>
+               <h4>Planifiez</h4>
+               <p>Programmez vos publications au meilleur moment.</p>
+            </div>
+            <div className="feature-item">
+               <div className="feature-icon">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+               </div>
+               <h4>Publiez partout</h4>
+               <p>Diffusez sur Facebook, Instagram, LinkedIn, TikTok et plus.</p>
+            </div>
+            <div className="feature-item">
+               <div className="feature-icon">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+               </div>
+               <h4>Analysez & optimisez</h4>
+               <p>Suivez les performances et améliorez vos résultats.</p>
+            </div>
           </div>
         </div>
 
         {/* Right — Form */}
         <div className="login-right">
-          <button className="theme-toggle" onClick={toggleTheme} type="button" aria-label="Toggle theme">
-            {theme === 'dark' ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            )}
-          </button>
+
 
           <div className="login-form-container">
             <div className="login-form">
+              {/* Logo visible only on mobile */}
+              <div className="form-logo">
+                <Image src="/logo.png" alt="CM Studio Logo" width={40} height={40} style={{ borderRadius: '8px' }} />
+              </div>
+
               {mode === 'login' ? (
                 <>
-                  <h2>Bon retour</h2>
+                  <h2>Connexion</h2>
                   <p className="subtitle">Connectez-vous à votre espace CM Studio</p>
 
                   <form onSubmit={handleLogin}>
@@ -643,12 +682,12 @@ export default function LoginPage() {
 
                   <div className="login-switch">
                     Vous n&apos;avez pas de compte ?{' '}
-                    <a onClick={() => { setMode('register'); setError('') }}>Créer un compte</a>
+                    <a onClick={() => { setMode('register'); setError('') }}>Inscription</a>
                   </div>
                 </>
               ) : (
                 <>
-                  <h2>Créer un compte</h2>
+                  <h2>Inscription</h2>
                   <p className="subtitle">Commencez gratuitement dès maintenant</p>
 
                   <form onSubmit={handleRegister}>
@@ -690,7 +729,7 @@ export default function LoginPage() {
                     {error && <div className="error-box">{error}</div>}
 
                     <button className="btn-primary" type="submit" disabled={loading}>
-                      {loading ? 'Création...' : 'Créer mon compte'}
+                      {loading ? 'Inscription...' : "S'inscrire"}
                     </button>
                   </form>
 

@@ -134,7 +134,7 @@ export function DashboardShell({ user: initialUser, children }: {
       >
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>C</div>
+            <img src="/logo.png" alt="CM Studio Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
             <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
           </div>
           {isMobile && (
