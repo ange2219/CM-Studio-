@@ -25,18 +25,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
-  const isPublic = PUBLIC_PATHS.some(p => path.startsWith(p))
+  const isPublic = PUBLIC_PATHS.some(p => p === '/' ? path === '/' : path.startsWith(p))
 
-  if (!user && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (!user) {
+    if (!isPublic) {
+      const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
+      redirectResponse.cookies.delete('onboarded')
+      return redirectResponse
+    }
+    supabaseResponse.cookies.delete('onboarded')
   }
 
   if (user && (path === '/login' || path === '/register')) {
     return NextResponse.redirect(new URL('/home', request.url))
-  }
-
-  if (!user && path === '/register') {
-    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Vérification onboarding — utilise un cookie pour éviter une DB query par request
@@ -51,13 +52,31 @@ export async function middleware(request: NextRequest) {
         process.env.SUPABASE_SERVICE_KEY!,
         { cookies: { getAll() { return request.cookies.getAll() }, setAll() {} } }
       )
-      const { data: profile } = await adminSupabase
-        .from('users')
-        .select('onboarded')
-        .eq('id', user.id)
-        .single()
 
-      if (!profile?.onboarded) {
+      let isOnboarded = false
+
+      // On tente d'abord sur la table profiles (onboarding_completed)
+      const { data: profileObj } = await adminSupabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (profileObj && typeof profileObj.onboarding_completed === 'boolean') {
+        isOnboarded = profileObj.onboarding_completed
+      } else {
+        // Fallback si la table users et onboarded existent (actuelle dans l'application)
+        const { data: userProfile } = await adminSupabase
+          .from('users')
+          .select('onboarded')
+          .eq('id', user.id)
+          .maybeSingle()
+        if (userProfile && typeof userProfile.onboarded === 'boolean') {
+          isOnboarded = userProfile.onboarded
+        }
+      }
+
+      if (!isOnboarded) {
         return NextResponse.redirect(new URL('/onboarding', request.url))
       }
 

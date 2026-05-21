@@ -22,6 +22,25 @@ export default function ProfilePage() {
   const supabase = createClient()
   const [active, setActive] = useState('personal')
 
+  const [isEditingPersonal, setIsEditingPersonal] = useState(false)
+  const [initialFullName, setInitialFullName] = useState('')
+
+  const [isEditingBrand, setIsEditingBrand] = useState(false)
+  const [initialBrand, setInitialBrand] = useState<{
+    brandName: string
+    brandDesc: string
+    sector: string
+    defaultTone: string
+    postsPerWeek: number
+    website: string
+    targetAudience: string
+    audienceAge: string
+    audienceLocation: string
+    contentPillars: string[]
+    avoidWords: string
+    objectives: string[]
+  } | null>(null)
+
   async function handleLogout() {
     await supabase.auth.signOut()
     router.push('/login')
@@ -75,7 +94,10 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) setEmail(user.email || '')
       const me = await fetch('/api/auth/me').then(r => r.json())
-      if (me?.full_name) setFullName(me.full_name)
+      if (me?.full_name) {
+        setFullName(me.full_name)
+        setInitialFullName(me.full_name)
+      }
       if (me?.plan) setUserPlan(me.plan)
       if (me?.avatar_url) setAvatarUrl(me.avatar_url)
       const brand = await fetch('/api/brand').then(r => r.ok ? r.json() : null)
@@ -92,11 +114,59 @@ export default function ProfilePage() {
         setContentPillars(brand.content_pillars || [])
         setAvoidWords(brand.avoid_words || '')
         setObjectives(brand.objectives || [])
+
+        setInitialBrand({
+          brandName: brand.brand_name || '',
+          brandDesc: brand.description || '',
+          sector: brand.industry || '',
+          defaultTone: brand.tone || 'professionnel',
+          postsPerWeek: brand.posts_per_week || 5,
+          website: brand.website || '',
+          targetAudience: brand.target_audience || '',
+          audienceAge: brand.audience_age || '',
+          audienceLocation: brand.audience_location || '',
+          contentPillars: brand.content_pillars || [],
+          avoidWords: brand.avoid_words || '',
+          objectives: brand.objectives || [],
+        })
+      } else {
+        setInitialBrand({
+          brandName: '',
+          brandDesc: '',
+          sector: '',
+          defaultTone: 'professionnel',
+          postsPerWeek: 5,
+          website: '',
+          targetAudience: '',
+          audienceAge: '',
+          audienceLocation: '',
+          contentPillars: [],
+          avoidWords: '',
+          objectives: [],
+        })
       }
       await loadAccounts()
     }
     load()
   }, [loadAccounts])
+
+  function cancelBrandEdit() {
+    if (initialBrand) {
+      setBrandName(initialBrand.brandName)
+      setBrandDesc(initialBrand.brandDesc)
+      setSector(initialBrand.sector)
+      setDefaultTone(initialBrand.defaultTone)
+      setPostsPerWeek(initialBrand.postsPerWeek)
+      setWebsite(initialBrand.website)
+      setTargetAudience(initialBrand.targetAudience)
+      setAudienceAge(initialBrand.audienceAge)
+      setAudienceLocation(initialBrand.audienceLocation)
+      setContentPillars(initialBrand.contentPillars)
+      setAvoidWords(initialBrand.avoidWords)
+      setObjectives(initialBrand.objectives)
+    }
+    setIsEditingBrand(false)
+  }
 
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
@@ -151,7 +221,13 @@ export default function ProfilePage() {
     setSavingUser(true)
     const res = await fetch('/api/auth/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: fullName }) })
     setSavingUser(false)
-    toast(res.ok ? 'Profil mis à jour' : 'Erreur', res.ok ? 'success' : 'error')
+    if (res.ok) {
+      setInitialFullName(fullName)
+      setIsEditingPersonal(false)
+      toast('Profil mis à jour', 'success')
+    } else {
+      toast('Erreur lors de la mise à jour', 'error')
+    }
   }
 
   async function saveBrand() {
@@ -168,7 +244,26 @@ export default function ProfilePage() {
       }),
     })
     setSavingBrand(false)
-    toast(res.ok ? 'Profil de marque sauvegardé' : 'Erreur', res.ok ? 'success' : 'error')
+    if (res.ok) {
+      setInitialBrand({
+        brandName,
+        brandDesc,
+        sector,
+        defaultTone,
+        postsPerWeek,
+        website,
+        targetAudience,
+        audienceAge,
+        audienceLocation,
+        contentPillars,
+        avoidWords,
+        objectives,
+      })
+      setIsEditingBrand(false)
+      toast('Profil de marque sauvegardé', 'success')
+    } else {
+      toast('Erreur', 'error')
+    }
   }
 
   async function renameAccount(id: string, name: string) {
@@ -313,16 +408,41 @@ export default function ProfilePage() {
             </div>
 
             <Row label="Nom complet" desc="Affiché sur votre profil et dans les exports.">
-              <input className="input" style={{ maxWidth: '320px' }} placeholder="Votre nom" value={fullName} onChange={e => setFullName(e.target.value)} />
+              <input className="input" style={{ maxWidth: '320px' }} placeholder="Votre nom" value={fullName} onChange={e => setFullName(e.target.value)} disabled={!isEditingPersonal} />
             </Row>
             <Row label="Adresse email" desc="Votre email de connexion — non modifiable.">
               <input className="input" style={{ maxWidth: '320px', opacity: .45, cursor: 'not-allowed' }} value={email} disabled />
             </Row>
 
-            <div style={{ borderTop: '1px solid var(--b1)', paddingTop: '1.25rem', marginTop: '.5rem' }}>
-              <button onClick={saveUserInfo} disabled={savingUser} className="btn-primary flex items-center gap-2">
-                <Save size={14} /> {savingUser ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
+            <div style={{ borderTop: '1px solid var(--b1)', paddingTop: '1.25rem', marginTop: '.5rem', display: 'flex', gap: '12px' }}>
+              {!isEditingPersonal ? (
+                <button onClick={() => setIsEditingPersonal(true)} className="btn-primary flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </button>
+              ) : (
+                <>
+                  <button onClick={saveUserInfo} disabled={savingUser} className="btn-primary flex items-center gap-2">
+                    <Save size={14} /> {savingUser ? 'Sauvegarde...' : 'Sauvegarder'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setFullName(initialFullName)
+                      setIsEditingPersonal(false)
+                    }} 
+                    disabled={savingUser}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 16px', borderRadius: '7px',
+                      border: '1px solid var(--b1)', background: 'transparent',
+                      color: 'var(--t1)', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600,
+                      transition: '.15s',
+                    }}
+                  >
+                    Annuler
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -378,16 +498,16 @@ export default function ProfilePage() {
             </div>
 
             <Row label="Nom de la marque">
-              <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Pixel Agency" value={brandName} onChange={e => setBrandName(e.target.value)} />
+              <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Pixel Agency" value={brandName} onChange={e => setBrandName(e.target.value)} disabled={!isEditingBrand} />
             </Row>
             <Row label="Secteur d'activité">
-              <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Marketing digital, Mode..." value={sector} onChange={e => setSector(e.target.value)} />
+              <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Marketing digital, Mode..." value={sector} onChange={e => setSector(e.target.value)} disabled={!isEditingBrand} />
             </Row>
             <Row label="Site web">
-              <input className="input" style={{ maxWidth: '320px' }} placeholder="https://votre-site.com" value={website} onChange={e => setWebsite(e.target.value)} />
+              <input className="input" style={{ maxWidth: '320px' }} placeholder="https://votre-site.com" value={website} onChange={e => setWebsite(e.target.value)} disabled={!isEditingBrand} />
             </Row>
             <Row label="Ton par défaut">
-              <select className="input" style={{ maxWidth: '200px' }} value={defaultTone} onChange={e => setDefaultTone(e.target.value)}>
+              <select className="input" style={{ maxWidth: '200px' }} value={defaultTone} onChange={e => setDefaultTone(e.target.value)} disabled={!isEditingBrand}>
                 <option value="professionnel">Professionnel</option>
                 <option value="decontracte">Décontracté</option>
                 <option value="inspirant">Inspirant</option>
@@ -395,16 +515,16 @@ export default function ProfilePage() {
               </select>
             </Row>
             <Row label="Audience cible">
-              <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Entrepreneurs, Étudiants..." value={targetAudience} onChange={e => setTargetAudience(e.target.value)} />
+              <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Entrepreneurs, Étudiants..." value={targetAudience} onChange={e => setTargetAudience(e.target.value)} disabled={!isEditingBrand} />
             </Row>
             <Row label="Tranche d'âge">
-              <select className="input" style={{ maxWidth: '200px' }} value={audienceAge} onChange={e => setAudienceAge(e.target.value)}>
+              <select className="input" style={{ maxWidth: '200px' }} value={audienceAge} onChange={e => setAudienceAge(e.target.value)} disabled={!isEditingBrand}>
                 <option value="">Non précisé</option>
                 {['13-17','18-24','25-34','35-44','45-54','55+','Tous âges'].map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </Row>
             <Row label="Portée géographique">
-              <select className="input" style={{ maxWidth: '200px' }} value={audienceLocation} onChange={e => setAudienceLocation(e.target.value)}>
+              <select className="input" style={{ maxWidth: '200px' }} value={audienceLocation} onChange={e => setAudienceLocation(e.target.value)} disabled={!isEditingBrand}>
                 <option value="">Non précisé</option>
                 <option value="locale">Locale</option>
                 <option value="nationale">Nationale</option>
@@ -412,25 +532,47 @@ export default function ProfilePage() {
               </select>
             </Row>
             <Row label="Piliers de contenu" desc="Séparés par des virgules.">
-              <input className="input" style={{ maxWidth: '480px', width: '100%' }} placeholder="Ex: Conseils, Coulisses, Produits..." value={contentPillars.join(', ')} onChange={e => setContentPillars(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
+              <input className="input" style={{ maxWidth: '480px', width: '100%' }} placeholder="Ex: Conseils, Coulisses, Produits..." value={contentPillars.join(', ')} onChange={e => setContentPillars(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} disabled={!isEditingBrand} />
             </Row>
             <Row label="Objectifs" desc="Séparés par des virgules.">
-              <input className="input" style={{ maxWidth: '480px', width: '100%' }} placeholder="Ex: notoriete, ventes, communaute..." value={objectives.join(', ')} onChange={e => setObjectives(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
+              <input className="input" style={{ maxWidth: '480px', width: '100%' }} placeholder="Ex: notoriete, ventes, communaute..." value={objectives.join(', ')} onChange={e => setObjectives(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} disabled={!isEditingBrand} />
             </Row>
             <Row label="Mots à éviter">
-              <input className="input" style={{ maxWidth: '480px', width: '100%' }} placeholder="Ex: politique, prix des concurrents..." value={avoidWords} onChange={e => setAvoidWords(e.target.value)} />
+              <input className="input" style={{ maxWidth: '480px', width: '100%' }} placeholder="Ex: politique, prix des concurrents..." value={avoidWords} onChange={e => setAvoidWords(e.target.value)} disabled={!isEditingBrand} />
             </Row>
             <Row label="Posts / semaine">
-              <input className="input" style={{ maxWidth: '100px' }} type="number" min={1} max={21} value={postsPerWeek} onChange={e => setPostsPerWeek(Number(e.target.value))} />
+              <input className="input" style={{ maxWidth: '100px' }} type="number" min={1} max={21} value={postsPerWeek} onChange={e => setPostsPerWeek(Number(e.target.value))} disabled={!isEditingBrand} />
             </Row>
             <Row label="Description" desc="Ce que vous faites, vos valeurs, votre audience cible.">
-              <textarea className="input resize-none" rows={5} style={{ maxWidth: '480px', width: '100%' }} placeholder="Décrivez votre marque..." value={brandDesc} onChange={e => setBrandDesc(e.target.value)} />
+              <textarea className="input resize-none" rows={5} style={{ maxWidth: '480px', width: '100%' }} placeholder="Décrivez votre marque..." value={brandDesc} onChange={e => setBrandDesc(e.target.value)} disabled={!isEditingBrand} />
             </Row>
 
-            <div style={{ borderTop: '1px solid var(--b1)', paddingTop: '1.25rem', marginTop: '.5rem' }}>
-              <button onClick={saveBrand} disabled={savingBrand} className="btn-primary flex items-center gap-2">
-                <Save size={14} /> {savingBrand ? 'Sauvegarde...' : 'Sauvegarder le profil de marque'}
-              </button>
+            <div style={{ borderTop: '1px solid var(--b1)', paddingTop: '1.25rem', marginTop: '.5rem', display: 'flex', gap: '12px' }}>
+              {!isEditingBrand ? (
+                <button onClick={() => setIsEditingBrand(true)} className="btn-primary flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </button>
+              ) : (
+                <>
+                  <button onClick={saveBrand} disabled={savingBrand} className="btn-primary flex items-center gap-2">
+                    <Save size={14} /> {savingBrand ? 'Sauvegarde...' : 'Sauvegarder'}
+                  </button>
+                  <button 
+                    onClick={cancelBrandEdit} 
+                    disabled={savingBrand}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 16px', borderRadius: '7px',
+                      border: '1px solid var(--b1)', background: 'transparent',
+                      color: 'var(--t1)', cursor: 'pointer', fontSize: '.83rem', fontWeight: 600,
+                      transition: '.15s',
+                    }}
+                  >
+                    Annuler
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
