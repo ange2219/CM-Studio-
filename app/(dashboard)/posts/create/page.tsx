@@ -279,7 +279,7 @@ export default function CreatePage() {
   useEffect(() => {
     const supabase = createClient()
     supabase.from('users').select('plan').single().then(({ data }) => {
-      if (data) setIsPro(true)
+      if (data && data.plan && data.plan !== 'free') setIsPro(true)
     })
     supabase.from('social_accounts').select('platform').eq('is_active', true).then(({ data }) => {
       if (data && data.length > 0) {
