@@ -1127,9 +1127,19 @@ export default function PostsPage() {
                 <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, cursor: 'pointer' }}>
                   {isSelected ? <CheckSquare size={20} color="var(--accent)" style={{ background: '#fff', borderRadius: '4px' }} /> : <Square size={20} color="rgba(255,255,255,.7)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />}
                 </div>
-                {post.platforms[0] && (
-                  <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, width: '24px', height: '24px', borderRadius: '6px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.4)' }}>
-                    <PlatformIcon platform={post.platforms[0]} size={24} />
+                {post.platforms && post.platforms.length > 0 && (
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
+                    {post.platforms.map((p, i) => (
+                      <div key={p} style={{
+                        width: '24px', height: '24px', borderRadius: '6px', overflow: 'hidden',
+                        boxShadow: '0 2px 8px rgba(0,0,0,.4)',
+                        marginLeft: i === 0 ? 0 : '-8px',
+                        zIndex: 10 - i,
+                        border: '1.5px solid var(--s2)'
+                      }}>
+                        <PlatformIcon platform={p} size={24} />
+                      </div>
+                    ))}
                   </div>
                 )}
                 <div style={{ height: '90px', background: 'var(--bg)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
