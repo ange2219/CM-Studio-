@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 
@@ -928,340 +928,286 @@ export default function PostsPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '.75rem' }}>
-        <div>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em' }}>Mes Posts</h1>
-          <p style={{ color: 'var(--t3)', fontSize: '.8rem', marginTop: '.15rem' }}>{nonDeletedCount} post{nonDeletedCount !== 1 ? 's' : ''} au total</p>
-        </div>
-        <div style={{ display: 'flex', gap: '.5rem' }}>
-          {/* Sync icon-only */}
-          <button onClick={syncPlatforms} disabled={syncing} title="Synchroniser les plateformes"
-            style={{ padding: '.5rem .6rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--card)', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <RefreshCw size={14} style={{ animation: syncing ? 'rot .7s linear infinite' : 'none' }} />
+      {/* ── NOUVEAU HEADER WORKSPACE ── */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em' }}>Workspace</h1>
+            <p style={{ color: 'var(--t3)', fontSize: '.9rem', marginTop: '.3rem' }}>Votre centre de création, de planification et d'analyse.</p>
+          </div>
+          <button onClick={() => toast('Personnalisation disponible bientôt !', 'info')} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.85rem', fontWeight: 500 }}>
+            <Sparkles size={14} /> Personnalisé <ChevronDown size={14} />
           </button>
+        </div>
 
-          {/* + dropdown menu */}
-          <div ref={plusMenuRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setPlusMenuOpen(o => !o)}
-              className="btn-primary flex items-center gap-1.5"
-              style={{ padding: '.55rem .75rem', fontSize: '.82rem' }}
-            >
-              <Plus size={15} />
-              <ChevronDown size={13} style={{ opacity: .7, transition: 'transform .15s', transform: plusMenuOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+        {/* 4 Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+          {/* Nouveau post */}
+          <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <PenLine size={22} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Nouveau post</h3>
+            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Créez ou générez du contenu avec ou sans IA.</p>
+            <button onClick={() => router.push('/posts/create')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
+              Créer maintenant <ArrowRight size={14} />
             </button>
+          </div>
+          {/* Calendrier */}
+          <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <Calendar size={22} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Calendrier</h3>
+            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Planifiez et programmez vos publications.</p>
+            <button onClick={() => router.push('/calendar')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(168,85,247,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'}>
+              Ouvrir le calendrier <ArrowRight size={14} />
+            </button>
+          </div>
+          {/* Analytique */}
+          <div style={{ background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <BarChart3 size={22} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Analytique</h3>
+            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Suivez vos performances et votre croissance.</p>
+            <button onClick={() => toast('Analytique disponible bientôt !', 'info')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
+              Voir les analyses <ArrowRight size={14} />
+            </button>
+          </div>
+          {/* Idées & Inspiration */}
+          <div style={{ background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <Sparkles size={22} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Idées & Inspiration</h3>
+            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Découvrez des idées de contenu tendance et pertinentes.</p>
+            <button onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(249,115,22,0.15)', color: '#F97316', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,115,22,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(249,115,22,0.15)'}>
+              Explorer les idées <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
 
-            {plusMenuOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.3rem', minWidth: '168px', boxShadow: '0 8px 24px rgba(0,0,0,.5)', zIndex: 50 }}>
-                <button
-                  onClick={() => { setPlusMenuOpen(false); router.push('/posts/create') }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.55rem .75rem', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.82rem', textAlign: 'left' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--s2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <Sparkles size={14} style={{ color: 'var(--accent, #7B5CF5)', flexShrink: 0 }} />
-                  Générer
+      {/* ── SECTION VOS POSTS EXISTANTS ── */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '1.25rem' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#fff' }}>Vos posts existants</h2>
+          <span style={{ background: 'var(--s2)', padding: '.15rem .6rem', borderRadius: '12px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+        </div>
+
+        {/* Filters + view toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '.5rem', flexWrap: 'wrap' }}>
+          <div className="mob-scroll" style={{ display: 'flex', gap: '.4rem', overflowX: 'auto' }}>
+            {(['all', 'published', 'draft', 'scheduled', 'deleted'] as const).map(f => {
+              const label = f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? 'Brouillons' : f === 'scheduled' ? 'Programmés' : 'Archivés';
+              return (
+                <button key={f} onClick={() => setFilter(f)} style={{
+                  padding: '.4rem .85rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500, cursor: 'pointer',
+                  border: filter === f ? 'none' : '1px solid transparent',
+                  background: filter === f ? '#2A43E8' : 'var(--s2)',
+                  color: filter === f ? '#fff' : 'var(--t2)', transition: '.15s',
+                  display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
+                }}>
+                  {label}
                 </button>
+              )
+            })}
+          </div>
+
+          <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0 }}>
+            {(['grid', 'list'] as const).map(v => (
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: '.4rem .6rem', borderRadius: '8px',
+                border: view === v ? '1px solid #4646FF' : '1px solid var(--b1)',
+                background: view === v ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
+                color: view === v ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center',
+              }}>
+                {v === 'grid' ? <Grid3X3 size={15} /> : <List size={15} />}
+              </button>
+            ))}
+            
+            {/* Filtre plateforme */}
+            {availablePlatforms.length > 0 && (
+              <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
                 <button
-                  onClick={() => {
-                    setPlusMenuOpen(false)
-                    try {
-                      sessionStorage.setItem('social_ia_results', JSON.stringify({
-                        variants: { facebook: '' },
-                        platforms: ['facebook'],
-                        objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true,
-                        pageTitle: 'Créer un post',
-                        allowPlatformToggle: true,
-                      }))
-                    } catch {}
-                    router.push('/posts/results')
+                  onClick={() => setPfMenuOpen(o => !o)}
+                  style={{
+                    padding: '.4rem .75rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500, cursor: 'pointer',
+                    border: platformFilter ? '1px solid #4646FF' : '1px solid var(--b1)',
+                    background: platformFilter ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
+                    color: platformFilter ? 'var(--accent)' : 'var(--t2)', transition: '.15s',
+                    display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
                   }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.55rem .75rem', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.82rem', textAlign: 'left' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--s2)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <PenLine size={14} style={{ color: 'var(--t2)', flexShrink: 0 }} />
-                  Créer
+                  <Filter size={14} /> Filtres
+                  {platformFilter && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
                 </button>
+
+                {pfMenuOpen && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 5px)', right: 0, zIndex: 200, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.3rem', minWidth: '150px', boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
+                    {availablePlatforms.map(p => (
+                      <button key={p} onClick={() => { setPlatformFilter(p); setPfMenuOpen(false) }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: platformFilter === p ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem' }}
+                        onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <PlatformIcon platform={p} size={14} /> {PLATFORM_SHORT[p] || p}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Filters + view toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '.5rem' }}>
-        {/* Statuts + filtre plateforme — le filtre plateforme est HORS du conteneur overflow:auto */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flex: 1, minWidth: 0 }}>
-          <div className="mob-scroll" style={{ display: 'flex', gap: '.4rem', overflowX: 'auto' }}>
-            {(['all', 'published', 'draft', 'scheduled'] as const).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{
-                padding: '.3rem .75rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                border: filter === f ? '1px solid #4646FF' : '1px solid var(--b1)',
-                background: filter === f ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                color: filter === f ? 'var(--accent)' : 'var(--t3)', transition: '.15s',
-                display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
-              }}>
-                {f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? `Brouillons${draftCount > 0 ? ` (${draftCount})` : ''}` : 'Programmés'}
-              </button>
-            ))}
+        {/* Content */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--s2)', borderRadius: '16px', border: '1px dashed var(--b1)' }}>
+            <div style={{ color: 'var(--t3)', fontSize: '.9rem' }}>
+              {filter === 'all'       && 'Aucun post pour le moment'}
+              {filter === 'published' && 'Aucun post publié'}
+              {filter === 'draft'     && 'Aucun post dans les brouillons'}
+              {filter === 'scheduled' && 'Aucun post programmé'}
+              {filter === 'deleted'   && 'Aucun post archivé'}
+            </div>
           </div>
-
-          {/* Filtre plateforme — en dehors du scroll pour que le dropdown ne soit pas coupé */}
-          {availablePlatforms.length > 0 && (
-            <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
-              <button
-                onClick={() => setPfMenuOpen(o => !o)}
-                style={{
-                  padding: '.3rem .75rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                  border: platformFilter ? '1px solid #4646FF' : '1px solid var(--b1)',
-                  background: platformFilter ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                  color: platformFilter ? 'var(--accent)' : 'var(--t3)', transition: '.15s',
-                  display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
-                }}
+        ) : view === 'grid' ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.25rem' }}>
+            {filtered.slice(0, 8).map(post => {
+              const isSelected = selectedIds.has(post.id)
+              return (
+              <div key={post.id}
+                onClick={() => openPost(post)}
+                style={{ background: 'var(--s2)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '12px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', display: 'flex', flexDirection: 'column' }}
               >
-                {platformFilter ? (
-                  <>
-                    <PlatformIcon platform={platformFilter} size={12} />
-                    {PLATFORM_SHORT[platformFilter] || platformFilter}
-                    <span
-                      onClick={e => { e.stopPropagation(); setPlatformFilter(null); setPfMenuOpen(false) }}
-                      style={{ marginLeft: '.15rem', opacity: .6, fontWeight: 700, lineHeight: 1, cursor: 'pointer' }}
-                    >×</span>
-                  </>
-                ) : 'Plateforme'}
-              </button>
-
-              {pfMenuOpen && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 5px)', left: 0, zIndex: 200,
-                  background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px',
-                  padding: '.3rem', minWidth: '150px', boxShadow: '0 8px 24px rgba(0,0,0,.5)',
-                }}>
-                  {platformFilter && (
-                    <>
-                      <button
-                        onClick={() => { setPlatformFilter(null); setPfMenuOpen(false) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.78rem', fontStyle: 'italic' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                      >
-                        Toutes les plateformes
-                      </button>
-                      <div style={{ borderTop: '1px solid var(--b1)', margin: '.2rem 0' }} />
-                    </>
-                  )}
-                  {availablePlatforms.map(p => (
-                    <button
-                      key={p}
-                      onClick={() => { setPlatformFilter(p); setPfMenuOpen(false) }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem',
-                        padding: '.45rem .65rem', borderRadius: '7px', border: 'none',
-                        background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent',
-                        color: platformFilter === p ? 'var(--accent)' : 'var(--t1)',
-                        cursor: 'pointer', fontSize: '.78rem',
-                      }}
-                      onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }}
-                      onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <PlatformIcon platform={p} size={14} />
-                      {PLATFORM_SHORT[p] || p}
-                    </button>
-                  ))}
+                <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, cursor: 'pointer' }}>
+                  {isSelected ? <CheckSquare size={20} color="var(--accent)" style={{ background: '#fff', borderRadius: '4px' }} /> : <Square size={20} color="rgba(255,255,255,.7)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />}
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', gap: '.3rem', alignItems: 'center', flexShrink: 0 }}>
-          {(['grid', 'list'] as const).map(v => (
-            <button key={v} onClick={() => setView(v)} style={{
-              padding: '.3rem .5rem', borderRadius: '6px',
-              border: view === v ? '1px solid #4646FF' : '1px solid var(--b1)',
-              background: view === v ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-              color: view === v ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center',
-            }}>
-              {v === 'grid' ? <Grid3X3 size={14} /> : <List size={14} />}
-            </button>
-          ))}
-        </div>
+                {post.platforms[0] && (
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, width: '24px', height: '24px', borderRadius: '6px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.4)' }}>
+                    <PlatformIcon platform={post.platforms[0]} size={24} />
+                  </div>
+                )}
+                <div style={{ height: '140px', background: 'var(--bg)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {post.media_urls?.[0]
+                    ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    : <ImageIcon size={32} color="var(--t3)" opacity={0.3} />
+                  }
+                </div>
+                <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontSize: '.85rem', color: 'var(--t1)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.75rem', flex: 1 }}>
+                    {post.content}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
+                    <span className={stClass(post.status)} style={{ fontSize: '.65rem', padding: '.2rem .5rem', borderRadius: '4px' }}>{stLabel(post.status)}</span>
+                  </div>
+                  <div style={{ fontSize: '.7rem', color: 'var(--t3)', marginBottom: post.analytics ? '.75rem' : '0' }}>
+                    {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} à {new Date(post.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  {post.analytics && post.status === 'published' && (
+                    <div style={{ display: 'flex', gap: '.8rem', fontSize: '.75rem', color: 'var(--t2)', borderTop: '1px solid var(--b1)', paddingTop: '.75rem' }}>
+                      <span title="Likes" style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>❤️ {post.analytics.likes}</span>
+                      <span title="Commentaires" style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>💬 {post.analytics.comments}</span>
+                      <span title="Partages" style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>↗️ {post.analytics.shares}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )})}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+            {filtered.map(post => {
+              const isSelected = selectedIds.has(post.id)
+              return (
+              <div key={post.id} onClick={() => openPost(post)} style={{ background: 'var(--s2)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}>
+                <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ flexShrink: 0, cursor: 'pointer' }}>
+                  {isSelected ? <CheckSquare size={18} color="var(--accent)" /> : <Square size={18} color="var(--t3)" />}
+                </div>
+                <div style={{ width: '48px', height: '48px', borderRadius: '6px', background: 'var(--bg)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {post.media_urls?.[0] ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={20} color="var(--t3)" opacity={0.4} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '.85rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.4rem' }}>
+                    {post.platforms.map(p => (
+                      <div key={p} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0 }}><PlatformIcon platform={p} size={16} /></div>
+                    ))}
+                    <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                  {post.analytics && post.status === 'published' && (
+                    <div style={{ display: 'flex', gap: '.8rem', fontSize: '.75rem', color: 'var(--t3)' }}>
+                      <span>❤️ {post.analytics.likes}</span>
+                      <span>💬 {post.analytics.comments}</span>
+                    </div>
+                  )}
+                  <span className={stClass(post.status)} style={{ fontSize: '.7rem' }}>{stLabel(post.status)}</span>
+                </div>
+              </div>
+            )})}
+          </div>
+        )}
+        
+        {filtered.length > 8 && view === 'grid' && (
+          <div style={{ marginTop: '1.5rem', background: 'var(--s2)', borderRadius: '12px', padding: '1rem', textAlign: 'center', border: '1px solid var(--b1)', cursor: 'pointer', color: 'var(--t2)', fontSize: '.85rem', fontWeight: 500 }} onClick={() => toast('Tous les posts sont déjà chargés (scroll vers le bas)', 'info')}>
+            Voir tous les posts
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>
-            </svg>
-          </div>
-          <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>
-            {filter === 'all'       && 'Aucun post pour le moment'}
-            {filter === 'published' && 'Aucun post publié'}
-            {filter === 'draft'     && 'Aucun post dans les brouillons'}
-            {filter === 'scheduled' && 'Aucun post programmé'}
-          </div>
-        </div>
-      ) : view === 'grid' ? (
-        <div>
-          {groupPostsByDate(filtered).map(group => (
-            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.6rem', paddingLeft: '.1rem' }}>
-                {group.label}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '.6rem' }}>
-                {group.posts.map(post => {
-                  const isSelected = selectedIds.has(post.id)
-                  return (
-                  <div key={post.id}
-                    onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative' }}
-                    onMouseEnter={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
-                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
-                      if (overlay) overlay.style.opacity = '1'
-                    }}
-                    onMouseLeave={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)'
-                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
-                      if (overlay) overlay.style.opacity = '0'
-                    }}
-                  >
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
-                      style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}
-                    >
-                      {isSelected
-                        ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
-                        : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
-                      }
-                    </div>
-                    <div style={{ aspectRatio: '1', background: 'var(--s2)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.media_urls?.[0]
-                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        : <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                          </svg>
-                      }
-                      {post.status === 'published' && <InsightsBadge a={post.analytics} />}
-                      <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '3px', zIndex: 6 }}>
-                        {post.platforms.slice(0, 3).map(p => {
-                          const hasErr = !!post.platform_errors?.[p]
-                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                          return (
-                            <div key={p} title={title} style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                              <PlatformIcon platform={p} size={18} />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                    <div style={{ padding: '.55rem .6rem' }}>
-                      <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.45rem' }}>
-                        {post.content}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span className={stClass(post.status)} style={{ fontSize: '.62rem' }}>{stLabel(post.status)}</span>
-                        {(post.status === 'draft' || post.status === 'failed') && (
-                          <div style={{ display: 'flex', gap: '.25rem' }} onClick={e => e.stopPropagation()}>
-                            <button onClick={() => publishPost(post)} disabled={publishing === post.id} title="Publier"
-                              style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '5px', padding: '.2rem .35rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>
-                              {publishing === post.id
-                                ? <div style={{ width: '10px', height: '10px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                                : <Send size={10} />}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )})}
-              </div>
+      {/* ── SECTION OUTILS ET PLUS ── */}
+      <div style={{ marginTop: '2rem' }}>
+        <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Outils et plus</h3>
+        <div className="mob-scroll" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '.5rem' }}>
+          <div onClick={() => toast('Bibliothèque médias disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <FileImage size={20} color="var(--t3)" />
+            <div>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Bibliothèque médias</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Gérez vos fichiers</div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div>
-          {groupPostsByDate(filtered).map(group => (
-            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.5rem', paddingLeft: '.1rem' }}>
-                {group.label}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-                {group.posts.map(post => {
-                  const isSelected = selectedIds.has(post.id)
-                  return (
-                  <div key={post.id}
-                    onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '8px', padding: '.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)' }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)' }}
-                  >
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
-                      style={{ flexShrink: 0, cursor: 'pointer' }}
-                    >
-                      {isSelected ? <CheckSquare size={17} color="var(--accent)" /> : <Square size={17} color="#52525C" />}
-                    </div>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '6px', background: 'var(--s2)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.media_urls?.[0]
-                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <svg width="22" height="22" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                          </svg>
-                      }
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '.8rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.3rem' }}>
-                        {post.platforms.map(p => {
-                          const hasErr = !!post.platform_errors?.[p]
-                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                          return (
-                            <div key={p} title={title} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                              <PlatformIcon platform={p} size={16} />
-                            </div>
-                          )
-                        })}
-                        <span style={{ fontSize: '.7rem', color: '#3f3f46' }}>
-                          {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                      {post.analytics && post.status === 'published' && (
-                        <div style={{ display: 'flex', gap: '.6rem', fontSize: '.7rem', color: 'var(--t3)' }}>
-                          <span title="Likes">❤️ {post.analytics.likes}</span>
-                          <span title="Commentaires">💬 {post.analytics.comments}</span>
-                          <span title="Impressions">👁️ {post.analytics.impressions > 1000 ? (post.analytics.impressions/1000).toFixed(1)+'K' : post.analytics.impressions}</span>
-                        </div>
-                      )}
-                      <span className={stClass(post.status)} style={{ fontSize: '.68rem' }}>{stLabel(post.status)}</span>
-                      {(post.status === 'draft' || post.status === 'failed') && (
-                        <button onClick={() => publishPost(post)} disabled={publishing === post.id}
-                          style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '6px', padding: '.3rem .6rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.72rem', fontWeight: 500 }}>
-                          {publishing === post.id
-                            ? <div style={{ width: '11px', height: '11px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                            : <Send size={11} />} Publier
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )})}
-              </div>
+          </div>
+          <div onClick={() => toast('Générateur d\'images disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <ImageIcon size={20} color="var(--t3)" />
+            <div>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Générateur d'images</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Créez des visuels avec l'IA</div>
             </div>
-          ))}
+          </div>
+          <div onClick={() => toast('Automatisation disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <Zap size={20} color="var(--t3)" />
+            <div>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Automatisation</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Gagnez du temps</div>
+            </div>
+          </div>
+          <div onClick={() => toast('Rapports disponibles bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <FileText size={20} color="var(--t3)" />
+            <div>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Rapports</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Générez des rapports</div>
+            </div>
+          </div>
+          <div onClick={() => toast('Export de données disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <Database size={20} color="var(--t3)" />
+            <div>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Export de données</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Téléchargez vos données</div>
+            </div>
+          </div>
+          <div onClick={() => router.push('/settings')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <Settings size={20} color="var(--t3)" />
+            <div>
+              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Paramètres</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Gérez vos préférences</div>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
