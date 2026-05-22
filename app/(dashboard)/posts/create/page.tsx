@@ -272,6 +272,7 @@ export default function CreatePage() {
   // ── Plan ──
   const [isPro, setIsPro] = useState(false)
   const [connectedPlatforms, setConnectedPlatforms] = useState<Platform[]>([])
+  const [connectPopupPlatform, setConnectPopupPlatform] = useState<Platform | null>(null)
 
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -645,6 +646,33 @@ export default function CreatePage() {
       {mode === 'ai' && (
         <div style={{ display: 'flex', gap: '2rem', flex: 1, minHeight: 0, overflow: 'hidden' }}>
 
+          {/* ── Modal connexion requise ── */}
+          {connectPopupPlatform && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={e => { if (e.target === e.currentTarget) setConnectPopupPlatform(null) }}
+            >
+              <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '360px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PLATFORM_COLORS[connectPopupPlatform] }}>
+                    <PlatformIcon platform={connectPopupPlatform} size={18} />
+                  </div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--t1)' }}>Connexion requise</div>
+                </div>
+                <div style={{ fontSize: '.85rem', color: 'var(--t3)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                  Vous n'avez pas connecté votre compte {PLATFORM_NAMES[connectPopupPlatform]}. Voulez-vous vous connecter maintenant ?
+                </div>
+                <div style={{ display: 'flex', gap: '.6rem' }}>
+                  <button onClick={() => setConnectPopupPlatform(null)} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.85rem' }}>
+                    Annuler
+                  </button>
+                  <button onClick={() => router.push('/settings')} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600 }}>
+                    Connecter
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── Colonne gauche : Éditeur ── */}
           <div style={{ flex: '1 1 500px', minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Header */}
@@ -745,7 +773,7 @@ export default function CreatePage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-                {(['linkedin', 'instagram', 'twitter', 'facebook', 'tiktok'] as Platform[]).map(p => {
+                {((isPro ? ['linkedin', 'instagram', 'twitter', 'facebook', 'tiktok'] : ['facebook', 'instagram']) as Platform[]).map(p => {
                   const isSel = selectedPlatforms.includes(p)
                   const isPriority = distributionMode === 'unified' && selectedPlatforms[0] === p
 
@@ -764,11 +792,7 @@ export default function CreatePage() {
                           setSelectedPlatforms(prev => prev.filter(x => x !== p))
                         } else {
                           if (!connectedPlatforms.includes(p)) {
-                            toast(`Veuillez connecter ${PLATFORM_NAMES[p]} dans les Paramètres.`, 'warning')
-                            return
-                          }
-                          if (!isPro && selectedPlatforms.length >= 2) {
-                            toast('Le plan gratuit est limité à 2 plateformes simultanées.', 'warning')
+                            setConnectPopupPlatform(p)
                             return
                           }
                           setSelectedPlatforms(prev => [...prev, p])
@@ -777,6 +801,24 @@ export default function CreatePage() {
                     </label>
                   )
                 })}
+
+                {!isPro && (
+                  <div style={{ marginTop: '.5rem', paddingTop: '.75rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Autres réseaux (PRO)</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {(['linkedin', 'twitter', 'tiktok'] as Platform[]).map((p, i) => (
+                          <div key={p} style={{ width: '22px', height: '22px', borderRadius: '50%', background: PLATFORM_COLORS[p], display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--card)', marginLeft: i === 0 ? 0 : '-8px', zIndex: 10 - i }}>
+                            <PlatformIcon platform={p} size={11} />
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => router.push('/settings')} style={{ background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.75rem', color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }}>
+                        <Lock size={12} /> Débloquer
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
