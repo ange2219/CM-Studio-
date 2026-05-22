@@ -760,7 +760,19 @@ export default function CreatePage() {
                         {isSel && <Check size={12} color="#fff" />}
                       </div>
                       <input type="checkbox" checked={isSel} onChange={() => {
-                        setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+                        if (isSel) {
+                          setSelectedPlatforms(prev => prev.filter(x => x !== p))
+                        } else {
+                          if (!connectedPlatforms.includes(p)) {
+                            toast(`Veuillez connecter ${PLATFORM_NAMES[p]} dans les Paramètres.`, 'warning')
+                            return
+                          }
+                          if (!isPro && selectedPlatforms.length >= 2) {
+                            toast('Le plan gratuit est limité à 2 plateformes simultanées.', 'warning')
+                            return
+                          }
+                          setSelectedPlatforms(prev => [...prev, p])
+                        }
                       }} style={{ display: 'none' }} />
                     </label>
                   )
