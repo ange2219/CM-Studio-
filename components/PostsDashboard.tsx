@@ -572,7 +572,7 @@ export default function PostsDashboard() {
     ? baseFiltered.filter(p => p.platforms.includes(platformFilter))
     : baseFiltered
 
-  const displayPosts = filtered
+  const displayPosts = filtered.slice(0, 5)
 
   const isDraft = selectedPost?.status === 'draft' || selectedPost?.status === 'failed'
   const isDeleted = selectedPost?.status === 'deleted'
@@ -947,10 +947,10 @@ export default function PostsDashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
           <div>
             <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em' }}>
-              Mes Posts
+              Workspace
             </h1>
             <p style={{ color: 'var(--t3)', fontSize: '.9rem', marginTop: '.3rem' }}>
-              Gérez et publiez vos contenus depuis votre workspace.
+              Votre centre de création, de planification et d&apos;analyse.
             </p>
           </div>
           <button onClick={() => toast('Personnalisation disponible bientôt !', 'info')} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.85rem', fontWeight: 500 }}>
@@ -1016,7 +1016,7 @@ export default function PostsDashboard() {
               <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Analytique</h3>
             </div>
             <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Suivez vos performances.</p>
-            <button onClick={() => toast('Analytique disponible bientôt !', 'info')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
+            <button onClick={() => router.push('/posts/analytics')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
               Analyses <ArrowRight size={12} />
             </button>
           </div>
@@ -1044,7 +1044,7 @@ export default function PostsDashboard() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Posts récents</h2>
             <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
           </div>
 
@@ -1285,7 +1285,18 @@ export default function PostsDashboard() {
       )}
 
         {/* Bouton Voir Tout */}
-
+        {!loading && filtered.length > 5 && (
+          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
+            <button
+              onClick={() => router.push('/posts/all')}
+              style={{ background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.7rem 2rem', borderRadius: '10px', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.5rem', transition: '.15s', boxShadow: '0 4px 12px rgba(0,0,0,.05)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.borderColor = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--b1)' }}
+            >
+              Voir tout ({filtered.length})
+            </button>
+          </div>
+        )}
         </div>
       </div>
 
