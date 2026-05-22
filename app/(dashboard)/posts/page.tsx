@@ -1129,17 +1129,20 @@ export default function PostsPage() {
                 </div>
                 {post.platforms && post.platforms.length > 0 && (
                   <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
-                    {post.platforms.map((p, i) => (
+                    {post.platforms.map((p, i) => {
+                      const removed = post.status !== 'draft' && post.platform_errors?.[p] === 'removed_externally'
+                      return (
                       <div key={p} style={{
                         width: '24px', height: '24px', borderRadius: '6px', overflow: 'hidden',
                         boxShadow: '0 2px 8px rgba(0,0,0,.4)',
                         marginLeft: i === 0 ? 0 : '-8px',
                         zIndex: 10 - i,
-                        border: '1.5px solid var(--s2)'
+                        border: '1.5px solid var(--s2)',
+                        filter: removed ? 'grayscale(100%) opacity(50%)' : 'none'
                       }}>
                         <PlatformIcon platform={p} size={24} />
                       </div>
-                    ))}
+                    )})}
                   </div>
                 )}
                 <div style={{ height: '90px', background: 'var(--bg)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1184,9 +1187,11 @@ export default function PostsPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '.85rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.4rem' }}>
-                    {post.platforms.map(p => (
-                      <div key={p} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0 }}><PlatformIcon platform={p} size={16} /></div>
-                    ))}
+                    {post.platforms.map(p => {
+                      const removed = post.status !== 'draft' && post.platform_errors?.[p] === 'removed_externally'
+                      return (
+                      <div key={p} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0, filter: removed ? 'grayscale(100%) opacity(50%)' : 'none' }}><PlatformIcon platform={p} size={16} /></div>
+                    )})}
                     <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
                   </div>
                 </div>
