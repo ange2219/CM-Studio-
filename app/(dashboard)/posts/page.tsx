@@ -1038,24 +1038,7 @@ export default function PostsPage() {
 
         {/* Filters + view toggle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
-          <div className="mob-scroll" style={{ display: 'flex', gap: '.4rem', overflowX: 'auto' }}>
-            {(['all', 'published', 'draft', 'scheduled', 'deleted'] as const).map(f => {
-              const label = f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? 'Brouillons' : f === 'scheduled' ? 'Programmés' : 'Archivés';
-              return (
-                <button key={f} onClick={() => setFilter(f)} style={{
-                  padding: '.3rem .6rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                  border: filter === f ? 'none' : '1px solid transparent',
-                  background: filter === f ? '#2A43E8' : 'var(--s2)',
-                  color: filter === f ? '#fff' : 'var(--t2)', transition: '.15s',
-                  display: 'flex', alignItems: 'center', gap: '.3rem', whiteSpace: 'nowrap',
-                }}>
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-
-          <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
             {(['grid', 'list'] as const).map(v => (
               <button key={v} onClick={() => setView(v)} style={{
                 padding: '.4rem .6rem', borderRadius: '8px',
@@ -1067,37 +1050,53 @@ export default function PostsPage() {
               </button>
             ))}
             
-            {/* Filtre plateforme */}
-            {availablePlatforms.length > 0 && (
-              <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
-                <button
-                  onClick={() => setPfMenuOpen(o => !o)}
-                  style={{
-                    padding: '.3rem .6rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                    border: platformFilter ? '1px solid #4646FF' : '1px solid var(--b1)',
-                    background: platformFilter ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                    color: platformFilter ? 'var(--accent)' : 'var(--t2)', transition: '.15s',
-                    display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
-                  }}
-                >
-                  <Filter size={13} /> Filtres
-                  {platformFilter && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
-                </button>
+            {/* Filtres dropdown */}
+            <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
+              <button
+                onClick={() => setPfMenuOpen(o => !o)}
+                style={{
+                  padding: '.3rem .6rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
+                  border: platformFilter || filter !== 'all' ? '1px solid #4646FF' : '1px solid var(--b1)',
+                  background: platformFilter || filter !== 'all' ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
+                  color: platformFilter || filter !== 'all' ? 'var(--accent)' : 'var(--t2)', transition: '.15s',
+                  display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
+                }}
+              >
+                <Filter size={13} /> Filtres
+                {(platformFilter || filter !== 'all') && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setFilter('all'); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
+              </button>
 
-                {pfMenuOpen && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 5px)', right: 0, zIndex: 200, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.3rem', minWidth: '150px', boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
-                    {availablePlatforms.map(p => (
-                      <button key={p} onClick={() => { setPlatformFilter(p); setPfMenuOpen(false) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: platformFilter === p ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem' }}
-                        onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
+              {pfMenuOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 5px)', right: 0, zIndex: 200, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.5rem', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
+                  
+                  <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.3rem', padding: '0 .3rem' }}>STATUT</div>
+                  {(['all', 'published', 'draft', 'scheduled'] as const).map(f => {
+                    const label = f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? 'Brouillons' : 'Programmés';
+                    return (
+                      <button key={f} onClick={() => { setFilter(f); setPfMenuOpen(false) }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: filter === f ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: filter === f ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem', textAlign: 'left' }}
+                        onMouseEnter={e => { if (filter !== f) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (filter !== f) e.currentTarget.style.background = 'transparent' }}
                       >
-                        <PlatformIcon platform={p} size={14} /> {PLATFORM_SHORT[p] || p}
+                        {label}
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                    )
+                  })}
+
+                  <div style={{ margin: '.5rem 0', borderTop: '1px solid var(--b1)' }} />
+                  <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.3rem', padding: '0 .3rem' }}>PLATEFORMES</div>
+                  
+                  {availablePlatforms.map(p => (
+                    <button key={p} onClick={() => { setPlatformFilter(p); setPfMenuOpen(false) }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: platformFilter === p ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem' }}
+                      onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <PlatformIcon platform={p} size={14} /> {PLATFORM_SHORT[p] || p}
+                    </button>
+                  ))}
+                  {availablePlatforms.length === 0 && <div style={{ fontSize: '.75rem', color: 'var(--t3)', padding: '0 .3rem', marginTop: '.2rem' }}>Aucune plateforme</div>}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
