@@ -1031,13 +1031,15 @@ export default function PostsPage() {
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.75rem' }}>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
-          <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
-        </div>
-
-        {/* Filters + view toggle */}
+        
+        {/* Header & Filters */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
+            <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+          </div>
+
           <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
             {(['grid', 'list'] as const).map(v => (
               <button key={v} onClick={() => setView(v)} style={{
