@@ -1164,54 +1164,7 @@ export default function PostsPage() {
         </div>
       </div>
 
-      {/* ── SECTION OUTILS ET PLUS ── */}
-      <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
-        <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: '0 0 .5rem 0' }}>Outils et plus</h3>
-        <div className="mob-scroll" style={{ display: 'flex', gap: '.75rem', overflowX: 'auto', paddingBottom: '.25rem' }}>
-          <div onClick={() => toast('Bibliothèque médias disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <FileImage size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
-            <div>
-              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Bibliothèque médias</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Gérez vos fichiers</div>
-            </div>
-          </div>
-          <div onClick={() => toast('Générateur d\'images disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <ImageIcon size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
-            <div>
-              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Générateur d'images</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Créez des visuels avec l'IA</div>
-            </div>
-          </div>
-          <div onClick={() => toast('Automatisation disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <Zap size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
-            <div>
-              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Automatisation</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Gagnez du temps</div>
-            </div>
-          </div>
-          <div onClick={() => toast('Rapports disponibles bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <FileText size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
-            <div>
-              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Rapports</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Générez des rapports</div>
-            </div>
-          </div>
-          <div onClick={() => toast('Export de données disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <Database size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
-            <div>
-              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Export de données</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Téléchargez vos données</div>
-            </div>
-          </div>
-          <div onClick={() => router.push('/settings')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <Settings size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
-            <div>
-              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Paramètres</div>
-              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Gérez vos préférences</div>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </div>
   )
 }
