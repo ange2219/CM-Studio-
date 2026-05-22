@@ -133,7 +133,7 @@ function InsightsBadge({ a }: { a: PostAnalytics | null }) {
   )
 }
 
-export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: boolean }) {
+export default function PostsDashboard() {
   const router = useRouter()
   const { toast } = useToast()
   const [posts, setPosts] = useState<Post[]>([])
@@ -572,7 +572,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
     ? baseFiltered.filter(p => p.platforms.includes(platformFilter))
     : baseFiltered
 
-  const displayPosts = isWorkspace ? filtered.slice(0, 5) : filtered
+  const displayPosts = filtered
 
   const isDraft = selectedPost?.status === 'draft' || selectedPost?.status === 'failed'
   const isDeleted = selectedPost?.status === 'deleted'
@@ -947,10 +947,10 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
           <div>
             <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em' }}>
-              {isWorkspace ? 'Workspace' : 'Tous les posts'}
+              Mes Posts
             </h1>
             <p style={{ color: 'var(--t3)', fontSize: '.9rem', marginTop: '.3rem' }}>
-              {isWorkspace ? "Votre centre de création, de planification et d'analyse." : "Gérez toutes vos publications existantes."}
+              Gérez et publiez vos contenus depuis votre workspace.
             </p>
           </div>
           <button onClick={() => toast('Personnalisation disponible bientôt !', 'info')} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.85rem', fontWeight: 500 }}>
@@ -959,7 +959,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
         </div>
 
         {/* 4 Cards */}
-        {isWorkspace && (
+        {(
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
           {/* Nouveau post */}
           <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
@@ -1041,19 +1041,11 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         
         {/* Header & Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: isWorkspace ? '1.5rem' : '0', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            {!isWorkspace ? (
-              <button onClick={() => router.push('/posts')} style={{ background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.4rem .8rem', borderRadius: '8px', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.4rem', transition: '.15s' }} onMouseEnter={e => e.currentTarget.style.background='var(--card)'} onMouseLeave={e => e.currentTarget.style.background='var(--s2)'}>
-                ← Retour
-              </button>
-            ) : (
-              <>
-                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
-                <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
-              </>
-            )}
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
+            <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
           </div>
 
           <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
@@ -1293,13 +1285,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
       )}
 
         {/* Bouton Voir Tout */}
-        {!loading && isWorkspace && filtered.length > 5 && (
-          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
-            <button onClick={() => router.push('/posts/all')} style={{ background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.7rem 2rem', borderRadius: '10px', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.5rem', transition: '.15s', boxShadow: '0 4px 12px rgba(0,0,0,.05)' }} onMouseEnter={e => {e.currentTarget.style.background='var(--s2)'; e.currentTarget.style.borderColor='var(--accent)'}} onMouseLeave={e => {e.currentTarget.style.background='var(--card)'; e.currentTarget.style.borderColor='var(--b1)'}}>
-              Voir tout ({filtered.length})
-            </button>
-          </div>
-        )}
+
         </div>
       </div>
 

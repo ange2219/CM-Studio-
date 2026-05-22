@@ -5,8 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { 
-  Home, Layout, BarChart3, Users, MessageCircle, Search, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X, Calendar
+  Home, Layout, Users, MessageCircle, Search, Bell,
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -83,19 +83,18 @@ export function DashboardShell({ user: initialUser, children }: {
   const initials = (user?.full_name || user?.email || 'U').slice(0, 2).toUpperCase()
 
   const navItems = [
-    { label: 'Home', icon: Home, href: '/home' },
-    { label: 'Workspace', icon: Layout, href: '/posts' },
-    { label: 'Notifications', icon: Bell, href: '/notifications' },
-    { label: 'Messagerie', icon: MessageCircle, href: '/messages' },
-    { label: 'Community', icon: Users, href: '/community' },
+    { label: 'Home',        icon: Home,          href: '/home'          },
+    { label: 'Workspace',   icon: Layout,        href: '/posts'         },
+    { label: 'Notifications', icon: Bell,        href: '/notifications' },
+    { label: 'Messagerie',  icon: MessageCircle, href: '/messages'      },
+    { label: 'Community',   icon: Users,         href: '/community'     },
   ]
 
   const bottomNavItems = [
-    { label: 'Home', icon: Home, href: '/home' },
-    { label: 'Contenu', icon: Layout, href: '/posts' },
-    { label: 'Messages', icon: MessageCircle, href: '/messages' },
-    { label: 'Calendrier', icon: Calendar, href: '/calendar' },
-    { label: 'Profil', icon: User, href: '/profile' },
+    { label: 'Home',      icon: Home,          href: '/home'    },
+    { label: 'Workspace', icon: Layout,        href: '/posts'   },
+    { label: 'Messages',  icon: MessageCircle, href: '/messages'},
+    { label: 'Profil',    icon: User,          href: '/profile' },
   ]
 
   return (
@@ -147,7 +146,7 @@ export function DashboardShell({ user: initialUser, children }: {
         <div style={{ flex: 1, padding: '0 12px' }}>
           <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px' }}>Navigation</div>
           {navItems.map(item => {
-            const active = pathname === item.href
+            const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
             return (
               <Link key={item.label} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s' }}>
                 <item.icon size={18} color={active ? 'var(--accent)' : 'currentColor'} />
