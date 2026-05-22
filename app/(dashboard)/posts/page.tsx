@@ -35,7 +35,7 @@ function stClass(s: string) {
   if (s === 'draft' || s === 'failed') return 'st st-p'
   if (s === 'scheduled') return 'st st-pub'
   if (s === 'published') return 'st st-a'
-  if (s === 'partial')   return 'st st-pub'
+  if (s === 'partial')   return 'st st-a'
   if (s === 'deleted')   return 'st'
   return 'st st-p'
 }
@@ -43,7 +43,7 @@ function stLabel(s: string) {
   if (s === 'draft' || s === 'failed') return 'Brouillon'
   if (s === 'scheduled') return 'Programmé'
   if (s === 'published') return 'Publié'
-  if (s === 'partial')   return 'Partiel'
+  if (s === 'partial')   return 'Publié'
   if (s === 'deleted')   return 'Supprimé'
   return 'Brouillon'
 }
