@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/Toast'
 import { createClient } from '@/lib/supabase/client'
 import {
   Save, Send, Upload, X, ArrowLeft, Clock,
-  ChevronDown, Settings2, Layers, Zap, Check, Target,
+  ChevronDown, Settings2, Layers, Zap, Check, Target, Star,
   Sparkles, Lock, Bookmark, Bold, Italic, Underline, Strikethrough, List, Link, Smile
 } from 'lucide-react'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
@@ -514,7 +514,7 @@ export default function CreatePage() {
   const objectiveBtnLabel = objective || 'Objectif'
 
   return (
-    <div className="pc" style={{ maxWidth: '1200px' }}>
+    <div className="pc" style={{ maxWidth: '1200px', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
       {/* Overlay génération */}
       {overlayOpen && (
@@ -643,10 +643,10 @@ export default function CreatePage() {
 
       {/* ── Mode IA ────────────────────────────────────────────────────── */}
       {mode === 'ai' && (
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '2rem', flex: 1, minHeight: 0, overflow: 'hidden' }}>
 
           {/* ── Colonne gauche : Éditeur ── */}
-          <div style={{ flex: '1 1 500px', minWidth: 0 }}>
+          <div style={{ flex: '1 1 500px', minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
@@ -678,9 +678,9 @@ export default function CreatePage() {
 
             <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>1. Sujet</div>
 
-            <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
-              <div style={{ padding: '.75rem', borderBottom: '1px solid var(--b1)', display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+              <div style={{ padding: '.75rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
                 {[
                   { icon: Bold, label: 'Gras' }, { icon: Italic, label: 'Italique' }, { icon: Underline, label: 'Souligné' }, { icon: Strikethrough, label: 'Barré' },
                   { icon: List, label: 'Liste' }, { icon: Link, label: 'Lien' }, { icon: Smile, label: 'Emoji' }
@@ -700,18 +700,18 @@ export default function CreatePage() {
               />
 
               {/* Footer */}
-              <div style={{ padding: '.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--b1)' }}>
+              <div style={{ padding: '.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{brief.length} / 2000 caractères</span>
-                <button onClick={() => toast("Suggestions IA disponibles bientôt", "info")} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'transparent', border: '1px solid var(--b1)', borderRadius: '6px', padding: '.4rem .75rem', fontSize: '.75rem', color: 'var(--t2)', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--t3)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)' }}>
-                  <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Suggestions IA
+                <button onClick={() => toast("Suggestions IA disponibles bientôt", "info")} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '.4rem .75rem', fontSize: '.75rem', color: 'var(--t2)', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--t3)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}>
+                  <Sparkles size={14} style={{ color: 'var(--t3)' }} /> Suggestions IA
                 </button>
               </div>
             </div>
 
             {/* Bouton générer principal */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden' }}>
-                <button onClick={handleGenerate} className="btn-primary" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, display: 'flex', alignItems: 'center', gap: '.5rem', borderRight: '1px solid rgba(0,0,0,0.2)' }}>
+                <button onClick={handleGenerate} className="btn-primary" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, display: 'flex', alignItems: 'center', gap: '.5rem', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
                   <Sparkles size={18} /> Générer le post
                 </button>
                 <button onClick={() => toast("Options supplémentaires bientôt", "info")} className="btn-primary" style={{ padding: '.8rem .8rem', borderRadius: 0 }}>
@@ -722,14 +722,14 @@ export default function CreatePage() {
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto', paddingRight: '4px' }}>
 
             {/* Block Plateforme */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1.25rem' }}>
+            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: '0 0 .25rem 0' }}>Plateforme</h3>
               <p style={{ fontSize: '.75rem', color: 'var(--t3)', margin: '0 0 1.25rem 0' }}>Choisissez où publier votre contenu</p>
 
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--b1)', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.25rem' }}>
                 <button
                   onClick={() => setDistributionMode('unified')}
                   style={{ flex: 1, padding: '.5rem', background: 'none', border: 'none', borderBottom: distributionMode === 'unified' ? '2px solid var(--accent)' : '2px solid transparent', color: distributionMode === 'unified' ? 'var(--accent)' : 'var(--t3)', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', transition: '.2s' }}
@@ -745,11 +745,14 @@ export default function CreatePage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-                {FREE_PLATFORMS.map(p => {
+                {(['linkedin', 'instagram', 'twitter', 'facebook', 'tiktok'] as Platform[]).map(p => {
                   const isSel = selectedPlatforms.includes(p)
+                  const isPriority = distributionMode === 'unified' && selectedPlatforms[0] === p
+
                   return (
-                    <label key={p} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '.5rem', borderRadius: '8px', background: isSel ? 'rgba(255,255,255,0.03)' : 'transparent', transition: '.2s' }}>
+                    <label key={p} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '.5rem', borderRadius: '8px', background: 'transparent', transition: '.2s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                        {isPriority && <Star size={14} color="var(--accent)" fill="var(--accent)" style={{ marginRight: '-4px' }} />}
                         <PlatformIcon platform={p} size={18} />
                         <span style={{ fontSize: '.85rem', color: isSel ? 'var(--t1)' : 'var(--t2)', fontWeight: isSel ? 500 : 400 }}>{PLATFORM_NAMES[p]}</span>
                       </div>
@@ -762,36 +765,11 @@ export default function CreatePage() {
                     </label>
                   )
                 })}
-                
-                {/* PRO Platforms stacked */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.5rem', opacity: isPro ? 1 : 0.6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {ALL_PLATFORMS.filter(p => !FREE_PLATFORMS.includes(p)).map((p, i) => (
-                      <div key={p} style={{
-                        width: '24px', height: '24px', borderRadius: '50%', background: PLATFORM_COLORS[p],
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '2px solid var(--card)',
-                        marginLeft: i === 0 ? 0 : '-10px',
-                        zIndex: 10 - i
-                      }}>
-                        <PlatformIcon platform={p} size={12} />
-                      </div>
-                    ))}
-                  </div>
-                  {isPro ? (
-                    <span style={{ fontSize: '.75rem', color: 'var(--accent)', fontWeight: 500 }}>Disponible (PRO)</span>
-                  ) : (
-                    <button onClick={() => router.push('/settings')} style={{ background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.75rem', color: 'var(--t3)', cursor: 'pointer', fontWeight: 500 }} onMouseEnter={e => e.currentTarget.style.color='var(--t1)'} onMouseLeave={e => e.currentTarget.style.color='var(--t3)'}>
-                      <Lock size={12} /> Débloquer PRO
-                    </button>
-                  )}
-                </div>
-
               </div>
             </div>
 
             {/* Block Paramètres */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1.25rem' }}>
+            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.25rem' }}>
                 <Settings2 size={16} color="var(--t2)" />
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>Paramètres</h3>
@@ -803,7 +781,7 @@ export default function CreatePage() {
                   <select
                     value={params.tone}
                     onChange={e => setParams({ ...params, tone: e.target.value as PostTone })}
-                    style={{ width: '100%', padding: '.6rem', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none' }}
+                    style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
                   >
                     <option value="professionnel">Professionnel</option>
                     <option value="decontracte">Décontracté</option>
@@ -814,15 +792,15 @@ export default function CreatePage() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Longueur</label>
-                  <div style={{ display: 'flex', border: '1px solid var(--b1)', borderRadius: '8px', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
                     {(['court', 'moyen', 'long'] as const).map(l => (
                       <button
                         key={l}
                         onClick={() => setParams({ ...params, length: l })}
                         style={{
                           flex: 1, padding: '.5rem', border: 'none',
-                          background: params.length === l ? 'var(--s2)' : 'transparent',
-                          color: params.length === l ? 'var(--accent)' : 'var(--t3)',
+                          background: params.length === l ? 'var(--accent)' : 'transparent',
+                          color: params.length === l ? '#fff' : 'var(--t3)',
                           fontSize: '.8rem', fontWeight: 500, cursor: 'pointer', transition: '.2s'
                         }}
                       >
@@ -837,9 +815,9 @@ export default function CreatePage() {
                   <select
                     value={params.format}
                     onChange={e => setParams({ ...params, format: e.target.value as PostFormat })}
-                    style={{ width: '100%', padding: '.6rem', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none' }}
+                    style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
                   >
-                    <option value="direct">Direct</option>
+                    <option value="direct">Humoristique</option>
                     <option value="liste">Liste</option>
                     <option value="narratif">Narratif</option>
                     <option value="question">Question</option>
