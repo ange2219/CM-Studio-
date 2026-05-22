@@ -1124,32 +1124,29 @@ export default function PostsPage() {
                 onClick={() => openPost(post)}
                 style={{ background: 'var(--s2)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '12px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', display: 'flex', flexDirection: 'column' }}
               >
-                <div style={{ aspectRatio: '1', background: 'var(--bg)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 10, cursor: 'pointer' }}>
-                    {isSelected ? <CheckSquare size={22} color="var(--accent)" style={{ background: '#fff', borderRadius: '4px' }} /> : <Square size={22} color="rgba(255,255,255,.7)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />}
+                <div style={{ aspectRatio: '1', background: 'var(--s2)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}>
+                    {isSelected ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} /> : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />}
                   </div>
-                  {post.platforms && post.platforms.length > 0 && (
-                    <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
-                      {post.platforms.map((p, i) => {
-                        const removed = post.status !== 'draft' && post.platform_errors?.[p] === 'removed_externally'
-                        return (
-                        <div key={p} style={{
-                          width: '28px', height: '28px', borderRadius: '6px', overflow: 'hidden',
-                          boxShadow: '0 2px 8px rgba(0,0,0,.4)',
-                          marginLeft: i === 0 ? 0 : '-8px',
-                          zIndex: 10 - i,
-                          border: '1.5px solid var(--s2)',
-                          filter: removed ? 'grayscale(100%) opacity(50%)' : 'none'
-                        }}>
-                          <PlatformIcon platform={p} size={28} />
-                        </div>
-                      )})}
-                    </div>
-                  )}
                   {post.media_urls?.[0]
                     ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    : <ImageIcon size={32} color="var(--t3)" opacity={0.3} />
+                    : <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
+                        <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
+                        <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
+                        <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
+                      </svg>
                   }
+                  <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '3px', zIndex: 6 }}>
+                    {post.platforms.slice(0, 3).map(p => {
+                      const hasErr = post.status !== 'draft' && !!post.platform_errors?.[p]
+                      const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
+                      return (
+                        <div key={p} title={title} style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
+                          <PlatformIcon platform={p} size={18} />
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
                 <div style={{ padding: '.75rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontSize: '.75rem', color: 'var(--t1)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.5rem', flex: 1 }}>
