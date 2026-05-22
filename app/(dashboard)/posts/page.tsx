@@ -141,6 +141,7 @@ export default function PostsPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'scheduled'>('all')
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [viewAll, setViewAll] = useState(false)
   const [publishing, setPublishing] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [restoring, setRestoring] = useState<string | null>(null)
@@ -572,6 +573,8 @@ export default function PostsPage() {
     ? baseFiltered.filter(p => p.platforms.includes(platformFilter))
     : baseFiltered
 
+  const displayPosts = viewAll ? filtered : filtered.slice(0, 5)
+
   const isDraft = selectedPost?.status === 'draft' || selectedPost?.status === 'failed'
   const isDeleted = selectedPost?.status === 'deleted'
   const draftCount = posts.filter(p => p.status === 'draft' || p.status === 'failed').length
@@ -953,7 +956,8 @@ export default function PostsPage() {
         </div>
 
         {/* 4 Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem' }}>
+        {!viewAll && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
           {/* Nouveau post */}
           <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
@@ -1027,17 +1031,26 @@ export default function PostsPage() {
             </button>
           </div>
         </div>
+        )}
       </div>
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         
         {/* Header & Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: viewAll ? '0' : '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
-            <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+            {viewAll ? (
+              <button onClick={() => setViewAll(false)} style={{ background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.4rem .8rem', borderRadius: '8px', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.4rem', transition: '.15s' }} onMouseEnter={e => e.currentTarget.style.background='var(--card)'} onMouseLeave={e => e.currentTarget.style.background='var(--s2)'}>
+                ← Retour
+              </button>
+            ) : (
+              <>
+                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
+                <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+              </>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
@@ -1106,7 +1119,7 @@ export default function PostsPage() {
         <div className="sb-scroll" style={{ flex: 1, overflowY: 'auto', paddingRight: '.25rem' }}>
           {loading ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
-          ) : filtered.length === 0 ? (
+          ) : displayPosts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round">
@@ -1122,7 +1135,7 @@ export default function PostsPage() {
         </div>
       ) : view === 'grid' ? (
         <div>
-          {groupPostsByDate(filtered).map(group => (
+          {groupPostsByDate(displayPosts).map(group => (
             <div key={group.label} style={{ marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.6rem', paddingLeft: '.1rem' }}>
                 {group.label}
@@ -1202,7 +1215,7 @@ export default function PostsPage() {
         </div>
       ) : (
         <div>
-          {groupPostsByDate(filtered).map(group => (
+          {groupPostsByDate(displayPosts).map(group => (
             <div key={group.label} style={{ marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.5rem', paddingLeft: '.1rem' }}>
                 {group.label}
@@ -1275,6 +1288,15 @@ export default function PostsPage() {
           ))}
         </div>
       )}
+
+        {/* Bouton Voir Tout */}
+        {!loading && !viewAll && filtered.length > 5 && (
+          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
+            <button onClick={() => setViewAll(true)} style={{ background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.7rem 2rem', borderRadius: '10px', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.5rem', transition: '.15s', boxShadow: '0 4px 12px rgba(0,0,0,.05)' }} onMouseEnter={e => {e.currentTarget.style.background='var(--s2)'; e.currentTarget.style.borderColor='var(--accent)'}} onMouseLeave={e => {e.currentTarget.style.background='var(--card)'; e.currentTarget.style.borderColor='var(--b1)'}}>
+              Voir tout ({filtered.length})
+            </button>
+          </div>
+        )}
         </div>
       </div>
 
