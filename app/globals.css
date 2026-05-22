@@ -94,6 +94,11 @@ body {
     @apply bg-s2 border border-b1 text-t1 placeholder:text-t3 rounded-lg px-3 py-2 text-sm w-full outline-none focus:border-accent transition-colors;
   }
 
+  select option {
+    background-color: var(--s2);
+    color: var(--t1);
+  }
+
   .label {
     @apply text-t2 text-sm font-medium mb-1.5 block;
   }

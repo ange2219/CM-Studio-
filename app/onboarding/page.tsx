@@ -125,6 +125,10 @@ const labelStyle: React.CSSProperties = {
   display: 'block', fontSize: '.78rem', color: 'var(--t2)',
   fontWeight: 600, marginBottom: '.4rem',
 }
+const optionStyle: React.CSSProperties = {
+  background: 'var(--s2)',
+  color: 'var(--t1)',
+}
 
 function ChipGrid({ options, selected, onToggle, max }: {
   options: string[], selected: string[], onToggle: (v: string) => void, max?: number
@@ -333,33 +337,33 @@ export default function OnboardingPage() {
 
   return (
     <>
-      <button onClick={toggleTheme} type="button" style={{ position: 'fixed', top: 20, right: 20, zIndex: 100, width: 40, height: 40, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(123,92,245,0.2)' }}>
+      <button onClick={toggleTheme} type="button" style={{ position: 'fixed', top: 20, right: 20, zIndex: 100, width: 40, height: 40, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px var(--shadow)' }}>
         {theme === 'dark'
           ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" strokeWidth="1.8" strokeLinecap="round"><path d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 12c0 5.385 4.365 9.75 9.75 9.75 4.282 0 7.937-2.764 9.002-6.998Z"/></svg>
           : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" strokeWidth="1.8" strokeLinecap="round"><path d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></svg>
         }
       </button>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '3px', background: 'rgba(255,255,255,0.06)', zIndex: 100 }}>
-        <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--accent),var(--accent2))', width: `${progress}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 0 8px rgba(30,87,205,0.6)' }} />
+        <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--accent),var(--accent-secondary))', width: `${progress}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 0 8px var(--accent)' }} />
       </div>
 
       <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '3rem 1.5rem 2rem', position: 'relative', overflow: 'hidden' }}>
 
-        <div style={{ position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse at center,rgba(123,92,245,0.09) 0%,transparent 65%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse at center,var(--accent-light) 0%,transparent 65%)', pointerEvents: 'none' }} />
 
         <div style={{ marginBottom: '2.5rem', position: 'relative', zIndex: 1 }}>
-          <span style={{ fontFamily: "'Syne',sans-serif", fontSize: '1.5rem', fontWeight: 800, background: 'linear-gradient(135deg,var(--accent),var(--accent2))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>CM Studio</span>
+          <span style={{ fontFamily: "'Syne',sans-serif", fontSize: '1.5rem', fontWeight: 800, background: 'linear-gradient(135deg,var(--accent),var(--accent-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>CM Studio</span>
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '1.25rem', maxWidth: '460px', position: 'relative', zIndex: 1 }}>
-          <p style={{ fontSize: '.72rem', color: '#7B5CF5', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.6rem' }}>{meta.motivation}</p>
+          <p style={{ fontSize: '.72rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.6rem' }}>{meta.motivation}</p>
           <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: '1.9rem', fontWeight: 800, color: 'var(--t1)', lineHeight: 1.15, marginBottom: '.5rem' }}>{meta.title}</h1>
           <p style={{ fontSize: '.875rem', color: 'var(--t3)', lineHeight: 1.5 }}>{meta.subtitle}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '.4rem', marginBottom: '1.75rem', position: 'relative', zIndex: 1 }}>
           {STEPS.map((_, i) => (
-            <div key={i} style={{ height: '6px', width: i === step ? '22px' : '6px', borderRadius: '3px', background: i <= step ? '#7B5CF5' : 'rgba(255,255,255,0.12)', transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)' }} />
+            <div key={i} style={{ height: '6px', width: i === step ? '22px' : '6px', borderRadius: '3px', background: i <= step ? 'var(--accent)' : 'var(--b1)', transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)' }} />
           ))}
         </div>
 
@@ -374,15 +378,15 @@ export default function OnboardingPage() {
                   {ACCOUNT_TYPES.map(type => {
                     const selected = data.account_type === type.value
                     return (
-                      <button key={type.value} type="button" onClick={() => update('account_type', type.value)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '.9rem 1rem', borderRadius: '10px', textAlign: 'left', border: selected ? '1.5px solid #7B5CF5' : '1px solid var(--b1)', background: selected ? 'rgba(123,92,245,0.08)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s', width: '100%' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: selected ? 'rgba(123,92,245,0.15)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <type.icon size={17} style={{ color: selected ? '#7B5CF5' : 'var(--t3)' }} />
+                      <button key={type.value} type="button" onClick={() => update('account_type', type.value)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '.9rem 1rem', borderRadius: '10px', textAlign: 'left', border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s', width: '100%' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: selected ? 'var(--accent-light)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <type.icon size={17} style={{ color: selected ? 'var(--accent)' : 'var(--t3)' }} />
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '.875rem', fontWeight: 600, color: selected ? '#7B5CF5' : 'var(--t1)', marginBottom: '.15rem' }}>{type.label}</div>
+                          <div style={{ fontSize: '.875rem', fontWeight: 600, color: selected ? 'var(--accent)' : 'var(--t1)', marginBottom: '.15rem' }}>{type.label}</div>
                           <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{type.desc}</div>
                         </div>
-                        {selected && <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#7B5CF5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={11} color="#fff" /></div>}
+                        {selected && <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={11} color="#fff" /></div>}
                       </button>
                     )
                   })}
@@ -397,8 +401,8 @@ export default function OnboardingPage() {
               <div>
                 <label style={labelStyle}>Secteur d&apos;activité *</label>
                 <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.industry} onChange={e => update('industry', e.target.value)}>
-                  <option value="">Choisir un secteur...</option>
-                  {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                  <option style={optionStyle} value="">Choisir un secteur...</option>
+                  {INDUSTRIES.map(ind => <option style={optionStyle} key={ind} value={ind}>{ind}</option>)}
                 </select>
               </div>
 
@@ -422,31 +426,31 @@ export default function OnboardingPage() {
               <div>
                 <label style={labelStyle}>Qui sont vos clients / abonnés ? *</label>
                 <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.target_audience} onChange={e => update('target_audience', e.target.value)}>
-                  <option value="">Choisir un profil...</option>
-                  {TARGET_AUDIENCE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                  <option style={optionStyle} value="">Choisir un profil...</option>
+                  {TARGET_AUDIENCE_OPTIONS.map(o => <option style={optionStyle} key={o} value={o}>{o}</option>)}
                 </select>
               </div>
 
               <div>
                 <label style={labelStyle}>Tranche d&apos;âge principale *</label>
                 <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.audience_age} onChange={e => update('audience_age', e.target.value)}>
-                  <option value="">Choisir une tranche d&apos;âge...</option>
-                  {AGE_RANGES.map(age => <option key={age} value={age}>{age}</option>)}
+                  <option style={optionStyle} value="">Choisir une tranche d&apos;âge...</option>
+                  {AGE_RANGES.map(age => <option style={optionStyle} key={age} value={age}>{age}</option>)}
                 </select>
               </div>
 
               <div>
                 <label style={labelStyle}>Centres d&apos;intérêt <span style={{ fontWeight: 400, color: 'var(--t3)' }}>(optionnel)</span></label>
                 <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.audience_interests} onChange={e => update('audience_interests', e.target.value)}>
-                  <option value="">Choisir un centre d&apos;intérêt...</option>
-                  {INTERESTS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                  <option style={optionStyle} value="">Choisir un centre d&apos;intérêt...</option>
+                  {INTERESTS_OPTIONS.map(o => <option style={optionStyle} key={o} value={o}>{o}</option>)}
                 </select>
               </div>
 
               <div>
                 <label style={labelStyle}>Portée géographique</label>
                 <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.audience_location} onChange={e => update('audience_location', e.target.value)}>
-                  {LOCATIONS.map(loc => <option key={loc.value} value={loc.value}>{loc.label}</option>)}
+                  {LOCATIONS.map(loc => <option style={optionStyle} key={loc.value} value={loc.value}>{loc.label}</option>)}
                 </select>
               </div>
 
@@ -455,15 +459,15 @@ export default function OnboardingPage() {
                   Vos piliers de contenu * <span style={{ fontWeight: 400, color: 'var(--t3)' }}>({selectedPillars.length}/5 max)</span>
                 </label>
                 <select style={{ ...fieldStyle, cursor: 'pointer' }} value="" onChange={e => addPillar(e.target.value)}>
-                  <option value="">Ajouter un pilier...</option>
-                  {CONTENT_PILLARS_OPTIONS.filter(o => !selectedPillars.includes(o)).map(o => <option key={o} value={o}>{o}</option>)}
+                  <option style={optionStyle} value="">Ajouter un pilier...</option>
+                  {CONTENT_PILLARS_OPTIONS.filter(o => !selectedPillars.includes(o)).map(o => <option style={optionStyle} key={o} value={o}>{o}</option>)}
                 </select>
                 {selectedPillars.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginTop: '.5rem' }}>
                     {selectedPillars.map(p => (
-                      <span key={p} style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '.3rem .7rem', borderRadius: '20px', background: 'rgba(123,92,245,0.12)', border: '1px solid rgba(123,92,245,0.3)', fontSize: '.8rem', color: '#7B5CF5' }}>
+                      <span key={p} style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '.3rem .7rem', borderRadius: '20px', background: 'var(--accent-light)', border: '1px solid var(--accent)', fontSize: '.8rem', color: 'var(--accent)' }}>
                         {p}
-                        <button type="button" onClick={() => removePillar(p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7B5CF5', padding: 0, lineHeight: 1, fontSize: '.9rem' }}>×</button>
+                        <button type="button" onClick={() => removePillar(p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', padding: 0, lineHeight: 1, fontSize: '.9rem' }}>×</button>
                       </span>
                     ))}
                   </div>
@@ -476,8 +480,8 @@ export default function OnboardingPage() {
                   {TONES.map(t => {
                     const sel = data.tone === t.value
                     return (
-                      <button key={t.value} type="button" onClick={() => update('tone', t.value)} style={{ padding: '.75rem', borderRadius: '10px', textAlign: 'left', border: sel ? '1.5px solid #7B5CF5' : '1px solid var(--b1)', background: sel ? 'rgba(123,92,245,0.08)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s' }}>
-                        <div style={{ fontSize: '.825rem', fontWeight: 600, color: sel ? '#7B5CF5' : 'var(--t1)', marginBottom: '.15rem' }}>{t.label}</div>
+                      <button key={t.value} type="button" onClick={() => update('tone', t.value)} style={{ padding: '.75rem', borderRadius: '10px', textAlign: 'left', border: sel ? '1.5px solid var(--accent)' : '1px solid var(--b1)', background: sel ? 'var(--accent-light)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s' }}>
+                        <div style={{ fontSize: '.825rem', fontWeight: 600, color: sel ? 'var(--accent)' : 'var(--t1)', marginBottom: '.15rem' }}>{t.label}</div>
                         <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>{t.desc}</div>
                       </button>
                     )
@@ -499,10 +503,10 @@ export default function OnboardingPage() {
                 {OBJECTIVES.map(obj => {
                   const selected = data.objectives.includes(obj.value)
                   return (
-                    <button key={obj.value} type="button" onClick={() => toggleObjective(obj.value)} style={{ padding: '.9rem', borderRadius: '10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '.6rem', border: selected ? '1.5px solid #7B5CF5' : '1px solid var(--b1)', background: selected ? 'rgba(123,92,245,0.08)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}>
-                      <obj.icon size={16} style={{ color: selected ? '#7B5CF5' : 'var(--t3)', flexShrink: 0 }} />
-                      <span style={{ fontSize: '.825rem', fontWeight: 600, color: selected ? '#7B5CF5' : 'var(--t1)' }}>{obj.label}</span>
-                      {selected && <div style={{ position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: '50%', background: '#7B5CF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={9} color="#fff" /></div>}
+                    <button key={obj.value} type="button" onClick={() => toggleObjective(obj.value)} style={{ padding: '.9rem', borderRadius: '10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '.6rem', border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}>
+                      <obj.icon size={16} style={{ color: selected ? 'var(--accent)' : 'var(--t3)', flexShrink: 0 }} />
+                      <span style={{ fontSize: '.825rem', fontWeight: 600, color: selected ? 'var(--accent)' : 'var(--t1)' }}>{obj.label}</span>
+                      {selected && <div style={{ position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={9} color="#fff" /></div>}
                     </button>
                   )
                 })}
@@ -511,15 +515,15 @@ export default function OnboardingPage() {
               <div>
                 <label style={labelStyle}>Fréquence de publication souhaitée</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <input type="range" min={1} max={21} value={data.posts_per_week} onChange={e => update('posts_per_week', parseInt(e.target.value))} style={{ flex: 1, accentColor: '#7B5CF5' }} />
+                  <input type="range" min={1} max={21} value={data.posts_per_week} onChange={e => update('posts_per_week', parseInt(e.target.value))} style={{ flex: 1, accentColor: 'var(--accent)' }} />
                   <span style={{ fontSize: '.825rem', fontWeight: 700, color: 'var(--t1)', width: '8rem', flexShrink: 0 }}>
                     {data.posts_per_week} post{data.posts_per_week > 1 ? 's' : ''}/semaine
                   </span>
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(123,92,245,0.05)', border: '1px solid rgba(123,92,245,0.18)', borderRadius: '10px', padding: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', color: '#7B5CF5', fontSize: '.825rem', fontWeight: 600, marginBottom: '.5rem' }}>
+              <div style={{ background: 'var(--accent-light)', border: '1px solid var(--accent)', borderRadius: '10px', padding: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', color: 'var(--accent)', fontSize: '.825rem', fontWeight: 600, marginBottom: '.5rem' }}>
                   <Sparkles size={14} /> Votre profil IA est prêt
                 </div>
                 <p style={{ fontSize: '.78rem', color: 'var(--t3)', lineHeight: 1.6 }}>
@@ -560,7 +564,7 @@ export default function OnboardingPage() {
                         type="button"
                         disabled={isConnecting}
                         onClick={() => connectSocial(platform, oauthUrl)}
-                        style={{ fontSize: '.78rem', fontWeight: 600, color: '#7B5CF5', border: '1px solid rgba(123,92,245,0.3)', background: 'rgba(123,92,245,0.08)', padding: '.4rem .8rem', borderRadius: '7px', cursor: isConnecting ? 'not-allowed' : 'pointer', opacity: isConnecting ? 0.6 : 1, minWidth: 90, textAlign: 'center' }}
+                        style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--accent)', border: '1px solid var(--accent)', background: 'var(--accent-light)', padding: '.4rem .8rem', borderRadius: '7px', cursor: isConnecting ? 'not-allowed' : 'pointer', opacity: isConnecting ? 0.6 : 1, minWidth: 90, textAlign: 'center' }}
                       >
                         {isConnecting ? '...' : 'Connecter'}
                       </button>
@@ -570,7 +574,7 @@ export default function OnboardingPage() {
               })}
 
               <p style={{ fontSize: '.75rem', color: 'var(--t3)', textAlign: 'center', marginTop: '.25rem' }}>
-                TikTok, Twitter / X et LinkedIn disponibles avec le plan <span style={{ color: '#7B5CF5', fontWeight: 600 }}>Pro</span>.
+                TikTok, Twitter / X et LinkedIn disponibles avec le plan <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Pro</span>.
               </p>
             </div>
           )}
