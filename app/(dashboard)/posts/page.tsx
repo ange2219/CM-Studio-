@@ -180,6 +180,10 @@ export default function PostsPage() {
   const [plusMenuOpen, setPlusMenuOpen] = useState(false)
   const plusMenuRef = useRef<HTMLDivElement>(null)
 
+  // Nouveau post menu
+  const [npMenuOpen, setNpMenuOpen] = useState(false)
+  const npMenuRef = useRef<HTMLDivElement>(null)
+
   // Filtre par plateforme
   const [platformFilter, setPlatformFilter] = useState<string | null>(null)
   const [pfMenuOpen, setPfMenuOpen] = useState(false)
@@ -205,6 +209,14 @@ export default function PostsPage() {
     if (pfMenuOpen) document.addEventListener('mousedown', handleOutsidePf)
     return () => document.removeEventListener('mousedown', handleOutsidePf)
   }, [pfMenuOpen])
+
+  useEffect(() => {
+    function handleOutsideNp(e: MouseEvent) {
+      if (npMenuRef.current && !npMenuRef.current.contains(e.target as Node)) setNpMenuOpen(false)
+    }
+    if (npMenuOpen) document.addEventListener('mousedown', handleOutsideNp)
+    return () => document.removeEventListener('mousedown', handleOutsideNp)
+  }, [npMenuOpen])
 
   function toggleSelect(id: string) {
     setSelectedIds(prev => {
@@ -929,7 +941,7 @@ export default function PostsPage() {
       )}
 
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem', marginTop: '-.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.5rem' }}>
           <div>
             <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em' }}>Workspace</h1>
@@ -951,9 +963,29 @@ export default function PostsPage() {
               <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Nouveau post</h3>
             </div>
             <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Créez ou générez du contenu avec/sans IA.</p>
-            <button onClick={() => router.push('/posts/create')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
-              Créer <ArrowRight size={12} />
-            </button>
+            <div style={{ position: 'relative', marginTop: '.75rem' }} ref={npMenuRef}>
+              <button onClick={() => setNpMenuOpen(o => !o)} style={{ width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
+                Nouveau <ChevronDown size={12} style={{ transition: 'transform .15s', transform: npMenuOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+              </button>
+              {npMenuOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 5px)', left: 0, width: '100%', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
+                  <button onClick={() => { setNpMenuOpen(false); router.push('/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Générer (IA)
+                  </button>
+                  <button onClick={() => {
+                    setNpMenuOpen(false)
+                    try {
+                      sessionStorage.setItem('social_ia_results', JSON.stringify({
+                        variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
+                      }))
+                    } catch {}
+                    router.push('/posts/results')
+                  }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <PenLine size={14} style={{ color: 'var(--t2)' }} /> Créer manuellement
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           {/* Calendrier */}
           <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
