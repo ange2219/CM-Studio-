@@ -1106,105 +1106,174 @@ export default function PostsPage() {
           {loading ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'var(--s2)', borderRadius: '12px', border: '1px dashed var(--b1)' }}>
-              <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>
-                {filter === 'all'       && 'Aucun post pour le moment'}
-                {filter === 'published' && 'Aucun post publié'}
-                {filter === 'draft'     && 'Aucun post dans les brouillons'}
-                {filter === 'scheduled' && 'Aucun post programmé'}
-                {filter === 'deleted'   && 'Aucun post archivé'}
+            <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+          <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>
+            </svg>
+          </div>
+          <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>
+            {filter === 'all'       && 'Aucun post pour le moment'}
+            {filter === 'published' && 'Aucun post publié'}
+            {filter === 'draft'     && 'Aucun post dans les brouillons'}
+            {filter === 'scheduled' && 'Aucun post programmé'}
+          </div>
+        </div>
+      ) : view === 'grid' ? (
+        <div>
+          {groupPostsByDate(filtered).map(group => (
+            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.6rem', paddingLeft: '.1rem' }}>
+                {group.label}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '.6rem' }}>
+                {group.posts.map(post => {
+                  const isSelected = selectedIds.has(post.id)
+                  return (
+                  <div key={post.id}
+                    onClick={() => openPost(post)}
+                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative' }}
+                    onMouseEnter={e => {
+                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
+                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
+                      if (overlay) overlay.style.opacity = '1'
+                    }}
+                    onMouseLeave={e => {
+                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)'
+                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
+                      if (overlay) overlay.style.opacity = '0'
+                    }}
+                  >
+                    <div
+                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
+                      style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}
+                    >
+                      {isSelected
+                        ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
+                        : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
+                      }
+                    </div>
+                    <div style={{ aspectRatio: '1', background: 'var(--s2)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {post.media_urls?.[0]
+                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        : <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
+                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
+                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
+                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
+                          </svg>
+                      }
+                      {post.status === 'published' && <InsightsBadge a={post.analytics} />}
+                      <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '3px', zIndex: 6 }}>
+                        {post.platforms.slice(0, 3).map(p => {
+                          const hasErr = !!post.platform_errors?.[p]
+                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
+                          return (
+                            <div key={p} title={title} style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
+                              <PlatformIcon platform={p} size={18} />
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div style={{ padding: '.55rem .6rem' }}>
+                      <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.45rem' }}>
+                        {post.content}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span className={stClass(post.status)} style={{ fontSize: '.62rem' }}>{stLabel(post.status)}</span>
+                        {(post.status === 'draft' || post.status === 'failed') && (
+                          <div style={{ display: 'flex', gap: '.25rem' }} onClick={e => e.stopPropagation()}>
+                            <button onClick={() => publishPost(post)} disabled={publishing === post.id} title="Publier"
+                              style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '5px', padding: '.2rem .35rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>
+                              {publishing === post.id
+                                ? <div style={{ width: '10px', height: '10px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
+                                : <Send size={10} />}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )})}
               </div>
             </div>
-          ) : view === 'grid' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '.75rem' }}>
-            {filtered.slice(0, 8).map(post => {
-              const isSelected = selectedIds.has(post.id)
-              return (
-              <div key={post.id}
-                onClick={() => openPost(post)}
-                style={{ background: 'var(--s2)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '12px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', display: 'flex', flexDirection: 'column' }}
-              >
-                <div style={{ aspectRatio: '1', background: 'var(--s2)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}>
-                    {isSelected ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} /> : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />}
-                  </div>
-                  {post.media_urls?.[0]
-                    ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    : <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                        <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                        <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                        <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                      </svg>
-                  }
-                  <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '3px', zIndex: 6 }}>
-                    {post.platforms.slice(0, 3).map(p => {
-                      const hasErr = post.status !== 'draft' && !!post.platform_errors?.[p]
-                      const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                      return (
-                        <div key={p} title={title} style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                          <PlatformIcon platform={p} size={18} />
+          ))}
+        </div>
+      ) : (
+        <div>
+          {groupPostsByDate(filtered).map(group => (
+            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.5rem', paddingLeft: '.1rem' }}>
+                {group.label}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                {group.posts.map(post => {
+                  const isSelected = selectedIds.has(post.id)
+                  return (
+                  <div key={post.id}
+                    onClick={() => openPost(post)}
+                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '8px', padding: '.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)' }}
+                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)' }}
+                  >
+                    <div
+                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
+                      style={{ flexShrink: 0, cursor: 'pointer' }}
+                    >
+                      {isSelected ? <CheckSquare size={17} color="var(--accent)" /> : <Square size={17} color="#52525C" />}
+                    </div>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '6px', background: 'var(--s2)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {post.media_urls?.[0]
+                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <svg width="22" height="22" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
+                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
+                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
+                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
+                          </svg>
+                      }
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '.8rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.3rem' }}>
+                        {post.platforms.map(p => {
+                          const hasErr = !!post.platform_errors?.[p]
+                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
+                          return (
+                            <div key={p} title={title} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
+                              <PlatformIcon platform={p} size={16} />
+                            </div>
+                          )
+                        })}
+                        <span style={{ fontSize: '.7rem', color: '#3f3f46' }}>
+                          {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                      {post.analytics && post.status === 'published' && (
+                        <div style={{ display: 'flex', gap: '.6rem', fontSize: '.7rem', color: 'var(--t3)' }}>
+                          <span title="Likes">❤️ {post.analytics.likes}</span>
+                          <span title="Commentaires">💬 {post.analytics.comments}</span>
+                          <span title="Impressions">👁️ {post.analytics.impressions > 1000 ? (post.analytics.impressions/1000).toFixed(1)+'K' : post.analytics.impressions}</span>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div style={{ padding: '.75rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '.75rem', color: 'var(--t1)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.5rem', flex: 1 }}>
-                    {post.content}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.5rem' }}>
-                    <span className={stClass(post.status)} style={{ fontSize: '.6rem', padding: '.15rem .4rem', borderRadius: '4px' }}>{stLabel(post.status)}</span>
-                  </div>
-                  <div style={{ fontSize: '.65rem', color: 'var(--t3)', marginBottom: post.analytics ? '.5rem' : '0' }}>
-                    {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </div>
-                  {post.analytics && post.status === 'published' && (
-                    <div style={{ display: 'flex', gap: '.6rem', fontSize: '.7rem', color: 'var(--t2)', borderTop: '1px solid var(--b1)', paddingTop: '.5rem' }}>
-                      <span title="Likes" style={{ display: 'flex', alignItems: 'center', gap: '.2rem' }}>❤️ {post.analytics.likes}</span>
-                      <span title="Commentaires" style={{ display: 'flex', alignItems: 'center', gap: '.2rem' }}>💬 {post.analytics.comments}</span>
-                      <span title="Partages" style={{ display: 'flex', alignItems: 'center', gap: '.2rem' }}>↗️ {post.analytics.shares}</span>
+                      )}
+                      <span className={stClass(post.status)} style={{ fontSize: '.68rem' }}>{stLabel(post.status)}</span>
+                      {(post.status === 'draft' || post.status === 'failed') && (
+                        <button onClick={() => publishPost(post)} disabled={publishing === post.id}
+                          style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '6px', padding: '.3rem .6rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.72rem', fontWeight: 500 }}>
+                          {publishing === post.id
+                            ? <div style={{ width: '11px', height: '11px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
+                            : <Send size={11} />} Publier
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            )})}
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-            {filtered.map(post => {
-              const isSelected = selectedIds.has(post.id)
-              return (
-              <div key={post.id} onClick={() => openPost(post)} style={{ background: 'var(--s2)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}>
-                <div onClick={e => { e.stopPropagation(); toggleSelect(post.id) }} style={{ flexShrink: 0, cursor: 'pointer' }}>
-                  {isSelected ? <CheckSquare size={18} color="var(--accent)" /> : <Square size={18} color="var(--t3)" />}
-                </div>
-                <div style={{ width: '48px', height: '48px', borderRadius: '6px', background: 'var(--bg)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {post.media_urls?.[0] ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={20} color="var(--t3)" opacity={0.4} />}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '.85rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.4rem' }}>
-                    {post.platforms.map(p => {
-                      const removed = post.status !== 'draft' && post.platform_errors?.[p] === 'removed_externally'
-                      return (
-                      <div key={p} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0, filter: removed ? 'grayscale(100%) opacity(50%)' : 'none' }}><PlatformIcon platform={p} size={16} /></div>
-                    )})}
-                    <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
                   </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                  {post.analytics && post.status === 'published' && (
-                    <div style={{ display: 'flex', gap: '.8rem', fontSize: '.75rem', color: 'var(--t3)' }}>
-                      <span>❤️ {post.analytics.likes}</span>
-                      <span>💬 {post.analytics.comments}</span>
-                    </div>
-                  )}
-                  <span className={stClass(post.status)} style={{ fontSize: '.7rem' }}>{stLabel(post.status)}</span>
-                </div>
+                )})}
               </div>
-            )})}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+      )}
         </div>
       </div>
 
