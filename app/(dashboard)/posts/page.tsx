@@ -929,8 +929,8 @@ export default function PostsPage() {
       )}
 
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.5rem' }}>
           <div>
             <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em' }}>Workspace</h1>
             <p style={{ color: 'var(--t3)', fontSize: '.9rem', marginTop: '.3rem' }}>Votre centre de création, de planification et d'analyse.</p>
@@ -941,69 +941,77 @@ export default function PostsPage() {
         </div>
 
         {/* 4 Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem' }}>
           {/* Nouveau post */}
-          <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-              <PenLine size={22} />
+          <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PenLine size={14} />
+              </div>
+              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Nouveau post</h3>
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Nouveau post</h3>
-            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Créez ou générez du contenu avec ou sans IA.</p>
-            <button onClick={() => router.push('/posts/create')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
-              Créer maintenant <ArrowRight size={14} />
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Créez ou générez du contenu avec/sans IA.</p>
+            <button onClick={() => router.push('/posts/create')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
+              Créer <ArrowRight size={12} />
             </button>
           </div>
           {/* Calendrier */}
-          <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-              <Calendar size={22} />
+          <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Calendar size={14} />
+              </div>
+              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Calendrier</h3>
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Calendrier</h3>
-            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Planifiez et programmez vos publications.</p>
-            <button onClick={() => router.push('/calendar')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(168,85,247,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'}>
-              Ouvrir le calendrier <ArrowRight size={14} />
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Planifiez vos publications.</p>
+            <button onClick={() => router.push('/calendar')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(168,85,247,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'}>
+              Ouvrir <ArrowRight size={12} />
             </button>
           </div>
           {/* Analytique */}
-          <div style={{ background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-              <BarChart3 size={22} />
+          <div style={{ background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BarChart3 size={14} />
+              </div>
+              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Analytique</h3>
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Analytique</h3>
-            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Suivez vos performances et votre croissance.</p>
-            <button onClick={() => toast('Analytique disponible bientôt !', 'info')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
-              Voir les analyses <ArrowRight size={14} />
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Suivez vos performances.</p>
+            <button onClick={() => toast('Analytique disponible bientôt !', 'info')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
+              Analyses <ArrowRight size={12} />
             </button>
           </div>
-          {/* Idées & Inspiration */}
-          <div style={{ background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-              <Sparkles size={22} />
+          {/* Idées */}
+          <div style={{ background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkles size={14} />
+              </div>
+              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Inspiration</h3>
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '.5rem' }}>Idées & Inspiration</h3>
-            <p style={{ fontSize: '.85rem', color: 'var(--t3)', lineHeight: 1.5, flex: 1 }}>Découvrez des idées de contenu tendance et pertinentes.</p>
-            <button onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ marginTop: '1.5rem', width: '100%', padding: '.7rem', borderRadius: '8px', border: 'none', background: 'rgba(249,115,22,0.15)', color: '#F97316', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,115,22,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(249,115,22,0.15)'}>
-              Explorer les idées <ArrowRight size={14} />
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Idées de contenu tendance.</p>
+            <button onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(249,115,22,0.15)', color: '#F97316', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,115,22,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(249,115,22,0.15)'}>
+              Explorer <ArrowRight size={12} />
             </button>
           </div>
         </div>
       </div>
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#fff' }}>Vos posts existants</h2>
-          <span style={{ background: 'var(--s2)', padding: '.15rem .6rem', borderRadius: '12px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.75rem' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Vos posts existants</h2>
+          <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
         </div>
 
         {/* Filters + view toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           <div className="mob-scroll" style={{ display: 'flex', gap: '.4rem', overflowX: 'auto' }}>
             {(['all', 'published', 'draft', 'scheduled', 'deleted'] as const).map(f => {
               const label = f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? 'Brouillons' : f === 'scheduled' ? 'Programmés' : 'Archivés';
               return (
                 <button key={f} onClick={() => setFilter(f)} style={{
-                  padding: '.4rem .85rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500, cursor: 'pointer',
+                  padding: '.3rem .6rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
                   border: filter === f ? 'none' : '1px solid transparent',
                   background: filter === f ? '#2A43E8' : 'var(--s2)',
                   color: filter === f ? '#fff' : 'var(--t2)', transition: '.15s',
@@ -1033,14 +1041,14 @@ export default function PostsPage() {
                 <button
                   onClick={() => setPfMenuOpen(o => !o)}
                   style={{
-                    padding: '.4rem .75rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500, cursor: 'pointer',
+                    padding: '.3rem .6rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
                     border: platformFilter ? '1px solid #4646FF' : '1px solid var(--b1)',
                     background: platformFilter ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
                     color: platformFilter ? 'var(--accent)' : 'var(--t2)', transition: '.15s',
                     display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
                   }}
                 >
-                  <Filter size={14} /> Filtres
+                  <Filter size={13} /> Filtres
                   {platformFilter && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
                 </button>
 
@@ -1061,21 +1069,22 @@ export default function PostsPage() {
           </div>
         </div>
 
-        {/* Content */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--s2)', borderRadius: '16px', border: '1px dashed var(--b1)' }}>
-            <div style={{ color: 'var(--t3)', fontSize: '.9rem' }}>
-              {filter === 'all'       && 'Aucun post pour le moment'}
-              {filter === 'published' && 'Aucun post publié'}
-              {filter === 'draft'     && 'Aucun post dans les brouillons'}
-              {filter === 'scheduled' && 'Aucun post programmé'}
-              {filter === 'deleted'   && 'Aucun post archivé'}
+        {/* Content (Scrollable part) */}
+        <div className="sb-scroll" style={{ flex: 1, overflowY: 'auto', paddingRight: '.25rem' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'var(--s2)', borderRadius: '12px', border: '1px dashed var(--b1)' }}>
+              <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>
+                {filter === 'all'       && 'Aucun post pour le moment'}
+                {filter === 'published' && 'Aucun post publié'}
+                {filter === 'draft'     && 'Aucun post dans les brouillons'}
+                {filter === 'scheduled' && 'Aucun post programmé'}
+                {filter === 'deleted'   && 'Aucun post archivé'}
+              </div>
             </div>
-          </div>
-        ) : view === 'grid' ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.25rem' }}>
+          ) : view === 'grid' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '.75rem' }}>
             {filtered.slice(0, 8).map(post => {
               const isSelected = selectedIds.has(post.id)
               return (
@@ -1091,27 +1100,27 @@ export default function PostsPage() {
                     <PlatformIcon platform={post.platforms[0]} size={24} />
                   </div>
                 )}
-                <div style={{ height: '140px', background: 'var(--bg)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ height: '90px', background: 'var(--bg)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {post.media_urls?.[0]
                     ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    : <ImageIcon size={32} color="var(--t3)" opacity={0.3} />
+                    : <ImageIcon size={24} color="var(--t3)" opacity={0.3} />
                   }
                 </div>
-                <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '.85rem', color: 'var(--t1)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.75rem', flex: 1 }}>
+                <div style={{ padding: '.75rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontSize: '.75rem', color: 'var(--t1)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.5rem', flex: 1 }}>
                     {post.content}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
-                    <span className={stClass(post.status)} style={{ fontSize: '.65rem', padding: '.2rem .5rem', borderRadius: '4px' }}>{stLabel(post.status)}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.5rem' }}>
+                    <span className={stClass(post.status)} style={{ fontSize: '.6rem', padding: '.15rem .4rem', borderRadius: '4px' }}>{stLabel(post.status)}</span>
                   </div>
-                  <div style={{ fontSize: '.7rem', color: 'var(--t3)', marginBottom: post.analytics ? '.75rem' : '0' }}>
-                    {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })} à {new Date(post.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  <div style={{ fontSize: '.65rem', color: 'var(--t3)', marginBottom: post.analytics ? '.5rem' : '0' }}>
+                    {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                   {post.analytics && post.status === 'published' && (
-                    <div style={{ display: 'flex', gap: '.8rem', fontSize: '.75rem', color: 'var(--t2)', borderTop: '1px solid var(--b1)', paddingTop: '.75rem' }}>
-                      <span title="Likes" style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>❤️ {post.analytics.likes}</span>
-                      <span title="Commentaires" style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>💬 {post.analytics.comments}</span>
-                      <span title="Partages" style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>↗️ {post.analytics.shares}</span>
+                    <div style={{ display: 'flex', gap: '.6rem', fontSize: '.7rem', color: 'var(--t2)', borderTop: '1px solid var(--b1)', paddingTop: '.5rem' }}>
+                      <span title="Likes" style={{ display: 'flex', alignItems: 'center', gap: '.2rem' }}>❤️ {post.analytics.likes}</span>
+                      <span title="Commentaires" style={{ display: 'flex', alignItems: 'center', gap: '.2rem' }}>💬 {post.analytics.comments}</span>
+                      <span title="Partages" style={{ display: 'flex', alignItems: 'center', gap: '.2rem' }}>↗️ {post.analytics.shares}</span>
                     </div>
                   )}
                 </div>
@@ -1152,58 +1161,55 @@ export default function PostsPage() {
             )})}
           </div>
         )}
-        
-        {filtered.length > 8 && view === 'grid' && (
-          <div style={{ marginTop: '1.5rem', background: 'var(--s2)', borderRadius: '12px', padding: '1rem', textAlign: 'center', border: '1px solid var(--b1)', cursor: 'pointer', color: 'var(--t2)', fontSize: '.85rem', fontWeight: 500 }} onClick={() => toast('Tous les posts sont déjà chargés (scroll vers le bas)', 'info')}>
-            Voir tous les posts
           </div>
         )}
+        </div>
       </div>
 
       {/* ── SECTION OUTILS ET PLUS ── */}
-      <div style={{ marginTop: '2rem' }}>
-        <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: '1rem' }}>Outils et plus</h3>
-        <div className="mob-scroll" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '.5rem' }}>
-          <div onClick={() => toast('Bibliothèque médias disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <FileImage size={20} color="var(--t3)" />
+      <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+        <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: '0 0 .5rem 0' }}>Outils et plus</h3>
+        <div className="mob-scroll" style={{ display: 'flex', gap: '.75rem', overflowX: 'auto', paddingBottom: '.25rem' }}>
+          <div onClick={() => toast('Bibliothèque médias disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <FileImage size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
             <div>
-              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Bibliothèque médias</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Gérez vos fichiers</div>
+              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Bibliothèque médias</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Gérez vos fichiers</div>
             </div>
           </div>
-          <div onClick={() => toast('Générateur d\'images disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <ImageIcon size={20} color="var(--t3)" />
+          <div onClick={() => toast('Générateur d\'images disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <ImageIcon size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
             <div>
-              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Générateur d'images</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Créez des visuels avec l'IA</div>
+              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Générateur d'images</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Créez des visuels avec l'IA</div>
             </div>
           </div>
-          <div onClick={() => toast('Automatisation disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <Zap size={20} color="var(--t3)" />
+          <div onClick={() => toast('Automatisation disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <Zap size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
             <div>
-              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Automatisation</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Gagnez du temps</div>
+              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Automatisation</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Gagnez du temps</div>
             </div>
           </div>
-          <div onClick={() => toast('Rapports disponibles bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <FileText size={20} color="var(--t3)" />
+          <div onClick={() => toast('Rapports disponibles bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <FileText size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
             <div>
-              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Rapports</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Générez des rapports</div>
+              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Rapports</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Générez des rapports</div>
             </div>
           </div>
-          <div onClick={() => toast('Export de données disponible bientôt !', 'info')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <Database size={20} color="var(--t3)" />
+          <div onClick={() => toast('Export de données disponible bientôt !', 'info')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <Database size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
             <div>
-              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Export de données</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Téléchargez vos données</div>
+              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Export de données</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Téléchargez vos données</div>
             </div>
           </div>
-          <div onClick={() => router.push('/settings')} style={{ minWidth: '180px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
-            <Settings size={20} color="var(--t3)" />
+          <div onClick={() => router.push('/settings')} style={{ minWidth: '160px', flex: 1, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.75rem', display: 'flex', alignItems: 'flex-start', gap: '.5rem', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--t3)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--b1)'}>
+            <Settings size={16} color="var(--t3)" style={{ marginTop: '2px' }} />
             <div>
-              <div style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff', marginBottom: '.2rem' }}>Paramètres</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Gérez vos préférences</div>
+              <div style={{ fontSize: '.75rem', fontWeight: 600, color: '#fff', marginBottom: '.1rem' }}>Paramètres</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--t3)' }}>Gérez vos préférences</div>
             </div>
           </div>
         </div>
