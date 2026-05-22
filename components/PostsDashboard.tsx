@@ -962,7 +962,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
         {isWorkspace && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
           {/* Nouveau post */}
-          <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <PenLine size={14} />
@@ -995,7 +995,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
             </div>
           </div>
           {/* Calendrier */}
-          <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Calendar size={14} />
@@ -1008,7 +1008,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
             </button>
           </div>
           {/* Analytique */}
-          <div style={{ background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BarChart3 size={14} />
@@ -1021,7 +1021,7 @@ export default function PostsDashboard({ isWorkspace = false }: { isWorkspace?: 
             </button>
           </div>
           {/* Idées */}
-          <div style={{ background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Sparkles size={14} />
