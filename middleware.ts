@@ -27,9 +27,26 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
   const isPublic = PUBLIC_PATHS.some(p => p === '/' ? path === '/' : path.startsWith(p))
 
+  // Helper pour rediriger tout en conservant les cookies Supabase (très important en middleware)
+  const redirect = (to: string) => {
+    const res = NextResponse.redirect(new URL(to, request.url))
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      res.cookies.set(cookie.name, cookie.value, {
+        path: cookie.path,
+        domain: cookie.domain,
+        maxAge: cookie.maxAge,
+        expires: cookie.expires,
+        secure: cookie.secure,
+        httpOnly: cookie.httpOnly,
+        sameSite: cookie.sameSite,
+      })
+    })
+    return res
+  }
+
   if (!user) {
     if (!isPublic) {
-      const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
+      const redirectResponse = redirect('/login')
       redirectResponse.cookies.delete('onboarded')
       return redirectResponse
     }
@@ -37,7 +54,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && (path === '/login' || path === '/register')) {
-    return NextResponse.redirect(new URL('/home', request.url))
+    return redirect('/home')
   }
 
   // Vérification onboarding — utilise un cookie pour éviter une DB query par request
@@ -77,7 +94,7 @@ export async function middleware(request: NextRequest) {
       }
 
       if (!isOnboarded) {
-        return NextResponse.redirect(new URL('/onboarding', request.url))
+        return redirect('/onboarding')
       }
 
       // User onboardé : poser le cookie (7 jours) pour éviter future DB query
