@@ -1,48 +1,76 @@
 'use client'
 import { useState } from 'react'
-import { Search, Edit3, Paperclip, Smile, Send } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, Edit3, Paperclip, Smile, Send, ArrowLeft } from 'lucide-react'
 
 const CONVS = [
   { id: 1, name: 'Équipe Marketing', last: 'On se retrouve à 14h pour la réunion...', time: '14:32', avatar: 'EM', color: '#7B5CF5' },
-  { id: 2, name: 'Aïcha B.', last: "J'ai oublié comment c'était av...", time: '13:45', avatar: 'AI', color: '#F59E0B', active: true },
-  { id: 3, name: 'David K.', last: "Mais on va probablement...", time: '12:09', avatar: 'DK', color: '#3B82F6' },
-  { id: 4, name: 'Mamadou', last: "C'est pas si mal...", time: '12:09', avatar: 'MT', color: '#10B981' },
-  { id: 5, name: 'Christelle', last: 'Wasup pour la 3ème fois li...', time: '12:09', avatar: 'CP', color: '#EC4899' },
-  { id: 6, name: 'Dennis', last: 'howdoyoudoaspace', time: '12:09', avatar: 'DH', color: '#F97316' },
+  { id: 2, name: 'Aïcha B.',          last: "J'ai oublié comment c'était av...",        time: '13:45', avatar: 'AI', color: '#F59E0B' },
+  { id: 3, name: 'David K.',          last: "Mais on va probablement...",                time: '12:09', avatar: 'DK', color: '#3B82F6' },
+  { id: 4, name: 'Mamadou',           last: "C'est pas si mal...",                       time: '12:09', avatar: 'MT', color: '#10B981' },
+  { id: 5, name: 'Christelle',        last: "Wasup pour la 3ème fois li...",             time: '12:09', avatar: 'CP', color: '#EC4899' },
+  { id: 6, name: 'Dennis',            last: 'howdoyoudoaspace',                          time: '12:09', avatar: 'DH', color: '#F97316' },
 ]
 
-const MSGS = [
-  { id: 1, from: 'them', text: 'Salut ! 👋 Est-ce que tu peux jeter un œil à ce post ?' },
-  { id: 2, from: 'them', text: "Je m'en souviens plus comment c'était avant..." },
-  { id: 3, from: 'me', text: '... à propos de qui on était.' },
-  { id: 4, from: 'me', text: 'Tu es sérieux ?' },
-  { id: 5, from: 'them', text: 'Quand on était jeunes et libres...' },
-  { id: 6, from: 'them', text: "J'ai oublié comment c'était avant" },
-]
+const MSGS_BY_CONV: Record<number, { id: number; from: 'me' | 'them'; text: string }[]> = {
+  1: [
+    { id: 1, from: 'them', text: 'Salut ! On se retrouve à 14h pour la réunion ?' },
+    { id: 2, from: 'me',   text: 'Oui bien sûr, je serai là 👍' },
+    { id: 3, from: 'them', text: "Super ! On parlera du planning du mois prochain." },
+  ],
+  2: [
+    { id: 1, from: 'them', text: 'Salut ! 👋 Est-ce que tu peux jeter un œil à ce post ?' },
+    { id: 2, from: 'them', text: "Je m'en souviens plus comment c'était avant..." },
+    { id: 3, from: 'me',   text: '... à propos de qui on était.' },
+    { id: 4, from: 'me',   text: 'Tu es sérieux ?' },
+    { id: 5, from: 'them', text: 'Quand on était jeunes et libres...' },
+    { id: 6, from: 'them', text: "J'ai oublié comment c'était avant" },
+  ],
+  3: [{ id: 1, from: 'them', text: 'Ok super, merci !' }, { id: 2, from: 'me', text: "De rien, à bientôt !" }],
+  4: [{ id: 1, from: 'them', text: "Peux-tu me confirmer ça ?" }, { id: 2, from: 'me', text: "Oui, confirmé ✅" }],
+  5: [{ id: 1, from: 'them', text: "J'ai publié le post 👍" }],
+  6: [{ id: 1, from: 'them', text: 'howdoyoudoaspace' }, { id: 2, from: 'me', text: 'Haha 😄' }],
+}
 
 export default function MessagesPage() {
-  const [active, setActive] = useState(1)
+  const router = useRouter()
+  const [active, setActive] = useState(2)
   const [input, setInput] = useState('')
   const conv = CONVS.find(c => c.id === active)!
+  const messages = MSGS_BY_CONV[active] || []
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: 'var(--bg)', fontFamily: 'DM Sans, sans-serif' }}>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: 'var(--bg)' }}>
 
-      {/* ── Left panel ── */}
-      <div style={{ width: 280, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--card)', flexShrink: 0 }}>
+      {/* ── Conversation list (replaces main sidebar) ── */}
+      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)', height: '100%' }}>
 
-        {/* Search + compose */}
-        <div style={{ padding: '1rem .9rem .75rem', display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
-            <input placeholder="Search" style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.45rem .75rem .45rem 2rem', fontSize: '.82rem', color: 'var(--t1)', outline: 'none' }} />
-          </div>
-          <button style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Edit3 size={14} />
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '1rem 1rem .75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t2)', fontSize: '.83rem', fontWeight: 600, borderBottom: '1px solid var(--b1)', textAlign: 'left', transition: '.12s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--t2)'}
+        >
+          <ArrowLeft size={15} />
+          Retour
+        </button>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .9rem' }}>
+          <span style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: '1rem', fontWeight: 700, color: 'var(--t1)' }}>Messagerie</span>
+          <button style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--accent)', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Edit3 size={13} />
           </button>
         </div>
 
-        {/* Conversation list */}
+        {/* Search */}
+        <div style={{ padding: '0 .75rem .75rem', position: 'relative' }}>
+          <Search size={13} style={{ position: 'absolute', left: '1.3rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
+          <input placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.4rem .75rem .4rem 2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none' }} />
+        </div>
+
+        {/* List */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {CONVS.map(c => {
             const isActive = c.id === active
@@ -50,19 +78,19 @@ export default function MessagesPage() {
               <div
                 key={c.id}
                 onClick={() => setActive(c.id)}
-                style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '.7rem .9rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '.65rem .9rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
               >
-                {/* Avatar */}
-                <div style={{ width: 42, height: 42, borderRadius: '50%', background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                   {c.avatar}
                 </div>
-                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span style={{ fontSize: '.84rem', fontWeight: 700, color: isActive ? '#fff' : 'var(--t1)' }}>{c.name}</span>
-                    <span style={{ fontSize: '.7rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)' }}>{c.time}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <span style={{ fontSize: '.82rem', fontWeight: 700, color: isActive ? '#fff' : 'var(--t1)' }}>{c.name}</span>
+                    <span style={{ fontSize: '.68rem', color: isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)' }}>{c.time}</span>
                   </div>
-                  <div style={{ fontSize: '.75rem', color: isActive ? 'rgba(255,255,255,.75)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: '.73rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.last}
                   </div>
                 </div>
@@ -72,24 +100,31 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* ── Right chat area ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      {/* ── Chat area ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
 
-        {/* To: header */}
-        <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', background: 'var(--card)', fontSize: '.88rem', color: 'var(--t2)' }}>
-          To: <strong style={{ color: 'var(--t1)' }}>{conv.name}</strong>
+        {/* Chat header */}
+        <div style={{ padding: '.75rem 1.25rem', borderBottom: '1px solid var(--b1)', background: 'var(--card)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <div style={{ width: 34, height: 34, borderRadius: '50%', background: conv.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.68rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+            {conv.avatar}
+          </div>
+          <span style={{ fontSize: '.88rem', color: 'var(--t2)' }}>
+            À : <strong style={{ color: 'var(--t1)' }}>{conv.name}</strong>
+          </span>
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {/* Date separator */}
-          <div style={{ textAlign: 'center', fontSize: '.75rem', color: 'var(--t3)', margin: '.5rem 0 1rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '.25rem 0 .75rem' }}>
             <div style={{ flex: 1, height: 1, background: 'var(--b1)' }} />
-            Aujourd&apos;hui, {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            <span style={{ fontSize: '.72rem', color: 'var(--t3)', whiteSpace: 'nowrap' }}>
+              Aujourd&apos;hui, {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
             <div style={{ flex: 1, height: 1, background: 'var(--b1)' }} />
           </div>
 
-          {MSGS.map(m => (
+          {messages.map(m => (
             <div key={m.id} style={{ display: 'flex', justifyContent: m.from === 'them' ? 'flex-start' : 'flex-end' }}>
               <div style={{
                 padding: '.6rem 1rem',
@@ -98,8 +133,8 @@ export default function MessagesPage() {
                 color: m.from === 'them' ? '#fff' : 'var(--t1)',
                 border: m.from === 'them' ? 'none' : '1px solid var(--b1)',
                 fontSize: '.85rem',
-                maxWidth: 340,
-                lineHeight: 1.5,
+                maxWidth: 380,
+                lineHeight: 1.55,
               }}>
                 {m.text}
               </div>
@@ -108,9 +143,9 @@ export default function MessagesPage() {
         </div>
 
         {/* Input bar */}
-        <div style={{ padding: '.75rem 1.25rem', borderTop: '1px solid var(--b1)', background: 'var(--card)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 12, padding: '.5rem .75rem' }}>
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex' }}><Paperclip size={16} /></button>
+        <div style={{ padding: '.75rem 1.25rem', borderTop: '1px solid var(--b1)', background: 'var(--card)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 14, padding: '.45rem .75rem' }}>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: 4 }}><Paperclip size={16} /></button>
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -118,16 +153,15 @@ export default function MessagesPage() {
               placeholder="Écrire un message..."
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '.85rem', color: 'var(--t1)', fontFamily: 'inherit' }}
             />
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex' }}><Smile size={16} /></button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: 4 }}><Smile size={16} /></button>
             <button
               onClick={() => setInput('')}
-              style={{ background: input ? 'var(--accent)' : 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: input ? '#fff' : 'var(--t3)', transition: '.15s' }}
+              style={{ background: input ? 'var(--accent)' : 'transparent', border: '1px solid var(--b1)', borderRadius: 9, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: input ? '#fff' : 'var(--t3)', transition: '.15s', flexShrink: 0 }}
             >
               <Send size={14} />
             </button>
           </div>
         </div>
-
       </div>
     </div>
   )
