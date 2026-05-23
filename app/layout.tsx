@@ -4,8 +4,8 @@ import { PWAInstall } from '@/components/PWAInstall'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'CM Studio — Plateforme Community Management',
-  description: 'Gérez vos réseaux sociaux et votre communauté avec intelligence.',
+  title: 'CM Studio — Assistant community manager',
+  description: 'Assistant community manager',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     title: 'CM Studio',
   },
   icons: {
+    icon: '/logo.png',
     apple: '/icons/apple-touch-icon.svg',
   },
   other: {
