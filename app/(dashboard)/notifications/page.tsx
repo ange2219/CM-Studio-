@@ -21,7 +21,6 @@ const RECENT_ACTIVITY = [
 
 export default function NotificationsPage() {
   const [mainTab, setMainTab] = useState<'cm_studio' | 'social'>('cm_studio')
-  const [subTab, setSubTab] = useState('Toutes')
 
   return (
     <div style={{ display: 'flex', gap: '2rem', height: '100%', alignItems: 'flex-start' }}>
@@ -112,8 +111,6 @@ export default function NotificationsPage() {
             Voir plus de notifications <ChevronDown size={14} />
           </button>
         </div>
-      </div>
-
       </div>
     </div>
   )
