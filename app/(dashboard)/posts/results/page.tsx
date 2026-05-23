@@ -122,7 +122,7 @@ export default function ResultsPage() {
       const remaining = (data?.platforms || []).filter(p => !!data?.variants[p] && !next.has(p))
       if (remaining.length === 0) {
         clearResults()
-        router.replace('/posts')
+        router.replace('/workspace')
       }
       return next
     })
@@ -133,7 +133,7 @@ export default function ResultsPage() {
       await saveUnifiedPost(content, imageUrl, 'draft')
       clearResults()
       toast('Brouillon sauvegardé', 'success')
-      router.replace('/posts')
+      router.replace('/workspace')
       return
     }
     await savePost(platform, content, imageUrl, 'draft')
@@ -154,7 +154,7 @@ export default function ResultsPage() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
       clearResults()
       toast('Post publié !', 'success')
-      router.replace('/posts')
+      router.replace('/workspace')
       return
     }
     if ((platform === 'instagram' || platform === 'tiktok') && !imageUrl) {
@@ -178,7 +178,7 @@ export default function ResultsPage() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
       clearResults()
       toast('Post programmé !', 'success')
-      router.replace('/posts')
+      router.replace('/workspace')
       return
     }
     const id = await savePost(platform, content, imageUrl, 'draft')
@@ -207,7 +207,7 @@ export default function ResultsPage() {
       }
       clearResults()
       toast('Posts sauvegardés en brouillon', 'success')
-      router.replace('/posts')
+      router.replace('/workspace')
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Erreur', 'error')
       setLeaveSaving(false)
@@ -217,7 +217,7 @@ export default function ResultsPage() {
   function handleLeaveDiscard() {
     clearResults()
     setShowLeaveModal(false)
-    router.push('/posts')
+    router.push('/workspace')
   }
 
   if (!ready || !data) return null

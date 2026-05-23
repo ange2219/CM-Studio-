@@ -84,17 +84,17 @@ export function DashboardShell({ user: initialUser, children }: {
 
   const navItems = [
     { label: 'Home',        icon: Home,          href: '/home'          },
-    { label: 'Workspace',   icon: Layout,        href: '/posts'         },
+    { label: 'Workspace',   icon: Layout,        href: '/workspace'     },
     { label: 'Notifications', icon: Bell,        href: '/notifications' },
     { label: 'Messagerie',  icon: MessageCircle, href: '/messages'      },
     { label: 'Community',   icon: Users,         href: '/community'     },
   ]
 
   const bottomNavItems = [
-    { label: 'Home',      icon: Home,          href: '/home'    },
-    { label: 'Workspace', icon: Layout,        href: '/posts'   },
-    { label: 'Messages',  icon: MessageCircle, href: '/messages'},
-    { label: 'Profil',    icon: User,          href: '/profile' },
+    { label: 'Home',      icon: Home,          href: '/home'      },
+    { label: 'Workspace', icon: Layout,        href: '/workspace' },
+    { label: 'Messages',  icon: MessageCircle, href: '/messages'  },
+    { label: 'Profil',    icon: User,          href: '/profile'   },
   ]
 
   return (

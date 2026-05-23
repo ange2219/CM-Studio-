@@ -1003,7 +1003,7 @@ export default function PostsDashboard() {
               <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Calendrier</h3>
             </div>
             <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Planifiez vos publications.</p>
-            <button onClick={() => router.push('/calendar')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(168,85,247,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'}>
+            <button onClick={() => router.push('/workspace/calendrier')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(168,85,247,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'}>
               Ouvrir <ArrowRight size={12} />
             </button>
           </div>
@@ -1016,7 +1016,7 @@ export default function PostsDashboard() {
               <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Analytique</h3>
             </div>
             <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Suivez vos performances.</p>
-            <button onClick={() => router.push('/posts/analytics')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
+            <button onClick={() => router.push('/workspace/analytics')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
               Analyses <ArrowRight size={12} />
             </button>
           </div>
@@ -1288,7 +1288,7 @@ export default function PostsDashboard() {
         {!loading && filtered.length > 5 && (
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
             <button
-              onClick={() => router.push('/posts/all')}
+              onClick={() => router.push('/workspace/posts')}
               style={{ background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.7rem 2rem', borderRadius: '10px', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.5rem', transition: '.15s', boxShadow: '0 4px 12px rgba(0,0,0,.05)' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.borderColor = 'var(--accent)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--b1)' }}

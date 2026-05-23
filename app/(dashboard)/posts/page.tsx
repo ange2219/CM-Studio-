@@ -1,7 +1,6 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import PostsDashboard from '@/components/PostsDashboard'
-
-export default function WorkspacePage() {
-  return <PostsDashboard />
+// /posts redirige vers /workspace (ancienne URL)
+export default function PostsRedirect() {
+  redirect('/workspace')
 }
