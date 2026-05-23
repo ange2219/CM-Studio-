@@ -260,7 +260,7 @@ export function DashboardShell({ user: initialUser, children }: {
           </div>
         </header>
 
-        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 12px' : '32px' }}>
+        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: pathname === '/messages' ? 0 : (isMobile ? '16px 12px' : '32px'), display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
       </div>
