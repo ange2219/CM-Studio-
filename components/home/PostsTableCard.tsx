@@ -380,7 +380,7 @@ export function PostsTableCard({ posts, analytics, aiTip }: Props) {
           <div style={{ fontSize: 32, marginBottom: 8 }}>📅</div>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Aucun post programmé</div>
           <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>Planifiez vos publications pour maintenir une présence régulière.</div>
-          <Link href="/posts/create" className="detail-btn" style={{ display: 'inline-flex' }}>
+          <Link href="/workspace/posts/create" className="detail-btn" style={{ display: 'inline-flex' }}>
             <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Créer un post
           </Link>

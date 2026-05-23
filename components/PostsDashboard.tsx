@@ -371,7 +371,7 @@ export default function PostsDashboard() {
           pageTitle: 'Modifier le post',
         }))
       } catch {}
-      router.push('/posts/results')
+      router.push('/workspace/posts/results')
       return
     }
     setSelectedPost(post)
@@ -927,7 +927,7 @@ export default function PostsDashboard() {
           </div>
           <div style={{ display: 'flex', gap: '.4rem', flexShrink: 0 }}>
             <button
-              onClick={() => router.push('/posts/results')}
+              onClick={() => router.push('/workspace/posts/results')}
               style={{ padding: '.35rem .8rem', borderRadius: '7px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600 }}
             >
               Reprendre
@@ -976,7 +976,7 @@ export default function PostsDashboard() {
               </button>
               {npMenuOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 5px)', left: 0, width: '100%', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
-                  <button onClick={() => { setNpMenuOpen(false); router.push('/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <button onClick={() => { setNpMenuOpen(false); router.push('/workspace/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Générer (IA)
                   </button>
                   <button onClick={() => {
@@ -986,7 +986,7 @@ export default function PostsDashboard() {
                         variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
                       }))
                     } catch {}
-                    router.push('/posts/results')
+                    router.push('/workspace/posts/results')
                   }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <PenLine size={14} style={{ color: 'var(--t2)' }} /> Créer manuellement
                   </button>
