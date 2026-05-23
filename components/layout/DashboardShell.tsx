@@ -116,45 +116,57 @@ export function DashboardShell({ user: initialUser, children }: {
       <div 
         className="sb-scroll" 
         style={{ 
-          width: (sidebarOpen || isMobile) ? '260px' : '0px', 
-          opacity: sidebarOpen ? 1 : 0,
+          width: isMobile ? (sidebarOpen ? '280px' : '0px') : ((sidebarOpen && pathname !== '/messages') ? '260px' : '64px'), 
+          opacity: isMobile ? (sidebarOpen ? 1 : 0) : 1,
           background: 'var(--sidebar-bg)', 
-          borderRight: sidebarOpen ? '1px solid var(--b1)' : 'none', 
+          borderRight: '1px solid var(--b1)', 
           display: 'flex', flexDirection: 'column', flexShrink: 0, 
           overflowY: 'auto', overflowX: 'hidden', 
-          transition: isMobile ? 'transform 0.3s ease' : 'all 0.3s ease',
+          transition: 'all 0.3s ease',
           ...(isMobile ? {
             position: 'fixed', top: 0, left: 0, bottom: 0,
-            zIndex: 50, width: '280px', opacity: 1,
+            zIndex: 50,
             transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
             boxShadow: sidebarOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none',
           } : {}),
         }}
       >
-        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/logo.png" alt="CM Studio Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
-            <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>CM Studio</span>
-          </div>
-          {isMobile && (
-            <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex' }}>
-              <X size={20} />
-            </button>
-          )}
-        </div>
-
-        <div style={{ flex: 1, padding: '0 12px' }}>
-          <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px' }}>Navigation</div>
-          {navItems.map(item => {
-            const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
-            return (
-              <Link key={item.label} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s' }}>
-                <item.icon size={18} color={active ? 'var(--accent)' : 'currentColor'} />
-                <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500 }}>{item.label}</span>
-              </Link>
-            )
-          })}
-        </div>
+        {(() => {
+          const isExpanded = isMobile ? sidebarOpen : (sidebarOpen && pathname !== '/messages');
+          return (
+            <>
+              <div style={{ padding: isExpanded ? '24px' : '24px 16px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: isExpanded ? 'space-between' : 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src="/logo.png" alt="CM Studio Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                  {isExpanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>CM Studio</span>}
+                </div>
+                {isMobile && (
+                  <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex' }}>
+                    <X size={20} />
+                  </button>
+                )}
+              </div>
+      
+              <div style={{ flex: 1, padding: isExpanded ? '0 12px' : '0 8px' }}>
+                {isExpanded ? (
+                  <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px', whiteSpace: 'nowrap' }}>Navigation</div>
+                ) : (
+                  <div style={{ height: '36px' }} />
+                )}
+                
+                {navItems.map(item => {
+                  const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+                  return (
+                    <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center' }}>
+                      <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
+                      {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap' }}>{item.label}</span>}
+                    </Link>
+                  )
+                })}
+              </div>
+            </>
+          )
+        })()}
       </div>
 
       {/* Main Content Area */}

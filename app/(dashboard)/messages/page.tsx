@@ -45,17 +45,6 @@ export default function MessagesPage() {
       {/* ── Conversation list (internal sidebar) ── */}
       <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
 
-        {/* Back button */}
-        <button
-          onClick={() => router.back()}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '1rem 1rem .75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t2)', fontSize: '.83rem', fontWeight: 600, borderBottom: '1px solid var(--b1)', textAlign: 'left', transition: '.12s' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--t2)'}
-        >
-          <ArrowLeft size={15} />
-          Retour
-        </button>
-
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .9rem' }}>
           <span style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: '1rem', fontWeight: 700, color: 'var(--t1)' }}>Messagerie</span>
