@@ -40,10 +40,10 @@ export default function MessagesPage() {
   const messages = MSGS_BY_CONV[active] || []
 
   return (
-    <div style={{ display: 'flex', flex: 1, height: '100%', background: 'var(--card)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flex: 1, height: '100%', background: 'var(--bg)', overflow: 'hidden' }}>
 
       {/* ── Conversation list (internal sidebar) ── */}
-      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
+      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .9rem' }}>
