@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -36,9 +36,28 @@ export default function LoginPage() {
     else router.push('/home')
   }
 
-  async function handleForgotPassword() {
-    if (!email) { setError('Entrez votre email d\'abord'); return }
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email) { setError('Entrez votre email'); return }
     setLoading(true); setError(''); setForgotMsg('')
+
+    try {
+      const res = await fetch('/api/auth/check-provider', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const data = await res.json()
+      
+      if (data.provider === 'google') {
+        setError("Votre compte utilise la connexion Google. Vous n'avez pas de mot de passe à réinitialiser.")
+        setLoading(false)
+        return
+      }
+    } catch (err) {
+      console.error(err)
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
@@ -620,7 +639,38 @@ export default function LoginPage() {
                 <Image src="/logo.png" alt="CM Studio Logo" width={40} height={40} style={{ borderRadius: '8px' }} />
               </div>
 
-              {mode === 'login' ? (
+              {mode === 'forgot' ? (
+                <>
+                  <h2>Mot de passe oublié</h2>
+                  <p className="subtitle">On vous envoie un lien de réinitialisation</p>
+
+                  <form onSubmit={handleForgotPassword}>
+                    <div className="form-group">
+                      <label className="form-label">EMAIL</label>
+                      <div className="input-icon-wrap">
+                        <span className="input-left-icon">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </span>
+                        <input className="form-input" type="email" placeholder="votre@email.com"
+                          value={email} onChange={e => setEmail(e.target.value)} required />
+                      </div>
+                      {forgotMsg && <div className="forgot-msg">{forgotMsg}</div>}
+                    </div>
+
+                    {error && <div className="error-box">{error}</div>}
+
+                    <button className="btn-primary" type="submit" disabled={loading}>
+                      {loading ? 'Envoi...' : 'Envoyer le lien'}
+                    </button>
+                  </form>
+
+                  <div className="login-switch" style={{ marginTop: '24px' }}>
+                    <a onClick={() => { setMode('login'); setError(''); setForgotMsg('') }}>
+                      Retour à la connexion
+                    </a>
+                  </div>
+                </>
+              ) : mode === 'login' ? (
                 <>
                   <h2>Connexion</h2>
                   <p className="subtitle">Connectez-vous à votre espace CM Studio</p>
@@ -640,7 +690,7 @@ export default function LoginPage() {
                     <div className="form-group">
                       <div className="password-row">
                         <label className="form-label" style={{ margin: 0 }}>MOT DE PASSE</label>
-                        <span className="forgot-link" onClick={handleForgotPassword}>Mot de passe oublié ?</span>
+                        <span className="forgot-link" onClick={() => { setMode('forgot'); setError(''); setForgotMsg('') }}>Mot de passe oublié ?</span>
                       </div>
                       <div className="password-wrap">
                         <div className="input-icon-wrap">
