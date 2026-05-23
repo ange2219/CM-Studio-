@@ -40,10 +40,10 @@ export default function MessagesPage() {
   const messages = MSGS_BY_CONV[active] || []
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: 'var(--bg)' }}>
+    <div style={{ display: 'flex', height: 'calc(100vh - 140px)', background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
 
-      {/* ── Conversation list (replaces main sidebar) ── */}
-      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)', height: '100%' }}>
+      {/* ── Conversation list (internal sidebar) ── */}
+      <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
 
         {/* Back button */}
         <button
@@ -71,7 +71,7 @@ export default function MessagesPage() {
         </div>
 
         {/* List */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '1rem' }}>
           {CONVS.map(c => {
             const isActive = c.id === active
             return (
@@ -101,10 +101,10 @@ export default function MessagesPage() {
       </div>
 
       {/* ── Chat area ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
         {/* Chat header */}
-        <div style={{ padding: '.75rem 1.25rem', borderBottom: '1px solid var(--b1)', background: 'var(--card)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', background: 'transparent', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', background: conv.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.68rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
             {conv.avatar}
           </div>
@@ -143,8 +143,8 @@ export default function MessagesPage() {
         </div>
 
         {/* Input bar */}
-        <div style={{ padding: '.75rem 1.25rem', borderTop: '1px solid var(--b1)', background: 'var(--card)', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 14, padding: '.45rem .75rem' }}>
+        <div style={{ padding: '.85rem 1.25rem', borderTop: '1px solid var(--b1)', background: 'transparent', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '.45rem .75rem' }}>
             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: 4 }}><Paperclip size={16} /></button>
             <input
               value={input}

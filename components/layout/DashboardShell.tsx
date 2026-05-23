@@ -116,17 +116,17 @@ export function DashboardShell({ user: initialUser, children }: {
       <div 
         className="sb-scroll" 
         style={{ 
-          width: (sidebarOpen || isMobile) && pathname !== '/messages' ? '260px' : '0px', 
-          opacity: sidebarOpen && pathname !== '/messages' ? 1 : 0,
+          width: (sidebarOpen || isMobile) ? '260px' : '0px', 
+          opacity: sidebarOpen ? 1 : 0,
           background: 'var(--sidebar-bg)', 
-          borderRight: sidebarOpen && pathname !== '/messages' ? '1px solid var(--b1)' : 'none', 
+          borderRight: sidebarOpen ? '1px solid var(--b1)' : 'none', 
           display: 'flex', flexDirection: 'column', flexShrink: 0, 
           overflowY: 'auto', overflowX: 'hidden', 
           transition: isMobile ? 'transform 0.3s ease' : 'all 0.3s ease',
           ...(isMobile ? {
             position: 'fixed', top: 0, left: 0, bottom: 0,
             zIndex: 50, width: '280px', opacity: 1,
-            transform: sidebarOpen && pathname !== '/messages' ? 'translateX(0)' : 'translateX(-100%)',
+            transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
             boxShadow: sidebarOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none',
           } : {}),
         }}
@@ -248,7 +248,7 @@ export function DashboardShell({ user: initialUser, children }: {
           </div>
         </header>
 
-        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: pathname === '/messages' ? 0 : (isMobile ? '16px 12px' : '32px') }}>
+        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 12px' : '32px' }}>
           {children}
         </main>
       </div>
