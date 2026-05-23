@@ -944,19 +944,7 @@ export default function PostsDashboard() {
 
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem', marginTop: '-.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-          <div>
-            <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em' }}>
-              Workspace
-            </h1>
-            <p style={{ color: 'var(--t3)', fontSize: '.9rem', marginTop: '.3rem' }}>
-              Votre centre de création, de planification et d&apos;analyse.
-            </p>
-          </div>
-          <button onClick={() => toast('Personnalisation disponible bientôt !', 'info')} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.85rem', fontWeight: 500 }}>
-            <Sparkles size={14} /> Personnalisé <ChevronDown size={14} />
-          </button>
-        </div>
+        {/* Header removed and moved to main navigation */}
 
         {/* 4 Cards */}
         {(

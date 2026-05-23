@@ -185,6 +185,20 @@ export function DashboardShell({ user: initialUser, children }: {
             <Menu size={isMobile ? 20 : 22} />
           </button>
 
+          {!isMobile && (
+            <div style={{ minWidth: '120px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                {pathname === '/workspace' && 'Workspace'}
+                {pathname === '/messages' && 'Messagerie'}
+                {pathname === '/home' && 'Accueil'}
+                {pathname === '/community' && 'Communauté'}
+                {pathname === '/notifications' && 'Notifications'}
+                {pathname === '/profile' && 'Profil'}
+                {pathname?.startsWith('/settings') && 'Paramètres'}
+              </span>
+            </div>
+          )}
+
           {/* Search bar - hidden on mobile */}
           {!isMobile && (
             <div style={{ position: 'relative', flex: 1, maxWidth: '500px', margin: '0 auto' }}>

@@ -41,15 +41,6 @@ export default function MessagesPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 110px)' }}>
-      <div style={{ marginBottom: '1.25rem' }}>
-        <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#fff', letterSpacing: '-.02em', margin: 0 }}>
-          Messagerie
-        </h1>
-        <p style={{ color: 'var(--t3)', fontSize: '.9rem', marginTop: '.2rem', margin: 0 }}>
-          Votre boîte de réception pour interagir avec votre communauté.
-        </p>
-      </div>
-
       <div style={{ display: 'flex', flex: 1, minHeight: 0, background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
 
       {/* ── Conversation list (internal sidebar) ── */}
