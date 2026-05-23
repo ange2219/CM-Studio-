@@ -13,8 +13,6 @@ const NOTIFICATIONS = [
   { id: 7, unread: true, icon: Award, color: '#ec4899', title: 'Vous avez obtenu un nouveau badge', desc: 'Félicitations ! Vous avez obtenu le badge "Expert Engagement" 🏆', badge: 'Badge', badgeColor: '#ec4899', badgeBg: 'rgba(236, 72, 153, 0.1)', time: 'Hier, 17:20' }
 ]
 
-const TABS = ['Toutes', 'Mentions', 'Messages', 'Groupes', 'Communauté', 'Système']
-
 const RECENT_ACTIVITY = [
   { id: 1, initial: 'AB', color: '#F59E0B', title: 'Aïcha B. a commenté votre post', time: 'Il y a 2 min' },
   { id: 2, initial: 'DK', color: '#3B82F6', title: 'David K. a partagé votre post', time: 'Il y a 15 min' },
@@ -39,7 +37,7 @@ export default function NotificationsPage() {
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: '.2s',
                 background: mainTab === 'cm_studio' ? 'rgba(59, 130, 246, 0.1)' : 'var(--card)', 
-                border: mainTab === 'cm_studio' ? '1px solid var(--accent)' : '1px solid var(--b1)' 
+                border: mainTab === 'cm_studio' ? '1px solid var(--accent)' : '1px solid transparent' 
               }}
             >
               <div>
@@ -53,7 +51,7 @@ export default function NotificationsPage() {
               style={{ 
                 display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: '.2s',
                 background: mainTab === 'social' ? 'rgba(59, 130, 246, 0.1)' : 'var(--card)', 
-                border: mainTab === 'social' ? '1px solid var(--accent)' : '1px solid var(--b1)' 
+                border: mainTab === 'social' ? '1px solid var(--accent)' : '1px solid transparent' 
               }}
             >
               <div>
@@ -70,26 +68,22 @@ export default function NotificationsPage() {
 
         {/* Sub Tabs */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {TABS.map(tab => (
-            <button 
-              key={tab}
-              onClick={() => setSubTab(tab)}
-              style={{ 
-                padding: '.45rem 1rem', borderRadius: '20px', cursor: 'pointer', fontSize: '.8rem', fontWeight: 500, transition: '.15s', whiteSpace: 'nowrap',
-                background: subTab === tab ? 'rgba(59, 130, 246, 0.15)' : 'var(--card)',
-                color: subTab === tab ? 'var(--accent)' : 'var(--t2)',
-                border: subTab === tab ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid var(--b1)'
-              }}
-            >
-              {tab}
-            </button>
-          ))}
+          <button 
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '6px', padding: '.45rem 1rem', borderRadius: '20px', cursor: 'pointer', fontSize: '.8rem', fontWeight: 500, transition: '.15s', whiteSpace: 'nowrap',
+              background: 'transparent',
+              color: 'var(--t2)',
+              border: '1px solid var(--b1)'
+            }}
+          >
+            Filtre <ChevronDown size={14} />
+          </button>
         </div>
 
         {/* List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {NOTIFICATIONS.map(notif => (
-            <div key={notif.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem 1.25rem', background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--b1)', position: 'relative' }}>
+            <div key={notif.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem 1.25rem', background: 'var(--card)', borderRadius: '12px', border: '1px solid transparent', position: 'relative' }}>
               {/* Unread Dot */}
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: notif.unread ? 'var(--accent)' : 'transparent', flexShrink: 0 }} />
               
@@ -119,84 +113,6 @@ export default function NotificationsPage() {
           </button>
         </div>
       </div>
-
-      {/* ── Right Column: Widgets ── */}
-      <div style={{ width: '320px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        
-        {/* Résumé du jour */}
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '.9rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '1.25rem' }}>
-            <Activity size={16} color="var(--accent)" /> Résumé du jour
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--b1)' }}>
-              <Bell size={18} color="#F59E0B" style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '2px' }}>12</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>Notifications</span>
-                <span style={{ fontSize: '.65rem', color: '#10b981', fontWeight: 600 }}>+12%</span>
-              </div>
-            </div>
-            <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--b1)' }}>
-              <MessageSquare size={18} color="#ec4899" style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '2px' }}>5</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>Mentions</span>
-                <span style={{ fontSize: '.65rem', color: '#10b981', fontWeight: 600 }}>+25%</span>
-              </div>
-            </div>
-            <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--b1)' }}>
-              <UserPlus size={18} color="#3b82f6" style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '2px' }}>2</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>Membres</span>
-                <span style={{ fontSize: '.65rem', color: '#10b981', fontWeight: 600 }}>+8%</span>
-              </div>
-            </div>
-            <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--b1)' }}>
-              <Mail size={18} color="#a855f7" style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '2px' }}>3</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '.7rem', color: 'var(--t3)' }}>Messages</span>
-                <span style={{ fontSize: '.65rem', color: '#10b981', fontWeight: 600 }}>+15%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Activité récente */}
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <span style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t1)' }}>Activité récente</span>
-            <span style={{ fontSize: '.75rem', color: 'var(--accent)', cursor: 'pointer' }}>Voir tout</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {RECENT_ACTIVITY.map(act => (
-              <div key={act.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: act.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '.65rem', fontWeight: 700, flexShrink: 0 }}>
-                  {act.initial}
-                </div>
-                <div>
-                  <div style={{ fontSize: '.8rem', color: 'var(--t2)', marginBottom: '2px' }}>{act.title}</div>
-                  <div style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{act.time}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Astuce du jour */}
-        <div style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '.9rem', fontWeight: 600, color: '#F59E0B', marginBottom: '1rem' }}>
-            <Lightbulb size={16} /> Astuce du jour
-          </div>
-          <p style={{ fontSize: '.8rem', color: 'var(--t2)', lineHeight: 1.5, marginBottom: '1rem' }}>
-            Les posts publiés entre 18h et 21h génèrent en moyenne 40% plus d&apos;engagement.
-          </p>
-          <button style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: 'var(--accent)', padding: '.5rem', width: '100%', borderRadius: '8px', fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', transition: '.2s' }}>
-            Voir les statistiques →
-          </button>
-        </div>
 
       </div>
     </div>
