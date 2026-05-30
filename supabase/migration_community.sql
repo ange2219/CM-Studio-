@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   content     text NOT NULL CHECK (char_length(content) BETWEEN 1 AND 2000),
+  image_url   text,
   created_at  timestamptz NOT NULL DEFAULT now(),
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS public.community_comments (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id    uuid NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
   user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  parent_id  uuid REFERENCES public.community_comments(id) ON DELETE CASCADE,
   content    text NOT NULL CHECK (char_length(content) BETWEEN 1 AND 1000),
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -69,6 +71,7 @@ SELECT
   p.id,
   p.user_id,
   p.content,
+  p.image_url,
   p.created_at,
   p.updated_at,
   u.full_name,

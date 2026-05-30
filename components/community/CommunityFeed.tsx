@@ -46,8 +46,11 @@ export function CommunityFeed({
 }) {
   const [posts, setPosts] = useState(initialPosts)
   const [likedIds, setLikedIds] = useState(new Set(initialLikedIds))
+  const [savedIds, setSavedIds] = useState(new Set<string>())
   const [newPostContent, setNewPostContent] = useState('')
   const [isPosting, setIsPosting] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
   
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null)
   const [commentsByPost, setCommentsByPost] = useState<Record<string, any[]>>({})
@@ -63,9 +66,11 @@ export function CommunityFeed({
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
-    if (!newPostContent.trim() || isPosting) return
+    if (!newPostContent.trim() && !uploadedImageUrl) return
+    if (isPosting) return
     setIsPosting(true)
-    const { data, error } = await supabase.from('community_posts').insert({ content: newPostContent.trim(), user_id: currentUser.id }).select('id, created_at').single()
+    const payload = { content: newPostContent.trim(), user_id: currentUser.id, image_url: uploadedImageUrl || null }
+    const { data, error } = await supabase.from('community_posts').insert(payload).select('id, created_at').single()
     if (!error && data) {
       setPosts([{ 
         id: data.id, 
@@ -77,10 +82,12 @@ export function CommunityFeed({
         plan: currentUser.plan || 'Free', 
         likes_count: 0, 
         comments_count: 0, 
+        image_url: uploadedImageUrl || undefined,
         group_name: 'Communauté',
         is_community: true
       }, ...posts])
       setNewPostContent('')
+      setUploadedImageUrl(null)
     } else if (error) {
       console.error("Erreur lors de la publication:", error)
     }
@@ -209,12 +216,35 @@ export function CommunityFeed({
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--accent)' }}>U</div>
           <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
         </div>
+        
+        {uploadedImageUrl && (
+          <div style={{ padding: '8px 12px 12px 52px', position: 'relative' }}>
+            <img src={uploadedImageUrl} style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid var(--b1)' }} alt="Upload preview" />
+            <button onClick={() => setUploadedImageUrl(null)} style={{ position: 'absolute', top: 0, left: '235px', background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✕</button>
+          </div>
+        )}
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--b1)' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>Image</span></button>
+            <input type="file" id="community-image-upload" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              setUploadingImage(true)
+              const formData = new FormData()
+              formData.append('file', file)
+              try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                const data = await res.json()
+                if (data.url) setUploadedImageUrl(data.url)
+              } catch (err) {
+                console.error(err)
+              }
+              setUploadingImage(false)
+            }} />
+            <button onClick={() => document.getElementById('community-image-upload')?.click()} disabled={uploadingImage} style={{ background: 'none', border: 'none', color: uploadedImageUrl ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>{uploadingImage ? 'Upload...' : 'Image'}</span></button>
             <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
           </div>
-          <button onClick={handlePost} disabled={!newPostContent.trim() || isPosting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: !newPostContent.trim() ? 0.5 : 1 }}>Publier</button>
+          <button onClick={handlePost} disabled={(!newPostContent.trim() && !uploadedImageUrl) || isPosting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: (!newPostContent.trim() && !uploadedImageUrl) ? 0.5 : 1 }}>Publier</button>
         </div>
       </div>
 
@@ -248,13 +278,39 @@ export function CommunityFeed({
               </div>
 
               {/* Post Content */}
-              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.5 }}>{post.content}</div>
+              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.5 }} id={`post-${post.id}`}>
+                {post.content}
+                {post.image_url && (
+                  <div style={{ marginTop: '12px' }}>
+                    <img src={post.image_url} style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--b1)' }} alt="Post image" />
+                  </div>
+                )}
+              </div>
 
               {/* Post Actions */}
               <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--b1)' }}>
                 <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count + (isLiked ? 1 : 0)}</button>
                 <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
-                <button style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
+                <button onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Post de la communauté CM Studio',
+                      text: post.content.slice(0, 50) + '...',
+                      url: `${window.location.origin}/community#post-${post.id}`
+                    }).catch(() => {})
+                  } else {
+                    navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`)
+                  }
+                }} style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
+                
+                <button onClick={() => {
+                  const newSaved = new Set(savedIds);
+                  if (newSaved.has(post.id)) newSaved.delete(post.id);
+                  else newSaved.add(post.id);
+                  setSavedIds(newSaved);
+                }} style={{ background: 'none', border: 'none', color: savedIds.has(post.id) ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0', marginLeft: 'auto' }}>
+                  <Bookmark size={18} fill={savedIds.has(post.id) ? 'var(--accent)' : 'none'} />
+                </button>
               </div>
 
               {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
