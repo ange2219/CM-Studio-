@@ -241,8 +241,6 @@ export function CommunityFeed({
                     ) : (
                       <Globe size={12} />
                     )}
-                    <span>{post.group_name || 'Général'}</span>
-                    <span>•</span>
                     <span>{getShortTimeAgo(post.created_at)}</span>
                   </div>
                 </div>
