@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon } from 'lucide-react'
+import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users } from 'lucide-react'
 
 type Post = {
   id: string
@@ -234,13 +234,17 @@ export function CommunityFeed({
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {post.full_name || 'Utilisateur'}
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '2px 8px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {post.group_name && post.group_name !== 'Général' ? post.group_name : 'Communauté Générale'}
-                    </span>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
+                      <Users size={12} />
+                    ) : (
+                      <Globe size={12} />
+                    )}
+                    <span>{post.group_name || 'Général'}</span>
+                    <span>•</span>
+                    <span>{getShortTimeAgo(post.created_at)}</span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--t3)', marginTop: '2px' }}>{getShortTimeAgo(post.created_at)}</div>
                 </div>
               </div>
 
