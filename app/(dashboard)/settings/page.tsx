@@ -44,18 +44,33 @@ function SettingsContent() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingPwd, setSavingPwd] = useState(false)
   const [pwdStep, setPwdStep] = useState<'idle' | 'verified'>('idle')
+  const [authProvider, setAuthProvider] = useState<string>('email')
 
   const [confirmDelete, setConfirmDelete] = useState('')
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setAuthProvider(user.app_metadata?.provider || 'email')
+    })
     fetch('/api/auth/me').then(r => r.json()).then(u => {
       if (u?.plan) setUserPlan(u.plan)
       if (u?.email) setUserEmail(u.email)
     })
     const saved = localStorage.getItem('theme') || document.documentElement.getAttribute('data-theme') || 'dark'
     setTheme(saved as 'dark' | 'light')
-  }, [])
+    
+    if (searchParams.get('action') === 'delete') {
+      handleDeleteAccount()
+    }
+  }, [searchParams])
+
+  async function handleDeleteAccount() {
+    setDeleting(true)
+    const res = await fetch('/api/auth/delete-account', { method: 'DELETE' })
+    if (res.ok) { await supabase.auth.signOut(); window.location.href = '/login' }
+    else { const d = await res.json(); toast(d.error || 'Erreur', 'error'); setDeleting(false) }
+  }
 
   async function verifyCurrentPassword() {
     if (!currentPassword) { toast('Entrez votre mot de passe actuel', 'error'); return }
@@ -159,47 +174,61 @@ function SettingsContent() {
               </div>
             </div>
 
-            {/* Mot de passe */}
-            <div style={{ marginBottom: '3rem', padding: '2rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.5rem' }}>Sécurité</h3>
-              {pwdStep === 'idle' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <label style={{ fontSize: '.85rem', color: 'var(--text3)', lineHeight: 1.5 }}>Pour modifier votre mot de passe, veuillez d'abord saisir votre mot de passe actuel.</label>
-                  <div style={{ display: 'flex', gap: '.75rem' }}>
-                    <input className="input" type="password" placeholder="Ancien mot de passe" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
-                    <button onClick={verifyCurrentPassword} disabled={savingPwd} className="btn-primary" style={{ padding: '0 2rem' }}>
-                      {savingPwd ? '...' : 'Vérifier'}
-                    </button>
+            {/* Mot de passe (Masqué si Google) */}
+            {authProvider !== 'google' && (
+              <div style={{ marginBottom: '3rem', padding: '2rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.5rem' }}>Sécurité</h3>
+                {pwdStep === 'idle' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <label style={{ fontSize: '.85rem', color: 'var(--text3)', lineHeight: 1.5 }}>Pour modifier votre mot de passe, veuillez d'abord saisir votre mot de passe actuel.</label>
+                    <div style={{ display: 'flex', gap: '.75rem' }}>
+                      <input className="input" type="password" placeholder="Ancien mot de passe" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+                      <button onClick={verifyCurrentPassword} disabled={savingPwd} className="btn-primary" style={{ padding: '0 2rem' }}>
+                        {savingPwd ? '...' : 'Vérifier'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', color: '#22C55E', fontSize: '.85rem', fontWeight: 600, marginBottom: '.5rem' }}>✓ Identité vérifiée</div>
-                  <input className="input" type="password" placeholder="Nouveau mot de passe" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-                  <input className="input" type="password" placeholder="Confirmer le nouveau mot de passe" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
-                  <div style={{ display: 'flex', gap: '1rem', marginTop: '.5rem' }}>
-                    <button onClick={changePassword} disabled={savingPwd || !newPassword || newPassword !== confirmPassword} className="btn-primary" style={{ padding: '0 2rem' }}>Enregistrer</button>
-                    <button onClick={() => setPwdStep('idle')} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '.9rem', fontWeight: 500 }}>Annuler</button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', color: '#22C55E', fontSize: '.85rem', fontWeight: 600, marginBottom: '.5rem' }}>✓ Identité vérifiée</div>
+                    <input className="input" type="password" placeholder="Nouveau mot de passe" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                    <input className="input" type="password" placeholder="Confirmer le nouveau mot de passe" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '.5rem' }}>
+                      <button onClick={changePassword} disabled={savingPwd || !newPassword || newPassword !== confirmPassword} className="btn-primary" style={{ padding: '0 2rem' }}>Enregistrer</button>
+                      <button onClick={() => setPwdStep('idle')} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: '.9rem', fontWeight: 500 }}>Annuler</button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Zone dangereuse */}
             <div style={{ border: '1px solid rgba(239,68,68,0.2)', padding: '2rem', borderRadius: '16px', background: 'rgba(239,68,68,0.02)' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ef4444', marginBottom: '0.75rem' }}>Zone dangereuse</h3>
-              <p style={{ fontSize: '.85rem', color: 'var(--text3)', marginBottom: '1.5rem', lineHeight: 1.6 }}>La suppression du compte est irréversible. Toutes vos données seront définitivement effacées. Tapez 'supprimer' pour confirmer.</p>
-              <div style={{ display: 'flex', gap: '.75rem' }}>
-                <input className="input" placeholder="supprimer" value={confirmDelete} onChange={e => setConfirmDelete(e.target.value)} style={{ borderColor: confirmDelete === 'supprimer' ? '#ef4444' : 'var(--border)' }} />
-                <button onClick={async () => {
-                  setDeleting(true)
-                  const res = await fetch('/api/auth/delete-account', { method: 'DELETE' })
-                  if (res.ok) { await supabase.auth.signOut(); window.location.href = '/login' }
-                  else { const d = await res.json(); toast(d.error || 'Erreur', 'error'); setDeleting(false) }
-                }} disabled={confirmDelete !== 'supprimer' || deleting} className="btn-danger" style={{ background: confirmDelete === 'supprimer' ? '#ef4444' : 'rgba(239,68,68,0.2)', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 2rem', fontWeight: 600 }}>
-                  {deleting ? '...' : 'Supprimer'}
+              <p style={{ fontSize: '.85rem', color: 'var(--text3)', marginBottom: '1.5rem', lineHeight: 1.6 }}>La suppression du compte est irréversible. Toutes vos données seront définitivement effacées.</p>
+              
+              {authProvider === 'google' ? (
+                <button 
+                  onClick={async () => {
+                    const { error } = await supabase.auth.signInWithOAuth({
+                      provider: 'google',
+                      options: { redirectTo: `${window.location.origin}/settings?tab=general&action=delete` }
+                    })
+                    if (error) toast('Erreur de connexion avec Google', 'error')
+                  }} 
+                  className="btn-danger" 
+                  style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '0.75rem 2rem', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Confirmer avec Google
                 </button>
-              </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '.75rem' }}>
+                  <input className="input" placeholder="Tapez 'supprimer' pour confirmer" value={confirmDelete} onChange={e => setConfirmDelete(e.target.value)} style={{ borderColor: confirmDelete === 'supprimer' ? '#ef4444' : 'var(--border)' }} />
+                  <button onClick={handleDeleteAccount} disabled={confirmDelete !== 'supprimer' || deleting} className="btn-danger" style={{ background: confirmDelete === 'supprimer' ? '#ef4444' : 'rgba(239,68,68,0.2)', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 2rem', fontWeight: 600 }}>
+                    {deleting ? '...' : 'Supprimer'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
