@@ -55,7 +55,7 @@ export function CommunityFeed({
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null)
   const [commentsByPost, setCommentsByPost] = useState<Record<string, any[]>>({})
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
-  const [newCommentText, setNewCommentText] = useState('')
+  const [newCommentTexts, setNewCommentTexts] = useState<Record<string, string>>({})
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   
   const [replyingTo, setReplyingTo] = useState<{ id: string, name: string, postId: string } | null>(null)
@@ -166,16 +166,17 @@ export function CommunityFeed({
   }
 
   async function handleCommentSubmit(postId: string) {
-    if (!newCommentText.trim() || isSubmittingComment) return
+    const text = newCommentTexts[postId] || ''
+    if (!text.trim() || isSubmittingComment) return
     setIsSubmittingComment(true)
-    const payload: any = { post_id: postId, user_id: currentUser.id, content: newCommentText.trim() }
+    const payload: any = { post_id: postId, user_id: currentUser.id, content: text.trim() }
     if (replyingTo && replyingTo.postId === postId) payload.parent_id = replyingTo.id
     const { data, error } = await supabase.from('community_comments').insert(payload).select('id, created_at').single()
     if (!error && data) {
-      const newComment = { id: data.id, content: newCommentText.trim(), created_at: data.created_at, user_id: currentUser.id, parent_id: payload.parent_id || null, full_name: currentUser.full_name || 'Utilisateur', avatar_url: currentUser.avatar_url, plan: currentUser.plan || 'Free', likes_count: 0 }
+      const newComment = { id: data.id, content: text.trim(), created_at: data.created_at, user_id: currentUser.id, parent_id: payload.parent_id || null, full_name: currentUser.full_name || 'Utilisateur', avatar_url: currentUser.avatar_url, plan: currentUser.plan || 'Free', likes_count: 0 }
       setCommentsByPost(prev => ({ ...prev, [postId]: [...(prev[postId] || []), newComment] }))
       setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
-      setNewCommentText('')
+      setNewCommentTexts(prev => ({ ...prev, [postId]: '' }))
       setReplyingTo(null)
       
       if (payload.parent_id) {
@@ -189,6 +190,9 @@ export function CommunityFeed({
         }
         setVisibleReplies(prev => ({ ...prev, [rootId]: (prev[rootId] || 0) + 1 }))
       }
+    } else if (error) {
+      console.error("Erreur lors de l'insertion du commentaire :", error)
+      alert("Erreur: " + error.message)
     }
     setIsSubmittingComment(false)
   }
@@ -437,14 +441,14 @@ export function CommunityFeed({
                         <input 
                           type="text" 
                           placeholder={replyingTo ? `Répondre à ${replyingTo.name}...` : "Ajouter un commentaire..."}
-                          value={newCommentText}
-                          onChange={e => setNewCommentText(e.target.value)}
+                          value={newCommentTexts[post.id] || ''}
+                          onChange={e => setNewCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
                           style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
                         />
                         <button 
                           type="submit"
-                          disabled={isSubmittingComment || !newCommentText.trim()}
-                          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isSubmittingComment || !newCommentText.trim()) ? 'not-allowed' : 'pointer', opacity: (isSubmittingComment || !newCommentText.trim()) ? 0.5 : 1, marginLeft: '8px' }}>
+                          disabled={isSubmittingComment || !(newCommentTexts[post.id] || '').trim()}
+                          style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isSubmittingComment || !(newCommentTexts[post.id] || '').trim()) ? 'not-allowed' : 'pointer', opacity: (isSubmittingComment || !(newCommentTexts[post.id] || '').trim()) ? 0.5 : 1, marginLeft: '8px' }}>
                           <Send size={16} />
                         </button>
                       </form>
