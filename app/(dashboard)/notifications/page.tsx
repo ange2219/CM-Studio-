@@ -1,33 +1,94 @@
 'use client'
 
-import { useState } from 'react'
-import { Check, Users, BarChart2, Award, ChevronDown, Bell, MessageSquare, UserPlus, Mail, Lightbulb, Activity } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Check, ChevronDown, Bell, Globe } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { PlatformIcon } from '@/components/ui/PlatformIcon'
+import type { Platform } from '@/types'
 
-const NOTIFICATIONS = [
-  { id: 1, unread: true, initial: 'AB', color: '#F59E0B', title: 'Aïcha B. vous a mentionné dans un commentaire', desc: '"@CM Studio superbe analyse ! Merci pour ton partage ✨"', badge: 'Mention', badgeColor: '#a855f7', badgeBg: 'rgba(168, 85, 247, 0.1)', time: '14:32' },
-  { id: 2, unread: true, initial: 'DK', color: '#3B82F6', title: 'David K. vous a envoyé un message', desc: "Salut ! J'aimerais avoir ton avis sur le calendrier éditorial.", badge: 'Message', badgeColor: '#3b82f6', badgeBg: 'rgba(59, 130, 246, 0.1)', time: '13:15' },
-  { id: 3, unread: true, icon: Users, color: '#10b981', title: 'Nouveau post dans le groupe Community Managers France', desc: 'Sarah L. a publié : "Quels sont vos outils préférés pour la veille ?"', badge: 'Groupe', badgeColor: '#10b981', badgeBg: 'rgba(16, 185, 129, 0.1)', time: '11:48' },
-  { id: 4, unread: true, icon: Users, color: '#a855f7', title: '12 nouvelles personnes ont rejoint votre communauté', desc: 'Votre communauté CM Studio continue de grandir 🚀', badge: 'Communauté', badgeColor: '#a855f7', badgeBg: 'rgba(168, 85, 247, 0.1)', time: '10:22' },
-  { id: 5, unread: false, initial: 'SL', color: '#ec4899', title: 'Sarah L. a répondu à votre commentaire', desc: '"Merci pour ton conseil, je vais essayer ça !"', badge: 'Commentaire', badgeColor: '#f59e0b', badgeBg: 'rgba(245, 158, 11, 0.1)', time: '09:35' },
-  { id: 6, unread: true, icon: BarChart2, color: '#3b82f6', title: 'Votre rapport hebdomadaire est prêt', desc: 'Découvrez les performances de vos publications cette semaine.', badge: 'Système', badgeColor: '#3b82f6', badgeBg: 'rgba(59, 130, 246, 0.1)', time: 'Hier, 18:45' },
-  { id: 7, unread: true, icon: Award, color: '#ec4899', title: 'Vous avez obtenu un nouveau badge', desc: 'Félicitations ! Vous avez obtenu le badge "Expert Engagement" 🏆', badge: 'Badge', badgeColor: '#ec4899', badgeBg: 'rgba(236, 72, 153, 0.1)', time: 'Hier, 17:20' }
-]
-
-const RECENT_ACTIVITY = [
-  { id: 1, initial: 'AB', color: '#F59E0B', title: 'Aïcha B. a commenté votre post', time: 'Il y a 2 min' },
-  { id: 2, initial: 'DK', color: '#3B82F6', title: 'David K. a partagé votre post', time: 'Il y a 15 min' },
-  { id: 3, initial: 'SL', color: '#ec4899', title: 'Sarah L. a aimé votre publication', time: 'Il y a 47 min' }
-]
+function getShortTimeAgo(dateStr: string | null | undefined) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return "à l'instant";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes} min`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} h`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays} j`;
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  return `${diffInWeeks} sem`;
+}
 
 export default function NotificationsPage() {
   const [mainTab, setMainTab] = useState<'cm_studio' | 'social'>('cm_studio')
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    async function loadNotifs() {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) return
+      setUser(authUser)
+
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: false })
+      
+      if (data) setNotifications(data)
+      setLoading(false)
+    }
+    loadNotifs()
+  }, [])
+
+  const filteredNotifs = notifications.filter(n => 
+    mainTab === 'cm_studio' ? n.platform === 'cm_studio' : n.platform !== 'cm_studio'
+  )
+
+  const unreadCmStudio = notifications.filter(n => !n.is_read && n.platform === 'cm_studio').length
+  const unreadSocial = notifications.filter(n => !n.is_read && n.platform !== 'cm_studio').length
+
+  const handleMarkAllRead = async () => {
+    if (!user) return
+    const idsToUpdate = filteredNotifs.filter(n => !n.is_read).map(n => n.id)
+    if (idsToUpdate.length === 0) return
+
+    await supabase.from('notifications').update({ is_read: true }).in('id', idsToUpdate)
+    
+    setNotifications(prev => prev.map(n => 
+      idsToUpdate.includes(n.id) ? { ...n, is_read: true } : n
+    ))
+  }
+
+  const handleNotifClick = async (notif: any) => {
+    if (!notif.is_read) {
+      await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id)
+      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n))
+    }
+    if (notif.action_url) {
+      router.push(notif.action_url)
+    }
+  }
 
   return (
     <div style={{ display: 'flex', gap: '2rem', height: '100%', alignItems: 'flex-start' }}>
       
       {/* ── Left Column: Notifications List ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0, maxWidth: '800px', margin: '0 auto' }}>
         
+        <header style={{ marginBottom: '1rem' }}>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--t1)', marginBottom: '.5rem' }}>Vos Notifications</h1>
+        </header>
+
         {/* Main Tabs & Mark as read */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -43,7 +104,9 @@ export default function NotificationsPage() {
                 <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '4px' }}>CM Studio</div>
                 <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Notifications internes</div>
               </div>
-              <div style={{ background: 'var(--accent)', color: '#fff', fontSize: '.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px' }}>12</div>
+              {unreadCmStudio > 0 && (
+                <div style={{ background: 'var(--accent)', color: '#fff', fontSize: '.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px' }}>{unreadCmStudio}</div>
+              )}
             </button>
             <button 
               onClick={() => setMainTab('social')}
@@ -57,59 +120,74 @@ export default function NotificationsPage() {
                 <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '4px' }}>Réseaux Sociaux</div>
                 <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Activité de vos publications</div>
               </div>
+              {unreadSocial > 0 && (
+                <div style={{ background: 'var(--accent)', color: '#fff', fontSize: '.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px' }}>{unreadSocial}</div>
+              )}
             </button>
           </div>
 
-          <button style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.8rem', cursor: 'pointer' }}>
+          <button onClick={handleMarkAllRead} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.8rem', cursor: 'pointer' }}>
             <Check size={14} /> Tout marquer comme lu
-          </button>
-        </div>
-
-        {/* Sub Tabs */}
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-          <button 
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '6px', padding: '.45rem 1rem', borderRadius: '20px', cursor: 'pointer', fontSize: '.8rem', fontWeight: 500, transition: '.15s', whiteSpace: 'nowrap',
-              background: 'transparent',
-              color: 'var(--t2)',
-              border: '1px solid var(--b1)'
-            }}
-          >
-            Filtre <ChevronDown size={14} />
           </button>
         </div>
 
         {/* List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {NOTIFICATIONS.map(notif => (
-            <div key={notif.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem 1.25rem', background: 'var(--card)', borderRadius: '12px', border: '1px solid transparent', position: 'relative' }}>
-              {/* Unread Dot */}
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: notif.unread ? 'var(--accent)' : 'transparent', flexShrink: 0 }} />
-              
-              {/* Avatar/Icon */}
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: notif.icon ? `rgba(${notif.color === '#10b981' ? '16, 185, 129' : notif.color === '#a855f7' ? '168, 85, 247' : notif.color === '#ec4899' ? '236, 72, 153' : '59, 130, 246'}, 0.1)` : notif.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: notif.icon ? notif.color : '#fff', fontSize: '.8rem', fontWeight: 700, border: notif.icon ? `1px solid ${notif.color}30` : 'none' }}>
-                {notif.icon ? <notif.icon size={18} /> : notif.initial}
-              </div>
-
-              {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.title}</div>
-                <div style={{ fontSize: '.8rem', color: 'var(--t3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.desc}</div>
-              </div>
-
-              {/* Badge & Time */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
-                <div style={{ padding: '3px 8px', borderRadius: '12px', fontSize: '.65rem', fontWeight: 600, background: notif.badgeBg, color: notif.badgeColor }}>
-                  {notif.badge}
-                </div>
-                <div style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{notif.time}</div>
-              </div>
+          {loading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--t3)' }}>Chargement...</div>
+          ) : filteredNotifs.length === 0 ? (
+            <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--card)', borderRadius: '12px', color: 'var(--t2)', border: '1px dashed var(--b1)' }}>
+              Aucune notification pour le moment.
             </div>
-          ))}
-          
-          <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '1rem', background: 'none', border: 'none', color: 'var(--t3)', fontSize: '.8rem', cursor: 'pointer', marginTop: '4px' }}>
-            Voir plus de notifications <ChevronDown size={14} />
-          </button>
+          ) : (
+            filteredNotifs.map(notif => {
+              const isCmStudio = notif.platform === 'cm_studio'
+              const accentColor = isCmStudio ? '59, 130, 246' : '168, 85, 247'
+              const hexColor = isCmStudio ? '#3b82f6' : '#a855f7'
+
+              return (
+                <div 
+                  key={notif.id} 
+                  onClick={() => handleNotifClick(notif)}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem 1.25rem', 
+                    background: 'var(--card)', borderRadius: '12px', 
+                    border: '1px solid transparent', position: 'relative', cursor: notif.action_url ? 'pointer' : 'default',
+                    opacity: notif.is_read ? 0.7 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => {
+                    if (notif.action_url) e.currentTarget.style.border = '1px solid var(--b2)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.border = '1px solid transparent'
+                  }}
+                >
+                  {/* Unread Dot */}
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: !notif.is_read ? 'var(--accent)' : 'transparent', flexShrink: 0 }} />
+                  
+                  {/* Avatar/Icon */}
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `rgba(${accentColor}, 0.1)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: hexColor }}>
+                    {isCmStudio ? <Bell size={18} /> : <PlatformIcon platform={notif.platform as Platform} size={18} />}
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.title}</div>
+                    <div style={{ fontSize: '.8rem', color: 'var(--t3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.message}</div>
+                  </div>
+
+                  {/* Badge & Time */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                    <div style={{ padding: '3px 8px', borderRadius: '12px', fontSize: '.65rem', fontWeight: 600, background: `rgba(${accentColor}, 0.1)`, color: hexColor }}>
+                      {notif.type === 'like' ? 'Like' : notif.type === 'comment' ? 'Commentaire' : notif.type}
+                    </div>
+                    <div style={{ fontSize: '.7rem', color: 'var(--t3)' }}>{getShortTimeAgo(notif.created_at)}</div>
+                  </div>
+                </div>
+              )
+            })
+          )}
         </div>
       </div>
     </div>
