@@ -64,6 +64,27 @@ export function CommunityFeed({
 
   const supabase = createClient()
 
+  useEffect(() => {
+    // Scroll and expand if coming from a notification URL hash (e.g. #post-123)
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash
+      if (hash.startsWith('#post-')) {
+        const id = hash.replace('#post-', '')
+        setTimeout(() => {
+          const el = document.getElementById(`post-container-${id}`)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            // Automatically open comments
+            if (expandedPostId !== id) {
+              setExpandedPostId(id)
+              fetchComments(id)
+            }
+          }
+        }, 500) // Small delay to let the DOM render
+      }
+    }
+  }, [expandedPostId])
+
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
     if (!newPostContent.trim() && !uploadedImageUrl) return
@@ -261,7 +282,7 @@ export function CommunityFeed({
           const isLoading = loadingComments[post.id]
 
           return (
-            <div key={post.id} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
+            <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
               {/* Post Header */}
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

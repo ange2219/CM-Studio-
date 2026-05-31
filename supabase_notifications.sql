@@ -4,7 +4,9 @@
 -- ==============================================================================
 
 -- 1. Création de la table des notifications
-CREATE TABLE IF NOT EXISTS public.notifications (
+DROP TABLE IF EXISTS public.notifications CASCADE;
+
+CREATE TABLE public.notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   type text NOT NULL, -- e.g., 'like', 'comment', 'system', 'mention'
