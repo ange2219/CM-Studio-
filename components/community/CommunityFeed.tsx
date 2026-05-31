@@ -83,8 +83,9 @@ export function CommunityFeed({
           // Clear hash to prevent infinite reopening
           window.history.replaceState(null, '', window.location.pathname)
         }, 500)
-      } else if (hash.startsWith('#comment-')) {
-        const parts = hash.replace('#comment-', '').split('-')
+      } else if (hash.startsWith('#comment_')) {
+        // Format: #comment_[commentId]_[postId]
+        const parts = hash.replace('#comment_', '').split('_')
         if (parts.length >= 2) {
           const commentId = parts[0]
           const postId = parts[1]

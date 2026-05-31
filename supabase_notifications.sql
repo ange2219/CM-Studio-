@@ -98,7 +98,7 @@ BEGIN
       'comment',
       v_title,
       v_message,
-      '/community#comment-' || NEW.id || '-' || NEW.post_id,
+      '/community#comment_' || NEW.id || '_' || NEW.post_id,
       'cm_studio'
     );
   END IF;
