@@ -94,19 +94,21 @@ export function CommunityFeed({
               el.scrollIntoView({ behavior: 'smooth', block: 'center' })
               if (expandedPostId !== postId) {
                 setExpandedPostId(postId)
-                fetchComments(postId).then(() => {
+                fetchComments(postId, commentId).then(() => {
                   setTimeout(() => {
                     const cEl = document.getElementById(`comment-container-${commentId}`)
                     if (cEl) cEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    window.history.replaceState(null, '', window.location.pathname)
                   }, 500)
                 })
               } else {
                 const cEl = document.getElementById(`comment-container-${commentId}`)
                 if (cEl) cEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                window.history.replaceState(null, '', window.location.pathname)
               }
+            } else {
+               window.history.replaceState(null, '', window.location.pathname)
             }
-            // Clear hash to prevent infinite reopening
-            window.history.replaceState(null, '', window.location.pathname)
           }, 500)
         }
       }
@@ -182,7 +184,7 @@ export function CommunityFeed({
     if (!commentsByPost[postId]) fetchComments(postId)
   }
 
-  async function fetchComments(postId: string) {
+  async function fetchComments(postId: string, targetCommentId?: string) {
     setLoadingComments(prev => ({ ...prev, [postId]: true }))
     try {
       const { data: comments, error } = await supabase.from('community_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true })
@@ -205,6 +207,20 @@ export function CommunityFeed({
       
       const initialVisible: Record<string, number> = {}
       formatted.filter(c => !c.parent_id).forEach(c => initialVisible[c.id] = 0)
+      
+      if (targetCommentId) {
+        const target = formatted.find(c => c.id === targetCommentId)
+        if (target && target.parent_id) {
+          let rootId = target.parent_id
+          let curr = formatted.find(c => c.id === rootId)
+          while (curr && curr.parent_id) {
+            rootId = curr.parent_id
+            curr = formatted.find(c => c.id === rootId)
+          }
+          initialVisible[rootId] = 999 // Force expand all replies for this thread
+        }
+      }
+
       setVisibleReplies(prev => ({ ...prev, ...initialVisible }))
     } catch (err) {
       console.error("Erreur lors de la récupération des commentaires:", err)
