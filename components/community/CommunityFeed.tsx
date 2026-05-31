@@ -341,7 +341,7 @@ export function CommunityFeed({
               {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
               {isExpanded && (
                 <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--card)', borderTop: '1px solid var(--b1)' }}>
-                  <div className="sb-scroll" style={{ flex: 1, maxHeight: '350px', overflowY: 'auto', padding: '16px 16px 0 16px' }}>
+                  <div className="sb-scroll" style={{ flex: 1, maxHeight: '220px', overflowY: 'auto', padding: '16px 16px 0 16px' }}>
                     {isLoading ? (
                       <div style={{ fontSize: '0.8rem', color: 'var(--t3)', textAlign: 'center', paddingBottom: '16px' }}>Chargement...</div>
                     ) : postComments.length === 0 ? (
