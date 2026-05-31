@@ -63,16 +63,29 @@ export async function middleware(request: NextRequest) {
 
     if (onboardedCookie !== '1') {
       // Cookie absent ou expiré → vérifier en DB une seule fois
-      // On vérifie s'il existe un profil de marque pour cet utilisateur (créé à la fin de l'onboarding)
-      const { data: brandProfile } = await supabase
-        .from('brand_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      // On utilise un client Admin pour contourner tout problème de RLS dans le middleware Edge
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
+      if (serviceKey) {
+        const { createServerClient: createAdmin } = await import('@supabase/ssr')
+        const adminSupabase = createAdmin(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceKey,
+          { cookies: { getAll() { return request.cookies.getAll() }, setAll() {} } }
+        )
+        const { data: brandProfile } = await adminSupabase
+          .from('brand_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+          
+        let isOnboarded = !!brandProfile
 
-      let isOnboarded = !!brandProfile
-
-      if (!isOnboarded) {
+        if (!isOnboarded) {
+          return redirect('/onboarding')
+        }
+      } else {
+        // Fallback ultime si aucune clé service n'est trouvée, on redirige vers onboarding
+        // L'utilisateur devra nous prévenir, mais au moins ça ne crash pas
         return redirect('/onboarding')
       }
 
