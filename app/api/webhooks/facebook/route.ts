@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
           let platform = body.object === 'page' ? 'facebook' : 'instagram'
           let eventType = null
           let postId = null
-          let authorName = 'Quelqu''un'
+          let authorName = "Quelqu'un"
 
           // ----- PARSING FACEBOOK -----
           if (platform === 'facebook' && change.field === 'feed') {
