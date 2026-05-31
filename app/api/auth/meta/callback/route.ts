@@ -68,6 +68,31 @@ export async function GET(req: NextRequest) {
       }, { onConflict: 'user_id,platform' })
     } catch { /* baseline non critique */ }
 
+    // ✅ Auto-abonner la Page au webhook feed (transparent pour l'utilisateur)
+    // Dès la connexion, on souscrit automatiquement la Page aux événements feed
+    // pour recevoir les likes et commentaires en temps réel sans action manuelle.
+    try {
+      const subscribeRes = await fetch(
+        `https://graph.facebook.com/v19.0/${fbId}/subscribed_apps`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subscribed_fields: ['feed'],
+            access_token: fbToken,
+          }),
+        }
+      )
+      const subscribeData = await subscribeRes.json()
+      if (subscribeData.success) {
+        console.log(`[Meta OAuth] Page "${fbName}" (${fbId}) abonnée au webhook feed ✅`)
+      } else {
+        console.warn(`[Meta OAuth] Abonnement webhook échoué pour "${fbName}":`, subscribeData?.error?.message)
+      }
+    } catch (e) {
+      console.warn('[Meta OAuth] Erreur abonnement webhook (non critique):', e)
+    }
+
     const response = popupResponse({ success: 'facebook', page: fbName })
     // Invalider le state cookie après usage pour éviter le replay
     response.cookies.set('meta_oauth_state', '', { maxAge: 0, path: '/' })
