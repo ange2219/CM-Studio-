@@ -63,35 +63,14 @@ export async function middleware(request: NextRequest) {
 
     if (onboardedCookie !== '1') {
       // Cookie absent ou expiré → vérifier en DB une seule fois
-      const { createServerClient: createAdmin } = await import('@supabase/ssr')
-      const adminSupabase = createAdmin(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_KEY!,
-        { cookies: { getAll() { return request.cookies.getAll() }, setAll() {} } }
-      )
-
-      let isOnboarded = false
-
-      // On tente d'abord sur la table profiles (onboarding_completed)
-      const { data: profileObj } = await adminSupabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', user.id)
+      // On vérifie s'il existe un profil de marque pour cet utilisateur (créé à la fin de l'onboarding)
+      const { data: brandProfile } = await supabase
+        .from('brand_profiles')
+        .select('id')
+        .eq('user_id', user.id)
         .maybeSingle()
 
-      if (profileObj && typeof profileObj.onboarding_completed === 'boolean') {
-        isOnboarded = profileObj.onboarding_completed
-      } else {
-        // Fallback si la table users et onboarded existent (actuelle dans l'application)
-        const { data: userProfile } = await adminSupabase
-          .from('users')
-          .select('onboarded')
-          .eq('id', user.id)
-          .maybeSingle()
-        if (userProfile && typeof userProfile.onboarded === 'boolean') {
-          isOnboarded = userProfile.onboarded
-        }
-      }
+      let isOnboarded = !!brandProfile
 
       if (!isOnboarded) {
         return redirect('/onboarding')
