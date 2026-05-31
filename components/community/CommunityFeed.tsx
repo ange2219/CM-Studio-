@@ -65,22 +65,50 @@ export function CommunityFeed({
   const supabase = createClient()
 
   useEffect(() => {
-    // Scroll and expand if coming from a notification URL hash (e.g. #post-123)
+    // Scroll and expand if coming from a notification URL hash (e.g. #post-123 or #comment-456-123)
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash
+      
       if (hash.startsWith('#post-')) {
         const id = hash.replace('#post-', '')
         setTimeout(() => {
           const el = document.getElementById(`post-container-${id}`)
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            // Automatically open comments
             if (expandedPostId !== id) {
               setExpandedPostId(id)
               fetchComments(id)
             }
           }
-        }, 500) // Small delay to let the DOM render
+          // Clear hash to prevent infinite reopening
+          window.history.replaceState(null, '', window.location.pathname)
+        }, 500)
+      } else if (hash.startsWith('#comment-')) {
+        const parts = hash.replace('#comment-', '').split('-')
+        if (parts.length >= 2) {
+          const commentId = parts[0]
+          const postId = parts[1]
+          setTimeout(() => {
+            const el = document.getElementById(`post-container-${postId}`)
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              if (expandedPostId !== postId) {
+                setExpandedPostId(postId)
+                fetchComments(postId).then(() => {
+                  setTimeout(() => {
+                    const cEl = document.getElementById(`comment-container-${commentId}`)
+                    if (cEl) cEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  }, 500)
+                })
+              } else {
+                const cEl = document.getElementById(`comment-container-${commentId}`)
+                if (cEl) cEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }
+            // Clear hash to prevent infinite reopening
+            window.history.replaceState(null, '', window.location.pathname)
+          }, 500)
+        }
       }
     }
   }, [expandedPostId])
@@ -353,7 +381,7 @@ export function CommunityFeed({
                         const isLiked = commentLikes.has(c.id)
 
                         return (
-                          <div key={c.id} style={{ marginBottom: '16px' }}>
+                          <div key={c.id} id={`comment-container-${c.id}`} style={{ marginBottom: '16px' }}>
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
@@ -383,7 +411,7 @@ export function CommunityFeed({
                               const showDeepReplyIndicator = isDeepReply && parentComment && r.user_id !== parentComment.user_id
                               
                               return (
-                                <div key={r.id} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
+                                <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
                                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)' }}>
                                     {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1) || 'U'}
                                   </div>
