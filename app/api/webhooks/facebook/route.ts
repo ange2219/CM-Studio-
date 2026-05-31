@@ -62,16 +62,22 @@ export async function POST(req: NextRequest) {
           // ----- PARSING FACEBOOK -----
           if (platform === 'facebook' && change.field === 'feed') {
             const val = change.value
-            // On ignore les posts qu'on a créés nous-mêmes (verb = 'add', item = 'post')
-            if (val.verb !== 'add') continue
+            console.log('[Webhook FB] Feed event reçu:', JSON.stringify(val))
+            
+            // Ignorer les nouveaux posts créés par la Page (item = 'status' ou 'photo' avec verb = 'add')
+            if (val.verb === 'add' && (val.item === 'status' || val.item === 'photo' || val.item === 'video' || val.item === 'share')) {
+              console.log('[Webhook FB] Ignoré: nouveau post de la Page')
+              continue
+            }
             
             if (val.item === 'comment') {
               eventType = 'comment'
-              postId = val.post_id // ex: "PAGEID_POSTID"
+              // Facebook peut envoyer post_id sous différentes formes
+              postId = val.post_id || val.parent_id || null
               authorName = val.from?.name || authorName
             } else if (val.item === 'like' || val.item === 'reaction') {
               eventType = 'like'
-              postId = val.post_id
+              postId = val.post_id || val.object_id || null
               authorName = val.from?.name || authorName
             }
           }
