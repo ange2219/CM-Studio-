@@ -27,15 +27,8 @@ export async function GET(req: NextRequest) {
     const admin = createAdminClient()
     const tokenExpiresAt = longTokenData.expires_at
 
-    // Récupérer la photo de profil Instagram
-    let igAvatar: string | null = null
-    try {
-      const picRes = await fetch(`https://graph.instagram.com/${igUser.id}?fields=profile_picture_url&access_token=${longToken}`)
-      if (picRes.ok) {
-        const picData = await picRes.json()
-        igAvatar = picData?.profile_picture_url || null
-      }
-    } catch { /* non critique */ }
+    // Récupérer la photo de profil Instagram via le proxy
+    let igAvatar: string | null = `/api/social/avatar?platform=instagram&pid=${igUser.id}`
 
     await admin.from('social_accounts').delete().eq('user_id', userId).eq('platform', 'instagram')
     const { error } = await admin.from('social_accounts').insert({

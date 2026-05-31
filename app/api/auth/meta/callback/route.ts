@@ -36,14 +36,8 @@ export async function GET(req: NextRequest) {
     const fbToken = page.access_token
     let fbAvatar: string | null = null
       
-    // Photo de la Page Facebook
-    try {
-      const picRes = await fetch(`https://graph.facebook.com/${fbId}/picture?redirect=false&type=large&access_token=${fbToken}`)
-      if (picRes.ok) {
-        const picData = await picRes.json()
-        fbAvatar = picData?.data?.url || null
-      }
-    } catch { /* non critique */ }
+    // Photo de la Page Facebook (URL dynamique via notre proxy ou Graph API)
+    fbAvatar = `/api/social/avatar?platform=facebook&pid=${fbId}`
 
     const tokenExpiresAt = longTokenData.expires_at
     await admin.from('social_accounts').delete().eq('user_id', userId).eq('platform', 'facebook')
