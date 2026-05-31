@@ -44,7 +44,7 @@ export async function GET() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subscribed_fields: ['feed', 'messages'],
+          subscribed_fields: ['feed'],
           access_token: pageToken,
         }),
       }

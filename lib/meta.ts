@@ -14,9 +14,9 @@ export function getMetaOAuthUrl(state: string): string {
       'pages_manage_posts',
       'pages_read_engagement',
       'pages_show_list',
+      'pages_manage_metadata',  // Requis pour s'abonner aux webhooks feed de la Page
       'public_profile',
-      'read_insights',  // impressions + reach des posts Facebook uniquement
-      // instagram_manage_insights retiré — Instagram se connecte avec sa propre app séparée
+      'read_insights',
     ].join(','),
     response_type: 'code',
     state,
