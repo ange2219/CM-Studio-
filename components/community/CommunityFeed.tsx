@@ -75,10 +75,10 @@ export function CommunityFeed({
           const el = document.getElementById(`post-container-${id}`)
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            if (expandedPostId !== id) {
-              setExpandedPostId(id)
-              fetchComments(id)
-            }
+            // Highlight the post briefly to show it was liked
+            el.style.transition = 'background-color 0.5s ease'
+            el.style.backgroundColor = 'rgba(59, 130, 246, 0.1)'
+            setTimeout(() => { el.style.backgroundColor = 'var(--card)' }, 2000)
           }
           // Clear hash to prevent infinite reopening
           window.history.replaceState(null, '', window.location.pathname)
