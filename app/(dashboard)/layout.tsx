@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { ToastProvider } from '@/components/ui/Toast'
+import { UserProvider } from '@/components/context/UserContext'
 import type { User } from '@/types'
 
 const getUser = cache(async (id: string) => {
@@ -21,9 +22,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <ToastProvider>
-      <DashboardShell user={user as User} key="shell">
-        {children}
-      </DashboardShell>
+      <UserProvider initialUser={user as any}>
+        <DashboardShell user={user as User} key="shell">
+          {children}
+        </DashboardShell>
+      </UserProvider>
     </ToastProvider>
   )
 }

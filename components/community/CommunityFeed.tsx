@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users } from 'lucide-react'
 
 type Post = {
@@ -291,7 +292,7 @@ export function CommunityFeed({
 
         {uploadedImageUrl && (
           <div style={{ padding: '8px 12px 12px 52px', position: 'relative' }}>
-            <img src={uploadedImageUrl} style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid var(--b1)' }} alt="Upload preview" />
+            <Image src={uploadedImageUrl} width={200} height={150} style={{ maxWidth: '200px', height: 'auto', borderRadius: '8px', border: '1px solid var(--b1)', objectFit: 'cover' }} alt="Upload preview" />
             <button onClick={() => setUploadedImageUrl(null)} style={{ position: 'absolute', top: 0, left: '235px', background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✕</button>
           </div>
         )}
@@ -332,8 +333,8 @@ export function CommunityFeed({
             <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
               {/* Post Header */}
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {post.avatar_url ? <Image src={post.avatar_url} width={40} height={40} style={{ objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
@@ -360,7 +361,7 @@ export function CommunityFeed({
                 {post.content}
                 {post.image_url && (
                   <div style={{ marginTop: '12px' }}>
-                    <img src={post.image_url} style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--b1)' }} alt="Post image" />
+                    <Image src={post.image_url} width={680} height={400} style={{ maxWidth: '100%', maxHeight: '400px', height: 'auto', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--b1)' }} alt="Post image" />
                   </div>
                 )}
               </div>
@@ -409,8 +410,8 @@ export function CommunityFeed({
                           <div key={c.id} id={`comment-container-${c.id}`} style={{ marginBottom: '16px' }}>
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
-                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
-                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : c.full_name?.slice(0, 1) || 'U'}
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)', overflow: 'hidden' }}>
+                                {c.avatar_url ? <Image src={c.avatar_url} width={32} height={32} style={{ objectFit: 'cover', borderRadius: '50%' }} alt="" /> : c.full_name?.slice(0, 1) || 'U'}
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -437,8 +438,8 @@ export function CommunityFeed({
 
                               return (
                                 <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
-                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)' }}>
-                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : r.full_name?.slice(0, 1) || 'U'}
+                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)', overflow: 'hidden' }}>
+                                    {r.avatar_url ? <Image src={r.avatar_url} width={24} height={24} style={{ objectFit: 'cover', borderRadius: '50%' }} alt="" /> : r.full_name?.slice(0, 1) || 'U'}
                                   </div>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>

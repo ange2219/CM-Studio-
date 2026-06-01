@@ -2,14 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { CommunityFeed } from '@/components/community/CommunityFeed'
-import { WelcomeBanner } from '@/components/home/WelcomeBanner'
-import { PopularGroups } from '@/components/home/PopularGroups'
-import { NotificationsPanel } from '@/components/home/NotificationsPanel'
-import { StoriesSection } from '@/components/home/StoriesSection'
+import { useUser } from '@/components/context/UserContext'
+import { HomeSkeleton } from '@/components/ui/Skeleton'
 
 export default function HomePage() {
-  const [user, setUser] = useState<any>(null)
+  const { user } = useUser()
   const [loading, setLoading] = useState(true)
   const [initialPosts, setInitialPosts] = useState<any[]>([])
   const [initialLikedIds, setInitialLikedIds] = useState<string[]>([])
@@ -27,43 +24,26 @@ export default function HomePage() {
   useEffect(() => {
     document.title = 'Accueil — CM Studio'
     async function init() {
-      // 1. Get User
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (authUser) {
-        const { data: profile } = await supabase.from('users').select('*').eq('id', authUser.id).single()
-        setUser(profile)
+      if (user) {
+        // 2. Fetch posts and likes in parallel
+        const [postsRes, likesRes] = await Promise.all([
+          supabase.from('vw_community_posts').select('*').order('created_at', { ascending: false }).limit(20),
+          supabase.from('community_likes').select('post_id').eq('user_id', user.id)
+        ])
 
-        // 2. Get Posts
-        const { data: posts } = await supabase
-          .from('vw_community_posts')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20)
-
-        if (posts) {
-          setInitialPosts(posts)
+        if (postsRes.data) {
+          setInitialPosts(postsRes.data)
         }
-
-        // 3. Get User Likes
-        const { data: likes } = await supabase
-          .from('community_likes')
-          .select('post_id')
-          .eq('user_id', authUser.id)
-        
-        if (likes) {
-          setInitialLikedIds(likes.map(l => l.post_id))
+        if (likesRes.data) {
+          setInitialLikedIds(likesRes.data.map(l => l.post_id))
         }
       }
       setLoading(false)
     }
     init()
-  }, [])
+  }, [user])
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>
-       Chargement de votre espace...
-    </div>
-  )
+  if (loading) return <HomeSkeleton />
   
   if (!user) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>

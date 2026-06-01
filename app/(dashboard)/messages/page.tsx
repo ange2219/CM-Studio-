@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useSearchParams } from 'next/navigation'
+import { useUser } from '@/components/context/UserContext'
+import { MessagesSkeleton } from '@/components/ui/Skeleton'
 import { Search, Edit3, Paperclip, Smile, Send, X } from 'lucide-react'
 
 interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null }
@@ -34,7 +36,7 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
 function MessagesContent() {
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const searchParams = useSearchParams()
-  const [me, setMe] = useState<User | null>(null)
+  const { user: me } = useUser() as { user: User | null }
   const [convs, setConvs] = useState<Conversation[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<Message[]>([])
@@ -49,16 +51,12 @@ function MessagesContent() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const realtimeRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const convsRef = useRef<Conversation[]>([])
   const activeConv = convs.find(c => c.id === activeId)
 
-  // Load current user
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
-      supabase.from('users').select('id,full_name,email,username,avatar_url').eq('id', user.id).single()
-        .then(({ data }) => setMe(data))
-    })
-  }, [])
+    convsRef.current = convs
+  }, [convs])
 
   // Auto-ouvrir un DM si le paramètre ?dm=userId est présent (venant de la communauté)
   useEffect(() => {
@@ -81,32 +79,55 @@ function MessagesContent() {
   // Load conversations
   const loadConvs = useCallback(async () => {
     if (!me) return
-    const { data: myParts } = await supabase.from('conversation_participants').select('conversation_id').eq('user_id', me.id)
-    if (!myParts?.length) { setConvs([]); return }
-    const ids = myParts.map(p => p.conversation_id)
-    const result: Conversation[] = []
-    for (const cid of ids) {
-      const [{ data: otherPart }, { data: lastMsg }, { data: conv }] = await Promise.all([
-        supabase.from('conversation_participants').select('user_id, users(id,full_name,username,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
-        supabase.from('messages').select('content,created_at').eq('conversation_id', cid).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('conversations').select('updated_at').eq('id', cid).single(),
-      ])
-      if (!otherPart) continue
-      // Ignorer les conversations vides (sans aucun message)
-      if (!lastMsg) continue
-      const otherUser = ((otherPart as any).users as User) || {
-        id: otherPart.user_id,
-        full_name: 'Membre CM Studio',
-        username: 'membre',
-        avatar_url: null,
-      }
-      const { data: chatMsgs } = await supabase.from('messages').select('id, message_reads!left(user_id)').eq('conversation_id', cid).neq('sender_id', me.id)
-      const count = chatMsgs?.filter(m => {
-        const reads = (m as any).message_reads || []
-        return !reads.some((r: any) => r.user_id === me.id)
-      }).length || 0
-      result.push({ id: cid, updated_at: conv?.updated_at || '', otherUser, lastMessage: lastMsg?.content || 'Pièce jointe', unreadCount: count })
+    const { data: convsData, error } = await supabase
+      .from('vw_conversations_list')
+      .select('*')
+      .eq('my_user_id', me.id)
+    
+    if (error || !convsData) {
+      setConvs([])
+      return
     }
+
+    const ids = convsData.map(c => c.conversation_id).filter(Boolean) as string[]
+    const unreadMap: Record<string, number> = {}
+    
+    if (ids.length) {
+      const { data: chatMsgs } = await supabase
+        .from('messages')
+        .select('id, conversation_id, message_reads!left(user_id)')
+        .in('conversation_id', ids)
+        .neq('sender_id', me.id)
+        
+      if (chatMsgs) {
+        chatMsgs.forEach(m => {
+          const reads = (m as any).message_reads || []
+          const isRead = reads.some((r: any) => r.user_id === me.id)
+          if (!isRead) {
+            unreadMap[m.conversation_id] = (unreadMap[m.conversation_id] || 0) + 1
+          }
+        })
+      }
+    }
+
+    const result: Conversation[] = convsData
+      .filter(c => c.last_message_created_at)
+      .map(c => {
+        const otherUser: User = {
+          id: c.other_user_id || '',
+          full_name: c.other_full_name || 'Membre CM Studio',
+          username: c.other_username || 'membre',
+          avatar_url: c.other_avatar_url,
+        }
+        return {
+          id: c.conversation_id,
+          updated_at: c.updated_at || '',
+          otherUser,
+          lastMessage: c.last_message_content || (c.last_message_attachment_name ? 'Pièce jointe' : 'Aucun message'),
+          unreadCount: unreadMap[c.conversation_id] || 0,
+        }
+      })
+
     result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     setConvs(result)
   }, [me])
@@ -147,7 +168,17 @@ function MessagesContent() {
     realtimeRef.current = supabase.channel(`msgs:${activeId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeId}` }, async payload => {
         const nm = payload.new as Message
-        const { data: sender } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
+        
+        let sender: User | null = null
+        if (me && nm.sender_id === me.id) {
+          sender = me
+        } else {
+          const currentConv = convsRef.current.find(c => c.id === activeId)
+          if (currentConv) {
+            sender = currentConv.otherUser
+          }
+        }
+
         setMsgs(p => {
           // Filtrer le message temporaire correspondant pour éviter les doublons
           const withoutTemp = p.filter(m => !(m.isTemp && m.content === nm.content && m.sender_id === nm.sender_id))
@@ -248,7 +279,7 @@ function MessagesContent() {
   const totalUnread = convs.reduce((s, c) => s + c.unreadCount, 0)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 110px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', flex: 1, minHeight: 0 }}>
       {/* NEW CONV MODAL */}
       {showNew && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -283,7 +314,7 @@ function MessagesContent() {
         </div>
       )}
 
-      <div style={{ display: 'flex', flex: 1, minHeight: 0, background: 'var(--bg)', borderRadius: 16, border: '1px solid var(--b1)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,.05)' }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, background: 'transparent', overflow: 'hidden' }}>
         {/* SIDEBAR */}
         <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .9rem' }}>
@@ -424,7 +455,7 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t3)', fontSize: '.9rem' }}>Chargement...</div>}>
+    <Suspense fallback={<MessagesSkeleton />}>
       <MessagesContent />
     </Suspense>
   )

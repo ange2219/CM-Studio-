@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/components/context/UserContext'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X
@@ -20,14 +22,13 @@ function useIsMobile(breakpoint = 768) {
   return isMobile
 }
 
-export function DashboardShell({ user: initialUser, children }: { 
-  user: any
+export function DashboardShell({ children }: { 
   children: React.ReactNode 
 }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [user, setUser] = useState<any>(initialUser)
+  const { user } = useUser()
   const [profileOpen, setProfileOpen] = useState(false)
   const [theme, setTheme] = useState('dark')
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -280,7 +281,7 @@ export function DashboardShell({ user: initialUser, children }: {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0
                 }}
               >
-                {user?.avatar_url ? <img src={user.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : initials}
+                {user?.avatar_url ? <Image src={user.avatar_url} width={38} height={38} style={{ objectFit: 'cover', width: '100%', height: '100%' }} alt=""/> : initials}
               </button>
 
               {profileOpen && (
@@ -288,7 +289,7 @@ export function DashboardShell({ user: initialUser, children }: {
                   <div className="dropdown-header">
                     <div className="av-large" style={{ overflow: 'hidden' }}>
                       {user?.avatar_url ? (
-                        <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Image src={user.avatar_url} width={50} height={50} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         initials
                       )}
@@ -325,7 +326,13 @@ export function DashboardShell({ user: initialUser, children }: {
           </div>
         </header>
 
-        <main className="sb-scroll" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 12px' : '32px' }}>
+        <main className="sb-scroll" style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          padding: pathname === '/messages' ? '0' : (isMobile ? '16px 12px' : '32px'),
+          display: pathname === '/messages' ? 'flex' : 'block',
+          flexDirection: pathname === '/messages' ? 'column' : undefined
+        }}>
           {children}
         </main>
       </div>

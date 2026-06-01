@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { DashboardSkeleton } from '@/components/ui/Skeleton'
 import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
@@ -274,7 +276,12 @@ export default function PostsDashboard() {
     setBulkDeleting(true)
     const ids = Array.from(selectedIds)
     try {
-      await Promise.all(ids.map(id => fetch(`/api/posts/${id}`, { method: 'DELETE' })))
+      const res = await fetch('/api/posts/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      })
+      if (!res.ok) throw new Error()
       toast(`${ids.length} post${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`, 'success')
       lastDeletedAt.current = Date.now()
       setPosts(prev => prev.filter(p => !ids.includes(p.id)))
@@ -289,7 +296,7 @@ export default function PostsDashboard() {
 
   function loadPosts(): Promise<void> {
     setLoading(true)
-    return fetch('/api/posts?limit=100')
+    return fetch('/api/posts?limit=20')
       .then(r => r.json())
       .then(d => { setPosts(d.posts || []); setTotal(d.total || 0); setLoading(false) })
       .catch(() => setLoading(false))
@@ -606,7 +613,7 @@ export default function PostsDashboard() {
             {/* Image */}
             {editMediaUrl ? (
               <div style={{ background: 'var(--bg)', position: 'relative' }}>
-                <img src={editMediaUrl} alt="" style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block' }} />
+                <Image src={editMediaUrl} width={560} height={280} alt="" style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block' }} />
                 {isDraft && (
                   <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', gap: '.4rem' }}>
                     <label style={{ cursor: 'pointer', background: 'rgba(0,0,0,.7)', border: '1px solid rgba(255,255,255,.15)', borderRadius: '6px', padding: '.35rem .6rem', display: 'flex', alignItems: 'center', gap: '.35rem', fontSize: '.72rem', color: 'var(--t1)' }}>
@@ -1101,7 +1108,7 @@ export default function PostsDashboard() {
         {/* Content (Scrollable part) */}
         <div className="sb-scroll" style={{ flex: 1, overflowY: 'auto', paddingRight: '.25rem' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
+            <DashboardSkeleton />
           ) : displayPosts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
