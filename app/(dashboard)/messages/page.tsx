@@ -4,7 +4,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { useSearchParams } from 'next/navigation'
 import { Search, Edit3, Paperclip, Smile, Send, X } from 'lucide-react'
 
-interface User { id: string; full_name: string | null; email: string; avatar_url: string | null }
+interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null }
 interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User }
 interface Conversation { id: string; updated_at: string; otherUser: User; lastMessage: string; unreadCount: number }
 
@@ -12,10 +12,13 @@ const EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '❤️'
 
 function getInitials(u: User) {
   if (u.full_name) { const p = u.full_name.trim().split(' '); return (p[0][0] + (p[1]?.[0] || '')).toUpperCase() }
-  return u.email[0].toUpperCase()
+  return 'U'
 }
 const AVATAR_COLORS = ['#7B5CF5', '#F59E0B', '#3B82F6', '#10B981', '#EC4899', '#F97316']
-function avatarColor(u: User) { return AVATAR_COLORS[u.email.charCodeAt(0) % AVATAR_COLORS.length] }
+function avatarColor(u: User) {
+  const val = u.full_name || u.id || ''
+  return AVATAR_COLORS[val.charCodeAt(0) % AVATAR_COLORS.length]
+}
 
 function Avatar({ user, size = 40 }: { user: User; size?: number }) {
   if (user.avatar_url && !user.avatar_url.startsWith('/api/social')) {
@@ -233,7 +236,7 @@ function MessagesContent() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <span style={{ fontSize: '.82rem', fontWeight: c.unreadCount > 0 && !isActive ? 700 : 600, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.otherUser.full_name || c.otherUser.email}</span>
+                      <span style={{ fontSize: '.82rem', fontWeight: c.unreadCount > 0 && !isActive ? 700 : 600, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.otherUser.full_name || 'Utilisateur'}</span>
                       <span style={{ fontSize: '.68rem', color: isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)', flexShrink: 0 }}>{new Date(c.updated_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <div style={{ fontSize: '.73rem', color: isActive ? 'rgba(255,255,255,.7)' : c.unreadCount > 0 ? 'var(--t1)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 400 }}>{c.lastMessage}</div>
@@ -259,8 +262,8 @@ function MessagesContent() {
               <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 <Avatar user={activeConv.otherUser} size={34} />
                 <div>
-                  <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || activeConv.otherUser.email}</div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>{activeConv.otherUser.email}</div>
+                  <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || 'Utilisateur'}</div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>Membre CM Studio</div>
                 </div>
               </div>
 
