@@ -144,7 +144,11 @@ function MessagesContent() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeId}` }, async payload => {
         const nm = payload.new as Message
         const { data: sender } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
-        setMsgs(p => [...p, { ...nm, sender: sender as User, message_reads: [] }])
+        setMsgs(p => {
+          // Filtrer le message temporaire correspondant pour éviter les doublons
+          const withoutTemp = p.filter(m => !(m.isTemp && m.content === nm.content && m.sender_id === nm.sender_id))
+          return [...withoutTemp, { ...nm, sender: sender as User, message_reads: [] }]
+        })
         if (nm.sender_id !== me.id) {
           await supabase.from('message_reads').upsert({ message_id: nm.id, user_id: me.id }, { onConflict: 'message_id,user_id' })
         }
@@ -170,10 +174,37 @@ function MessagesContent() {
   }, [uSearch])
 
   async function send() {
-    if (!input.trim() || !activeId || !me || sending) return
-    setSending(true); const c = input.trim(); setInput('')
-    await supabase.from('messages').insert({ conversation_id: activeId, sender_id: me.id, content: c })
-    setSending(false)
+    if (!input.trim() || !activeId || !me) return
+    const content = input.trim()
+    setInput('')
+
+    // Créer un ID temporaire unique
+    const tempId = `temp-${Date.now()}`
+    const tempMsg: Message = {
+      id: tempId,
+      conversation_id: activeId,
+      sender_id: me.id,
+      content,
+      created_at: new Date().toISOString(),
+      sender: me as any,
+      message_reads: [],
+      isTemp: true,
+      error: false
+    }
+
+    // Afficher immédiatement le message localement avec le statut "En cours..."
+    setMsgs(prev => [...prev, tempMsg])
+
+    try {
+      const { error } = await supabase.from('messages').insert({ conversation_id: activeId, sender_id: me.id, content })
+      if (error) {
+        console.error('Insert error:', error)
+        setMsgs(prev => prev.map(m => m.id === tempId ? { ...m, error: true } : m))
+      }
+    } catch (err) {
+      console.error('Send catch error:', err)
+      setMsgs(prev => prev.map(m => m.id === tempId ? { ...m, error: true } : m))
+    }
   }
 
   async function startDm(user: User) {
