@@ -87,12 +87,17 @@ function MessagesContent() {
     const result: Conversation[] = []
     for (const cid of ids) {
       const [{ data: otherPart }, { data: lastMsg }, { data: conv }] = await Promise.all([
-        supabase.from('conversation_participants').select('user_id, users!inner(id,full_name,username,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
+        supabase.from('conversation_participants').select('user_id, users(id,full_name,username,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
         supabase.from('messages').select('content,created_at').eq('conversation_id', cid).order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('conversations').select('updated_at').eq('id', cid).single(),
       ])
       if (!otherPart) continue
-      const otherUser = (otherPart as any).users as User
+      const otherUser = ((otherPart as any).users as User) || {
+        id: otherPart.user_id,
+        full_name: 'Membre CM Studio',
+        username: 'membre',
+        avatar_url: null,
+      }
       const { count } = await supabase.from('messages').select('id', { count: 'exact', head: true }).eq('conversation_id', cid).neq('sender_id', me.id).not('id', 'in', `(select message_id from message_reads where user_id='${me.id}')`)
       result.push({ id: cid, updated_at: conv?.updated_at || '', otherUser, lastMessage: lastMsg?.content || 'Pièce jointe', unreadCount: count || 0 })
     }
