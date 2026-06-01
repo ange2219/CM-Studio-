@@ -240,6 +240,16 @@ export default function PostsDashboard() {
 
   async function bulkDelete() {
     if (selectedIds.size === 0) return
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const isGoogle = user?.app_metadata?.provider === 'google'
+    
+    if (isGoogle) {
+      await doBulkDelete()
+      return
+    }
+
     const needsPassword = !lastDeletedAt.current || Date.now() - lastDeletedAt.current >= DELETE_COOLDOWN_MS
     if (needsPassword) {
       setBulkConfirm(true)
@@ -517,8 +527,13 @@ export default function PostsDashboard() {
     }
   }
 
-  function askDelete(id: string) {
-    if (lastDeletedAt.current && Date.now() - lastDeletedAt.current < DELETE_COOLDOWN_MS) {
+  async function askDelete(id: string) {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const isGoogle = user?.app_metadata?.provider === 'google'
+
+    if (isGoogle || (lastDeletedAt.current && Date.now() - lastDeletedAt.current < DELETE_COOLDOWN_MS)) {
       doDelete(id)
     } else {
       setConfirmId(id)
