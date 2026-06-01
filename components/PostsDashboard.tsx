@@ -274,7 +274,12 @@ export default function PostsDashboard() {
     setBulkDeleting(true)
     const ids = Array.from(selectedIds)
     try {
-      await Promise.all(ids.map(id => fetch(`/api/posts/${id}`, { method: 'DELETE' })))
+      const res = await fetch('/api/posts/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      })
+      if (!res.ok) throw new Error('Erreur suppression groupée')
       toast(`${ids.length} post${ids.length > 1 ? 's' : ''} supprimé${ids.length > 1 ? 's' : ''}`, 'success')
       lastDeletedAt.current = Date.now()
       setPosts(prev => prev.filter(p => !ids.includes(p.id)))
@@ -289,7 +294,7 @@ export default function PostsDashboard() {
 
   function loadPosts(): Promise<void> {
     setLoading(true)
-    return fetch('/api/posts?limit=100')
+    return fetch('/api/posts?limit=20')
       .then(r => r.json())
       .then(d => { setPosts(d.posts || []); setTotal(d.total || 0); setLoading(false) })
       .catch(() => setLoading(false))
