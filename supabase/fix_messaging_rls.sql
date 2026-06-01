@@ -54,3 +54,25 @@ CREATE POLICY "messages: envoi par participant" ON public.messages
   FOR INSERT WITH CHECK (
     sender_id = auth.uid() AND public.check_is_conversation_member(conversation_id, auth.uid())
   );
+
+-- 6. Nouvelles politiques RLS pour public.message_reads
+DROP POLICY IF EXISTS "message_reads: propre" ON public.message_reads;
+DROP POLICY IF EXISTS "message_reads: select par participant" ON public.message_reads;
+DROP POLICY IF EXISTS "message_reads: insert/update par soi-meme" ON public.message_reads;
+
+-- Permettre de voir les lectures si on fait partie de la conversation
+CREATE POLICY "message_reads: select par participant" ON public.message_reads
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.messages m
+      WHERE m.id = message_reads.message_id
+        AND public.check_is_conversation_member(m.conversation_id, auth.uid())
+    )
+  );
+
+-- Interdire d'enregistrer une lecture pour un autre utilisateur
+CREATE POLICY "message_reads: insert/update par soi-meme" ON public.message_reads
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "message_reads: propre" ON public.message_reads
+  FOR ALL USING (user_id = auth.uid());
