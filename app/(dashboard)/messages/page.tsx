@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useSearchParams } from 'next/navigation'
 import { Search, Edit3, Paperclip, Smile, Send, X } from 'lucide-react'
 
 interface User { id: string; full_name: string | null; email: string; avatar_url: string | null }
@@ -27,7 +28,7 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
   )
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const searchParams = useSearchParams()
   const [me, setMe] = useState<User | null>(null)
@@ -310,5 +311,13 @@ export default function MessagesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t3)', fontSize: '.9rem' }}>Chargement...</div>}>
+      <MessagesContent />
+    </Suspense>
   )
 }
