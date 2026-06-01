@@ -79,7 +79,7 @@ function MessagesContent() {
     const result: Conversation[] = []
     for (const cid of ids) {
       const [{ data: otherPart }, { data: lastMsg }, { data: conv }] = await Promise.all([
-        supabase.from('conversation_participants').select('user_id, users!inner(id,full_name,email,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
+        supabase.from('conversation_participants').select('user_id, users!inner(id,full_name,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
         supabase.from('messages').select('content,created_at').eq('conversation_id', cid).order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('conversations').select('updated_at').eq('id', cid).single(),
       ])
@@ -97,7 +97,7 @@ function MessagesContent() {
   // Load messages + realtime
   useEffect(() => {
     if (!activeId || !me) return
-    supabase.from('messages').select('*,sender:users!sender_id(id,full_name,email,avatar_url)').eq('conversation_id', activeId).order('created_at', { ascending: true })
+    supabase.from('messages').select('*,sender:users!sender_id(id,full_name,avatar_url)').eq('conversation_id', activeId).order('created_at', { ascending: true })
       .then(({ data }) => {
         setMsgs((data as Message[]) || [])
         const ids = data?.filter(m => m.sender_id !== me.id).map(m => m.id) || []
@@ -108,7 +108,7 @@ function MessagesContent() {
     realtimeRef.current = supabase.channel(`msgs:${activeId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeId}` }, async payload => {
         const nm = payload.new as Message
-        const { data: sender } = await supabase.from('users').select('id,full_name,email,avatar_url').eq('id', nm.sender_id).single()
+        const { data: sender } = await supabase.from('users').select('id,full_name,avatar_url').eq('id', nm.sender_id).single()
         setMsgs(p => [...p, { ...nm, sender: sender as User }])
         if (nm.sender_id !== me.id) supabase.from('message_reads').upsert({ message_id: nm.id, user_id: me.id }, { onConflict: 'message_id,user_id' })
         loadConvs()
@@ -164,7 +164,7 @@ function MessagesContent() {
     setUploading(false)
   }
 
-  const filteredConvs = convs.filter(c => !convSearch || c.otherUser.full_name?.toLowerCase().includes(convSearch.toLowerCase()) || c.otherUser.email.toLowerCase().includes(convSearch.toLowerCase()))
+  const filteredConvs = convs.filter(c => !convSearch || c.otherUser.full_name?.toLowerCase().includes(convSearch.toLowerCase()))
   const totalUnread = convs.reduce((s, c) => s + c.unreadCount, 0)
 
   return (
