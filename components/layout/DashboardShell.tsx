@@ -51,20 +51,6 @@ export function DashboardShell({ children }: {
   }, [theme])
 
   useEffect(() => {
-    if (!initialUser) {
-      supabase.auth.getUser().then(({ data: { user: authUser } }) => {
-        if (authUser) {
-          supabase.from('users').select('*').eq('id', authUser.id).single().then(({ data }) => {
-            if (data) setUser(data)
-          })
-        }
-      })
-    } else {
-      setUser(initialUser)
-    }
-  }, [initialUser, supabase])
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false)
