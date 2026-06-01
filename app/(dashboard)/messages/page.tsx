@@ -81,32 +81,46 @@ function MessagesContent() {
   // Load conversations
   const loadConvs = useCallback(async () => {
     if (!me) return
-    const { data: myParts } = await supabase.from('conversation_participants').select('conversation_id').eq('user_id', me.id)
-    if (!myParts?.length) { setConvs([]); return }
-    const ids = myParts.map(p => p.conversation_id)
+    const { data: convsData } = await supabase.from('vw_conversations_list').select('*')
+    if (!convsData) { setConvs([]); return }
+
+    // Filtrer pour ne garder que les conversations où je suis participant
+    const myConvs = convsData.filter((c: any) => c.my_user_id === me.id)
     const result: Conversation[] = []
-    for (const cid of ids) {
-      const [{ data: otherPart }, { data: lastMsg }, { data: conv }] = await Promise.all([
-        supabase.from('conversation_participants').select('user_id, users(id,full_name,username,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
-        supabase.from('messages').select('content,created_at').eq('conversation_id', cid).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('conversations').select('updated_at').eq('id', cid).single(),
-      ])
-      if (!otherPart) continue
-      // Ignorer les conversations vides (sans aucun message)
-      if (!lastMsg) continue
-      const otherUser = ((otherPart as any).users as User) || {
-        id: otherPart.user_id,
-        full_name: 'Membre CM Studio',
-        username: 'membre',
-        avatar_url: null,
+
+    for (const c of myConvs) {
+      if (!c.other_user_id) continue
+      // Ignorer les conversations sans messages
+      if (!c.last_message_created_at) continue
+
+      const otherUser: User = {
+        id: c.other_user_id,
+        full_name: c.other_full_name || 'Membre CM Studio',
+        username: c.other_username || 'membre',
+        avatar_url: c.other_avatar_url,
       }
-      const { data: chatMsgs } = await supabase.from('messages').select('id, message_reads!left(user_id)').eq('conversation_id', cid).neq('sender_id', me.id)
-      const count = chatMsgs?.filter(m => {
+
+      // Nombre de messages non lus
+      const { data: unreadData } = await supabase
+        .from('messages')
+        .select('id, message_reads!left(user_id)')
+        .eq('conversation_id', c.conversation_id)
+        .neq('sender_id', me.id)
+
+      const count = unreadData?.filter(m => {
         const reads = (m as any).message_reads || []
         return !reads.some((r: any) => r.user_id === me.id)
       }).length || 0
-      result.push({ id: cid, updated_at: conv?.updated_at || '', otherUser, lastMessage: lastMsg?.content || 'Pièce jointe', unreadCount: count })
+
+      result.push({
+        id: c.conversation_id,
+        updated_at: c.updated_at || '',
+        otherUser,
+        lastMessage: c.last_message_content || 'Pièce jointe',
+        unreadCount: count
+      })
     }
+
     result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     setConvs(result)
   }, [me])
