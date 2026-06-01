@@ -47,7 +47,14 @@ export function DashboardShell({ user: initialUser, children }: {
   }, [pathname, isMobile])
 
   useEffect(() => {
+    // Init: read saved theme from localStorage
+    const saved = localStorage.getItem('theme')
+    if (saved) setTheme(saved)
+  }, [])
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
   }, [theme])
 
   useEffect(() => {

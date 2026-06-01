@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { PWAInstall } from '@/components/PWAInstall'
-import { ThemeProvider } from '@/components/layout/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'CM Studio — Assistant community manager',
@@ -31,12 +30,27 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-theme="light" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        {/* Script anti-FOUC : s'exécute de manière synchrone AVANT le rendu */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || 'dark';
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch(e) {
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
-        <ThemeProvider>
-          {children}
-          <PWAInstall />
-        </ThemeProvider>
+        {children}
+        <PWAInstall />
       </body>
     </html>
   )
