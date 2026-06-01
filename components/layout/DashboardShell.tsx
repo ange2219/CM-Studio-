@@ -179,7 +179,7 @@ export function DashboardShell({ user: initialUser, children }: {
             <>
               <div style={{ padding: isExpanded ? '24px' : '24px 16px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: isExpanded ? 'space-between' : 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src="/logo.png" alt="CM Studio Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                  <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
                   {isExpanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>CM Studio</span>}
                 </div>
                 {isMobile && (
@@ -280,7 +280,7 @@ export function DashboardShell({ user: initialUser, children }: {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0
                 }}
               >
-                {user?.avatar_url ? <img src={user.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : initials}
+                {user?.avatar_url ? <Image src={user.avatar_url} width={38} height={38} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : initials}
               </button>
 
               {profileOpen && (
@@ -288,7 +288,7 @@ export function DashboardShell({ user: initialUser, children }: {
                   <div className="dropdown-header">
                     <div className="av-large" style={{ overflow: 'hidden' }}>
                       {user?.avatar_url ? (
-                        <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         initials
                       )}
