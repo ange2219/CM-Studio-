@@ -53,8 +53,10 @@ WHERE username IS NULL;
 
 -- 4. Rendre la colonne NOT NULL et UNIQUE
 ALTER TABLE public.users ALTER COLUMN username SET NOT NULL;
+ALTER TABLE public.users DROP CONSTRAINT IF EXISTS users_username_unique;
 ALTER TABLE public.users ADD CONSTRAINT users_username_unique UNIQUE (username);
 -- Optionnel : s'assurer que le format du pseudo est correct (min 3 caractères, max 30, alphanumérique + _ et -)
+ALTER TABLE public.users DROP CONSTRAINT IF EXISTS users_username_check;
 ALTER TABLE public.users ADD CONSTRAINT users_username_check CHECK (username ~ '^[a-zA-Z0-9_-]{3,30}$');
 
 -- 5. Mettre à jour la fonction handle_new_user pour l'inscription
