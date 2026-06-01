@@ -56,12 +56,21 @@ export async function POST(req: NextRequest) {
 
   if (brandError) return NextResponse.json({ error: brandError.message }, { status: 500 })
 
+  // Vérifier l'unicité du pseudo si fourni
+  if (data.username) {
+    const cleanUsername = data.username.toLowerCase().trim()
+    const { data: existing } = await admin.from('users').select('id').eq('username', cleanUsername).neq('id', user.id).maybeSingle()
+    if (existing) {
+      return NextResponse.json({ error: 'Ce pseudo est déjà utilisé. Veuillez en choisir un autre.' }, { status: 400 })
+    }
+  }
+
   // Marquer l'utilisateur comme onboardé et mettre à jour le pseudo s'il est fourni
   const { error: userError } = await admin
     .from('users')
     .update({ 
       onboarded: true,
-      ...(data.username ? { username: data.username } : {})
+      ...(data.username ? { username: data.username.toLowerCase().trim() } : {})
     })
     .eq('id', user.id)
 

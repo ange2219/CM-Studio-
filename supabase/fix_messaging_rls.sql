@@ -76,3 +76,23 @@ CREATE POLICY "message_reads: insert/update par soi-meme" ON public.message_read
 
 CREATE POLICY "message_reads: propre" ON public.message_reads
   FOR ALL USING (user_id = auth.uid());
+
+-- 7. Activer le Realtime de Supabase de manière sécurisée pour les tables concernées
+DO $$
+BEGIN
+  -- messages
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+  END IF;
+
+  -- message_reads
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'message_reads'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.message_reads;
+  END IF;
+END $$;
