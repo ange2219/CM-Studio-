@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { Search, Edit3, Paperclip, Smile, Send, X } from 'lucide-react'
 
 interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null }
-interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User }
+interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User; message_reads?: { user_id: string }[] }
 interface Conversation { id: string; updated_at: string; otherUser: User; lastMessage: string; unreadCount: number }
 
 const EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '❤️', '🔥', '✅', '🎉', '💯', '🙏', '😭', '😅', '🤩', '💪', '🚀', '⚡', '🌟', '🎯', '✨', '👏', '🫡', '🫶', '😤', '🥲', '😇', '🤝', '🎊']
@@ -92,6 +92,8 @@ function MessagesContent() {
         supabase.from('conversations').select('updated_at').eq('id', cid).single(),
       ])
       if (!otherPart) continue
+      // Ignorer les conversations vides (sans aucun message)
+      if (!lastMsg) continue
       const otherUser = ((otherPart as any).users as User) || {
         id: otherPart.user_id,
         full_name: 'Membre CM Studio',
@@ -107,28 +109,54 @@ function MessagesContent() {
 
   useEffect(() => { if (me) loadConvs() }, [me, loadConvs])
 
-  // Load messages + realtime
+  // Load messages
+  const loadMsgs = useCallback(async (convId: string) => {
+    if (!me) return
+    const { data } = await supabase.from('messages').select('*,sender:users!sender_id(id,full_name,username,avatar_url),message_reads(user_id)').eq('conversation_id', convId).order('created_at', { ascending: true })
+    if (data) {
+      setMsgs(data as Message[])
+      const ids = data.filter(m => m.sender_id !== me.id).map(m => m.id) || []
+      if (ids.length) {
+        await supabase.from('message_reads').upsert(ids.map(id => ({ message_id: id, user_id: me.id })), { onConflict: 'message_id,user_id' })
+        loadConvs()
+      }
+    }
+  }, [me, loadConvs])
+
+  // Realtime global pour mettre à jour les conversations et notifications non lues des autres chats
+  useEffect(() => {
+    if (!me) return
+    const globalChannel = supabase.channel('global-messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        loadConvs()
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(globalChannel) }
+  }, [me, loadConvs])
+
+  // Load messages + realtime de la conversation active
   useEffect(() => {
     if (!activeId || !me) return
-    supabase.from('messages').select('*,sender:users!sender_id(id,full_name,username,avatar_url)').eq('conversation_id', activeId).order('created_at', { ascending: true })
-      .then(({ data }) => {
-        setMsgs((data as Message[]) || [])
-        const ids = data?.filter(m => m.sender_id !== me.id).map(m => m.id) || []
-        if (ids.length) supabase.from('message_reads').upsert(ids.map(id => ({ message_id: id, user_id: me.id })), { onConflict: 'message_id,user_id' })
-      })
+    loadMsgs(activeId)
 
     if (realtimeRef.current) supabase.removeChannel(realtimeRef.current)
     realtimeRef.current = supabase.channel(`msgs:${activeId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeId}` }, async payload => {
         const nm = payload.new as Message
         const { data: sender } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
-        setMsgs(p => [...p, { ...nm, sender: sender as User }])
-        if (nm.sender_id !== me.id) supabase.from('message_reads').upsert({ message_id: nm.id, user_id: me.id }, { onConflict: 'message_id,user_id' })
+        setMsgs(p => [...p, { ...nm, sender: sender as User, message_reads: [] }])
+        if (nm.sender_id !== me.id) {
+          await supabase.from('message_reads').upsert({ message_id: nm.id, user_id: me.id }, { onConflict: 'message_id,user_id' })
+        }
         loadConvs()
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reads' }, () => {
+        // Un message a été lu (probablement par l'autre), recharger pour afficher les coches bleues
+        loadMsgs(activeId)
       })
       .subscribe()
     return () => { if (realtimeRef.current) supabase.removeChannel(realtimeRef.current) }
-  }, [activeId, me])
+  }, [activeId, me, loadMsgs])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
 
@@ -311,8 +339,17 @@ function MessagesContent() {
                             {m.content}
                           </div>
                         )}
-                        <div style={{ fontSize: '.65rem', color: 'var(--t3)', textAlign: isMe ? 'right' : 'left', marginTop: 2 }}>
-                          {new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        <div style={{ fontSize: '.65rem', color: 'var(--t3)', textAlign: isMe ? 'right' : 'left', marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 6 }}>
+                          <span>{new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                          {isMe && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontWeight: 700 }}>
+                              {m.message_reads?.some(r => r.user_id === activeConv.otherUser.id) ? (
+                                <span style={{ color: 'var(--accent)' }}>✓✓ Lu</span>
+                              ) : (
+                                <span style={{ color: 'var(--t3)' }}>✓ Envoyé</span>
+                              )}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
