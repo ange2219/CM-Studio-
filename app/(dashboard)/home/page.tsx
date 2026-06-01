@@ -27,31 +27,24 @@ export default function HomePage() {
   useEffect(() => {
     document.title = 'Accueil — CM Studio'
     async function init() {
-      // 1. Get User
+      // 1. Get User Auth
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (authUser) {
-        const { data: profile } = await supabase.from('users').select('*').eq('id', authUser.id).single()
-        setUser(profile)
+        // 2. Fetch profile, posts and likes in parallel
+        const [profileRes, postsRes, likesRes] = await Promise.all([
+          supabase.from('users').select('*').eq('id', authUser.id).single(),
+          supabase.from('vw_community_posts').select('*').order('created_at', { ascending: false }).limit(20),
+          supabase.from('community_likes').select('post_id').eq('user_id', authUser.id)
+        ])
 
-        // 2. Get Posts
-        const { data: posts } = await supabase
-          .from('vw_community_posts')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20)
-
-        if (posts) {
-          setInitialPosts(posts)
+        if (profileRes.data) {
+          setUser(profileRes.data)
         }
-
-        // 3. Get User Likes
-        const { data: likes } = await supabase
-          .from('community_likes')
-          .select('post_id')
-          .eq('user_id', authUser.id)
-        
-        if (likes) {
-          setInitialLikedIds(likes.map(l => l.post_id))
+        if (postsRes.data) {
+          setInitialPosts(postsRes.data)
+        }
+        if (likesRes.data) {
+          setInitialLikedIds(likesRes.data.map(l => l.post_id))
         }
       }
       setLoading(false)
