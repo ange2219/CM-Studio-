@@ -137,9 +137,19 @@ function MessagesContent() {
 
   async function startDm(user: User) {
     if (!me) return
-    const { data: convId } = await supabase.rpc('find_or_create_dm', { other_user_id: user.id })
+    const { data: convId, error } = await supabase.rpc('find_or_create_dm', { other_user_id: user.id })
+    if (error || !convId) { console.error('find_or_create_dm error:', error); return }
     setShowNew(false); setUSearch(''); setUResults([])
-    await loadConvs(); setActiveId(convId)
+    // Construire la conversation directement pour éviter le bug de timing React
+    const newConv: Conversation = { id: convId, updated_at: new Date().toISOString(), otherUser: user, lastMessage: 'Aucun message', unreadCount: 0 }
+    setConvs(prev => {
+      const exists = prev.find(c => c.id === convId)
+      if (exists) return prev
+      return [newConv, ...prev]
+    })
+    setActiveId(convId)
+    // Recharger en arrière-plan pour avoir les vraies données
+    loadConvs()
   }
 
   async function uploadFile(file: File) {
@@ -174,11 +184,11 @@ function MessagesContent() {
             {uResults.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {uResults.map(u => (
-                  <button key={u.id} onClick={() => startDm(u)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '.6rem .75rem', borderRadius: 10, background: 'var(--s2)', border: '1px solid var(--b1)', cursor: 'pointer', textAlign: 'left' }}>
+                  <button key={u.id} onClick={() => startDm(u)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '.6rem .75rem', borderRadius: 10, background: 'var(--s2)', border: '1px solid var(--b1)', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
                     <Avatar user={u} size={36} />
                     <div>
-                      <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)' }}>{u.full_name || u.email}</div>
-                      <div style={{ fontSize: '.73rem', color: 'var(--t3)' }}>{u.email}</div>
+                      <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)' }}>{u.full_name || 'Utilisateur'}</div>
+                      <div style={{ fontSize: '.73rem', color: 'var(--t3)' }}>Membre CM Studio</div>
                     </div>
                   </button>
                 ))}
