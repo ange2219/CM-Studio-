@@ -83,14 +83,18 @@ export function DashboardShell({ user: initialUser, children }: {
     const ids = myParts.map(p => p.conversation_id)
     
     let total = 0
-    for (const cid of ids) {
-      const { count } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('conversation_id', cid)
-        .neq('sender_id', user.id)
-        .not('id', 'in', `(select message_id from message_reads where user_id='${user.id}')`)
-      if (count) total += count
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id, message_reads!left(user_id)')
+      .in('conversation_id', ids)
+      .neq('sender_id', user.id)
+      
+    if (data && !error) {
+      const unread = data.filter(m => {
+        const reads = (m as any).message_reads || []
+        return !reads.some((r: any) => r.user_id === user.id)
+      })
+      total = unread.length
     }
     setUnreadCount(total)
   }, [user?.id, supabase])

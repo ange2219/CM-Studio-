@@ -100,8 +100,12 @@ function MessagesContent() {
         username: 'membre',
         avatar_url: null,
       }
-      const { count } = await supabase.from('messages').select('id', { count: 'exact', head: true }).eq('conversation_id', cid).neq('sender_id', me.id).not('id', 'in', `(select message_id from message_reads where user_id='${me.id}')`)
-      result.push({ id: cid, updated_at: conv?.updated_at || '', otherUser, lastMessage: lastMsg?.content || 'Pièce jointe', unreadCount: count || 0 })
+      const { data: chatMsgs } = await supabase.from('messages').select('id, message_reads!left(user_id)').eq('conversation_id', cid).neq('sender_id', me.id)
+      const count = chatMsgs?.filter(m => {
+        const reads = (m as any).message_reads || []
+        return !reads.some((r: any) => r.user_id === me.id)
+      }).length || 0
+      result.push({ id: cid, updated_at: conv?.updated_at || '', otherUser, lastMessage: lastMsg?.content || 'Pièce jointe', unreadCount: count })
     }
     result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     setConvs(result)
