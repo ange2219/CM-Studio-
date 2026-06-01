@@ -64,7 +64,12 @@ function MessagesContent() {
   useEffect(() => {
     const dmUserId = searchParams.get('dm')
     if (!dmUserId || !me) return
-    supabase.rpc('find_or_create_dm', { other_user_id: dmUserId }).then(({ data: convId }) => {
+    supabase.rpc('find_or_create_dm', { other_user_id: dmUserId }).then(({ data: convId, error }) => {
+      if (error) {
+        console.error('find_or_create_dm error (auto):', error)
+        alert("Erreur lors de la création de la discussion : " + error.message)
+        return
+      }
       if (convId) {
         loadConvs().then(() => setActiveId(convId))
         // Nettoyer l'URL sans recharger la page
@@ -141,7 +146,11 @@ function MessagesContent() {
   async function startDm(user: User) {
     if (!me) return
     const { data: convId, error } = await supabase.rpc('find_or_create_dm', { other_user_id: user.id })
-    if (error || !convId) { console.error('find_or_create_dm error:', error); return }
+    if (error || !convId) {
+      console.error('find_or_create_dm error:', error)
+      alert("Impossible de démarrer la discussion : " + (error?.message || "ID de conversation non reçu."))
+      return
+    }
     setShowNew(false); setUSearch(''); setUResults([])
     // Construire la conversation directement pour éviter le bug de timing React
     const newConv: Conversation = { id: convId, updated_at: new Date().toISOString(), otherUser: user, lastMessage: 'Aucun message', unreadCount: 0 }

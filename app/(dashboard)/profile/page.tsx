@@ -24,6 +24,13 @@ export default function ProfilePage() {
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false)
   const [initialFullName, setInitialFullName] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [username, setUsername] = useState('')
+  const [initialUsername, setInitialUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [savingUser, setSavingUser] = useState(false)
 
   const [isEditingBrand, setIsEditingBrand] = useState(false)
   const [initialBrand, setInitialBrand] = useState<{
@@ -45,12 +52,6 @@ export default function ProfilePage() {
     await supabase.auth.signOut()
     router.push('/login')
   }
-
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const [savingUser, setSavingUser] = useState(false)
 
   const [brandName, setBrandName] = useState('')
   const [brandDesc, setBrandDesc] = useState('')
@@ -97,6 +98,10 @@ export default function ProfilePage() {
       if (me?.full_name) {
         setFullName(me.full_name)
         setInitialFullName(me.full_name)
+      }
+      if (me?.username) {
+        setUsername(me.username)
+        setInitialUsername(me.username)
       }
       if (me?.plan) setUserPlan(me.plan)
       if (me?.avatar_url) setAvatarUrl(me.avatar_url)
@@ -219,14 +224,16 @@ export default function ProfilePage() {
 
   async function saveUserInfo() {
     setSavingUser(true)
-    const res = await fetch('/api/auth/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: fullName }) })
+    const res = await fetch('/api/auth/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: fullName, username: username }) })
     setSavingUser(false)
     if (res.ok) {
       setInitialFullName(fullName)
+      setInitialUsername(username)
       setIsEditingPersonal(false)
       toast('Profil mis à jour', 'success')
     } else {
-      toast('Erreur lors de la mise à jour', 'error')
+      const data = await res.json()
+      toast(data.error || 'Erreur lors de la mise à jour', 'error')
     }
   }
 
@@ -410,6 +417,12 @@ export default function ProfilePage() {
             <Row label="Nom complet" desc="Affiché sur votre profil et dans les exports.">
               <input className="input" style={{ maxWidth: '320px' }} placeholder="Votre nom" value={fullName} onChange={e => setFullName(e.target.value)} disabled={!isEditingPersonal} />
             </Row>
+            <Row label="Pseudo unique" desc="Votre pseudonyme unique (ex: jean.dupont). Utilisé dans la messagerie et la recherche de membres.">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', maxWidth: '320px' }}>
+                <span style={{ color: 'var(--t3)', fontSize: '.88rem', fontWeight: 600 }}>@</span>
+                <input className="input" style={{ flex: 1 }} placeholder="pseudo" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, ''))} disabled={!isEditingPersonal} />
+              </div>
+            </Row>
             <Row label="Adresse email" desc="Votre email de connexion — non modifiable.">
               <input className="input" style={{ maxWidth: '320px', opacity: .45, cursor: 'not-allowed' }} value={email} disabled />
             </Row>
@@ -428,6 +441,7 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => {
                       setFullName(initialFullName)
+                      setUsername(initialUsername)
                       setIsEditingPersonal(false)
                     }} 
                     disabled={savingUser}

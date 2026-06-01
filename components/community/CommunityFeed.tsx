@@ -333,7 +333,7 @@ export function CommunityFeed({
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                 </div>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
@@ -345,6 +345,12 @@ export function CommunityFeed({
                     <span>{getShortTimeAgo(post.created_at)}</span>
                   </div>
                 </div>
+                {currentUser && post.user_id !== currentUser.id && (
+                  <button onClick={() => router.push(`/messages?dm=${post.user_id}`)} style={{ background: 'none', border: '1px solid var(--b1)', borderRadius: '8px', padding: '6px 12px', color: 'var(--t2)', fontSize: '.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MessageCircle size={13} />
+                    Message
+                  </button>
+                )}
               </div>
 
               {/* Post Content */}
