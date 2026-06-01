@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/components/context/UserContext'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
 import { PopularGroups } from '@/components/home/PopularGroups'
@@ -9,7 +10,7 @@ import { NotificationsPanel } from '@/components/home/NotificationsPanel'
 import { StoriesSection } from '@/components/home/StoriesSection'
 
 export default function HomePage() {
-  const [user, setUser] = useState<any>(null)
+  const { user } = useUser()
   const [loading, setLoading] = useState(true)
   const [initialPosts, setInitialPosts] = useState<any[]>([])
   const [initialLikedIds, setInitialLikedIds] = useState<string[]>([])
@@ -26,41 +27,23 @@ export default function HomePage() {
 
   useEffect(() => {
     document.title = 'Accueil — CM Studio'
+    if (!user) return
     async function init() {
-      // 1. Get User Auth
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (authUser) {
-        // 2. Fetch profile, posts and likes in parallel
-        const [profileRes, postsRes, likesRes] = await Promise.all([
-          supabase.from('users').select('*').eq('id', authUser.id).single(),
-          supabase.from('vw_community_posts').select('*').order('created_at', { ascending: false }).limit(20),
-          supabase.from('community_likes').select('post_id').eq('user_id', authUser.id)
-        ])
-
-        if (profileRes.data) {
-          setUser(profileRes.data)
-        }
-        if (postsRes.data) {
-          setInitialPosts(postsRes.data)
-        }
-        if (likesRes.data) {
-          setInitialLikedIds(likesRes.data.map(l => l.post_id))
-        }
-      }
+      // Profile already in context — fetch only posts and likes in parallel
+      const [postsRes, likesRes] = await Promise.all([
+        supabase.from('vw_community_posts').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('community_likes').select('post_id').eq('user_id', user!.id)
+      ])
+      if (postsRes.data) setInitialPosts(postsRes.data)
+      if (likesRes.data) setInitialLikedIds(likesRes.data.map(l => l.post_id))
       setLoading(false)
     }
     init()
-  }, [])
+  }, [user])
 
-  if (loading) return (
+  if (loading || !user) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>
        Chargement de votre espace...
-    </div>
-  )
-  
-  if (!user) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>
-       Erreur : Profil introuvable. Veuillez vous reconnecter.
     </div>
   )
 
