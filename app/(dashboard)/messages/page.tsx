@@ -263,7 +263,7 @@ function MessagesContent() {
   const totalUnread = convs.reduce((s, c) => s + c.unreadCount, 0)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 110px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
       {/* NEW CONV MODAL */}
       {showNew && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -298,7 +298,7 @@ function MessagesContent() {
         </div>
       )}
 
-      <div style={{ display: 'flex', flex: 1, minHeight: 0, background: 'var(--bg)', borderRadius: 16, border: '1px solid var(--b1)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,.05)' }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {/* SIDEBAR */}
         <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .9rem' }}>
