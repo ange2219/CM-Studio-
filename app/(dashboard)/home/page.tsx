@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/components/context/UserContext'
+import { HomeSkeleton } from '@/components/ui/Skeleton'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
 import { PopularGroups } from '@/components/home/PopularGroups'
@@ -41,11 +42,7 @@ export default function HomePage() {
     init()
   }, [user])
 
-  if (loading || !user) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text3)', fontSize: '0.9rem' }}>
-       Chargement de votre espace...
-    </div>
-  )
+  if (loading || !user) return <HomeSkeleton />
 
   const firstName = user.full_name?.split(' ')[0] || 'Ulrich'
 
