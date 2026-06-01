@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 const PatchMeSchema = z.object({
   full_name: z.string().min(1).max(200).optional(),
+  username:  z.string().min(3).max(30).regex(/^[a-zA-Z0-9_-]+$/, { message: "Le pseudo ne peut contenir que des lettres, chiffres, tirets et underscores" }).optional(),
 })
 
 export async function GET() {
@@ -13,7 +14,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data } = await admin.from('users').select('id, email, full_name, plan, avatar_url').eq('id', user.id).single()
+  const { data } = await admin.from('users').select('id, email, full_name, username, plan, avatar_url').eq('id', user.id).single()
   if (!data) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
   const quota = await checkGenerationLimit(user.id, data.plan)
@@ -31,7 +32,20 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
   }
   const admin = createAdminClient()
-  const { error } = await admin.from('users').update({ full_name: parsed.data.full_name }).eq('id', user.id)
+  const updateData: any = {}
+  if (parsed.data.full_name !== undefined) updateData.full_name = parsed.data.full_name
+  
+  if (parsed.data.username !== undefined) {
+    const cleanUsername = parsed.data.username.toLowerCase().trim()
+    // Vérifier l'unicité
+    const { data: existing } = await admin.from('users').select('id').eq('username', cleanUsername).neq('id', user.id).maybeSingle()
+    if (existing) {
+      return NextResponse.json({ error: 'Ce pseudo est déjà pris' }, { status: 400 })
+    }
+    updateData.username = cleanUsername
+  }
+
+  const { error } = await admin.from('users').update(updateData).eq('id', user.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })

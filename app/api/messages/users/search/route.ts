@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('users')
-    .select('id, full_name, avatar_url')
-    .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+    .select('id, full_name, username, avatar_url')
+    .or(`username.ilike.%${q}%,full_name.ilike.%${q}%,email.ilike.%${q}%`)
     .neq('id', user.id)
     .limit(10)
 

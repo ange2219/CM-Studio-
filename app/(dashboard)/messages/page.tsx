@@ -55,7 +55,7 @@ function MessagesContent() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      supabase.from('users').select('id,full_name,email,avatar_url').eq('id', user.id).single()
+      supabase.from('users').select('id,full_name,email,username,avatar_url').eq('id', user.id).single()
         .then(({ data }) => setMe(data))
     })
   }, [])
@@ -82,7 +82,7 @@ function MessagesContent() {
     const result: Conversation[] = []
     for (const cid of ids) {
       const [{ data: otherPart }, { data: lastMsg }, { data: conv }] = await Promise.all([
-        supabase.from('conversation_participants').select('user_id, users!inner(id,full_name,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
+        supabase.from('conversation_participants').select('user_id, users!inner(id,full_name,username,avatar_url)').eq('conversation_id', cid).neq('user_id', me.id).limit(1).single(),
         supabase.from('messages').select('content,created_at').eq('conversation_id', cid).order('created_at', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('conversations').select('updated_at').eq('id', cid).single(),
       ])
@@ -100,7 +100,7 @@ function MessagesContent() {
   // Load messages + realtime
   useEffect(() => {
     if (!activeId || !me) return
-    supabase.from('messages').select('*,sender:users!sender_id(id,full_name,avatar_url)').eq('conversation_id', activeId).order('created_at', { ascending: true })
+    supabase.from('messages').select('*,sender:users!sender_id(id,full_name,username,avatar_url)').eq('conversation_id', activeId).order('created_at', { ascending: true })
       .then(({ data }) => {
         setMsgs((data as Message[]) || [])
         const ids = data?.filter(m => m.sender_id !== me.id).map(m => m.id) || []
@@ -111,7 +111,7 @@ function MessagesContent() {
     realtimeRef.current = supabase.channel(`msgs:${activeId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeId}` }, async payload => {
         const nm = payload.new as Message
-        const { data: sender } = await supabase.from('users').select('id,full_name,avatar_url').eq('id', nm.sender_id).single()
+        const { data: sender } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
         setMsgs(p => [...p, { ...nm, sender: sender as User }])
         if (nm.sender_id !== me.id) supabase.from('message_reads').upsert({ message_id: nm.id, user_id: me.id }, { onConflict: 'message_id,user_id' })
         loadConvs()
@@ -191,7 +191,9 @@ function MessagesContent() {
                     <Avatar user={u} size={36} />
                     <div>
                       <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)' }}>{u.full_name || 'Utilisateur'}</div>
-                      <div style={{ fontSize: '.73rem', color: 'var(--t3)' }}>Membre CM Studio</div>
+                      {u.username && (
+                        <div style={{ fontSize: '.73rem', color: 'var(--accent)' }}>@{u.username}</div>
+                      )}
                     </div>
                   </button>
                 ))}
@@ -236,7 +238,12 @@ function MessagesContent() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <span style={{ fontSize: '.82rem', fontWeight: c.unreadCount > 0 && !isActive ? 700 : 600, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.otherUser.full_name || 'Utilisateur'}</span>
+                      <span style={{ fontSize: '.82rem', fontWeight: c.unreadCount > 0 && !isActive ? 700 : 600, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {c.otherUser.full_name || 'Utilisateur'}
+                        {c.otherUser.username && (
+                          <span style={{ fontSize: '.72rem', color: isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)', fontWeight: 400 }}>@{c.otherUser.username}</span>
+                        )}
+                      </span>
                       <span style={{ fontSize: '.68rem', color: isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)', flexShrink: 0 }}>{new Date(c.updated_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <div style={{ fontSize: '.73rem', color: isActive ? 'rgba(255,255,255,.7)' : c.unreadCount > 0 ? 'var(--t1)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 400 }}>{c.lastMessage}</div>
@@ -263,7 +270,9 @@ function MessagesContent() {
                 <Avatar user={activeConv.otherUser} size={34} />
                 <div>
                   <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || 'Utilisateur'}</div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>Membre CM Studio</div>
+                  {activeConv.otherUser.username && (
+                    <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>@{activeConv.otherUser.username}</div>
+                  )}
                 </div>
               </div>
 
