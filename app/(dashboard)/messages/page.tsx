@@ -37,6 +37,8 @@ function MessagesContent() {
   const searchParams = useSearchParams()
   const [me, setMe] = useState<User | null>(null)
   const [convs, setConvs] = useState<Conversation[]>([])
+  const convsRef = useRef(convs)
+  useEffect(() => { convsRef.current = convs }, [convs])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -162,11 +164,24 @@ function MessagesContent() {
     realtimeRef.current = supabase.channel(`msgs:${activeId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeId}` }, async payload => {
         const nm = payload.new as Message
-        const { data: sender } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
+        
+        // Résolution locale de l'expéditeur pour éviter une requête réseau inutile
+        let localSender = me as any
+        if (nm.sender_id !== me.id) {
+          const currentConv = convsRef.current.find(c => c.id === activeId)
+          if (currentConv && currentConv.otherUser.id === nm.sender_id) {
+            localSender = currentConv.otherUser
+          } else {
+            // Fallback (très rare, par exemple groupe à 3 plus tard)
+            const { data } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
+            if (data) localSender = data
+          }
+        }
+
         setMsgs(p => {
           // Filtrer le message temporaire correspondant pour éviter les doublons
           const withoutTemp = p.filter(m => !(m.isTemp && m.content === nm.content && m.sender_id === nm.sender_id))
-          return [...withoutTemp, { ...nm, sender: sender as User, message_reads: [] }]
+          return [...withoutTemp, { ...nm, sender: localSender as User, message_reads: [] }]
         })
         if (nm.sender_id !== me.id) {
           await supabase.from('message_reads').upsert({ message_id: nm.id, user_id: me.id }, { onConflict: 'message_id,user_id' })
