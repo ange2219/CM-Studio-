@@ -21,6 +21,7 @@ interface OnboardingData {
   avoid_words: string
   objectives: string[]
   posts_per_week: number
+  username: string
 }
 
 const INITIAL: OnboardingData = {
@@ -38,6 +39,7 @@ const INITIAL: OnboardingData = {
   avoid_words: '',
   objectives: [],
   posts_per_week: 5,
+  username: '',
 }
 
 const ACCOUNT_TYPES = [
@@ -303,7 +305,7 @@ export default function OnboardingPage() {
   }
 
   function canNext(): boolean {
-    if (step === 0) return !!data.account_type && !!data.brand_name && !!data.industry && !!data.description
+    if (step === 0) return !!data.account_type && !!data.brand_name && !!data.industry && !!data.description && !!data.username && /^[a-zA-Z0-9_-]{3,30}$/.test(data.username)
     if (step === 1) return !!data.target_audience && !!data.audience_age && selectedPillars.length >= 1 && !!data.tone
     if (step === 2) return data.objectives.length >= 1
     return true
@@ -317,10 +319,13 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.error || 'Erreur lors de la sauvegarde')
+      }
       router.push('/home')
-    } catch {
-      toast('Erreur lors de la sauvegarde', 'error')
+    } catch (err: any) {
+      toast(err.message || 'Erreur lors de la sauvegarde', 'error')
       setSaving(false)
     }
   }
@@ -396,6 +401,15 @@ export default function OnboardingPage() {
               <div>
                 <label style={labelStyle}>Nom de la marque / votre nom *</label>
                 <input style={fieldStyle} placeholder="Ex: Pixel Agency" value={data.brand_name} onChange={e => update('brand_name', e.target.value)} />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Pseudo unique (ex: jean.dupont) *</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ color: 'var(--t3)', fontSize: '.88rem', fontWeight: 600 }}>@</span>
+                  <input style={fieldStyle} placeholder="votre.pseudo" value={data.username} onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, ''))} />
+                </div>
+                <p style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.3rem' }}>Sera affiché à la place de l&apos;email. 3 caractères minimum. Lettres, chiffres, tirets, underscores.</p>
               </div>
 
               <div>

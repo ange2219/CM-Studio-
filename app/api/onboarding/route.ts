@@ -17,6 +17,7 @@ const OnboardingSchema = z.object({
   avoid_words:        z.string().max(500).optional(),
   objectives:         z.array(z.string().max(100)).max(10).optional(),
   posts_per_week:     z.number().int().min(1).max(30).optional(),
+  username:           z.string().regex(/^[a-zA-Z0-9_-]{3,30}$/, "Le pseudo doit faire entre 3 et 30 caractères (lettres, chiffres, tirets, underscores).").optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -55,13 +56,21 @@ export async function POST(req: NextRequest) {
 
   if (brandError) return NextResponse.json({ error: brandError.message }, { status: 500 })
 
-  // Marquer l'utilisateur comme onboardé
+  // Marquer l'utilisateur comme onboardé et mettre à jour le pseudo s'il est fourni
   const { error: userError } = await admin
     .from('users')
-    .update({ onboarded: true })
+    .update({ 
+      onboarded: true,
+      ...(data.username ? { username: data.username } : {})
+    })
     .eq('id', user.id)
 
-  if (userError) return NextResponse.json({ error: userError.message }, { status: 500 })
+  if (userError) {
+    if (userError.code === '23505') {
+      return NextResponse.json({ error: 'Ce pseudo est déjà utilisé. Veuillez en choisir un autre.' }, { status: 400 })
+    }
+    return NextResponse.json({ error: userError.message }, { status: 500 })
+  }
 
   const res = NextResponse.json({ success: true })
   res.cookies.set('onboarded', '1', {
