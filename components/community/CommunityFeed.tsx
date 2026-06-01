@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users } from 'lucide-react'
 
@@ -44,6 +45,7 @@ export function CommunityFeed({
   currentUser: any
   initialLikedIds: string[]
 }) {
+  const router = useRouter()
   const [posts, setPosts] = useState(initialPosts)
   const [likedIds, setLikedIds] = useState(new Set(initialLikedIds))
   const [savedIds, setSavedIds] = useState(new Set<string>())
