@@ -35,11 +35,11 @@ function getShortTimeAgo(dateStr: string | null | undefined) {
   return `${diffInWeeks} sem`;
 }
 
-export function CommunityFeed({ 
-  initialPosts, 
+export function CommunityFeed({
+  initialPosts,
   currentUser,
   initialLikedIds,
-}: { 
+}: {
   initialPosts: Post[]
   currentUser: any
   initialLikedIds: string[]
@@ -51,13 +51,13 @@ export function CommunityFeed({
   const [isPosting, setIsPosting] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
-  
+
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null)
   const [commentsByPost, setCommentsByPost] = useState<Record<string, any[]>>({})
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({})
   const [newCommentTexts, setNewCommentTexts] = useState<Record<string, string>>({})
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
-  
+
   const [replyingTo, setReplyingTo] = useState<{ id: string, name: string, postId: string } | null>(null)
   const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({})
   const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set())
@@ -68,7 +68,7 @@ export function CommunityFeed({
     // Scroll and expand if coming from a notification URL hash (e.g. #post-123 or #comment-456-123)
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash
-      
+
       if (hash.startsWith('#post-')) {
         const id = hash.replace('#post-', '')
         setTimeout(() => {
@@ -108,7 +108,7 @@ export function CommunityFeed({
                 window.history.replaceState(null, '', window.location.pathname)
               }
             } else {
-               window.history.replaceState(null, '', window.location.pathname)
+              window.history.replaceState(null, '', window.location.pathname)
             }
           }, 500)
         }
@@ -124,16 +124,16 @@ export function CommunityFeed({
     const payload = { content: newPostContent.trim(), user_id: currentUser.id, image_url: uploadedImageUrl || null }
     const { data, error } = await supabase.from('community_posts').insert(payload).select('id, created_at').single()
     if (!error && data) {
-      setPosts([{ 
-        id: data.id, 
-        user_id: currentUser.id, 
-        content: newPostContent.trim(), 
-        created_at: data.created_at, 
-        full_name: currentUser.full_name || 'Utilisateur', 
-        avatar_url: currentUser.avatar_url, 
-        plan: currentUser.plan || 'Free', 
-        likes_count: 0, 
-        comments_count: 0, 
+      setPosts([{
+        id: data.id,
+        user_id: currentUser.id,
+        content: newPostContent.trim(),
+        created_at: data.created_at,
+        full_name: currentUser.full_name || 'Utilisateur',
+        avatar_url: currentUser.avatar_url,
+        plan: currentUser.plan || 'Free',
+        likes_count: 0,
+        comments_count: 0,
         image_url: uploadedImageUrl || undefined,
         group_name: 'Communauté',
         is_community: true
@@ -163,11 +163,11 @@ export function CommunityFeed({
     if (isLiked) newCommentLikes.delete(commentId)
     else newCommentLikes.add(commentId)
     setCommentLikes(newCommentLikes)
-    
+
     setCommentsByPost(prev => {
       const updated = { ...prev }
       if (updated[postId]) {
-        updated[postId] = updated[postId].map(c => 
+        updated[postId] = updated[postId].map(c =>
           c.id === commentId ? { ...c, likes_count: c.likes_count + (isLiked ? -1 : 1) } : c
         )
       }
@@ -190,7 +190,7 @@ export function CommunityFeed({
     try {
       const { data: comments, error } = await supabase.from('community_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true })
       if (error) throw error
-      
+
       let usersMap: Record<string, any> = {}
       if (comments && comments.length > 0) {
         const userIds = [...new Set(comments.map(c => c.user_id))]
@@ -205,10 +205,10 @@ export function CommunityFeed({
         return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: u?.plan, likes_count: 0 }
       })
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
-      
+
       const initialVisible: Record<string, number> = {}
       formatted.filter(c => !c.parent_id).forEach(c => initialVisible[c.id] = 0)
-      
+
       if (targetCommentId) {
         const target = formatted.find(c => c.id === targetCommentId)
         if (target && target.parent_id) {
@@ -244,7 +244,7 @@ export function CommunityFeed({
       setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       setNewCommentTexts(prev => ({ ...prev, [postId]: '' }))
       setReplyingTo(null)
-      
+
       if (payload.parent_id) {
         // Find the root parent ID to increment the correct visibleReplies counter
         let rootId = payload.parent_id
@@ -286,7 +286,7 @@ export function CommunityFeed({
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--accent)' }}>U</div>
           <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
         </div>
-        
+
         {uploadedImageUrl && (
           <div style={{ padding: '8px 12px 12px 52px', position: 'relative' }}>
             <img src={uploadedImageUrl} style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid var(--b1)' }} alt="Upload preview" />
@@ -331,7 +331,7 @@ export function CommunityFeed({
               {/* Post Header */}
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
+                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
@@ -367,12 +367,12 @@ export function CommunityFeed({
                       title: 'Post de la communauté CM Studio',
                       text: post.content.slice(0, 50) + '...',
                       url: `${window.location.origin}/community#post-${post.id}`
-                    }).catch(() => {})
+                    }).catch(() => { })
                   } else {
                     navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`)
                   }
                 }} style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
-                
+
                 <button onClick={() => {
                   const newSaved = new Set(savedIds);
                   if (newSaved.has(post.id)) newSaved.delete(post.id);
@@ -402,7 +402,7 @@ export function CommunityFeed({
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
-                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : c.full_name?.slice(0, 1) || 'U'}
+                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : c.full_name?.slice(0, 1) || 'U'}
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -426,11 +426,11 @@ export function CommunityFeed({
                               const isDeepReply = r.parent_id !== c.id
                               const parentComment = isDeepReply ? postComments.find(p => p.id === r.parent_id) : null
                               const showDeepReplyIndicator = isDeepReply && parentComment && r.user_id !== parentComment.user_id
-                              
+
                               return (
                                 <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
                                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)' }}>
-                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : r.full_name?.slice(0, 1) || 'U'}
+                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : r.full_name?.slice(0, 1) || 'U'}
                                   </div>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>
@@ -463,7 +463,7 @@ export function CommunityFeed({
                               <div style={{ paddingLeft: '44px', marginTop: '8px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                   {showCount < replies.length && (
-                                    <button 
+                                    <button
                                       onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 3 }))}
                                       style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--t2)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                                     >
@@ -472,7 +472,7 @@ export function CommunityFeed({
                                     </button>
                                   )}
                                   {showCount > 0 && (
-                                    <button 
+                                    <button
                                       onClick={() => setVisibleReplies(prev => ({ ...prev, [c.id]: 0 }))}
                                       style={{ background: 'none', border: 'none', color: 'var(--t2)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                                     >
@@ -498,20 +498,20 @@ export function CommunityFeed({
                     )}
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
-                        {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt=""/> : currentUser?.full_name?.slice(0, 1) || 'U'}
+                        {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : currentUser?.full_name?.slice(0, 1) || 'U'}
                       </div>
-                      <form 
+                      <form
                         onSubmit={e => { e.preventDefault(); handleCommentSubmit(post.id) }}
                         style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid rgba(255,255,255,0.08)' }}
                       >
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder={replyingTo ? `Répondre à ${replyingTo.name}...` : "Ajouter un commentaire..."}
                           value={newCommentTexts[post.id] || ''}
                           onChange={e => setNewCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
                           style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
                         />
-                        <button 
+                        <button
                           type="submit"
                           disabled={isSubmittingComment || !(newCommentTexts[post.id] || '').trim()}
                           style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isSubmittingComment || !(newCommentTexts[post.id] || '').trim()) ? 'not-allowed' : 'pointer', opacity: (isSubmittingComment || !(newCommentTexts[post.id] || '').trim()) ? 0.5 : 1, marginLeft: '8px' }}>

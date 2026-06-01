@@ -7,13 +7,13 @@ interface User { id: string; full_name: string | null; email: string; avatar_url
 interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User }
 interface Conversation { id: string; updated_at: string; otherUser: User; lastMessage: string; unreadCount: number }
 
-const EMOJIS = ['😀','😂','😍','🥰','😎','🤔','👍','❤️','🔥','✅','🎉','💯','🙏','😭','😅','🤩','💪','🚀','⚡','🌟','🎯','✨','👏','🫡','🫶','😤','🥲','😇','🤝','🎊']
+const EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '❤️', '🔥', '✅', '🎉', '💯', '🙏', '😭', '😅', '🤩', '💪', '🚀', '⚡', '🌟', '🎯', '✨', '👏', '🫡', '🫶', '😤', '🥲', '😇', '🤝', '🎊']
 
 function getInitials(u: User) {
   if (u.full_name) { const p = u.full_name.trim().split(' '); return (p[0][0] + (p[1]?.[0] || '')).toUpperCase() }
   return u.email[0].toUpperCase()
 }
-const AVATAR_COLORS = ['#7B5CF5','#F59E0B','#3B82F6','#10B981','#EC4899','#F97316']
+const AVATAR_COLORS = ['#7B5CF5', '#F59E0B', '#3B82F6', '#10B981', '#EC4899', '#F97316']
 function avatarColor(u: User) { return AVATAR_COLORS[u.email.charCodeAt(0) % AVATAR_COLORS.length] }
 
 function Avatar({ user, size = 40 }: { user: User; size?: number }) {
@@ -29,6 +29,7 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
 
 export default function MessagesPage() {
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+  const searchParams = useSearchParams()
   const [me, setMe] = useState<User | null>(null)
   const [convs, setConvs] = useState<Conversation[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -54,6 +55,19 @@ export default function MessagesPage() {
         .then(({ data }) => setMe(data))
     })
   }, [])
+
+  // Auto-ouvrir un DM si le paramètre ?dm=userId est présent (venant de la communauté)
+  useEffect(() => {
+    const dmUserId = searchParams.get('dm')
+    if (!dmUserId || !me) return
+    supabase.rpc('find_or_create_dm', { other_user_id: dmUserId }).then(({ data: convId }) => {
+      if (convId) {
+        loadConvs().then(() => setActiveId(convId))
+        // Nettoyer l'URL sans recharger la page
+        window.history.replaceState(null, '', '/messages')
+      }
+    })
+  }, [me, searchParams])
 
   // Load conversations
   const loadConvs = useCallback(async () => {
