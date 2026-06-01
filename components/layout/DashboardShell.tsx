@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -72,6 +72,44 @@ export function DashboardShell({ user: initialUser, children }: {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  // Messages non lus en temps réel pour le badge de la sidebar / navigation
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  const loadUnreadCount = useCallback(async () => {
+    if (!user?.id) return
+    const { data: myParts } = await supabase.from('conversation_participants').select('conversation_id').eq('user_id', user.id)
+    if (!myParts?.length) { setUnreadCount(0); return }
+    const ids = myParts.map(p => p.conversation_id)
+    
+    let total = 0
+    for (const cid of ids) {
+      const { count } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('conversation_id', cid)
+        .neq('sender_id', user.id)
+        .not('id', 'in', `(select message_id from message_reads where user_id='${user.id}')`)
+      if (count) total += count
+    }
+    setUnreadCount(total)
+  }, [user?.id, supabase])
+
+  useEffect(() => {
+    if (!user?.id) return
+    loadUnreadCount()
+
+    const channel = supabase.channel('sidebar-messages-unread')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        loadUnreadCount()
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reads' }, () => {
+        loadUnreadCount()
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [user?.id, loadUnreadCount, supabase])
 
   if (pathname === '/onboarding') return <>{children}</>
 
@@ -156,10 +194,19 @@ export function DashboardShell({ user: initialUser, children }: {
                 
                 {navItems.map(item => {
                   const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+                  const isMessages = item.href === '/messages'
                   return (
-                    <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center' }}>
-                      <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
-                      {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap' }}>{item.label}</span>}
+                    <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center', position: 'relative' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
+                        {isMessages && unreadCount > 0 && !isExpanded && (
+                          <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
+                        )}
+                      </div>
+                      {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap', flex: 1 }}>{item.label}</span>}
+                      {isExpanded && isMessages && unreadCount > 0 && (
+                        <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
+                      )}
                     </Link>
                   )
                 })}
@@ -291,14 +338,23 @@ export function DashboardShell({ user: initialUser, children }: {
         }}>
           {bottomNavItems.map(item => {
             const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+            const isMessages = item.href === '/messages'
             return (
               <Link key={item.href} href={item.href} style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: '3px', flex: 1, padding: '6px 0',
                 textDecoration: 'none', color: active ? 'var(--accent)' : 'var(--text3)',
                 transition: 'color 0.15s',
+                position: 'relative',
               }}>
-                <item.icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                <div style={{ position: 'relative', display: 'flex' }}>
+                  <item.icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                  {isMessages && unreadCount > 0 && (
+                    <span style={{ position: 'absolute', top: -5, right: -10, background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 5px', fontSize: '.6rem', fontWeight: 700, minWidth: 12, textAlign: 'center' }}>
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
                 <span style={{ fontSize: '0.6rem', fontWeight: active ? 600 : 500 }}>{item.label}</span>
               </Link>
             )
