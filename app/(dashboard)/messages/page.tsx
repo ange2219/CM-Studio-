@@ -341,11 +341,8 @@ function MessagesContent() {
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     <Avatar user={c.otherUser} size={44} />
-                    <div style={{ position: 'absolute', bottom: -2, right: -2, background: 'var(--sidebar-bg)', borderRadius: '50%', padding: '2px' }}>
-                      <div style={{ width: 16, height: 16, background: 'var(--s2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--b1)', color: 'var(--t3)' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                      </div>
-                    </div>
+                    {/* Pastille de statut en ligne (comme les stories) */}
+                    <div style={{ position: 'absolute', bottom: 1, right: 1, width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2.5px solid var(--sidebar-bg)' }} />
                   </div>
                   
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
