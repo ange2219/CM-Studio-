@@ -316,16 +316,12 @@ function MessagesContent() {
       <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {/* SIDEBAR */}
         <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .9rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: '1rem', fontWeight: 700, color: 'var(--t1)' }}>Messagerie</span>
-              {totalUnread > 0 && <span style={{ background: 'var(--accent)', color: '#fff', borderRadius: 99, padding: '1px 7px', fontSize: '.68rem', fontWeight: 700 }}>{totalUnread}</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '1rem .9rem', borderBottom: '1px solid var(--b1)' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
+              <input value={convSearch} onChange={e => setConvSearch(e.target.value)} placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.45rem .75rem .45rem 2.2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none', boxSizing: 'border-box' }} />
             </div>
-            <button onClick={() => setShowNew(true)} style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--accent)', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Edit3 size={13} /></button>
-          </div>
-          <div style={{ padding: '0 .75rem .75rem', position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: '1.3rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
-            <input value={convSearch} onChange={e => setConvSearch(e.target.value)} placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.4rem .75rem .4rem 2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none', boxSizing: 'border-box' }} />
+            <button onClick={() => setShowNew(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--accent)', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Edit3 size={15} /></button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {filteredConvs.length === 0 && (
