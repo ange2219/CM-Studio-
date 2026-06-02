@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X, Pin, PinOff
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -32,7 +32,6 @@ export function DashboardShell({ user: initialUser, children }: {
   const [profileOpen, setProfileOpen] = useState(false)
   const [theme, setTheme] = useState('dark')
   const [sidebarOpen, setSidebarOpen] = useState(true) // Mobile only now
-  const [isPinned, setIsPinned] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
@@ -52,20 +51,12 @@ export function DashboardShell({ user: initialUser, children }: {
     // Init: read saved theme from localStorage
     const saved = localStorage.getItem('theme')
     if (saved) setTheme(saved)
-    
-    // Init: read pin state
-    const savedPin = localStorage.getItem('sidebarPinned')
-    if (savedPin) setIsPinned(savedPin === 'true')
   }, [])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('theme', theme)
   }, [theme])
-
-  useEffect(() => {
-    localStorage.setItem('sidebarPinned', String(isPinned))
-  }, [isPinned])
 
   useEffect(() => {
     if (!initialUser) {
@@ -172,11 +163,10 @@ export function DashboardShell({ user: initialUser, children }: {
         />
       )}
 
-      {/* Desktop Sidebar Spacer (maintient la largeur du contenu) */}
+      {/* Desktop Sidebar Spacer (maintient la largeur du contenu à 64px) */}
       {!isMobile && (
         <div style={{ 
-          width: isPinned ? '240px' : '64px', 
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+          width: '64px', 
           flexShrink: 0 
         }} />
       )}
@@ -189,20 +179,20 @@ export function DashboardShell({ user: initialUser, children }: {
         style={{ 
           position: isMobile ? 'fixed' : 'absolute',
           top: 0, left: 0, bottom: 0,
-          width: isMobile ? (sidebarOpen ? '280px' : '0px') : ((isPinned || isHovered) ? '240px' : '64px'), 
+          width: isMobile ? (sidebarOpen ? '280px' : '0px') : (isHovered ? '240px' : '64px'), 
           opacity: isMobile ? (sidebarOpen ? 1 : 0) : 1,
           background: 'var(--sidebar-bg)', 
           borderRight: '1px solid var(--b1)', 
           display: 'flex', flexDirection: 'column', flexShrink: 0, 
           overflowY: 'auto', overflowX: 'hidden', 
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          zIndex: isMobile ? 50 : ((isPinned || isHovered) && !isPinned ? 40 : 10),
-          boxShadow: (!isMobile && (isPinned || isHovered) && !isPinned) ? '4px 0 24px rgba(0,0,0,0.15)' : (isMobile && sidebarOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none'),
+          zIndex: isMobile ? 50 : (isHovered ? 40 : 10),
+          boxShadow: (!isMobile && isHovered) ? '4px 0 24px rgba(0,0,0,0.15)' : (isMobile && sidebarOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none'),
           transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)'
         }}
       >
         {(() => {
-          const isExpanded = isMobile ? sidebarOpen : (isPinned || isHovered);
+          const isExpanded = isMobile ? sidebarOpen : isHovered;
           return (
             <>
               <div style={{ padding: isExpanded ? '24px 20px 24px 24px' : '24px 16px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: isExpanded ? 'space-between' : 'center', height: '80px', boxSizing: 'border-box' }}>
@@ -210,16 +200,10 @@ export function DashboardShell({ user: initialUser, children }: {
                   <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
                   {isExpanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>CM Studio</span>}
                 </div>
-                {isMobile ? (
+                {isMobile && (
                   <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex', flexShrink: 0 }}>
                     <X size={20} />
                   </button>
-                ) : (
-                  isExpanded && (
-                    <button onClick={() => setIsPinned(!isPinned)} style={{ background: 'none', border: 'none', color: isPinned ? 'var(--text)' : 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex', flexShrink: 0, transition: '0.2s', opacity: (isHovered || isPinned) ? 1 : 0 }} title={isPinned ? "Détacher la barre latérale" : "Épingler la barre latérale"}>
-                      {isPinned ? <PinOff size={16} /> : <Pin size={16} />}
-                    </button>
-                  )
                 )}
               </div>
       
