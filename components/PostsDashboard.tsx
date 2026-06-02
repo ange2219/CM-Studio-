@@ -133,7 +133,7 @@ function InsightsBadge({ a }: { a: PostAnalytics | null }) {
   )
 }
 
-export default function PostsDashboard() {
+export default function PostsDashboard({ allPosts = false }: { allPosts?: boolean }) {
   const router = useRouter()
   const { toast } = useToast()
   const [posts, setPosts] = useState<Post[]>([])
@@ -963,11 +963,9 @@ export default function PostsDashboard() {
       )}
 
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem', marginTop: '-.5rem' }}>
-        {/* Header removed and moved to main navigation */}
-
+      {!allPosts && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem' }}>
         {/* 4 Cards */}
-        {(
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
           {/* Nouveau post */}
           <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
@@ -1042,8 +1040,8 @@ export default function PostsDashboard() {
             </button>
           </div>
         </div>
-        )}
       </div>
+      )}
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -1052,10 +1050,18 @@ export default function PostsDashboard() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>Posts récents</h2>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>
+              {allPosts ? 'Mes Posts' : 'Posts récents'}
+            </h2>
             <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+            {!allPosts && displayPosts.length >= 5 && (
+              <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
+                Voir tout
+              </button>
+            )}
           </div>
 
+          {allPosts && (
           <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
             {(['grid', 'list'] as const).map(v => (
               <button key={v} onClick={() => setView(v)} style={{
@@ -1116,6 +1122,7 @@ export default function PostsDashboard() {
               )}
             </div>
           </div>
+          )}
         </div>
 
         {/* Content (Scrollable part) */}
@@ -1138,18 +1145,20 @@ export default function PostsDashboard() {
         </div>
       ) : view === 'grid' ? (
         <div>
-          {groupPostsByDate(displayPosts).map(group => (
-            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
+          {(allPosts ? groupPostsByDate(displayPosts) : [{ label: '', posts: displayPosts.slice(0, 5) }]).map((group, idx) => (
+            <div key={group.label || idx} style={{ marginBottom: allPosts ? '1.5rem' : '0' }}>
+              {allPosts && (
               <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.6rem', paddingLeft: '.1rem' }}>
                 {group.label}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '.6rem' }}>
+              )}
+              <div className={allPosts ? '' : 'sb-scroll'} style={allPosts ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '.6rem' } : { display: 'flex', gap: '.6rem', overflowX: 'auto', paddingBottom: '1rem' }}>
                 {group.posts.map(post => {
                   const isSelected = selectedIds.has(post.id)
                   return (
                   <div key={post.id}
                     onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative' }}
+                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', ...(allPosts ? {} : { width: '170px', flexShrink: 0 }) }}
                     onMouseEnter={e => {
                       if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
                       const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
@@ -1218,11 +1227,13 @@ export default function PostsDashboard() {
         </div>
       ) : (
         <div>
-          {groupPostsByDate(displayPosts).map(group => (
-            <div key={group.label} style={{ marginBottom: '1.5rem' }}>
+          {(allPosts ? groupPostsByDate(displayPosts) : [{ label: '', posts: displayPosts.slice(0, 5) }]).map((group, idx) => (
+            <div key={group.label || idx} style={{ marginBottom: allPosts ? '1.5rem' : '0' }}>
+              {allPosts && (
               <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.5rem', paddingLeft: '.1rem' }}>
                 {group.label}
               </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
                 {group.posts.map(post => {
                   const isSelected = selectedIds.has(post.id)
