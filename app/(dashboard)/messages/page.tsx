@@ -336,24 +336,46 @@ function MessagesContent() {
             {filteredConvs.map(c => {
               const isActive = c.id === activeId
               return (
-                <div key={c.id} onClick={() => setActiveId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '.65rem .9rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
+                <div key={c.id} onClick={() => setActiveId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '.8rem 1rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <Avatar user={c.otherUser} size={40} />
-                    {c.unreadCount > 0 && !isActive && <span style={{ position: 'absolute', top: -2, right: -2, background: 'var(--accent)', color: '#fff', borderRadius: 99, padding: '1px 5px', fontSize: '.6rem', fontWeight: 700, border: '2px solid var(--bg)' }}>{c.unreadCount}</span>}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <span style={{ fontSize: '.82rem', fontWeight: c.unreadCount > 0 && !isActive ? 700 : 600, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        {c.otherUser.full_name || 'Utilisateur'}
-                        {c.otherUser.username && (
-                          <span style={{ fontSize: '.72rem', color: isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)', fontWeight: 400 }}>@{c.otherUser.username}</span>
-                        )}
-                      </span>
-                      <span style={{ fontSize: '.68rem', color: isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)', flexShrink: 0 }}>{new Date(c.updated_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <Avatar user={c.otherUser} size={44} />
+                    <div style={{ position: 'absolute', bottom: -2, right: -2, background: 'var(--sidebar-bg)', borderRadius: '50%', padding: '2px' }}>
+                      <div style={{ width: 16, height: 16, background: 'var(--s2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--b1)', color: 'var(--t3)' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '.73rem', color: isActive ? 'rgba(255,255,255,.7)' : c.unreadCount > 0 ? 'var(--t1)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 400 }}>{c.lastMessage}</div>
+                  </div>
+                  
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: '.9rem', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 500, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.otherUser.full_name || 'Utilisateur'}
+                    </span>
+                    <span style={{ fontSize: '.8rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.lastMessage}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 4 }}>
+                    <span style={{ fontSize: '.75rem', color: c.unreadCount > 0 && !isActive ? '#22c55e' : (isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)'), fontWeight: c.unreadCount > 0 && !isActive ? 500 : 400 }}>
+                      {(() => {
+                        const d = new Date(c.updated_at)
+                        const today = new Date()
+                        const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+                        const yesterday = new Date(today)
+                        yesterday.setDate(yesterday.getDate() - 1)
+                        const isYesterday = d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear()
+                        if (isToday) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                        if (isYesterday) return 'Hier'
+                        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+                      })()}
+                    </span>
+                    {c.unreadCount > 0 && !isActive && (
+                      <div style={{ background: '#22c55e', color: '#fff', borderRadius: '50%', minWidth: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, padding: '0 5px' }}>
+                        {c.unreadCount}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
