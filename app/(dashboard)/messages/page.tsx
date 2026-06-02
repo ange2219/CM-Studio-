@@ -15,7 +15,7 @@ function getInitials(u: User) {
   if (u.full_name) { const p = u.full_name.trim().split(' '); return (p[0][0] + (p[1]?.[0] || '')).toUpperCase() }
   return 'U'
 }
-const AVATAR_COLORS = ['#7B5CF5', '#F59E0B', '#3B82F6', '#10B981', '#EC4899', '#F97316']
+const AVATAR_COLORS = ['#10B981', '#059669', '#047857', '#34D399', '#6EE7B7']
 function avatarColor(u: User) {
   const val = u.full_name || u.id || ''
   return AVATAR_COLORS[val.charCodeAt(0) % AVATAR_COLORS.length]
@@ -26,7 +26,7 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
     return <img src={user.avatar_url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   }
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: avatarColor(user), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.32, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(34, 197, 94, 0.12)', border: '1.5px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 600, color: '#22c55e', flexShrink: 0 }}>
       {getInitials(user)}
     </div>
   )
@@ -341,8 +341,6 @@ function MessagesContent() {
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     <Avatar user={c.otherUser} size={44} />
-                    {/* Pastille de statut en ligne (comme les stories) */}
-                    <div style={{ position: 'absolute', bottom: 1, right: 1, width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2.5px solid var(--sidebar-bg)' }} />
                   </div>
                   
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
