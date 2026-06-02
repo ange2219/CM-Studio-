@@ -5,6 +5,7 @@ import { Check, ChevronDown, Bell, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
+import { NotificationsSkeleton } from '@/components/ui/Skeleton'
 import type { Platform } from '@/types'
 
 function getShortTimeAgo(dateStr: string | null | undefined) {
@@ -134,7 +135,7 @@ export default function NotificationsPage() {
         {/* List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {loading ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--t3)' }}>Chargement...</div>
+            <NotificationsSkeleton />
           ) : filteredNotifs.length === 0 ? (
             <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--card)', borderRadius: '12px', color: 'var(--t2)', border: '1px dashed var(--b1)' }}>
               Aucune notification pour le moment.

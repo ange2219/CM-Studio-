@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
+import { DashboardSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
@@ -1128,12 +1129,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         {/* Content (Scrollable part) */}
         <div className="sb-scroll" style={{ flex: 1, overflowY: 'auto', paddingRight: '.25rem' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--t3)', fontSize: '.85rem' }}>Chargement...</div>
+            <DashboardSkeleton />
           ) : displayPosts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>
+              <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0-3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>
             </svg>
           </div>
           <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>

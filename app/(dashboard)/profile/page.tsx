@@ -8,6 +8,7 @@ import { PLATFORM_NAMES, PLATFORM_COLORS } from '@/types'
 import type { Platform, SocialAccount } from '@/types'
 import { User, Link2, Unlink, Save, Camera, CheckCircle2, RefreshCw, LogOut, Sparkles } from 'lucide-react'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
+import { ProfileSkeleton } from '@/components/ui/Skeleton'
 
 const NAV_ITEMS = [
   { id: 'personal', label: 'Informations personnelles', icon: User },
@@ -20,6 +21,7 @@ export default function ProfilePage() {
   const { toast } = useToast()
   const router = useRouter()
   const supabase = createClient()
+  const [loading, setLoading] = useState(true)
   const [active, setActive] = useState('personal')
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false)
@@ -151,6 +153,7 @@ export default function ProfilePage() {
         })
       }
       await loadAccounts()
+      setLoading(false)
     }
     load()
   }, [loadAccounts])
@@ -311,6 +314,7 @@ export default function ProfilePage() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+  if (loading) return <ProfileSkeleton />
 
   return (
     <div style={{ display: 'flex', flexDirection: isMobileProfile ? 'column' : 'row', minHeight: '100%', margin: isMobileProfile ? '0' : '-20px' }}>

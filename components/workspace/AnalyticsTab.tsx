@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { BarChart2, Heart, MessageCircle, Share2, Eye, TrendingUp } from 'lucide-react'
+import { AnalyticsSkeleton } from '@/components/ui/Skeleton'
 
 interface PlatformStats {
   impressions: number
@@ -91,11 +92,7 @@ export default function AnalyticsTab() {
     { label: 'Partages',     value: totals.shares,      icon: Share2,        color: '#7B5CF5' },
   ]
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '300px', color: 'var(--t3)', fontSize: '.9rem' }}>
-      Chargement…
-    </div>
-  )
+  if (loading) return <AnalyticsSkeleton />
 
   return (
     <div style={{ padding: '2rem' }}>
