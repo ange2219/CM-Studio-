@@ -1,22 +1,6 @@
 import React from 'react'
 
-// Styles globaux du shimmer — injectés une seule fois
-function ShimmerStyles() {
-  return (
-    <style dangerouslySetInnerHTML={{__html: `
-      @keyframes shimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-      }
-      .skeleton-box {
-        background: linear-gradient(90deg, var(--s2, #1C1C24) 25%, var(--b1, #252530) 50%, var(--s2, #1C1C24) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.8s infinite linear;
-        border-radius: 8px;
-      }
-    `}} />
-  )
-}
+
 
 export function Skeleton({ width, height, borderRadius = '8px', style }: { 
   width?: string | number
@@ -36,7 +20,7 @@ export function Skeleton({ width, height, borderRadius = '8px', style }: {
 export function HomeSkeleton() {
   return (
     <>
-      <ShimmerStyles />
+
       <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '24px 0' }}>
         <div style={{ flex: 1, maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Stories */}
@@ -71,7 +55,7 @@ export function HomeSkeleton() {
 export function MessagesSkeleton() {
   return (
     <>
-      <ShimmerStyles />
+
       <div style={{ display: 'flex', height: '100%', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {/* Sidebar conversations */}
         <div style={{ width: '280px', borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', gap: '0', flexShrink: 0, background: 'var(--sidebar-bg)' }}>
@@ -118,7 +102,6 @@ export function MessagesSkeleton() {
 export function DashboardSkeleton() {
   return (
     <>
-      <ShimmerStyles />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '1.5rem 2rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
           {[1,2,3,4].map(i => <Skeleton key={i} height="100px" borderRadius="12px" />)}
@@ -149,11 +132,36 @@ export function DashboardSkeleton() {
   )
 }
 
+// ─── Skeleton Posts List (For PostsDashboard content area) ────────────────────
+export function PostsListSkeleton() {
+  return (
+    <>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {[1,2,3,4].map(i => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 1 }}>
+              <Skeleton width="56px" height="56px" borderRadius="8px" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                <Skeleton width="50%" height="16px" />
+                <Skeleton width="30%" height="12px" />
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+              <Skeleton width="70px" height="28px" borderRadius="6px" />
+              <Skeleton width="50px" height="12px" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 // ─── Skeleton Notifications ───────────────────────────────────────────────────
 export function NotificationsSkeleton() {
   return (
     <>
-      <ShimmerStyles />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {[1,2,3,4,5].map(i => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem 1.25rem', background: 'var(--card)', borderRadius: '12px', border: '1px solid transparent' }}>
@@ -178,7 +186,6 @@ export function NotificationsSkeleton() {
 export function CommunitySkeleton() {
   return (
     <>
-      <ShimmerStyles />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {[1,2,3].map(i => (
           <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -210,7 +217,6 @@ export function CommunitySkeleton() {
 export function ProfileSkeleton() {
   return (
     <>
-      <ShimmerStyles />
       <div style={{ display: 'flex', gap: '2rem', height: '100%', alignItems: 'flex-start' }}>
         <div className="hidden md:flex" style={{ width: '260px', flexShrink: 0, flexDirection: 'column', gap: '1.5rem', position: 'sticky', top: '1.5rem' }}>
           <div style={{ padding: '0 1rem' }}>
@@ -254,7 +260,6 @@ export function ProfileSkeleton() {
 export function AnalyticsSkeleton() {
   return (
     <>
-      <ShimmerStyles />
       <div style={{ padding: '2rem' }}>
         <div style={{ marginBottom: '2rem' }}>
           <Skeleton width="150px" height="24px" />

@@ -50,6 +50,7 @@ export function CommunityFeed({
   groupId?: string
 }) {
   const router = useRouter()
+  const supabase = createClient()
   const [posts, setPosts] = useState(initialPosts)
 
   useEffect(() => {
@@ -103,8 +104,6 @@ export function CommunityFeed({
   const [replyingTo, setReplyingTo] = useState<{ id: string, name: string, postId: string } | null>(null)
   const [visibleReplies, setVisibleReplies] = useState<Record<string, number>>({})
   const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set())
-
-  const supabase = createClient()
 
   useEffect(() => {
     // Scroll and expand if coming from a notification URL hash (e.g. #post-123 or #comment-456-123)
@@ -378,9 +377,7 @@ export function CommunityFeed({
                 {/* Avatar with blue ring */}
                 <Link href={`/profile/${post.username || post.user_id}`} style={{
                   width: 42, height: 42, borderRadius: '50%',
-                  border: '2px solid var(--accent)',
-                  padding: '1px',
-                  background: 'var(--card)',
+                  background: 'rgba(var(--accent-rgb), 0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0, overflow: 'hidden',
                   boxSizing: 'border-box',

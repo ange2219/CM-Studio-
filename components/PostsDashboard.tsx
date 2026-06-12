@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
-import { DashboardSkeleton } from '@/components/ui/Skeleton'
+import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
@@ -1129,7 +1129,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         {/* Content (Scrollable part) */}
         <div className="sb-scroll" style={{ flex: 1, overflowY: 'auto', paddingRight: '.25rem' }}>
           {loading ? (
-            <DashboardSkeleton />
+            <PostsListSkeleton />
           ) : displayPosts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
