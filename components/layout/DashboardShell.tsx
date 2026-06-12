@@ -31,21 +31,9 @@ export function DashboardShell({ user: initialUser, children }: {
   const [user, setUser] = useState<any>(initialUser)
   const [profileOpen, setProfileOpen] = useState(false)
   const [theme, setTheme] = useState('dark')
-  const [sidebarOpen, setSidebarOpen] = useState(true) // Mobile only now
   const [isHovered, setIsHovered] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
-
-  // On mobile, sidebar is closed by default and acts as overlay
-  useEffect(() => {
-    if (isMobile) setSidebarOpen(false)
-    else setSidebarOpen(true)
-  }, [isMobile])
-
-  // Close sidebar on route change (mobile)
-  useEffect(() => {
-    if (isMobile) setSidebarOpen(false)
-  }, [pathname, isMobile])
 
   useEffect(() => {
     // Init: read saved theme from localStorage
@@ -134,34 +122,23 @@ export function DashboardShell({ user: initialUser, children }: {
   const initials = (user?.full_name || user?.email || 'U').slice(0, 2).toUpperCase()
 
   const navItems = [
-    { label: 'Home',        icon: Home,          href: '/home'          },
-    { label: 'Workspace',   icon: Layout,        href: '/workspace'     },
-    { label: 'Notifications', icon: Bell,        href: '/notifications' },
-    { label: 'Messagerie',  icon: MessageCircle, href: '/messages'      },
-    { label: 'Groupes',     icon: Users,         href: '/groups'        },
+    { label: 'Accueil',       icon: Home,          href: '/home'          },
+    { label: 'Workspace',     icon: Layout,        href: '/workspace'     },
+    { label: 'Messagerie',    icon: MessageCircle, href: '/messages'      },
+    { label: 'Notifications', icon: Bell,          href: '/notifications' },
+    { label: 'Groupes',       icon: Users,         href: '/groups'        },
   ]
 
   const bottomNavItems = [
-    { label: 'Home',      icon: Home,          href: '/home'      },
-    { label: 'Workspace', icon: Layout,        href: '/workspace' },
-    { label: 'Messages',  icon: MessageCircle, href: '/messages'  },
-    { label: 'Profil',    icon: User,          href: '/profile'   },
+    { label: 'Accueil',       icon: Home,          href: '/home'          },
+    { label: 'Workspace',     icon: Layout,        href: '/workspace'     },
+    { label: 'Messagerie',    icon: MessageCircle, href: '/messages'      },
+    { label: 'Notifications', icon: Bell,          href: '/notifications' },
+    { label: 'Groupes',       icon: Users,         href: '/groups'        },
   ]
 
   return (
     <div style={{ position: 'relative', display: 'flex', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
-      
-      {/* Mobile Overlay Backdrop */}
-      {isMobile && sidebarOpen && (
-        <div 
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)', zIndex: 40,
-            animation: 'fadeIn 0.2s ease',
-          }} 
-        />
-      )}
 
       {/* Desktop Sidebar Spacer (maintient la largeur du contenu à 64px) */}
       {!isMobile && (
@@ -172,71 +149,67 @@ export function DashboardShell({ user: initialUser, children }: {
       )}
 
       {/* Sidebar */}
-      <div 
-        className="sb-scroll" 
-        onMouseEnter={() => !isMobile && setIsHovered(true)}
-        onMouseLeave={() => !isMobile && setIsHovered(false)}
-        style={{ 
-          position: isMobile ? 'fixed' : 'absolute',
-          top: 0, left: 0, bottom: 0,
-          width: isMobile ? (sidebarOpen ? '280px' : '0px') : (isHovered ? '240px' : '64px'), 
-          opacity: isMobile ? (sidebarOpen ? 1 : 0) : 1,
-          background: 'var(--sidebar-bg)', 
-          borderRight: '1px solid var(--b1)', 
-          display: 'flex', flexDirection: 'column', flexShrink: 0, 
-          overflowY: 'auto', overflowX: 'hidden', 
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          zIndex: isMobile ? 50 : (isHovered ? 40 : 10),
-          boxShadow: (!isMobile && isHovered) ? '4px 0 24px rgba(0,0,0,0.15)' : (isMobile && sidebarOpen ? '4px 0 24px rgba(0,0,0,0.3)' : 'none'),
-          transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)'
-        }}
-      >
-        {(() => {
-          const isExpanded = isMobile ? sidebarOpen : isHovered;
-          return (
-            <>
-              <div style={{ padding: isExpanded ? '24px 20px 24px 24px' : '24px 16px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: isExpanded ? 'space-between' : 'center', height: '80px', boxSizing: 'border-box' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
-                  <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
-                  {isExpanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>CM Studio</span>}
+      {!isMobile && (
+        <div 
+          className="sb-scroll" 
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{ 
+            position: 'absolute',
+            top: 0, left: 0, bottom: 0,
+            width: isHovered ? '240px' : '64px', 
+            background: 'var(--sidebar-bg)', 
+            borderRight: '1px solid var(--b1)', 
+            display: 'flex', flexDirection: 'column', flexShrink: 0, 
+            overflowY: 'auto', overflowX: 'hidden', 
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 10,
+            boxShadow: isHovered ? '4px 0 24px rgba(0,0,0,0.15)' : 'none',
+            transform: 'translateX(0)'
+          }}
+        >
+          {(() => {
+            const isExpanded = isHovered;
+            return (
+              <>
+                <div style={{ padding: isExpanded ? '24px 20px 24px 24px' : '24px 16px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: isExpanded ? 'space-between' : 'center', height: '80px', boxSizing: 'border-box' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                    <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                    {isExpanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>CM Studio</span>}
+                  </div>
                 </div>
-                {isMobile && (
-                  <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex', flexShrink: 0 }}>
-                    <X size={20} />
-                  </button>
-                )}
-              </div>
-      
-              <div style={{ flex: 1, padding: isExpanded ? '0 12px' : '0 8px' }}>
-                {isExpanded ? (
-                  <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px', whiteSpace: 'nowrap', opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>Navigation</div>
-                ) : (
-                  <div style={{ height: '36px' }} />
-                )}
-                
-                {navItems.map(item => {
-                  const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
-                  const isMessages = item.href === '/messages'
-                  return (
-                    <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center', position: 'relative' }}>
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
-                        {isMessages && unreadCount > 0 && !isExpanded && (
-                          <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
+        
+                <div style={{ flex: 1, padding: isExpanded ? '0 12px' : '0 8px' }}>
+                  {isExpanded ? (
+                    <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px', whiteSpace: 'nowrap', opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>Navigation</div>
+                  ) : (
+                    <div style={{ height: '36px' }} />
+                  )}
+                  
+                  {navItems.map(item => {
+                    const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+                    const isMessages = item.href === '/messages'
+                    return (
+                      <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center', position: 'relative' }}>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
+                          {isMessages && unreadCount > 0 && !isExpanded && (
+                            <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
+                          )}
+                        </div>
+                        {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap', flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>{item.label}</span>}
+                        {isExpanded && isMessages && unreadCount > 0 && (
+                          <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
                         )}
-                      </div>
-                      {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap', flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>{item.label}</span>}
-                      {isExpanded && isMessages && unreadCount > 0 && (
-                        <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
-                      )}
-                    </Link>
-                  )
-                })}
-              </div>
-            </>
-          )
-        })()}
-      </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </>
+            )
+          })()}
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: isMobile ? '64px' : 0 }}>
@@ -250,11 +223,7 @@ export function DashboardShell({ user: initialUser, children }: {
           gap: isMobile ? '8px' : '24px', 
           flexShrink: 0 
         }}>
-          {isMobile && (
-            <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '8px', transition: '0.2s', flexShrink: 0 }}>
-              <Menu size={20} />
-            </button>
-          )}
+
 
           {!isMobile && (
             <div style={{ minWidth: '120px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
