@@ -1,0 +1,397 @@
+'use client'
+
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
+import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2 } from 'lucide-react'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type Profile = {
+  id: string
+  full_name: string | null
+  avatar_url: string | null
+  username: string
+  plan: string | null
+  bio: string | null
+  created_at: string
+}
+
+type Post = {
+  id: string
+  user_id: string
+  content: string
+  image_url?: string | null
+  created_at: string
+  full_name: string | null
+  avatar_url: string | null
+  plan: string | null
+  username?: string | null
+  likes_count: number
+  comments_count: number
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getTimeAgo(dateStr: string) {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
+  if (diff < 60) return "à l'instant"
+  if (diff < 3600) return `${Math.floor(diff / 60)} min`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} h`
+  const days = Math.floor(diff / 86400)
+  if (days < 7) return `${days} j`
+  if (days < 30) return `${Math.floor(days / 7)} sem`
+  if (days < 365) return `${Math.floor(days / 30)} mois`
+  return `${Math.floor(days / 365)} an(s)`
+}
+
+function planBadge(plan: string | null) {
+  if (plan === 'business') return { label: 'Business', color: '#F59E0B' }
+  if (plan === 'premium') return { label: 'Premium', color: 'var(--accent)' }
+  return { label: 'Free', color: 'var(--t3)' }
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function PublicProfileClient({
+  profile,
+  currentUserId,
+  isFollowing: initialIsFollowing,
+  posts: initialPosts,
+  followersCount: initialFollowersCount,
+  followingCount,
+  initialLikedIds,
+}: {
+  profile: Profile
+  currentUserId: string
+  isFollowing: boolean
+  posts: Post[]
+  followersCount: number
+  followingCount: number
+  initialLikedIds: string[]
+}) {
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
+  const [followersCount, setFollowersCount] = useState(initialFollowersCount)
+  const [followLoading, setFollowLoading] = useState(false)
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set(initialLikedIds))
+  const [posts, setPosts] = useState(initialPosts)
+
+  const supabase = createClient()
+  const isOwnProfile = currentUserId === profile.id
+  const badge = planBadge(profile.plan)
+
+  // ── Follow / Unfollow ──────────────────────────────────────────────────────
+  async function handleFollow() {
+    if (followLoading) return
+    setFollowLoading(true)
+
+    if (isFollowing) {
+      setIsFollowing(false)
+      setFollowersCount(c => c - 1)
+      await supabase.from('user_follows').delete().match({
+        follower_id: currentUserId,
+        following_id: profile.id,
+      })
+    } else {
+      setIsFollowing(true)
+      setFollowersCount(c => c + 1)
+      await supabase.from('user_follows').insert({
+        follower_id: currentUserId,
+        following_id: profile.id,
+      })
+    }
+    setFollowLoading(false)
+  }
+
+  // ── Like ──────────────────────────────────────────────────────────────────
+  async function toggleLike(postId: string, currentCount: number) {
+    const isLiked = likedIds.has(postId)
+    const next = new Set(likedIds)
+    isLiked ? next.delete(postId) : next.add(postId)
+    setLikedIds(next)
+    setPosts(prev =>
+      prev.map(p => p.id === postId ? { ...p, likes_count: currentCount + (isLiked ? -1 : 1) } : p)
+    )
+    if (isLiked) {
+      await supabase.from('community_likes').delete().match({ post_id: postId, user_id: currentUserId })
+    } else {
+      await supabase.from('community_likes').insert({ post_id: postId, user_id: currentUserId })
+    }
+  }
+
+  // ── Avatar helper ─────────────────────────────────────────────────────────
+  function Avatar({ url, name, size = 40 }: { url?: string | null; name?: string | null; size?: number }) {
+    return (
+      <div style={{
+        width: size, height: size, borderRadius: '50%',
+        background: 'rgba(var(--accent-rgb), 0.18)',
+        flexShrink: 0, overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: size * 0.35, fontWeight: 700, color: 'var(--accent)',
+      }}>
+        {url
+          ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : (name?.slice(0, 1)?.toUpperCase() || '?')}
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ maxWidth: 680, margin: '0 auto', paddingBottom: '4rem' }}>
+
+      {/* ── Cover band ── */}
+      <div style={{ position: 'relative', marginBottom: 64 }}>
+        <div style={{
+          height: 160, borderRadius: 16, overflow: 'hidden',
+          background: 'linear-gradient(135deg, var(--accent) 0%, #0a3a20 60%, #011a0e 100%)',
+          position: 'relative',
+        }}>
+          {/* Decorative blobs */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage:
+              'radial-gradient(circle at 15% 60%, rgba(255,255,255,0.08) 0%, transparent 55%),' +
+              'radial-gradient(circle at 85% 25%, rgba(255,255,255,0.05) 0%, transparent 45%)',
+          }} />
+        </div>
+
+        {/* Avatar overlapping */}
+        <div style={{
+          position: 'absolute', bottom: -48, left: 24,
+          width: 96, height: 96, borderRadius: '50%',
+          border: '4px solid var(--bg)',
+          background: 'rgba(var(--accent-rgb), 0.18)',
+          overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+        }}>
+          {profile.avatar_url
+            ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : profile.full_name?.slice(0, 1)?.toUpperCase() || '?'}
+        </div>
+
+        {/* Action button(s) */}
+        <div style={{
+          position: 'absolute', bottom: -44, right: 24,
+          display: 'flex', gap: 8,
+        }}>
+          {isOwnProfile ? (
+            <Link href="/profile" style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '9px 18px', borderRadius: 10,
+              background: 'var(--card)', border: '1px solid var(--b1)',
+              color: 'var(--t1)', fontSize: '0.83rem', fontWeight: 700,
+              textDecoration: 'none', transition: 'all .15s',
+            }}>
+              <Settings size={15} />
+              Modifier le profil
+            </Link>
+          ) : (
+            <>
+              <button
+                onClick={handleFollow}
+                disabled={followLoading}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '9px 20px', borderRadius: 10,
+                  background: isFollowing ? 'var(--card)' : 'var(--accent)',
+                  border: `1px solid ${isFollowing ? 'var(--b1)' : 'transparent'}`,
+                  color: isFollowing ? 'var(--t1)' : '#fff',
+                  fontSize: '0.83rem', fontWeight: 700,
+                  cursor: followLoading ? 'wait' : 'pointer',
+                  transition: 'all .2s ease',
+                  opacity: followLoading ? 0.75 : 1,
+                }}
+              >
+                {isFollowing ? <><UserCheck size={15} /> Abonné</> : <><UserPlus size={15} /> Suivre</>}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Profile info ── */}
+      <div style={{ padding: '0 24px 24px' }}>
+        {/* Name + badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 3 }}>
+          <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: 'var(--t1)', lineHeight: 1.2 }}>
+            {profile.full_name || profile.username}
+          </h1>
+          {profile.plan && profile.plan !== 'free' && (
+            <span style={{
+              fontSize: '0.68rem', fontWeight: 700,
+              padding: '2px 9px', borderRadius: 999,
+              background: `${badge.color}20`,
+              color: badge.color,
+              border: `1px solid ${badge.color}40`,
+              letterSpacing: '0.03em',
+            }}>
+              {badge.label}
+            </span>
+          )}
+        </div>
+
+        <div style={{ fontSize: '0.88rem', color: 'var(--t3)', marginBottom: 12 }}>
+          @{profile.username}
+        </div>
+
+        {profile.bio && (
+          <p style={{
+            margin: '0 0 16px', fontSize: '0.92rem',
+            color: 'var(--t2)', lineHeight: 1.65,
+          }}>
+            {profile.bio}
+          </p>
+        )}
+
+        {/* Stats */}
+        <div style={{
+          display: 'flex', gap: 28,
+          padding: '14px 0',
+          borderTop: '1px solid var(--b1)',
+          borderBottom: '1px solid var(--b1)',
+        }}>
+          {[
+            { label: 'Posts', value: posts.length },
+            { label: 'Abonnés', value: followersCount },
+            { label: 'Abonnements', value: followingCount },
+          ].map(stat => (
+            <div key={stat.label}>
+              <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--t1)', lineHeight: 1 }}>
+                {stat.value.toLocaleString('fr-FR')}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--t3)', fontWeight: 500, marginTop: 3 }}>
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Posts ── */}
+      <div style={{ padding: '0 24px' }}>
+        <div style={{
+          fontSize: '0.82rem', fontWeight: 700, color: 'var(--t3)',
+          textTransform: 'uppercase', letterSpacing: '0.08em',
+          marginBottom: 16,
+        }}>
+          Publications
+        </div>
+
+        {posts.length === 0 ? (
+          <div style={{
+            background: 'var(--card)', border: '1px dashed var(--b1)',
+            borderRadius: 14, padding: '3rem',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: 10 }}>📝</div>
+            <div style={{ color: 'var(--t2)', fontSize: '0.9rem' }}>
+              Aucune publication pour l'instant.
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {posts.map(post => {
+              const isLiked = likedIds.has(post.id)
+              return (
+                <article key={post.id} style={{
+                  background: 'var(--card)', borderRadius: 14,
+                  border: '1px solid var(--b1)', overflow: 'hidden',
+                  transition: 'box-shadow .2s',
+                }}>
+                  {/* Post header */}
+                  <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Avatar url={profile.avatar_url} name={profile.full_name} size={36} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.87rem', color: 'var(--t1)' }}>
+                        {profile.full_name || profile.username}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--t3)' }}>
+                        {getTimeAgo(post.created_at)}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/community#post-${post.id}`
+                        if (navigator.share) {
+                          navigator.share({ title: 'Post', text: post.content.slice(0, 60), url }).catch(() => {})
+                        } else {
+                          navigator.clipboard.writeText(url)
+                        }
+                      }}
+                      style={{
+                        background: 'none', border: 'none',
+                        color: 'var(--t3)', cursor: 'pointer', padding: 6,
+                      }}
+                      title="Partager"
+                    >
+                      <Share2 size={15} />
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div style={{
+                    padding: '0 16px 14px',
+                    fontSize: '0.93rem', color: 'var(--t1)', lineHeight: 1.62,
+                    whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                  }}>
+                    {post.content}
+                    {post.image_url && (
+                      <div style={{ marginTop: 10 }}>
+                        <img
+                          src={post.image_url}
+                          alt=""
+                          style={{
+                            maxWidth: '100%', borderRadius: 10,
+                            border: '1px solid var(--b1)', display: 'block',
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{
+                    padding: '8px 16px', borderTop: '1px solid var(--b1)',
+                    display: 'flex', alignItems: 'center', gap: 16,
+                  }}>
+                    <button
+                      onClick={() => toggleLike(post.id, post.likes_count)}
+                      style={{
+                        background: 'none', border: 'none',
+                        color: isLiked ? 'var(--accent)' : 'var(--t2)',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        fontSize: '0.85rem', fontWeight: 600, padding: '6px 0',
+                        transition: 'color .15s',
+                      }}
+                    >
+                      <Heart size={16} fill={isLiked ? 'var(--accent)' : 'none'} />
+                      {post.likes_count}
+                    </button>
+
+                    <Link
+                      href={`/community#post-${post.id}`}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        fontSize: '0.85rem', fontWeight: 600,
+                        color: 'var(--t2)', textDecoration: 'none',
+                        padding: '6px 0',
+                      }}
+                    >
+                      <MessageCircle size={16} />
+                      {post.comments_count}
+                    </Link>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

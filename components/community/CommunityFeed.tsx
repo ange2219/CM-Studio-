@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users } from 'lucide-react'
 
@@ -13,6 +14,7 @@ type Post = {
   full_name: string | null
   avatar_url: string | null
   plan: string | null
+  username?: string | null
   likes_count: number
   comments_count: number
   image_url?: string
@@ -196,7 +198,7 @@ export function CommunityFeed({
       let usersMap: Record<string, any> = {}
       if (comments && comments.length > 0) {
         const userIds = [...new Set(comments.map(c => c.user_id))]
-        const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, plan').in('id', userIds)
+        const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, plan, username').in('id', userIds)
         if (usersData) {
           usersMap = Object.fromEntries(usersData.map(u => [u.id, u]))
         }
@@ -204,7 +206,7 @@ export function CommunityFeed({
 
       const formatted = (comments || []).map(c => {
         const u = usersMap[c.user_id]
-        return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: u?.plan, likes_count: 0 }
+        return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: u?.plan, username: u?.username, likes_count: 0 }
       })
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
 
@@ -332,23 +334,25 @@ export function CommunityFeed({
             <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
               {/* Post Header */}
               <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
-                      <Users size={12} />
-                    ) : (
-                      <Globe size={12} />
-                    )}
-                    <span>•</span>
-                    <span>{getShortTimeAgo(post.created_at)}</span>
+                <Link href={`/profile/${post.username || post.user_id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', flex: 1, minWidth: 0 }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
                   </div>
-                </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
+                        <Users size={12} />
+                      ) : (
+                        <Globe size={12} />
+                      )}
+                      <span>•</span>
+                      <span>{getShortTimeAgo(post.created_at)}</span>
+                    </div>
+                  </div>
+                </Link>
                 {currentUser && post.user_id !== currentUser.id && (
-                  <button onClick={() => router.push(`/messages?dm=${post.user_id}`)} style={{ background: 'none', border: '1px solid var(--b1)', borderRadius: '8px', padding: '6px 12px', color: 'var(--t2)', fontSize: '.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button onClick={() => router.push(`/messages?dm=${post.user_id}`)} style={{ background: 'none', border: '1px solid var(--b1)', borderRadius: '8px', padding: '6px 12px', color: 'var(--t2)', fontSize: '.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                     <MessageCircle size={13} />
                     Message
                   </button>
@@ -414,7 +418,7 @@ export function CommunityFeed({
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t2)' }}>{c.full_name}</div>
+                                  <Link href={`/profile/${c.username || c.user_id}`} style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t2)', textDecoration: 'none' }}>{c.full_name}</Link>
                                   <div style={{ fontSize: '0.9rem', color: 'var(--t1)', lineHeight: 1.4, margin: '2px 0' }}>{c.content}</div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--t3)' }}>{getShortTimeAgo(c.created_at)}</span>
@@ -443,11 +447,11 @@ export function CommunityFeed({
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>
                                       <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        {r.full_name}
+                                        <Link href={`/profile/${r.username || r.user_id}`} style={{ color: 'var(--t2)', textDecoration: 'none' }}>{r.full_name}</Link>
                                         {showDeepReplyIndicator && (
                                           <>
                                             <span style={{ fontSize: '0.65rem' }}>▸</span>
-                                            <span>{parentComment.full_name}</span>
+                                            <Link href={`/profile/${parentComment.username || parentComment.user_id}`} style={{ color: 'var(--t2)', textDecoration: 'none' }}>{parentComment.full_name}</Link>
                                           </>
                                         )}
                                       </div>
