@@ -354,6 +354,31 @@ function MessagesContent() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
+      <style>{`
+        .dm-sidebar {
+          width: 280px;
+          border-right: 1px solid var(--b1);
+        }
+        .dm-header-back-button {
+          display: none !important;
+        }
+        @media (max-width: 767px) {
+          .dm-sidebar {
+            width: 100% !important;
+            border-right: none !important;
+          }
+          .dm-sidebar-mobile-hidden {
+            display: none !important;
+          }
+          .dm-chat-mobile-hidden {
+            display: none !important;
+          }
+          .dm-header-back-button {
+            display: flex !important;
+          }
+        }
+      `}</style>
+
       {/* NEW CONV MODAL */}
       {showNew && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -390,107 +415,102 @@ function MessagesContent() {
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {/* SIDEBAR */}
-        {(!isMobile || activeId === null) && (
-          <div style={{ width: isMobile ? '100%' : 280, flexShrink: 0, borderRight: isMobile ? 'none' : '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '1rem .9rem', borderBottom: '1px solid var(--b1)' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <Search size={14} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
-                <input value={convSearch} onChange={e => setConvSearch(e.target.value)} placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.45rem .75rem .45rem 2.2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <button onClick={() => setShowNew(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: '#0f5132', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Edit3 size={15} /></button>
+        <div className={`dm-sidebar ${activeId !== null ? 'dm-sidebar-mobile-hidden' : ''}`} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '1rem .9rem', borderBottom: '1px solid var(--b1)' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
+              <input value={convSearch} onChange={e => setConvSearch(e.target.value)} placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.45rem .75rem .45rem 2.2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none', boxSizing: 'border-box' }} />
             </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {filteredConvs.length === 0 && (
-                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--t3)', fontSize: '.82rem' }}>
-                  {convs.length === 0 ? <>Aucune conversation.<br /><button onClick={() => setShowNew(true)} style={{ marginTop: '.5rem', background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '.82rem', fontWeight: 600 }}>Démarrer une conversation</button></> : 'Aucun résultat'}
-                </div>
-              )}
-              {filteredConvs.map(c => {
-                const isActive = c.id === activeId
-                return (
-                  <div key={c.id} onClick={() => setActiveId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '.8rem 1rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
-                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                      <Avatar user={c.otherUser} size={44} />
-                    </div>
-                    
-                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ fontSize: '.9rem', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 500, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {c.otherUser.full_name || 'Utilisateur'}
-                      </span>
-                      <span style={{ fontSize: '.8rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {c.lastMessage}
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 4 }}>
-                      <span style={{ fontSize: '.75rem', color: c.unreadCount > 0 && !isActive ? 'var(--accent)' : (isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)'), fontWeight: c.unreadCount > 0 && !isActive ? 500 : 400 }}>
-                        {(() => {
-                          const d = new Date(c.updated_at)
-                          const today = new Date()
-                          const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
-                          const yesterday = new Date(today)
-                          yesterday.setDate(yesterday.getDate() - 1)
-                          const isYesterday = d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear()
-                          if (isToday) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-                          if (isYesterday) return 'Hier'
-                          return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
-                        })()}
-                      </span>
-                      {c.unreadCount > 0 && !isActive && (
-                        <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '50%', minWidth: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, padding: '0 5px' }}>
-                          {c.unreadCount}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <button onClick={() => setShowNew(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: '#0f5132', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Edit3 size={15} /></button>
           </div>
-        )}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {filteredConvs.length === 0 && (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--t3)', fontSize: '.82rem' }}>
+                {convs.length === 0 ? <>Aucune conversation.<br /><button onClick={() => setShowNew(true)} style={{ marginTop: '.5rem', background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '.82rem', fontWeight: 600 }}>Démarrer une conversation</button></> : 'Aucun résultat'}
+              </div>
+            )}
+            {filteredConvs.map(c => {
+              const isActive = c.id === activeId
+              return (
+                <div key={c.id} onClick={() => setActiveId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '.8rem 1rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <Avatar user={c.otherUser} size={44} />
+                  </div>
+                  
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: '.9rem', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 500, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.otherUser.full_name || 'Utilisateur'}
+                    </span>
+                    <span style={{ fontSize: '.8rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.lastMessage}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 4 }}>
+                    <span style={{ fontSize: '.75rem', color: c.unreadCount > 0 && !isActive ? 'var(--accent)' : (isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)'), fontWeight: c.unreadCount > 0 && !isActive ? 500 : 400 }}>
+                      {(() => {
+                        const d = new Date(c.updated_at)
+                        const today = new Date()
+                        const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+                        const yesterday = new Date(today)
+                        yesterday.setDate(yesterday.getDate() - 1)
+                        const isYesterday = d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear()
+                        if (isToday) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                        if (isYesterday) return 'Hier'
+                        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+                      })()}
+                    </span>
+                    {c.unreadCount > 0 && !isActive && (
+                      <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '50%', minWidth: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, padding: '0 5px' }}>
+                        {c.unreadCount}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
 
         {/* CHAT AREA */}
-        {(!isMobile || activeId !== null) && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
-            {!activeConv ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: 'var(--t3)' }}>
-                <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Edit3 size={24} style={{ color: 'var(--accent)' }} /></div>
-                <p style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t2)' }}>Vos messages</p>
-                <p style={{ fontSize: '.82rem', textAlign: 'center' }}>Envoyez des messages à vos collègues CM Studio</p>
-                <button onClick={() => setShowNew(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '.55rem 1.2rem', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer' }}>Nouveau message</button>
-              </div>
-            ) : (
-              <>
-                {/* Header */}
-                <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  {isMobile && (
-                    <button 
-                      onClick={() => setActiveId(null)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--t1)',
-                        cursor: 'pointer',
-                        padding: '4px 8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        marginLeft: '-8px'
-                      }}
-                    >
-                      <ChevronLeft size={20} />
-                      {convs.reduce((acc, c) => acc + c.unreadCount, 0) > 0 && (
-                        <span style={{ fontSize: '0.75rem', background: '#ef4444', color: '#fff', borderRadius: '12px', padding: '1px 6px', fontWeight: 700 }}>
-                          {convs.reduce((acc, c) => acc + c.unreadCount, 0)}
-                        </span>
-                      )}
-                    </button>
+        <div className={`dm-chat-area ${activeId === null ? 'dm-chat-mobile-hidden' : ''}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
+          {!activeConv ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: 'var(--t3)' }}>
+              <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Edit3 size={24} style={{ color: 'var(--accent)' }} /></div>
+              <p style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t2)' }}>Vos messages</p>
+              <p style={{ fontSize: '.82rem', textAlign: 'center' }}>Envoyez des messages à vos collègues CM Studio</p>
+              <button onClick={() => setShowNew(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '.55rem 1.2rem', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer' }}>Nouveau message</button>
+            </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                <button 
+                  className="dm-header-back-button"
+                  onClick={() => setActiveId(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--t1)',
+                    cursor: 'pointer',
+                    padding: '4px 8px',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    marginLeft: '-8px'
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                  {convs.reduce((acc, c) => acc + c.unreadCount, 0) > 0 && (
+                    <span style={{ fontSize: '0.75rem', background: '#ef4444', color: '#fff', borderRadius: '12px', padding: '1px 6px', fontWeight: 700 }}>
+                      {convs.reduce((acc, c) => acc + c.unreadCount, 0)}
+                    </span>
                   )}
-                  <Avatar user={activeConv.otherUser} size={34} />
+                </button>
+                <Avatar user={activeConv.otherUser} size={34} />
                   <div>
                     <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || 'Utilisateur'}</div>
                     {activeConv.otherUser.username && (
