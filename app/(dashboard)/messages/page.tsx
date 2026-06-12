@@ -39,7 +39,15 @@ function MessagesContent() {
   const [convs, setConvs] = useState<Conversation[]>([])
   const convsRef = useRef(convs)
   useEffect(() => { convsRef.current = convs }, [convs])
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [activeId, _setActiveId] = useState<string | null>(null)
+  const activeIdRef = useRef<string | null>(null)
+  const pendingConvRef = useRef<Conversation | null>(null)
+
+  const setActiveId = (id: string | null) => {
+    _setActiveId(id)
+    activeIdRef.current = id
+  }
+
   const [msgs, setMsgs] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -74,7 +82,26 @@ function MessagesContent() {
         return
       }
       if (convId) {
-        loadConvs().then(() => setActiveId(convId))
+        // Récupérer les détails de l'autre utilisateur pour pouvoir instancier la conversation locale
+        supabase.from('users').select('id,full_name,username,avatar_url').eq('id', dmUserId).single().then(({ data: otherUser }) => {
+          if (otherUser) {
+            const newConv: Conversation = { 
+              id: convId, 
+              updated_at: new Date().toISOString(), 
+              otherUser: otherUser as User, 
+              lastMessage: 'Aucun message', 
+              unreadCount: 0 
+            }
+            pendingConvRef.current = newConv
+            setActiveId(convId)
+            setConvs(prev => {
+              const exists = prev.find(c => c.id === convId)
+              if (exists) return prev
+              return [newConv, ...prev]
+            })
+            loadConvs()
+          }
+        })
         // Nettoyer l'URL sans recharger la page
         window.history.replaceState(null, '', '/messages')
       }
@@ -122,6 +149,18 @@ function MessagesContent() {
         lastMessage: c.last_message_content || 'Pièce jointe',
         unreadCount: count
       })
+    }
+
+    // Conserver la conversation active si elle est vide (pas encore de messages dans la DB)
+    const activeId = activeIdRef.current
+    if (activeId && !result.some(c => c.id === activeId)) {
+      let activePending = pendingConvRef.current?.id === activeId ? pendingConvRef.current : null
+      if (!activePending) {
+        activePending = convsRef.current.find(c => c.id === activeId) || null
+      }
+      if (activePending) {
+        result.push(activePending)
+      }
     }
 
     result.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
@@ -252,6 +291,7 @@ function MessagesContent() {
     setShowNew(false); setUSearch(''); setUResults([])
     // Construire la conversation directement pour éviter le bug de timing React
     const newConv: Conversation = { id: convId, updated_at: new Date().toISOString(), otherUser: user, lastMessage: 'Aucun message', unreadCount: 0 }
+    pendingConvRef.current = newConv
     setConvs(prev => {
       const exists = prev.find(c => c.id === convId)
       if (exists) return prev
