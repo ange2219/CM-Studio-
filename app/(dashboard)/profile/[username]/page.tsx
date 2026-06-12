@@ -41,8 +41,12 @@ export default async function PublicProfilePage({
     .order('created_at', { ascending: false })
     .limit(30)
 
-  // ── Fetch follow counts ────────────────────────────────────────────────────
-  const [{ count: followersCount }, { count: followingCount }] = await Promise.all([
+  // ── Fetch follow counts & thresholds ──────────────────────────────────────
+  const [
+    { count: followersCount },
+    { count: followingCount },
+    { data: thresholdsData }
+  ] = await Promise.all([
     admin
       .from('user_follows')
       .select('*', { count: 'exact', head: true })
@@ -51,6 +55,10 @@ export default async function PublicProfilePage({
       .from('user_follows')
       .select('*', { count: 'exact', head: true })
       .eq('follower_id', profile.id),
+    admin
+      .from('group_unlock_thresholds')
+      .select('threshold, label')
+      .order('threshold', { ascending: true })
   ])
 
   // ── Is current user following this profile? ────────────────────────────────
@@ -82,6 +90,7 @@ export default async function PublicProfilePage({
       followersCount={followersCount ?? 0}
       followingCount={followingCount ?? 0}
       initialLikedIds={likedIds}
+      thresholds={(thresholdsData || []) as { threshold: number; label: string }[]}
     />
   )
 }

@@ -63,6 +63,7 @@ export default function PublicProfileClient({
   followersCount: initialFollowersCount,
   followingCount,
   initialLikedIds,
+  thresholds = [],
 }: {
   profile: Profile
   currentUserId: string
@@ -71,6 +72,7 @@ export default function PublicProfileClient({
   followersCount: number
   followingCount: number
   initialLikedIds: string[]
+  thresholds?: { threshold: number; label: string }[]
 }) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const [followersCount, setFollowersCount] = useState(initialFollowersCount)
@@ -269,6 +271,95 @@ export default function PublicProfileClient({
             </div>
           ))}
         </div>
+
+        {/* Gamification Progress Bar */}
+        {(() => {
+          const sortedThresholds = [...(thresholds || [])].sort((a, b) => a.threshold - b.threshold)
+          if (sortedThresholds.length === 0) return null
+
+          const currentThresholdObj = [...sortedThresholds].reverse().find(t => followersCount >= t.threshold)
+          const nextThresholdObj = sortedThresholds.find(t => followersCount < t.threshold)
+
+          const currentRankLabel = currentThresholdObj ? currentThresholdObj.label : 'Novice'
+          const currentThresholdValue = currentThresholdObj ? currentThresholdObj.threshold : 0
+          const nextThresholdValue = nextThresholdObj ? nextThresholdObj.threshold : null
+          const nextThresholdLabel = nextThresholdObj ? nextThresholdObj.label : null
+
+          let progressPercent = 100
+          if (nextThresholdValue !== null) {
+            const range = nextThresholdValue - currentThresholdValue
+            const earned = followersCount - currentThresholdValue
+            progressPercent = Math.min(100, Math.max(0, (earned / range) * 100))
+          }
+
+          return (
+            <div style={{
+              marginTop: 20,
+              padding: '16px 20px',
+              borderRadius: 14,
+              background: 'rgba(var(--accent-rgb), 0.04)',
+              border: '1px solid rgba(var(--accent-rgb), 0.15)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}>
+              {/* Rank Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Rang Actuel
+                </span>
+                <span style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  color: 'var(--accent)',
+                  background: 'rgba(var(--accent-rgb), 0.12)',
+                  padding: '3px 10px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(var(--accent-rgb), 0.25)',
+                }}>
+                  {currentRankLabel}
+                </span>
+              </div>
+
+              {/* Progress Track */}
+              <div style={{
+                width: '100%',
+                height: 10,
+                background: 'rgba(255, 255, 255, 0.07)',
+                borderRadius: 999,
+                overflow: 'hidden',
+                position: 'relative',
+                border: '1px solid var(--b1)',
+              }}>
+                <div style={{
+                  width: `${progressPercent}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, var(--accent) 0%, #10b981 100%)',
+                  borderRadius: 999,
+                  transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)',
+                }} />
+              </div>
+
+              {/* Progress Info Footer */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: 'var(--t2)' }}>
+                <span>
+                  {followersCount} {followersCount > 1 ? 'abonnés' : 'abonné'}
+                </span>
+                {nextThresholdValue !== null ? (
+                  <span style={{ fontWeight: 500 }}>
+                    Plus que <strong>{nextThresholdValue - followersCount}</strong> pour débloquer {nextThresholdLabel?.split(' / ')[1] || nextThresholdLabel}
+                  </span>
+                ) : (
+                  <span style={{ fontWeight: 700, color: '#10b981' }}>
+                    🏆 Niveau Maximum débloqué !
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
       {/* ── Posts ── */}
