@@ -64,6 +64,15 @@ export function CommunityFeed({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
 
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
+  const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null)
+  const [notifiedPostIds, setNotifiedPostIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!openMenuPostId) return
+    const handleClose = () => setOpenMenuPostId(null)
+    window.addEventListener('click', handleClose)
+    return () => window.removeEventListener('click', handleClose)
+  }, [openMenuPostId])
 
   useEffect(() => {
     if (!currentUser?.id) return
@@ -428,12 +437,11 @@ export function CommunityFeed({
                 </div>
 
                 {/* Action Controls: Options and Hide */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
                   <button 
-                    onClick={() => {
-                      const url = `${window.location.origin}/groups#post-${post.id}`
-                      navigator.clipboard.writeText(url)
-                      alert("Lien de la publication copié dans le presse-papiers !")
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setOpenMenuPostId(openMenuPostId === post.id ? null : post.id)
                     }}
                     style={{
                       background: 'none', border: 'none', color: 'var(--t3)',
@@ -443,10 +451,123 @@ export function CommunityFeed({
                     }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                    title="Copier le lien"
+                    title="Options"
                   >
                     <MoreHorizontal size={18} />
                   </button>
+
+                  {openMenuPostId === post.id && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: 4,
+                      background: 'var(--card)',
+                      border: '1px solid var(--b1)',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                      zIndex: 100,
+                      minWidth: '240px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden'
+                    }}>
+                      <button
+                        onClick={() => {
+                          const newSaved = new Set(savedIds)
+                          if (newSaved.has(post.id)) {
+                            newSaved.delete(post.id)
+                            alert("Publication retirée des favoris !")
+                          } else {
+                            newSaved.add(post.id)
+                            alert("Publication enregistrée dans vos favoris !")
+                          }
+                          setSavedIds(newSaved)
+                          setOpenMenuPostId(null)
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--t1)',
+                          padding: '10px 14px',
+                          textAlign: 'left',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                      >
+                        <Bookmark size={16} fill={savedIds.has(post.id) ? 'var(--t1)' : 'none'} />
+                        {savedIds.has(post.id) ? 'Retirer la publication des favoris' : 'Enregistrer la publication'}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const newNotified = new Set(notifiedPostIds)
+                          if (newNotified.has(post.id)) {
+                            newNotified.delete(post.id)
+                            alert("Notifications désactivées pour cette publication.")
+                          } else {
+                            newNotified.add(post.id)
+                            alert("Notifications activées pour cette publication !")
+                          }
+                          setNotifiedPostIds(newNotified)
+                          setOpenMenuPostId(null)
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--t1)',
+                          padding: '10px 14px',
+                          textAlign: 'left',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          transition: 'background 0.2s',
+                          borderTop: '1px solid var(--b1)'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                      >
+                        <Sparkles size={16} fill={notifiedPostIds.has(post.id) ? 'var(--t1)' : 'none'} />
+                        {notifiedPostIds.has(post.id) ? 'Désactiver les notifications' : 'Activer les notifications pour ce post'}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/groups#post-${post.id}`
+                          navigator.clipboard.writeText(url)
+                          alert("Lien de la publication copié dans le presse-papiers !")
+                          setOpenMenuPostId(null)
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--t1)',
+                          padding: '10px 14px',
+                          textAlign: 'left',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          transition: 'background 0.2s',
+                          borderTop: '1px solid var(--b1)'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                      >
+                        <Share2 size={16} />
+                        Copier le lien
+                      </button>
+                    </div>
+                  )}
 
                   <button 
                     onClick={() => handleHidePost(post.id)}
@@ -490,15 +611,6 @@ export function CommunityFeed({
                     navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`)
                   }
                 }} style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
-
-                <button onClick={() => {
-                  const newSaved = new Set(savedIds);
-                  if (newSaved.has(post.id)) newSaved.delete(post.id);
-                  else newSaved.add(post.id);
-                  setSavedIds(newSaved);
-                }} style={{ background: 'none', border: 'none', color: savedIds.has(post.id) ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0', marginLeft: 'auto' }}>
-                  <Bookmark size={18} fill={savedIds.has(post.id) ? 'var(--accent)' : 'none'} />
-                </button>
               </div>
 
               {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
