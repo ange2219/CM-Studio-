@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users } from 'lucide-react'
+import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users, MoreHorizontal, X } from 'lucide-react'
 
 type Post = {
   id: string
@@ -61,6 +61,38 @@ export function CommunityFeed({
   const [isPosting, setIsPosting] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+
+  const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!currentUser?.id) return
+    supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', currentUser.id)
+      .then(({ data }) => {
+        if (data) setFollowedIds(new Set(data.map((f: any) => f.following_id)))
+      })
+  }, [currentUser?.id, supabase])
+
+  async function handleFollowUser(authorId: string) {
+    if (!currentUser?.id) return
+    // Optimistic update
+    setFollowedIds(prev => {
+      const next = new Set(prev)
+      next.add(authorId)
+      return next
+    })
+    // Database insert
+    await supabase.from('user_follows').insert({
+      follower_id: currentUser.id,
+      following_id: authorId,
+    })
+  }
+
+  const handleHidePost = (postId: string) => {
+    setPosts(prev => prev.filter(p => p.id !== postId))
+  }
 
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null)
   const [commentsByPost, setCommentsByPost] = useState<Record<string, any[]>>({})
@@ -341,31 +373,99 @@ export function CommunityFeed({
 
           return (
             <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
-              {/* Post Header */}
-              <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Link href={`/profile/${post.username || post.user_id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', flex: 1, minWidth: 0 }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                    {post.avatar_url ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{post.full_name?.slice(0, 1)}</span>}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--t1)' }}>{post.full_name || 'Utilisateur'}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
-                        <Users size={12} />
-                      ) : (
-                        <Globe size={12} />
-                      )}
-                      <span>•</span>
-                      <span>{getShortTimeAgo(post.created_at)}</span>
-                    </div>
-                  </div>
+              {/* Post Header (Facebook-style structure) */}
+              <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifySelf: 'stretch', width: '100%', boxSizing: 'border-box' }}>
+                {/* Avatar with blue ring */}
+                <Link href={`/profile/${post.username || post.user_id}`} style={{
+                  width: 42, height: 42, borderRadius: '50%',
+                  border: '2px solid var(--accent)',
+                  padding: '1px',
+                  background: 'var(--card)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, overflow: 'hidden',
+                  boxSizing: 'border-box',
+                  marginRight: 12,
+                }}>
+                  {post.avatar_url ? (
+                    <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" />
+                  ) : (
+                    <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '0.9rem' }}>{post.full_name?.slice(0, 1).toUpperCase()}</span>
+                  )}
                 </Link>
-                {currentUser && post.user_id !== currentUser.id && (
-                  <button onClick={() => router.push(`/messages?dm=${post.user_id}`)} style={{ background: 'none', border: '1px solid var(--b1)', borderRadius: '8px', padding: '6px 12px', color: 'var(--t2)', fontSize: '.75rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                    <MessageCircle size={13} />
-                    Message
+
+                {/* Name, Follow, Date & Visibility */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', lineHeight: 1.2 }}>
+                    <Link href={`/profile/${post.username || post.user_id}`} style={{ fontWeight: 700, fontSize: '0.93rem', color: 'var(--t1)', textDecoration: 'none' }}>
+                      {post.full_name || 'Utilisateur'}
+                    </Link>
+                    {currentUser && post.user_id !== currentUser.id && !followedIds.has(post.user_id) && (
+                      <>
+                        <span style={{ color: 'var(--t3)', fontSize: '0.9rem', fontWeight: 500 }}>·</span>
+                        <button
+                          onClick={() => handleFollowUser(post.user_id)}
+                          style={{
+                            background: 'none', border: 'none',
+                            color: 'var(--accent)', fontSize: '0.88rem', fontWeight: 700,
+                            cursor: 'pointer', padding: '0 4px', display: 'inline-flex',
+                            alignItems: 'center', transition: 'opacity 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                          onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                        >
+                          Suivre
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  
+                  <div style={{ fontSize: '0.73rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', lineHeight: 1 }}>
+                    <span>{getShortTimeAgo(post.created_at)}</span>
+                    <span>·</span>
+                    {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
+                      <Users size={11} style={{ opacity: 0.7 }} />
+                    ) : (
+                      <Globe size={11} style={{ opacity: 0.7 }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Controls: Options and Hide */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                  <button 
+                    onClick={() => {
+                      const url = `${window.location.origin}/groups#post-${post.id}`
+                      navigator.clipboard.writeText(url)
+                      alert("Lien de la publication copié dans le presse-papiers !")
+                    }}
+                    style={{
+                      background: 'none', border: 'none', color: 'var(--t3)',
+                      cursor: 'pointer', padding: 6, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                    title="Copier le lien"
+                  >
+                    <MoreHorizontal size={18} />
                   </button>
-                )}
+
+                  <button 
+                    onClick={() => handleHidePost(post.id)}
+                    style={{
+                      background: 'none', border: 'none', color: 'var(--t3)',
+                      cursor: 'pointer', padding: 6, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                    title="Masquer la publication"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
               {/* Post Content */}
