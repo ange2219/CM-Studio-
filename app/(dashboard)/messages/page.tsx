@@ -46,6 +46,8 @@ function MessagesContent() {
   const setActiveId = (id: string | null) => {
     _setActiveId(id)
     activeIdRef.current = id
+    // Supprimer les conversations vides inactives lors du changement de sélection
+    setConvs(prev => prev.filter(c => c.id === id || c.lastMessage !== 'Aucun message'))
   }
 
   const [msgs, setMsgs] = useState<Message[]>([])
