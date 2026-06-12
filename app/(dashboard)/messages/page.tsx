@@ -26,7 +26,7 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
     return <img src={user.avatar_url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   }
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(34, 197, 94, 0.12)', border: '1.5px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 600, color: '#22c55e', flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 600, color: 'var(--accent)', flexShrink: 0 }}>
       {getInitials(user)}
     </div>
   )
