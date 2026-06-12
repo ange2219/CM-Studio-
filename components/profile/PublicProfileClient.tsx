@@ -274,6 +274,7 @@ export default function PublicProfileClient({
 
         {/* Gamification Progress Bar */}
         {(() => {
+          if (!isOwnProfile) return null
           const sortedThresholds = [...(thresholds || [])].sort((a, b) => a.threshold - b.threshold)
           if (sortedThresholds.length === 0) return null
 
