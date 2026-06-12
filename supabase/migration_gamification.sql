@@ -153,6 +153,6 @@ BEGIN
         INSERT INTO public.group_members (group_id, user_id) VALUES (v_group.id, v_user.id);
       END IF;
     END LOOP;
-  END FOR;
+  END LOOP;
 END;
 $$;
