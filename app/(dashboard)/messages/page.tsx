@@ -32,21 +32,29 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
   )
 }
 
-function getDateDividerLabel(dateStr: string) {
-  const d = new Date(dateStr)
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-  
-  if (d.toDateString() === today.toDateString()) return 'Aujourd\'hui'
-  if (d.toDateString() === yesterday.toDateString()) return 'Hier'
-  
-  const diffTime = Math.abs(today.getTime() - d.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  if (diffDays < 7) {
-    return d.toLocaleDateString('fr-FR', { weekday: 'long' })
+function getDateDividerLabel(dateStr: string | null | undefined) {
+  try {
+    if (!dateStr) return 'Date inconnue'
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return 'Date inconnue'
+    
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    if (d.toDateString() === today.toDateString()) return 'Aujourd\'hui'
+    if (d.toDateString() === yesterday.toDateString()) return 'Hier'
+    
+    const diffTime = Math.abs(today.getTime() - d.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    if (diffDays < 7) {
+      return d.toLocaleDateString('fr-FR', { weekday: 'long' })
+    }
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+  } catch (e) {
+    console.error(e)
+    return 'Date inconnue'
   }
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
 }
 
 function MessagesContent() {
@@ -424,6 +432,7 @@ function MessagesContent() {
                           const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
                           const yesterday = new Date(today)
                           yesterday.setDate(yesterday.getDate() - 1)
+                          const isYesterday = d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear()
                           if (isToday) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
                           if (isYesterday) return 'Hier'
                           return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
