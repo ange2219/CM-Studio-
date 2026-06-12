@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useSearchParams } from 'next/navigation'
 import { MessagesSkeleton } from '@/components/ui/Skeleton'
-import { Search, Edit3, Paperclip, Smile, Send, X } from 'lucide-react'
+import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft } from 'lucide-react'
 
 interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null }
 interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User; message_reads?: { user_id: string }[] }
@@ -32,9 +32,34 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
   )
 }
 
+function getDateDividerLabel(dateStr: string) {
+  const d = new Date(dateStr)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  if (d.toDateString() === today.toDateString()) return 'Aujourd\'hui'
+  if (d.toDateString() === yesterday.toDateString()) return 'Hier'
+  
+  const diffTime = Math.abs(today.getTime() - d.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  if (diffDays < 7) {
+    return d.toLocaleDateString('fr-FR', { weekday: 'long' })
+  }
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+}
+
 function MessagesContent() {
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const searchParams = useSearchParams()
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const [me, setMe] = useState<User | null>(null)
   const [convs, setConvs] = useState<Conversation[]>([])
   const convsRef = useRef(convs)
@@ -357,151 +382,195 @@ function MessagesContent() {
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {/* SIDEBAR */}
-        <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '1rem .9rem', borderBottom: '1px solid var(--b1)' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <Search size={14} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
-              <input value={convSearch} onChange={e => setConvSearch(e.target.value)} placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.45rem .75rem .45rem 2.2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none', boxSizing: 'border-box' }} />
-            </div>
-            <button onClick={() => setShowNew(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--accent)', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Edit3 size={15} /></button>
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            {filteredConvs.length === 0 && (
-              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--t3)', fontSize: '.82rem' }}>
-                {convs.length === 0 ? <>Aucune conversation.<br /><button onClick={() => setShowNew(true)} style={{ marginTop: '.5rem', background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '.82rem', fontWeight: 600 }}>Démarrer une conversation</button></> : 'Aucun résultat'}
+        {(!isMobile || activeId === null) && (
+          <div style={{ width: isMobile ? '100%' : 280, flexShrink: 0, borderRight: isMobile ? 'none' : '1px solid var(--b1)', display: 'flex', flexDirection: 'column', background: 'var(--sidebar-bg)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '1rem .9rem', borderBottom: '1px solid var(--b1)' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--t3)' }} />
+                <input value={convSearch} onChange={e => setConvSearch(e.target.value)} placeholder="Rechercher..." style={{ width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 20, padding: '.45rem .75rem .45rem 2.2rem', fontSize: '.8rem', color: 'var(--t1)', outline: 'none', boxSizing: 'border-box' }} />
               </div>
-            )}
-            {filteredConvs.map(c => {
-              const isActive = c.id === activeId
-              return (
-                <div key={c.id} onClick={() => setActiveId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '.8rem 1rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-                  <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <Avatar user={c.otherUser} size={44} />
-                  </div>
-                  
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ fontSize: '.9rem', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 500, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {c.otherUser.full_name || 'Utilisateur'}
-                    </span>
-                    <span style={{ fontSize: '.8rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {c.lastMessage}
-                    </span>
-                  </div>
+              <button onClick={() => setShowNew(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: '#0f5132', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Edit3 size={15} /></button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {filteredConvs.length === 0 && (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--t3)', fontSize: '.82rem' }}>
+                  {convs.length === 0 ? <>Aucune conversation.<br /><button onClick={() => setShowNew(true)} style={{ marginTop: '.5rem', background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '.82rem', fontWeight: 600 }}>Démarrer une conversation</button></> : 'Aucun résultat'}
+                </div>
+              )}
+              {filteredConvs.map(c => {
+                const isActive = c.id === activeId
+                return (
+                  <div key={c.id} onClick={() => setActiveId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '.8rem 1rem', cursor: 'pointer', background: isActive ? 'var(--accent)' : 'transparent', transition: '.12s', borderLeft: isActive ? '3px solid rgba(255,255,255,.3)' : '3px solid transparent' }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <Avatar user={c.otherUser} size={44} />
+                    </div>
+                    
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <span style={{ fontSize: '.9rem', fontWeight: c.unreadCount > 0 && !isActive ? 600 : 500, color: isActive ? '#fff' : 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {c.otherUser.full_name || 'Utilisateur'}
+                      </span>
+                      <span style={{ fontSize: '.8rem', color: isActive ? 'rgba(255,255,255,.7)' : 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {c.lastMessage}
+                      </span>
+                    </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 4 }}>
-                    <span style={{ fontSize: '.75rem', color: c.unreadCount > 0 && !isActive ? '#22c55e' : (isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)'), fontWeight: c.unreadCount > 0 && !isActive ? 500 : 400 }}>
-                      {(() => {
-                        const d = new Date(c.updated_at)
-                        const today = new Date()
-                        const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
-                        const yesterday = new Date(today)
-                        yesterday.setDate(yesterday.getDate() - 1)
-                        const isYesterday = d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear()
-                        if (isToday) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-                        if (isYesterday) return 'Hier'
-                        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
-                      })()}
-                    </span>
-                    {c.unreadCount > 0 && !isActive && (
-                      <div style={{ background: '#22c55e', color: '#fff', borderRadius: '50%', minWidth: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, padding: '0 5px' }}>
-                        {c.unreadCount}
-                      </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 4 }}>
+                      <span style={{ fontSize: '.75rem', color: c.unreadCount > 0 && !isActive ? 'var(--accent)' : (isActive ? 'rgba(255,255,255,.6)' : 'var(--t3)'), fontWeight: c.unreadCount > 0 && !isActive ? 500 : 400 }}>
+                        {(() => {
+                          const d = new Date(c.updated_at)
+                          const today = new Date()
+                          const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+                          const yesterday = new Date(today)
+                          yesterday.setDate(yesterday.getDate() - 1)
+                          if (isToday) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                          if (isYesterday) return 'Hier'
+                          return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+                        })()}
+                      </span>
+                      {c.unreadCount > 0 && !isActive && (
+                        <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: '50%', minWidth: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, padding: '0 5px' }}>
+                          {c.unreadCount}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* CHAT AREA */}
+        {(!isMobile || activeId !== null) && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
+            {!activeConv ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: 'var(--t3)' }}>
+                <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Edit3 size={24} style={{ color: 'var(--accent)' }} /></div>
+                <p style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t2)' }}>Vos messages</p>
+                <p style={{ fontSize: '.82rem', textAlign: 'center' }}>Envoyez des messages à vos collègues CM Studio</p>
+                <button onClick={() => setShowNew(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '.55rem 1.2rem', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer' }}>Nouveau message</button>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                  {isMobile && (
+                    <button 
+                      onClick={() => setActiveId(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--t1)',
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        marginLeft: '-8px'
+                      }}
+                    >
+                      <ChevronLeft size={20} />
+                      {convs.reduce((acc, c) => acc + c.unreadCount, 0) > 0 && (
+                        <span style={{ fontSize: '0.75rem', background: '#ef4444', color: '#fff', borderRadius: '12px', padding: '1px 6px', fontWeight: 700 }}>
+                          {convs.reduce((acc, c) => acc + c.unreadCount, 0)}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                  <Avatar user={activeConv.otherUser} size={34} />
+                  <div>
+                    <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || 'Utilisateur'}</div>
+                    {activeConv.otherUser.username && (
+                      <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>@{activeConv.otherUser.username}</div>
                     )}
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </div>
 
-        {/* CHAT AREA */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          {!activeConv ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: 'var(--t3)' }}>
-              <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Edit3 size={24} style={{ color: 'var(--accent)' }} /></div>
-              <p style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t2)' }}>Vos messages</p>
-              <p style={{ fontSize: '.82rem', textAlign: 'center' }}>Envoyez des messages à vos collègues CM Studio</p>
-              <button onClick={() => setShowNew(true)} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '.55rem 1.2rem', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer' }}>Nouveau message</button>
-            </div>
-          ) : (
-            <>
-              {/* Header */}
-              <div style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <Avatar user={activeConv.otherUser} size={34} />
-                <div>
-                  <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || 'Utilisateur'}</div>
-                  {activeConv.otherUser.username && (
-                    <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>@{activeConv.otherUser.username}</div>
-                  )}
-                </div>
-              </div>
+                {/* Messages */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(() => {
+                    let lastDateLabel = ''
+                    return msgs.map(m => {
+                      const isMe = m.sender_id === me?.id
+                      const dateLabel = getDateDividerLabel(m.created_at)
+                      const showDivider = dateLabel !== lastDateLabel
+                      lastDateLabel = dateLabel
 
-              {/* Messages */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {msgs.map(m => {
-                  const isMe = m.sender_id === me?.id
-                  return (
-                    <div key={m.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 8, alignItems: 'flex-end' }}>
-                      {!isMe && m.sender && <Avatar user={m.sender} size={24} />}
-                      <div style={{ maxWidth: 380 }}>
-                        {m.attachment_url ? (
-                          <div style={{ padding: '.6rem 1rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'var(--s2)' : 'var(--accent)', border: isMe ? '1px solid var(--b1)' : 'none' }}>
-                            {m.attachment_type?.startsWith('image/') ? (
-                              <img src={m.attachment_url} alt={m.attachment_name || 'image'} style={{ maxWidth: 240, borderRadius: 8, display: 'block' }} />
-                            ) : (
-                              <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? 'var(--accent)' : '#fff', fontSize: '.82rem', textDecoration: 'underline' }}>📎 {m.attachment_name}</a>
-                            )}
-                          </div>
-                        ) : (
-                          <div style={{ padding: '.6rem 1rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'var(--s2)' : 'var(--accent)', color: isMe ? 'var(--t1)' : '#fff', border: isMe ? '1px solid var(--b1)' : 'none', fontSize: '.85rem', lineHeight: 1.55 }}>
-                            {m.content}
-                          </div>
-                        )}
-                        <div style={{ fontSize: '.65rem', color: 'var(--t3)', textAlign: isMe ? 'right' : 'left', marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 6 }}>
-                          <span>{new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                          {isMe && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontWeight: 700 }}>
-                              {m.message_reads?.some(r => r.user_id === activeConv.otherUser.id) ? (
-                                <span style={{ color: 'var(--accent)' }}>✓✓ Lu</span>
-                              ) : (
-                                <span style={{ color: 'var(--t3)' }}>✓ Envoyé</span>
-                              )}
-                            </span>
+                      return (
+                        <div key={m.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                          {showDivider && (
+                            <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 8px' }}>
+                              <span style={{ background: '#121216', color: 'var(--t3)', fontSize: '0.7rem', fontWeight: 600, padding: '3px 10px', borderRadius: '10px', border: '1px solid var(--b1)', textTransform: 'capitalize' }}>
+                                {dateLabel}
+                              </span>
+                            </div>
                           )}
+                          <div style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 8, alignItems: 'flex-end', marginTop: 4 }}>
+                            {!isMe && m.sender && <Avatar user={m.sender} size={24} />}
+                            <div style={{ maxWidth: 380 }}>
+                              {m.attachment_url ? (
+                                <div style={{ padding: '.6rem 1rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'var(--accent)' : 'var(--s2)', border: isMe ? 'none' : '1px solid var(--b1)' }}>
+                                  {m.attachment_type?.startsWith('image/') ? (
+                                    <img src={m.attachment_url} alt={m.attachment_name || 'image'} style={{ maxWidth: 240, borderRadius: 8, display: 'block' }} />
+                                  ) : (
+                                    <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" style={{ color: isMe ? '#fff' : 'var(--accent)', fontSize: '.82rem', textDecoration: 'underline' }}>📎 {m.attachment_name}</a>
+                                  )}
+                                </div>
+                              ) : (
+                                <div style={{ padding: '.6rem 1rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'var(--accent)' : 'var(--s2)', color: isMe ? '#fff' : 'var(--t1)', border: isMe ? 'none' : '1px solid var(--b1)', fontSize: '.85rem', lineHeight: 1.55 }}>
+                                  {m.content}
+                                </div>
+                              )}
+                              <div style={{ fontSize: '.65rem', color: 'var(--t3)', textAlign: isMe ? 'right' : 'left', marginTop: 2, display: 'flex', alignItems: 'center', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 6 }}>
+                                <span>{new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                {isMe && (
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontWeight: 700 }}>
+                                    {m.message_reads?.some(r => r.user_id === activeConv.otherUser.id) ? (
+                                      <span style={{ color: 'var(--accent)' }}>✓✓</span>
+                                    ) : (
+                                      <span style={{ color: 'var(--t3)' }}>✓</span>
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  )
-                })}
-                <div ref={bottomRef} />
-              </div>
-
-              {/* Input */}
-              <div style={{ padding: '.85rem 1.25rem', borderTop: '1px solid var(--b1)', flexShrink: 0, position: 'relative' }}>
-                {showEmoji && (
-                  <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: 12, padding: '.75rem', display: 'flex', flexWrap: 'wrap', gap: 4, width: 280, boxShadow: '0 8px 30px rgba(0,0,0,.2)', zIndex: 10 }}>
-                    {EMOJIS.map(e => (
-                      <button key={e} onClick={() => { setInput(p => p + e); setShowEmoji(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', padding: '2px', borderRadius: 6, lineHeight: 1 }}
-                        onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--s2)')}
-                        onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>
-                        {e}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <input type="file" ref={fileRef} style={{ display: 'none' }} accept="image/*,.pdf,.txt,.zip,.mp4" onChange={e => { if (e.target.files?.[0]) uploadFile(e.target.files[0]); e.target.value = '' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 14, padding: '.45rem .75rem' }}>
-                  <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ background: 'none', border: 'none', cursor: 'pointer', color: uploading ? 'var(--accent)' : 'var(--t3)', display: 'flex', padding: 4 }}><Paperclip size={16} /></button>
-                  <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())} placeholder="Écrire un message..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '.85rem', color: 'var(--t1)', fontFamily: 'inherit' }} />
-                  <button onClick={() => setShowEmoji(p => !p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: showEmoji ? 'var(--accent)' : 'var(--t3)', display: 'flex', padding: 4 }}><Smile size={16} /></button>
-                  <button onClick={send} disabled={!input.trim() || sending} style={{ background: input.trim() ? 'var(--accent)' : 'transparent', border: '1px solid var(--b1)', borderRadius: 9, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: input.trim() ? 'pointer' : 'not-allowed', color: input.trim() ? '#fff' : 'var(--t3)', transition: '.15s', flexShrink: 0 }}><Send size={14} /></button>
+                      )
+                    })
+                  })()}
+                  <div ref={bottomRef} />
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+
+                {/* Input */}
+                <div style={{ padding: '.85rem 1.25rem', borderTop: '1px solid var(--b1)', flexShrink: 0, position: 'relative' }}>
+                  {showEmoji && (
+                    <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: 12, padding: '.75rem', display: 'flex', flexWrap: 'wrap', gap: 4, width: 280, boxShadow: '0 8px 30px rgba(0,0,0,.2)', zIndex: 10 }}>
+                      {EMOJIS.map(e => (
+                        <button key={e} onClick={() => { setInput(p => p + e); setShowEmoji(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', padding: '2px', borderRadius: 6, lineHeight: 1 }}
+                          onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--s2)')}
+                          onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <input type="file" ref={fileRef} style={{ display: 'none' }} accept="image/*,.pdf,.txt,.zip,.mp4" onChange={e => { if (e.target.files?.[0]) uploadFile(e.target.files[0]); e.target.value = '' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 14, padding: '.45rem .75rem' }}>
+                    <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ background: 'none', border: 'none', cursor: 'pointer', color: uploading ? 'var(--accent)' : 'var(--t3)', display: 'flex', padding: 4 }}><Paperclip size={16} /></button>
+                    <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())} placeholder="Écrire un message..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '.85rem', color: 'var(--t1)', fontFamily: 'inherit' }} />
+                    <button onClick={() => setShowEmoji(p => !p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: showEmoji ? 'var(--accent)' : 'var(--t3)', display: 'flex', padding: 4 }}><Smile size={16} /></button>
+                    <button onClick={send} disabled={!input.trim() || sending} style={{ background: input.trim() ? 'var(--accent)' : 'transparent', border: '1px solid var(--b1)', borderRadius: 9, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: input.trim() ? 'pointer' : 'not-allowed', color: input.trim() ? '#fff' : 'var(--t3)', transition: '.15s', flexShrink: 0 }}><Send size={14} /></button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
