@@ -407,7 +407,7 @@ export default function PublicProfileClient({
                     </div>
                     <button
                       onClick={() => {
-                        const url = `${window.location.origin}/community#post-${post.id}`
+                        const url = `${window.location.origin}/groups#post-${post.id}`
                         if (navigator.share) {
                           navigator.share({ title: 'Post', text: post.content.slice(0, 60), url }).catch(() => {})
                         } else {
@@ -466,7 +466,7 @@ export default function PublicProfileClient({
                     </button>
 
                     <Link
-                      href={`/community#post-${post.id}`}
+                      href={`/groups#post-${post.id}`}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 6,
                         fontSize: '0.85rem', fontWeight: 600,

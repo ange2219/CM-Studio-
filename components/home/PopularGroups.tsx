@@ -13,7 +13,7 @@ export function PopularGroups() {
     <div className="card" style={{ padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--t1)' }}>Groupes populaires</span>
-        <Link href="/community" style={{ fontSize: '0.73rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
+        <Link href="/groups" style={{ fontSize: '0.73rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
           Voir tout <ChevronRight size={12} />
         </Link>
       </div>

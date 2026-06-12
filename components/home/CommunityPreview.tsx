@@ -28,9 +28,9 @@ export function CommunityPreview({ topPosts }: { topPosts: any[] }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.2rem' }}>
         <div>
-          <div className="card-title" style={{ marginBottom: '.1rem' }}>Communauté</div>
+          <div className="card-title" style={{ marginBottom: '.1rem' }}>Groupes</div>
           <p style={{ fontSize: '.78rem', color: 'var(--t3)', margin: 0 }}>
-            Ce que la communauté partage en ce moment
+            Ce que partagent les groupes en ce moment
           </p>
         </div>
       </div>
@@ -90,7 +90,7 @@ export function CommunityPreview({ topPosts }: { topPosts: any[] }) {
       )}
 
       {/* CTA */}
-      <Link href="/community" style={{
+      <Link href="/groups" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem',
         marginTop: '1.1rem',
         fontSize: '.82rem', fontWeight: 700, color: 'var(--accent)',

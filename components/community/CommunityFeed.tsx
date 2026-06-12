@@ -42,13 +42,19 @@ export function CommunityFeed({
   initialPosts,
   currentUser,
   initialLikedIds,
+  groupId,
 }: {
   initialPosts: Post[]
   currentUser: any
   initialLikedIds: string[]
+  groupId?: string
 }) {
   const router = useRouter()
   const [posts, setPosts] = useState(initialPosts)
+
+  useEffect(() => {
+    setPosts(initialPosts)
+  }, [initialPosts])
   const [likedIds, setLikedIds] = useState(new Set(initialLikedIds))
   const [savedIds, setSavedIds] = useState(new Set<string>())
   const [newPostContent, setNewPostContent] = useState('')
@@ -125,7 +131,10 @@ export function CommunityFeed({
     if (!newPostContent.trim() && !uploadedImageUrl) return
     if (isPosting) return
     setIsPosting(true)
-    const payload = { content: newPostContent.trim(), user_id: currentUser.id, image_url: uploadedImageUrl || null }
+    const payload: any = { content: newPostContent.trim(), user_id: currentUser.id, image_url: uploadedImageUrl || null }
+    if (groupId) {
+      payload.group_id = groupId
+    }
     const { data, error } = await supabase.from('community_posts').insert(payload).select('id, created_at').single()
     if (!error && data) {
       setPosts([{

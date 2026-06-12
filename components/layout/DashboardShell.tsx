@@ -138,7 +138,7 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Workspace',   icon: Layout,        href: '/workspace'     },
     { label: 'Notifications', icon: Bell,        href: '/notifications' },
     { label: 'Messagerie',  icon: MessageCircle, href: '/messages'      },
-    { label: 'Community',   icon: Users,         href: '/community'     },
+    { label: 'Groupes',     icon: Users,         href: '/groups'        },
   ]
 
   const bottomNavItems = [
@@ -262,7 +262,7 @@ export function DashboardShell({ user: initialUser, children }: {
                 {pathname === '/workspace' && 'Workspace'}
                 {pathname === '/messages' && 'Messagerie'}
                 {pathname === '/home' && 'Accueil'}
-                {pathname === '/community' && 'Communauté'}
+                {pathname === '/groups' && 'Groupes'}
                 {pathname === '/notifications' && 'Notifications'}
                 {pathname === '/profile' && 'Profil'}
                 {pathname?.startsWith('/settings') && 'Paramètres'}

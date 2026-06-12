@@ -141,11 +141,11 @@ export default function HomePage() {
                   Vous ne suivez personne encore
                 </div>
                 <p style={{ fontSize: '0.9rem', color: 'var(--t2)', maxWidth: '340px', lineHeight: 1.6, margin: '0 auto' }}>
-                  Découvrez des créateurs dans la Communauté et suivez ceux qui vous inspirent.
+                  Abonnez-vous à des créateurs depuis leur profil ou rejoignez les groupes de discussion.
                 </p>
               </div>
               <a
-                href="/community"
+                href="/groups"
                 style={{
                   marginTop: '8px',
                   display: 'inline-flex',
@@ -160,7 +160,7 @@ export default function HomePage() {
                   textDecoration: 'none',
                 }}
               >
-                Découvrir des créateurs →
+                Rejoindre les groupes →
               </a>
             </div>
           ) : (
