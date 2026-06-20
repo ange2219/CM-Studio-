@@ -50,8 +50,11 @@ export async function POST(req: NextRequest) {
     }, { status: 429 })
   }
 
-  const parsed = GenerateSchema.safeParse(await req.json())
+  const bodyData = await req.json()
+  console.log('[generate/route] request body:', JSON.stringify(bodyData))
+  const parsed = GenerateSchema.safeParse(bodyData)
   if (!parsed.success) {
+    console.error('[generate/route] Zod validation failed:', JSON.stringify(parsed.error.flatten()))
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
   }
 
