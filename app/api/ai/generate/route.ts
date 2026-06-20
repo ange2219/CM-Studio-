@@ -18,7 +18,7 @@ const GenerateSchema = z.object({
   platforms:        z.array(z.enum(ALLOWED_PLATFORMS)).min(1).max(7),
   tone:             z.enum(ALLOWED_TONES),
   brief:            z.string().max(2000).optional(),
-  objective:        z.enum(ALLOWED_OBJECTIVES).optional(),
+  objective:        z.string().max(100).optional(),
   length:           z.enum(ALLOWED_LENGTHS).optional(),
   format:           z.enum(ALLOWED_FORMATS).optional(),
   cta:              z.enum(ALLOWED_CTAS).optional(),
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
   const body: GenerateRequest = {
     ...parsed.data,
-    objective:        parsed.data.objective,
+    objective:        parsed.data.objective as any,
     length:           parsed.data.length,
     format:           parsed.data.format,
     cta:              parsed.data.cta,

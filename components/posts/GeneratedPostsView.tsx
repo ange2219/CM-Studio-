@@ -504,7 +504,7 @@ function PostPlatformCard({
               fontSize: '.62rem', color: 'var(--t3)', marginTop: '.15rem',
             }}>
               <ObjIcon objective={objective} size={10} />
-              <span>{OBJECTIVE_LABELS[objective]}</span>
+              <span>{OBJECTIVE_LABELS[objective] || objective}</span>
               <ChevronDown size={9} />
             </div>
           )}
