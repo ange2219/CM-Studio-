@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { MessagesSkeleton } from '@/components/ui/Skeleton'
 import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft } from 'lucide-react'
 
-interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null }
-interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User; message_reads?: { user_id: string }[] }
+interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null; username?: string | null }
+interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User; message_reads?: { user_id: string }[]; isTemp?: boolean; error?: boolean }
 interface Conversation { id: string; updated_at: string; otherUser: User; lastMessage: string; unreadCount: number }
 
 const EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '❤️', '🔥', '✅', '🎉', '💯', '🙏', '😭', '😅', '🤩', '💪', '🚀', '⚡', '🌟', '🎯', '✨', '👏', '🫡', '🫶', '😤', '🥲', '😇', '🤝', '🎊']
@@ -599,7 +599,6 @@ function MessagesContent() {
               </>
             )}
           </div>
-        )}
       </div>
     </div>
   )

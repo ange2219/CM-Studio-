@@ -242,9 +242,7 @@ export default function CreatePage() {
   const [distributionMode, setDistributionMode] = useState<DistributionMode>('unified')
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([])
 
-  // ── Popups ──
-  const [showParamsPopup,   setShowParamsPopup]   = useState(false)
-  const [showPlatformPopup, setShowPlatformPopup] = useState(false)
+
 
 
   // ── Résultats IA ──
@@ -283,7 +281,7 @@ export default function CreatePage() {
     })
     supabase.from('social_accounts').select('platform').eq('is_active', true).then(({ data }) => {
       if (data && data.length > 0) {
-        setConnectedPlatforms([...new Set(data.map((r: any) => r.platform as Platform))])
+        setConnectedPlatforms(Array.from(new Set(data.map((r: any) => r.platform as Platform))))
       }
     })
     fetch('/api/brand').then((r: Response) => r.ok ? r.json() : null).then((b: any) => {
@@ -533,24 +531,7 @@ export default function CreatePage() {
         </div>
       )}
 
-      {/* Popups */}
-      {showParamsPopup && (
-        <ParamsPopup
-          params={params}
-          onChange={setParams}
-          onClose={() => setShowParamsPopup(false)}
-        />
-      )}
-      {showPlatformPopup && (
-        <PlatformPopup
-          selected={selectedPlatforms}
-          onChange={setSelectedPlatforms}
-          distributionMode={distributionMode}
-          onDistributionChange={setDistributionMode}
-          connectedPlatforms={connectedPlatforms}
-          onClose={() => setShowPlatformPopup(false)}
-        />
-      )}
+
 
       {/* Modal action (mode manuel) */}
       {actionModal && (
@@ -581,40 +562,34 @@ export default function CreatePage() {
           {/* Plateformes */}
           <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.25rem' }}>
             <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'var(--t2)', marginBottom: '.75rem' }}>
-              Plateformes connectées
+              Plateformes
             </label>
-            {connectedPlatforms.length === 0 ? (
-              <div style={{ padding: '.75rem', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '8px', fontSize: '.78rem', color: 'var(--t3)', marginBottom: '1.25rem' }}>
-                Aucune plateforme connectée — connectez-en une dans les Paramètres.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.45rem', marginBottom: '1.25rem' }}>
-                {connectedPlatforms.map(p => {
-                  const isSelected = selectedPlatforms.includes(p)
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => setSelectedPlatforms(prev =>
-                        prev.includes(p)
-                          ? prev.length > 1 ? prev.filter(x => x !== p) : prev
-                          : [...prev, p]
-                      )}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '.4rem',
-                        padding: '.35rem .75rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500,
-                        border: `1px solid ${isSelected ? PLATFORM_COLORS[p] + '60' : 'var(--b1)'}`,
-                        background: isSelected ? PLATFORM_COLORS[p] + '12' : 'transparent',
-                        color: isSelected ? PLATFORM_COLORS[p] : 'var(--t2)',
-                        cursor: 'pointer', transition: '.12s',
-                      }}
-                    >
-                      <PlatformIcon platform={p} size={14} />
-                      {PLATFORM_NAMES[p]}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.45rem', marginBottom: '1.25rem' }}>
+              {((isPro ? ['linkedin', 'instagram', 'twitter', 'facebook', 'tiktok'] : ['facebook', 'instagram']) as Platform[]).map(p => {
+                const isSelected = selectedPlatforms.includes(p)
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setSelectedPlatforms(prev =>
+                      prev.includes(p)
+                        ? prev.length > 1 ? prev.filter(x => x !== p) : prev
+                        : [...prev, p]
+                    )}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '.4rem',
+                      padding: '.35rem .75rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500,
+                      border: `1px solid ${isSelected ? PLATFORM_COLORS[p] + '60' : 'var(--b1)'}`,
+                      background: isSelected ? PLATFORM_COLORS[p] + '12' : 'transparent',
+                      color: isSelected ? PLATFORM_COLORS[p] : 'var(--t2)',
+                      cursor: 'pointer', transition: '.12s',
+                    }}
+                  >
+                    <PlatformIcon platform={p} size={14} />
+                    {PLATFORM_NAMES[p]}
+                  </button>
+                )
+              })}
+            </div>
             <p style={{ fontSize: '.73rem', color: 'var(--t3)', marginBottom: '1rem', lineHeight: 1.5 }}>
               Vous rédigerez votre contenu directement dans l&apos;éditeur — une carte par plateforme.
             </p>
@@ -791,10 +766,6 @@ export default function CreatePage() {
                         if (isSel) {
                           setSelectedPlatforms(prev => prev.filter(x => x !== p))
                         } else {
-                          if (!connectedPlatforms.includes(p)) {
-                            setConnectPopupPlatform(p)
-                            return
-                          }
                           setSelectedPlatforms(prev => [...prev, p])
                         }
                       }} style={{ display: 'none' }} />

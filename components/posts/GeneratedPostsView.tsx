@@ -925,9 +925,9 @@ export function GeneratedPostsView({
   }
 
   const ALL_PLATFORMS_LIST: Platform[] = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
-  const connectedPlatforms: Platform[] = socialAccounts && socialAccounts.length > 0
-    ? ALL_PLATFORMS_LIST.filter(p => socialAccounts.some(a => a.platform === p))
-    : ALL_PLATFORMS_LIST
+  const connectedPlatforms: Platform[] = isPro
+    ? ALL_PLATFORMS_LIST
+    : ['instagram', 'facebook']
 
   return (
     <div>

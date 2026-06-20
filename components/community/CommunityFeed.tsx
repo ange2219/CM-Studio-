@@ -246,7 +246,7 @@ export function CommunityFeed({
 
       let usersMap: Record<string, any> = {}
       if (comments && comments.length > 0) {
-        const userIds = [...new Set(comments.map(c => c.user_id))]
+        const userIds = Array.from(new Set(comments.map(c => c.user_id)))
         const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, plan, username').in('id', userIds)
         if (usersData) {
           usersMap = Object.fromEntries(usersData.map(u => [u.id, u]))

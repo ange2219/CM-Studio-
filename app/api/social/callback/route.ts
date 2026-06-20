@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
       const match = accounts.find((a: any) =>
         a.platform?.toLowerCase() === platform.toLowerCase()
-      )
+      ) as any
 
       if (match) {
         finalAccountId = finalAccountId || match._id || match.id || match.accountId

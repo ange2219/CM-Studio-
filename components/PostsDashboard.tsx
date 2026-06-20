@@ -580,7 +580,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   }
 
   // Unique platforms across all loaded posts (for the platform filter dropdown)
-  const availablePlatforms = [...new Set(posts.flatMap(p => p.platforms))].sort()
+  const availablePlatforms = Array.from(new Set(posts.flatMap(p => p.platforms))).sort()
 
   // Failed posts appear under "Brouillons" filter; partial appears under "Publiés"
   const baseFiltered =

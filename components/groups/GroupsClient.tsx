@@ -372,7 +372,7 @@ export default function GroupsClient({
                   initialPosts={posts}
                   currentUser={currentUser}
                   initialLikedIds={initialLikedIds}
-                  groupId={selectedGroupId}
+                  groupId={selectedGroupId || undefined}
                 />
               )}
             </div>

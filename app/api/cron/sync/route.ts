@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
   if (!posts?.length) return NextResponse.json({ synced: 0 })
 
   // Récupère tous les comptes actifs concernés
-  const userIds = [...new Set(posts.map(p => p.user_id))]
+  const userIds = Array.from(new Set(posts.map(p => p.user_id)))
   const { data: accounts } = await admin
     .from('social_accounts')
     .select('user_id, platform, access_token, platform_user_id')

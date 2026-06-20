@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (post.status !== 'published') return NextResponse.json({ comments: [] })
 
   const metaIds = post.meta_post_ids || {}
-  const results: Array<{ platform: string; comments: any[] }> = []
+  const results: Array<{ platform: string; comments: any[]; error?: string }> = []
 
   // Facebook comments
   if (metaIds.facebook) {
