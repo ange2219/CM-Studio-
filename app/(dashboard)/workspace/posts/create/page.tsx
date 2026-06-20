@@ -268,7 +268,7 @@ export default function CreatePage() {
   } | null>(null)
 
   // ── Plan ──
-  const [isPro, setIsPro] = useState(false)
+  const [isPro, setIsPro] = useState(true)
   const [connectedPlatforms, setConnectedPlatforms] = useState<Platform[]>([])
   const [connectPopupPlatform, setConnectPopupPlatform] = useState<Platform | null>(null)
 
@@ -277,7 +277,7 @@ export default function CreatePage() {
   useEffect(() => {
     const supabase = createClient()
     supabase.from('users').select('plan').single().then(({ data }) => {
-      if (data && data.plan && data.plan !== 'free') setIsPro(true)
+      setIsPro(true)
     })
     supabase.from('social_accounts').select('platform').eq('is_active', true).then(({ data }) => {
       if (data && data.length > 0) {

@@ -753,10 +753,11 @@ export interface GeneratedPostsViewProps {
 
 export function GeneratedPostsView({
   platforms, variants, objective,
-  quotaUsed, quotaLimit, isPro, userName, socialAccounts, initialImages, initialScheduledAt,
+  quotaUsed, quotaLimit, isPro: _isPro, userName, socialAccounts, initialImages, initialScheduledAt,
   allowPlatformToggle, unifiedMode,
   onSaveDraft, onPublish, onSchedule, onClose,
 }: GeneratedPostsViewProps) {
+  const isPro = true
   const { toast } = useToast()
 
   // Per-card state

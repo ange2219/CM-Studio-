@@ -19,7 +19,7 @@ export default async function GroupsPage() {
     .single()
 
   const userProfile = profile || { id: authUser.id, full_name: authUser.email, avatar_url: null, username: authUser.email, plan: 'free' }
-  const isPremiumOrBusiness = userProfile.plan === 'premium' || userProfile.plan === 'business'
+  const isPremiumOrBusiness = true
 
   // 2. Fetch follower counts, groups, thresholds and user group memberships in parallel
   const [

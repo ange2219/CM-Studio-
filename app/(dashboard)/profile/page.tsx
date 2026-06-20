@@ -489,7 +489,7 @@ export default function ProfilePage() {
                 { platform: 'linkedin'  as Platform, proOnly: true,  onConnect: () => openOAuthPopup('linkedin') },
               ] as { platform: Platform; proOnly: boolean; onConnect: () => void }[]).map(({ platform, proOnly, onConnect }, i, arr) => {
                 const acc = accounts.find(a => a.platform === platform)
-                const locked = proOnly && userPlan === 'free'
+                const locked = false
                 return (
                   <AccountListItem
                     key={platform}

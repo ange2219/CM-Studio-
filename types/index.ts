@@ -92,15 +92,15 @@ export interface PlanLimits {
 
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   free: {
-    platforms: 2,
-    generationsPerWeek: 15,
-    imagesPerWeek: 0,
-    accountsPerPlatform: 1,
-    scheduling: false,
-    advancedAnalytics: false,
-    generateWeek: false,
-    workspaces: 1,
-    aiProvider: 'github',
+    platforms: 999,
+    generationsPerWeek: 'unlimited',
+    imagesPerWeek: 'unlimited',
+    accountsPerPlatform: 10,
+    scheduling: true,
+    advancedAnalytics: true,
+    generateWeek: true,
+    workspaces: 3,
+    aiProvider: 'claude',
   },
   premium: {
     platforms: 5,
@@ -126,7 +126,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   },
 }
 
-export const FREE_PLATFORMS: Platform[] = ['instagram', 'facebook']
+export const FREE_PLATFORMS: Platform[] = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
 
 export const PLATFORM_NAMES: Record<Platform, string> = {
   instagram: 'Instagram',

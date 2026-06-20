@@ -17,7 +17,7 @@ const PLATFORM_CHAR_LIMITS: Record<string, number> = {
   instagram: 2000, facebook: 2000, twitter: 280, linkedin: 3000, tiktok: 300,
 }
 const ALL_PLATFORMS = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
-const FREE_PLATFORMS = ['instagram', 'facebook']
+const FREE_PLATFORMS = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
 
 interface Post {
   id: string
