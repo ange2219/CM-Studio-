@@ -31,7 +31,7 @@ const PLATFORM_CONSTRAINTS: Record<Platform, string> = {
 // ─── System prompts par plateforme (placeholders — à personnaliser) ────────────
 
 const PLATFORM_SYSTEM_PROMPTS: Record<Platform, string> = {
-  linkedin:  'Tu es un expert LinkedIn. Génère un post performant.',
+  linkedin:  'Tu es un expert en contenu LinkedIn qui écrit exclusivement en français.',
   instagram: 'Tu es un expert Instagram. Génère un post performant.',
   facebook:  'Tu es un expert Facebook. Génère un post performant.',
   twitter:   'Tu es un expert Twitter/X. Génère un post performant.',
@@ -93,6 +93,76 @@ function buildBrandContext(req: GenerateRequest): string {
 }
 
 function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
+  if (targetPlatform === 'linkedin') {
+    return `Tu es un expert en contenu LinkedIn qui écrit exclusivement en français.
+
+CONTEXTE DE LA MARQUE :
+- Nom : ${req.brand_name || 'Non spécifié'}
+- Secteur : ${req.brand_industry || 'Non spécifié'}
+- Description : ${req.brand_description || 'Non spécifié'}
+- Ton de communication : ${req.tone || 'Non spécifié'}
+- Piliers de contenu : ${req.brand_pillars?.join(', ') || 'Non spécifiés'}
+- Objectifs : ${req.brand_objectives?.join(', ') || 'Non spécifiés'}
+- Audience cible : ${req.brand_audience || 'Non spécifiée'}
+- Mots/sujets à éviter : ${req.brand_avoid || 'Aucun'}
+
+ÉTAPE 1 — DÉTECTION DU TYPE DE POST
+Analyse le brief et classe dans une de ces catégories :
+- STORYTELLING : récit d'expérience personnelle avec tournant et leçon
+- ANALYSE : décryptage d'un sujet avec arguments et données
+- CONSEIL : méthode étape par étape pour atteindre un résultat
+- LISTE : framework numéroté ("5 façons de...", "3 erreurs...")
+- PROFIL : mise en avant d'une personne et de son parcours
+
+ÉTAPE 2 — RÈGLES ABSOLUES (jamais violées)
+- Écris UNIQUEMENT en français
+- L'accroche doit tenir en moins de 200 caractères — c'est ce que LinkedIn affiche avant "Voir plus"
+- Aucun markdown : pas de **gras**, pas de #titres, pas de _italique_
+- 3 à 5 hashtags maximum, placés uniquement à la fin du post
+- 0 à 4 emojis maximum, jamais en début de phrase
+- Longueur : 150 à 300 mots
+- Termine toujours par une question ouverte ou un CTA
+- Minimum 12 heures suggéré entre deux posts (à mentionner dans les métadonnées)
+
+ÉTAPE 3 — INTERDICTIONS STRICTES
+Ces formules sont interdites car elles trahissent une génération IA :
+- "Dans le monde d'aujourd'hui..."
+- "Laissez-moi vous raconter..."
+- "Voici la vérité que personne ne vous dit"
+- "En tant que professionnel..."
+- "Il est temps de parler de..."
+- "Cela peut sembler contre-intuitif mais..."
+- Toute formule corporate creuse ou jargon sans substance
+- L'engagement bait direct ("Commentez OUI si...")
+
+ÉTAPE 4 — STYLE SELON LE TYPE DÉTECTÉ
+
+STORYTELLING / CONSEIL :
+- Accroche en 1 à 2 phrases créant un manque d'information, terminée par ↓
+- Espacement aéré — saut de ligne après chaque idée forte
+- Structure : situation initiale → tournant ou étapes → résolution → leçon → question finale
+
+ANALYSE / LISTE :
+- Accroche : affirmation qui challenge une idée reçue ou chiffre surprenant
+- Espacement compact — 2 à 3 phrases par paragraphe
+- Structure : affirmation → développement structuré → conclusion qui interpelle
+
+PROFIL :
+- Accroche centrée sur la personne, percutante et humaine
+- Espacement aéré pour l'accroche et la conclusion
+- Structure : accroche → parcours avec flèches → ce qui inspire → CTA communautaire
+
+ÉTAPE 5 — SORTIE ATTENDUE
+Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
+{
+  "type_detecte": "...",
+  "post": "...",
+  "image_prompt": "... (en anglais, style photographique réaliste, adapté au contenu du post, pour Pollinations.ai)"
+}
+
+BRIEF UTILISATEUR : ${req.brief || 'Génère un post inspirant lié au secteur.'}`
+  }
+
   const platforms = targetPlatform ? [targetPlatform] : req.platforms
 
   const platformInstructions = platforms
@@ -197,7 +267,16 @@ async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platfor
   })
 
   const text = response.choices[0]?.message?.content || '{}'
-  return JSON.parse(text) as GenerateResponse
+  const parsed = JSON.parse(text)
+  if (targetPlatform === 'linkedin' && parsed.post) {
+    return {
+      variants: {
+        linkedin: parsed.post
+      },
+      ...parsed
+    } as any
+  }
+  return parsed as GenerateResponse
 }
 
 // ─── Génération via Claude (Anthropic) — plans payants ────────────────────────
@@ -212,7 +291,16 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
   })
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
-  return JSON.parse(text.trim()) as GenerateResponse
+  const parsed = JSON.parse(text.trim())
+  if (targetPlatform === 'linkedin' && parsed.post) {
+    return {
+      variants: {
+        linkedin: parsed.post
+      },
+      ...parsed
+    } as any
+  }
+  return parsed as GenerateResponse
 }
 
 // ─── Réécriture ────────────────────────────────────────────────────────────────

@@ -265,6 +265,7 @@ export interface GenerateRequest {
   brand_audience?: string
   brand_pillars?: string[]
   brand_avoid?: string
+  brand_objectives?: string[]
   // New generation params
   objective?: PostObjective
   length?: PostLength
