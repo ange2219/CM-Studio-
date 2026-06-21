@@ -164,7 +164,7 @@ export type PostLength = 'court' | 'moyen' | 'long'
 
 export type PostFormat = 'direct' | 'liste' | 'narratif' | 'question'
 
-export type PostTone = 'professionnel' | 'decontracte' | 'emotionnel' | 'expert'
+export type PostTone = 'direct' | 'inspirant' | 'emotionnel' | 'humoristique' | 'professionnel'
 
 export type PostCTA =
   | 'acheter'
@@ -190,12 +190,12 @@ export const OBJECTIVE_LABELS: Record<PostObjective, string> = {
 }
 
 export const OBJECTIVE_DEFAULTS: Record<PostObjective, GenerationParams> = {
-  vendre:    { length: 'court',  format: 'direct',    tone: 'professionnel', cta: 'acheter'       },
-  engager:   { length: 'court',  format: 'question',  tone: 'decontracte',   cta: 'commenter'     },
-  eduquer:   { length: 'long',   format: 'liste',     tone: 'expert',        cta: 'en_savoir_plus' },
-  inspirer:  { length: 'moyen',  format: 'narratif',  tone: 'emotionnel',    cta: 'partager'      },
+  vendre:    { length: 'court',  format: 'direct',    tone: 'direct',        cta: 'acheter'       },
+  engager:   { length: 'court',  format: 'question',  tone: 'humoristique',  cta: 'commenter'     },
+  eduquer:   { length: 'long',   format: 'liste',     tone: 'professionnel', cta: 'en_savoir_plus' },
+  inspirer:  { length: 'moyen',  format: 'narratif',  tone: 'inspirant',     cta: 'partager'      },
   annoncer:  { length: 'court',  format: 'direct',    tone: 'professionnel', cta: 'en_savoir_plus' },
-  fideliser: { length: 'moyen',  format: 'narratif',  tone: 'decontracte',   cta: 'aucun'         },
+  fideliser: { length: 'moyen',  format: 'narratif',  tone: 'emotionnel',    cta: 'aucun'         },
 }
 
 export const OBJECTIVE_DESCRIPTIONS: Record<PostObjective, string> = {
@@ -221,10 +221,11 @@ export const FORMAT_LABELS: Record<PostFormat, string> = {
 }
 
 export const POSTTONE_LABELS: Record<PostTone, string> = {
-  professionnel: 'Professionnel',
-  decontracte:   'Décontracté',
+  direct:        'Direct',
+  inspirant:     'Inspirant',
   emotionnel:    'Émotionnel',
-  expert:        'Expert',
+  humoristique:  'Humoristique',
+  professionnel: 'Professionnel',
 }
 
 export const CTA_LABELS: Record<PostCTA, string> = {
@@ -248,12 +249,11 @@ export const PLATFORM_CONSTRAINTS_INFO: Partial<Record<Platform, { limit: string
 // ─── AI generation types ───────────────────────────────────────────────────────
 
 export type GenerateTone =
-  | 'professionnel'
-  | 'decontracte'
+  | 'direct'
   | 'inspirant'
-  | 'humoristique'
   | 'emotionnel'
-  | 'expert'
+  | 'humoristique'
+  | 'professionnel'
 
 export interface GenerateRequest {
   brief?: string

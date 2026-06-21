@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai' // utilisé pour GitHub Models (GPT-4o-mini)
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { GenerateRequest, GenerateResponse, Platform, Plan } from '@/types'
+import { TONE_DEFINITIONS } from './tones'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
@@ -41,12 +42,60 @@ const PLATFORM_SYSTEM_PROMPTS: Record<Platform, string> = {
 }
 
 const TONE_INSTRUCTIONS: Record<string, string> = {
-  professionnel: 'Adopte un ton professionnel, expert et crédible. Langage soigné, données et faits si pertinents.',
-  decontracte:   'Ton décontracté, accessible et authentique. Parle directement à l\'audience, comme un ami.',
-  inspirant:     'Ton motivant et inspirant. Élève l\'audience, crée de l\'émotion et de l\'aspiration.',
-  humoristique:  'Ton léger et humoristique. Wit intelligent, légèreté, mais reste pertinent au sujet.',
-  emotionnel:    'Ton émotionnel et touchant. Crée une connexion profonde avec l\'audience, appelle à l\'émotion.',
-  expert:        'Ton expert et autoritaire. Partage une expertise pointue, use de termes techniques maîtrisés.',
+  direct: `TON DIRECT :
+Définition : ${TONE_DEFINITIONS.direct.description}
+Règles de rédaction :
+${TONE_DEFINITIONS.direct.rules.map(r => `- ${r}`).join('\n')}
+Ce que le post doit contenir :
+${TONE_DEFINITIONS.direct.contentRequirements.map(r => `- ${r}`).join('\n')}
+Exemples d'accroches calibrantes :
+${TONE_DEFINITIONS.direct.hooksExamples.map(e => `- ${e}`).join('\n')}
+Exemple de post complet :
+${TONE_DEFINITIONS.direct.fullPostExample}`,
+
+  inspirant: `TON INSPIRANT :
+Définition : ${TONE_DEFINITIONS.inspirant.description}
+Règles de rédaction :
+${TONE_DEFINITIONS.inspirant.rules.map(r => `- ${r}`).join('\n')}
+Ce que le post doit contenir :
+${TONE_DEFINITIONS.inspirant.contentRequirements.map(r => `- ${r}`).join('\n')}
+Exemples d'accroches calibrantes :
+${TONE_DEFINITIONS.inspirant.hooksExamples.map(e => `- ${e}`).join('\n')}
+Exemple de post complet :
+${TONE_DEFINITIONS.inspirant.fullPostExample}`,
+
+  emotionnel: `TON ÉMOTIONNEL :
+Définition : ${TONE_DEFINITIONS.emotionnel.description}
+Règles de rédaction :
+${TONE_DEFINITIONS.emotionnel.rules.map(r => `- ${r}`).join('\n')}
+Ce que le post doit contenir :
+${TONE_DEFINITIONS.emotionnel.contentRequirements.map(r => `- ${r}`).join('\n')}
+Exemples d'accroches calibrantes :
+${TONE_DEFINITIONS.emotionnel.hooksExamples.map(e => `- ${e}`).join('\n')}
+Exemple de post complet :
+${TONE_DEFINITIONS.emotionnel.fullPostExample}`,
+
+  humoristique: `TON HUMORISTIQUE :
+Définition : ${TONE_DEFINITIONS.humoristique.description}
+Règles de rédaction :
+${TONE_DEFINITIONS.humoristique.rules.map(r => `- ${r}`).join('\n')}
+Ce que le post doit contenir :
+${TONE_DEFINITIONS.humoristique.contentRequirements.map(r => `- ${r}`).join('\n')}
+Exemples d'accroches calibrantes :
+${TONE_DEFINITIONS.humoristique.hooksExamples.map(e => `- ${e}`).join('\n')}
+Exemple de post complet :
+${TONE_DEFINITIONS.humoristique.fullPostExample}`,
+
+  professionnel: `TON PROFESSIONNEL :
+Définition : ${TONE_DEFINITIONS.professionnel.description}
+Règles de rédaction :
+${TONE_DEFINITIONS.professionnel.rules.map(r => `- ${r}`).join('\n')}
+Ce que le post doit contenir :
+${TONE_DEFINITIONS.professionnel.contentRequirements.map(r => `- ${r}`).join('\n')}
+Exemples d'accroches calibrantes :
+${TONE_DEFINITIONS.professionnel.hooksExamples.map(e => `- ${e}`).join('\n')}
+Exemple de post complet :
+${TONE_DEFINITIONS.professionnel.fullPostExample}`,
 }
 
 const LENGTH_INSTRUCTIONS: Record<string, string> = {

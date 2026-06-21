@@ -42,7 +42,7 @@ Plateformes cibles : ${platformList}
 Pour les paramètres, choisis parmi ces valeurs EXACTES :
 - length : "court" (Twitter, TikTok), "moyen" (usage courant), "long" (LinkedIn, Facebook)
 - format : "direct" (message clair), "liste" (points structurés), "narratif" (histoire), "question" (interpeller)
-- tone : "professionnel", "decontracte", "emotionnel", "expert"
+- tone : "direct", "inspirant", "emotionnel", "humoristique", "professionnel"
 - cta : "acheter", "commenter", "partager", "en_savoir_plus", "aucun"
 
 Réponds UNIQUEMENT en JSON :
@@ -62,7 +62,7 @@ Réponds UNIQUEMENT en JSON :
     // Valider les params retournés
     const validLengths = ['court', 'moyen', 'long']
     const validFormats = ['direct', 'liste', 'narratif', 'question']
-    const validTones = ['professionnel', 'decontracte', 'emotionnel', 'expert']
+    const validTones = ['direct', 'inspirant', 'emotionnel', 'humoristique', 'professionnel']
     const validCtas = ['acheter', 'commenter', 'partager', 'en_savoir_plus', 'aucun']
 
     const params = result.params && typeof result.params === 'object' ? {

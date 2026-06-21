@@ -130,10 +130,11 @@ const IMAGE_STYLE_GUIDES: Record<ImageType, { base: string; negative: string }> 
 }
 
 const TONE_VISUAL_STYLES: Record<string, string> = {
-  professionnel: 'expert and corporate visual tone, clean minimal aesthetic, authoritative and trustworthy',
-  decontracte:   'friendly and approachable visual tone, warm colors, casual and authentic feel',
+  direct:        'direct and striking visual tone, high contrast, bold and clean composition, no clutter',
   inspirant:     'uplifting and aspirational visual tone, dramatic lighting, motivational energy',
+  emotionnel:    'authentic and emotional visual tone, warm lighting, human connection and depth',
   humoristique:  'playful and vibrant visual tone, bold colors, dynamic and fun composition',
+  professionnel: 'expert and corporate visual tone, clean minimal aesthetic, authoritative and trustworthy',
 }
 
 const PLATFORM_SPECS: Record<Platform, string> = {

@@ -526,10 +526,11 @@ export default function ProfilePage() {
             </Row>
             <Row label="Ton par défaut">
               <select className="input" style={{ maxWidth: '200px' }} value={defaultTone} onChange={e => setDefaultTone(e.target.value)} disabled={!isEditingBrand}>
-                <option value="professionnel">Professionnel</option>
-                <option value="decontracte">Décontracté</option>
+                <option value="direct">Direct</option>
                 <option value="inspirant">Inspirant</option>
+                <option value="emotionnel">Émotionnel</option>
                 <option value="humoristique">Humoristique</option>
+                <option value="professionnel">Professionnel</option>
               </select>
             </Row>
             <Row label="Audience cible">

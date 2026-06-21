@@ -81,10 +81,11 @@ const LOCATIONS = [
 ]
 
 const TONES = [
-  { value: 'professionnel', label: 'Professionnel', desc: 'Expert, crédible, soigné' },
-  { value: 'decontracte', label: 'Décontracté', desc: 'Accessible, authentique' },
-  { value: 'inspirant', label: 'Inspirant', desc: 'Motivant, émotionnel' },
+  { value: 'direct', label: 'Direct', desc: 'Franc, tranchant, sans détour' },
+  { value: 'inspirant', label: 'Inspirant', desc: 'Motivant, inspirant, visionnaire' },
+  { value: 'emotionnel', label: 'Émotionnel', desc: 'Sensible, authentique' },
   { value: 'humoristique', label: 'Humoristique', desc: 'Léger, wit, fun' },
+  { value: 'professionnel', label: 'Professionnel', desc: 'Expert, crédible, soigné' },
 ]
 
 const OBJECTIVES = [

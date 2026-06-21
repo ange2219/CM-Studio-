@@ -7,7 +7,7 @@ import { FREE_PLATFORMS, PLAN_LIMITS } from '@/types'
 import { z } from 'zod'
 
 const ALLOWED_PLATFORMS = ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'pinterest'] as const
-const ALLOWED_TONES = ['professionnel', 'decontracte', 'inspirant', 'humoristique', 'emotionnel', 'expert'] as const
+const ALLOWED_TONES = ['direct', 'inspirant', 'emotionnel', 'humoristique', 'professionnel'] as const
 const ALLOWED_OBJECTIVES  = ['vendre', 'engager', 'eduquer', 'inspirer', 'annoncer', 'fideliser'] as const
 const ALLOWED_LENGTHS     = ['court', 'moyen', 'long'] as const
 const ALLOWED_FORMATS     = ['direct', 'liste', 'narratif', 'question'] as const

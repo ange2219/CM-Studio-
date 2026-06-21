@@ -288,9 +288,13 @@ export default function CreatePage() {
       if (b?.tone) {
         // Mapper l'ancien GenerateTone vers PostTone si possible
         const toneMap: Record<string, PostTone> = {
-          professionnel: 'professionnel', decontracte: 'decontracte',
-          inspirant: 'emotionnel', humoristique: 'decontracte',
-          emotionnel: 'emotionnel', expert: 'expert',
+          professionnel: 'professionnel',
+          decontracte:   'humoristique',
+          inspirant:     'inspirant',
+          humoristique:  'humoristique',
+          emotionnel:    'emotionnel',
+          expert:        'professionnel',
+          direct:        'direct',
         }
         const mapped = toneMap[b.tone as string]
         if (mapped) setParams(p => ({ ...p, tone: mapped }))
@@ -808,10 +812,11 @@ export default function CreatePage() {
                     onChange={e => setParams({ ...params, tone: e.target.value as PostTone })}
                     style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
                   >
-                    <option value="professionnel">Professionnel</option>
-                    <option value="decontracte">Décontracté</option>
+                    <option value="direct">Direct</option>
+                    <option value="inspirant">Inspirant</option>
                     <option value="emotionnel">Émotionnel</option>
-                    <option value="expert">Expert</option>
+                    <option value="humoristique">Humoristique</option>
+                    <option value="professionnel">Professionnel</option>
                   </select>
                 </div>
 

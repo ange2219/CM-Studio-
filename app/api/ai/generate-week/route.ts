@@ -6,7 +6,7 @@ import type { GenerateRequest, Plan } from '@/types'
 import { z } from 'zod'
 
 const ALLOWED_PLATFORMS = ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'pinterest'] as const
-const ALLOWED_TONES = ['professionnel', 'decontracte', 'inspirant', 'humoristique', 'emotionnel', 'expert'] as const
+const ALLOWED_TONES = ['direct', 'inspirant', 'emotionnel', 'humoristique', 'professionnel'] as const
 
 const GenerateWeekSchema = z.object({
   platforms:   z.array(z.enum(ALLOWED_PLATFORMS)).min(1).max(7),
