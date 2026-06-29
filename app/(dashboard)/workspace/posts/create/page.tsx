@@ -242,6 +242,13 @@ export default function CreatePage() {
   const [distributionMode, setDistributionMode] = useState<DistributionMode>('unified')
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([])
 
+  // ── Idéation & Briefs (Tunnel) ──
+  const [ideasModalOpen, setIdeasModalOpen] = useState(false)
+  const [ideasLoading, setIdeasLoading] = useState(false)
+  const [ideas, setIdeas] = useState<{ numero: number; angle: string; type: string; accroche: string }[]>([])
+  const [postType, setPostType] = useState<string | null>(null)
+  const [generatingBrief, setGeneratingBrief] = useState(false)
+
 
 
 
@@ -374,6 +381,66 @@ export default function CreatePage() {
     setOverlayOpen(false)
   }
 
+  async function handleFetchIdeas() {
+    setIdeasLoading(true)
+    setIdeasModalOpen(true)
+    setIdeas([])
+
+    const targetPlatform = selectedPlatforms[0] || 'linkedin'
+    try {
+      const res = await fetch('/api/ai/ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platform: targetPlatform }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur lors du chargement des idées')
+      if (data.idees) {
+        setIdeas(data.idees)
+      } else {
+        throw new Error('Format de réponse invalide')
+      }
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : 'Erreur lors de la recherche d\'idées', 'error')
+      setIdeasModalOpen(false)
+    } finally {
+      setIdeasLoading(false)
+    }
+  }
+
+  async function handleSelectIdea(idea: { numero: number; angle: string; type: string; accroche: string }) {
+    setGeneratingBrief(true)
+    try {
+      const res = await fetch('/api/ai/generate-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          angle: idea.angle,
+          post_type: idea.type,
+          accroche: idea.accroche,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de la génération du brief')
+      if (data.brief) {
+        setBrief(data.brief)
+        setPostType(idea.type)
+        // Si la plateforme n'est pas sélectionnée, on l'ajoute
+        if (selectedPlatforms.length === 0) {
+          setSelectedPlatforms(['linkedin'])
+        }
+        setIdeasModalOpen(false)
+        toast('Sujet et brief générés avec succès !', 'success')
+      } else {
+        throw new Error('Format de réponse de brief invalide')
+      }
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : 'Erreur', 'error')
+    } finally {
+      setGeneratingBrief(false)
+    }
+  }
+
   async function handleGenerate() {
     if (!selectedPlatforms.length) { toast('Veuillez choisir au moins une plateforme avant de générer.', 'warning'); return }
     await runOverlay(STEPS_SINGLE, async () => {
@@ -389,6 +456,7 @@ export default function CreatePage() {
           format:           params.format,
           cta:              params.cta,
           distributionMode: distributionMode,
+          post_type:        postType || undefined,
         }),
       })
       const data = await res.json()
@@ -545,6 +613,119 @@ export default function CreatePage() {
         />
       )}
 
+      {/* Modal Trouver une idée */}
+      {ideasModalOpen && (
+        <div 
+          onClick={e => { if (e.target === e.currentTarget) setIdeasModalOpen(false) }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,.75)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 500,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div 
+            style={{
+              background: 'var(--card)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '680px',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: 'var(--t1)', margin: 0, display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                  <Sparkles size={20} style={{ color: 'var(--accent)' }} /> Trouver une idée de post
+                </h2>
+                <p style={{ color: 'var(--t3)', fontSize: '.85rem', margin: '.25rem 0 0 0' }}>
+                  Sélectionnez une accroche rédigée par l'IA pour générer votre brief de post.
+                </p>
+              </div>
+              <button 
+                onClick={() => setIdeasModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '4px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+              {ideasLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 0', gap: '1rem' }}>
+                  <div className="spin" style={{ width: '32px', height: '32px' }} />
+                  <div style={{ color: 'var(--t2)', fontSize: '.9rem', fontWeight: 500 }}>Recherche d'idées sur-mesure...</div>
+                </div>
+              ) : generatingBrief ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 0', gap: '1rem' }}>
+                  <div className="spin" style={{ width: '32px', height: '32px' }} />
+                  <div style={{ color: 'var(--t2)', fontSize: '.9rem', fontWeight: 500 }}>Rédaction de votre brief en cours...</div>
+                </div>
+              ) : ideas.length > 0 ? (
+                ideas.map((idea) => (
+                  <div 
+                    key={idea.numero}
+                    onClick={() => handleSelectIdea(idea)}
+                    style={{
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      background: 'rgba(255,255,255,0.01)',
+                      borderRadius: '12px',
+                      padding: '1.25rem',
+                      cursor: 'pointer',
+                      transition: 'all .2s ease-in-out',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = 'var(--accent)'
+                      e.currentTarget.style.background = 'rgba(123,92,245,0.04)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.01)'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
+                      <span style={{ fontSize: '.7rem', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '.05em', color: 'var(--accent)', background: 'rgba(123,92,245,0.12)', padding: '.2rem .5rem', borderRadius: '4px' }}>
+                        {idea.type}
+                      </span>
+                      <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Idée #{idea.numero}</span>
+                    </div>
+
+                    <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '.5rem', lineHeight: 1.4 }}>
+                      &ldquo;{idea.accroche}&rdquo;
+                    </div>
+
+                    <div style={{ fontSize: '.8rem', color: 'var(--t3)', lineHeight: 1.4 }}>
+                      <span style={{ fontWeight: 500, color: 'var(--t2)' }}>Angle :</span> {idea.angle}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ color: 'var(--t3)', textAlign: 'center', padding: '2rem' }}>
+                  Aucune idée trouvée. Veuillez réessayer.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Mode manuel ────────────────────────────────────────────────── */}
       {mode === 'manual' && (
         <div style={{ maxWidth: '480px' }}>
@@ -674,7 +855,7 @@ export default function CreatePage() {
               </div>
 
               <button
-                onClick={() => toast("Suggestions d'idées disponibles bientôt", "info")}
+                onClick={handleFetchIdeas}
                 style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem 1rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', fontSize: '.85rem', cursor: 'pointer', transition: '.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
