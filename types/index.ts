@@ -173,11 +173,92 @@ export type PostCTA =
   | 'en_savoir_plus'
   | 'aucun'
 
+export interface PlatformSettings {
+  postType: string
+  length: string
+}
+
+export const PLATFORM_POST_TYPES: Record<Platform, { value: string; label: string }[]> = {
+  linkedin: [
+    { value: 'storytelling', label: 'Storytelling' },
+    { value: 'analyse', label: 'Analyse' },
+    { value: 'conseil', label: 'Conseil' },
+    { value: 'liste', label: 'Liste' },
+    { value: 'profil', label: 'Profil' },
+  ],
+  instagram: [
+    { value: 'citation', label: 'Citation' },
+    { value: 'carousel', label: 'Carousel' },
+    { value: 'temoignage', label: 'Témoignage' },
+    { value: 'coulisses', label: 'Coulisses' },
+  ],
+  facebook: [
+    { value: 'question', label: 'Question' },
+    { value: 'annonce', label: 'Annonce' },
+    { value: 'partage_experience', label: 'Partage d\'expérience' },
+  ],
+  tiktok: [
+    { value: 'accroche_choc', label: 'Accroche choc' },
+    { value: 'revelation', label: 'Révélation' },
+    { value: 'tendance', label: 'Tendance' },
+  ],
+  twitter: [
+    { value: 'opinion', label: 'Opinion' },
+    { value: 'punchline', label: 'Punchline' },
+    { value: 'fact', label: 'Fact' },
+  ],
+  youtube: [],
+  pinterest: [],
+}
+
+export const PLATFORM_LENGTHS: Record<Platform, { value: string; label: string }[]> = {
+  linkedin: [
+    { value: 'court', label: 'Court (150 mots)' },
+    { value: 'moyen', label: 'Moyen (200 mots)' },
+    { value: 'long', label: 'Long (300 mots)' },
+  ],
+  instagram: [
+    { value: 'tres_court', label: 'Très court (50 mots)' },
+    { value: 'court', label: 'Court (80 mots)' },
+  ],
+  facebook: [
+    { value: 'tres_court', label: 'Très court (40 mots)' },
+    { value: 'court', label: 'Court (60 mots)' },
+  ],
+  tiktok: [
+    { value: 'ultra_court', label: 'Ultra court (30-40 mots)' },
+  ],
+  twitter: [
+    { value: 'tweet', label: 'Tweet (240 caractères)' },
+    { value: 'thread', label: 'Thread' },
+  ],
+  youtube: [],
+  pinterest: [],
+}
+
+export function getDefaultPlatformSettings(platform: Platform): PlatformSettings {
+  switch (platform) {
+    case 'linkedin':
+      return { postType: 'storytelling', length: 'moyen' }
+    case 'instagram':
+      return { postType: 'citation', length: 'court' }
+    case 'facebook':
+      return { postType: 'question', length: 'court' }
+    case 'tiktok':
+      return { postType: 'accroche_choc', length: 'ultra_court' }
+    case 'twitter':
+      return { postType: 'opinion', length: 'tweet' }
+    default:
+      return { postType: '', length: '' }
+  }
+}
+
 export interface GenerationParams {
   length: PostLength
   format: PostFormat
   tone: PostTone
   cta: PostCTA
+  platformSettings?: Partial<Record<Platform, PlatformSettings>>
 }
 
 export const OBJECTIVE_LABELS: Record<PostObjective, string> = {
@@ -272,6 +353,7 @@ export interface GenerateRequest {
   format?: PostFormat
   cta?: PostCTA
   distributionMode?: DistributionMode
+  platformSettings?: Partial<Record<Platform, PlatformSettings>>
 }
 
 export interface GenerateResponse {

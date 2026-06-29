@@ -13,8 +13,9 @@ import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, Ic
 import {
   PLATFORM_NAMES, FREE_PLATFORMS, OBJECTIVE_LABELS, OBJECTIVE_DEFAULTS, OBJECTIVE_DESCRIPTIONS,
   LENGTH_LABELS, FORMAT_LABELS, POSTTONE_LABELS, CTA_LABELS, PLATFORM_CONSTRAINTS_INFO,
+  PLATFORM_POST_TYPES, PLATFORM_LENGTHS, getDefaultPlatformSettings,
   type Platform, type PostObjective, type DistributionMode, type GenerationParams,
-  type PostLength, type PostFormat, type PostTone, type PostCTA,
+  type PostLength, type PostFormat, type PostTone, type PostCTA, type PlatformSettings,
 } from '@/types'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -238,6 +239,13 @@ export default function CreatePage() {
   const [brief, setBrief]                   = useState('')
   const [params, setParams]                 = useState<GenerationParams>({
     length: 'moyen', format: 'direct', tone: 'professionnel', cta: 'aucun',
+    platformSettings: {
+      linkedin: { postType: 'storytelling', length: 'moyen' },
+      instagram: { postType: 'citation', length: 'court' },
+      facebook: { postType: 'question', length: 'court' },
+      tiktok: { postType: 'accroche_choc', length: 'ultra_court' },
+      twitter: { postType: 'opinion', length: 'tweet' },
+    }
   })
   const [distributionMode, setDistributionMode] = useState<DistributionMode>('unified')
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([])
@@ -389,6 +397,7 @@ export default function CreatePage() {
           format:           params.format,
           cta:              params.cta,
           distributionMode: distributionMode,
+          platformSettings: params.platformSettings,
         }),
       })
       const data = await res.json()
@@ -820,39 +829,74 @@ export default function CreatePage() {
                   </select>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Longueur</label>
-                  <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
-                    {(['court', 'moyen', 'long'] as const).map(l => (
-                      <button
-                        key={l}
-                        onClick={() => setParams({ ...params, length: l })}
-                        style={{
-                          flex: 1, padding: '.5rem', border: 'none',
-                          background: params.length === l ? 'var(--accent)' : 'transparent',
-                          color: params.length === l ? '#fff' : 'var(--t3)',
-                          fontSize: '.8rem', fontWeight: 500, cursor: 'pointer', transition: '.2s'
-                        }}
-                      >
-                        {l === 'court' ? 'Court' : l === 'moyen' ? 'Moyen' : 'Long'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {selectedPlatforms.map(platform => {
+                  const types = PLATFORM_POST_TYPES[platform] || []
+                  const lengths = PLATFORM_LENGTHS[platform] || []
+                  if (types.length === 0 && lengths.length === 0) return null
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Format</label>
-                  <select
-                    value={params.format}
-                    onChange={e => setParams({ ...params, format: e.target.value as PostFormat })}
-                    style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
-                  >
-                    <option value="direct">Humoristique</option>
-                    <option value="liste">Liste</option>
-                    <option value="narratif">Narratif</option>
-                    <option value="question">Question</option>
-                  </select>
-                </div>
+                  const currentSettings = params.platformSettings?.[platform] || getDefaultPlatformSettings(platform)
+
+                  return (
+                    <div key={platform} style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                        <PlatformIcon platform={platform} size={14} />
+                        <span style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--t2)', textTransform: 'capitalize' }}>
+                          {PLATFORM_NAMES[platform]}
+                        </span>
+                      </div>
+
+                      {types.length > 0 && (
+                        <div>
+                          <label style={{ display: 'block', fontSize: '.7rem', color: 'var(--t3)', marginBottom: '.3rem' }}>Type de post</label>
+                          <select
+                            value={currentSettings.postType}
+                            onChange={e => {
+                              const updated = { ...params.platformSettings }
+                              updated[platform] = {
+                                postType: e.target.value,
+                                length: currentSettings.length,
+                              }
+                              setParams({ ...params, platformSettings: updated })
+                            }}
+                            style={{ width: '100%', padding: '.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--t1)', fontSize: '.8rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
+                          >
+                            {types.map(t => (
+                              <option key={t.value} value={t.value}>{t.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {lengths.length > 0 && (
+                        <div>
+                          <label style={{ display: 'block', fontSize: '.7rem', color: 'var(--t3)', marginBottom: '.3rem' }}>Longueur</label>
+                          {lengths.length > 1 ? (
+                            <select
+                              value={currentSettings.length}
+                              onChange={e => {
+                                const updated = { ...params.platformSettings }
+                                updated[platform] = {
+                                  postType: currentSettings.postType,
+                                  length: e.target.value,
+                                }
+                                setParams({ ...params, platformSettings: updated })
+                              }}
+                              style={{ width: '100%', padding: '.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--t1)', fontSize: '.8rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
+                            >
+                              {lengths.map(l => (
+                                <option key={l.value} value={l.value}>{l.label}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div style={{ fontSize: '.8rem', color: 'var(--t2)', padding: '.2rem 0' }}>
+                              {lengths[0].label}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 

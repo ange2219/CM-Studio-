@@ -142,135 +142,121 @@ function buildBrandContext(req: GenerateRequest): string {
 }
 
 function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
-  if (targetPlatform === 'linkedin') {
-    return `Tu es un expert en contenu LinkedIn viral qui écrit exclusivement en français.
-
-CONTEXTE DE LA MARQUE :
-- Nom : ${req.brand_name || 'Non spécifié'}
-- Secteur : ${req.brand_industry || 'Non spécifié'}
-- Description : ${req.brand_description || 'Non spécifié'}
-- Ton de communication : ${req.tone || 'Non spécifié'}
-- Piliers de contenu : ${req.brand_pillars?.join(', ') || 'Non spécifiés'}
-- Objectifs : ${req.brand_objectives?.join(', ') || 'Non spécifiés'}
-- Audience cible : ${req.brand_audience || 'Non spécifiée'}
-- Mots/sujets à éviter : ${req.brand_avoid || 'Aucun'}
-
-ÉTAPE 1 — DÉTECTION DU TYPE DE POST
-Analyse le brief et classe dans une de ces catégories :
-- STORYTELLING : récit avec tension dramatique et leçon
-- ANALYSE : opinion tranchée qui divise
-- CONSEIL : vérité inconfortable que personne ne dit
-- LISTE : révélation surprenante en points
-- PROFIL : mise en avant humaine et percutante
-
-ÉTAPE 2 — RÈGLES D'ACCROCHE (le plus important)
-L'accroche doit ARRÊTER LE SCROLL. Elle doit :
-- Piquer l'ego, provoquer, ou révéler un secret en 1 à 2 phrases maximum
-- S'adresser DIRECTEMENT au lecteur avec "tu" ou "vous"
-- Créer une tension immédiate — le lecteur DOIT lire la suite
-- Tenir en moins de 200 caractères (limite d'affichage LinkedIn)
-- Ne jamais être polie, générique ou rassurante
-
-Exemples d'accroches qui arrêtent le scroll :
-- "Tu devrais arrêter la data science."
-- "Tu sais pourquoi tes sites ne génèrent aucun lead ?"
-- "Tu penses que tu es le meilleur dans ton domaine. Tu as probablement tort."
-- "Personne ne te dira ça en réunion. Je vais le faire."
-- "Ton problème n'est pas le budget. C'est toi."
-
-ÉTAPE 3 — RÈGLES ABSOLUES
-- Écris UNIQUEMENT en français
-- Aucun markdown : pas de gras, pas de titres, pas de italique
-- 3 à 5 hashtags maximum, uniquement à la fin
-- 0 à 3 emojis maximum, jamais en début de phrase
-- Longueur : 150 à 250 mots
-- Termine par une question qui provoque une réaction ou un CTA direct
-- Jamais de flèche ↓
-
-ÉTAPE 4 — INTERDICTIONS STRICTES
-- "Dans le monde d'aujourd'hui..."
-- "Laissez-moi vous raconter..."
-- "Cette expérience m'a appris..."
-- "Il est crucial de..."
-- "En tant que professionnel..."
-- "Cela peut sembler contre-intuitif..."
-- Toute conclusion moralisatrice ou bienveillante fade
-- L'engagement bait direct ("Commentez OUI si...")
-- Les formules qui sonnent IA
-
-ÉTAPE 5 — STRUCTURE SELON LE TYPE
-
-STORYTELLING :
-- Accroche provocatrice → situation tendue sans détails inutiles → tournant brutal → leçon courte et directe → question qui divise
-
-ANALYSE / CONSEIL :
-- Affirmation choc → 3 arguments courts et directs → conclusion qui dérange → question ouverte
-
-LISTE :
-- Titre provocateur → points numérotés courts et percutants → conclusion inattendue
-
-PROFIL :
-- Phrase sur la personne qui surprend → parcours en 3 lignes → ce qui rend unique → CTA
-
-ÉTAPE 6 — SORTIE ATTENDUE
-Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
-{
-  "type_detecte": "...",
-  "post": "...",
-  "image_prompt": "... (en anglais, style photographique réaliste, adapté au contenu)"
-}
-
-BRIEF UTILISATEUR : ${req.brief || 'Génère un post inspirant lié au secteur.'}`
-  }
-
-  const platforms = targetPlatform ? [targetPlatform] : req.platforms
-
-  const platformInstructions = platforms
-    .map(p => `**${p.toUpperCase()}**: ${PLATFORM_CONSTRAINTS[p]}`)
-    .join('\n')
+  const platform = targetPlatform || 'linkedin'
+  const settings = req.platformSettings?.[platform] || getDefaultPlatformSettings(platform)
 
   const brandContext = buildBrandContext(req)
-
-  const briefLine = req.brief
-    ? `Sujet / brief : ${req.brief}`
-    : `Aucun brief fourni. Choisis un sujet DIRECTEMENT lié à l'activité de cette marque${req.brand_industry ? ` (secteur : ${req.brand_industry})` : ''}. INTERDIT : nature, statistiques génériques, citations motivationnelles sans rapport, contenu lifestyle non lié à la marque. Reste 100% dans l'univers professionnel de la marque.`
-
-  // Nouvelles instructions contextuelles
-  const objectiveLine  = req.objective  ? OBJECTIVE_INSTRUCTIONS[req.objective]  : ''
-  const lengthLine     = req.length     ? LENGTH_INSTRUCTIONS[req.length]         : ''
-  const formatLine     = req.format     ? FORMAT_INSTRUCTIONS[req.format]         : ''
-  const ctaLine        = req.cta        ? CTA_INSTRUCTIONS[req.cta]               : ''
-  // Le ton PostTone (professionnel/decontracte/emotionnel/expert) prime sur le GenerateTone si présent
-  const toneLine       = TONE_INSTRUCTIONS[req.tone] || ''
-
-  const contextLines = [objectiveLine, lengthLine, formatLine, toneLine, ctaLine]
-    .filter(Boolean)
-    .join('\n')
-
   const brandSection = brandContext
-    ? `PROFIL DE MARQUE (respecte-le strictement) :\n${brandContext}`
-    : `ATTENTION : Aucun profil de marque défini. Génère un contenu professionnel générique sur la productivité ou la croissance des entreprises.`
+    ? `CONTEXTE DE LA MARQUE :
+${brandContext}`
+    : `ATTENTION : Aucun profil de marque défini.`
 
-  return `Tu es un expert Community Manager. Génère des posts pour les réseaux sociaux suivants.
+  const toneDef = req.tone || 'professionnel'
+  const toneInstruction = TONE_INSTRUCTIONS[toneDef] || ''
+
+  // Build type details
+  let typeDescription = ''
+  if (platform === 'linkedin') {
+    const typeMap: Record<string, string> = {
+      storytelling: 'STORYTELLING : Récit d\'expérience vécue avec tension dramatique, un tournant clair et une leçon finale.',
+      analyse: 'ANALYSE : Opinion tranchée qui divise, décryptage d\'un sujet avec des arguments forts ou des données clés.',
+      conseil: 'CONSEIL : Une méthode ou vérité inconfortable/contre-intuitive que personne ne dit sur le secteur.',
+      liste: 'LISTE : Révélation surprenante ou plan d\'action structuré en points numérotés ou à puces.',
+      profil: 'PROFIL : Mise en avant humaine et percutante d\'un parcours, d\'un client ou d\'un collaborateur.',
+    }
+    typeDescription = typeMap[settings.postType] || typeMap.storytelling
+  } else if (platform === 'instagram') {
+    const typeMap: Record<string, string> = {
+      citation: 'CITATION : Une citation inspirante, forte ou punchy mise en valeur, suivie d\'une explication courte.',
+      carousel: 'CAROUSEL : Un plan structuré diapositive par diapositive (slide 1, slide 2...) clair, visuel et progressif.',
+      temoignage: 'TÉMOIGNAGE : Un retour d\'expérience client authentique ou une mini-étude de cas émotionnelle avec un avant/après.',
+      coulisses: 'COULISSES : Partage authentique des coulisses, de la vie de l\'entreprise ou du processus de création d\'un produit.',
+    }
+    typeDescription = typeMap[settings.postType] || typeMap.citation
+  } else if (platform === 'facebook') {
+    const typeMap: Record<string, string> = {
+      question: 'QUESTION : Une interrogation ouverte et engageante conçue pour lancer une discussion au sein de la communauté.',
+      annonce: 'ANNONCE : Présentation enthousiaste, claire et attrayante d\'un nouveau produit, événement ou actualité majeure.',
+      partage_experience: 'PARTAGE D\'EXPÉRIENCE : Une anecdote personnelle ou professionnelle vécue avec un enseignement pratique.',
+    }
+    typeDescription = typeMap[settings.postType] || typeMap.question
+  } else if (platform === 'tiktok') {
+    const typeMap: Record<string, string> = {
+      accroche_choc: 'ACCROCHE CHOC : Script court avec un concept provocateur ou intrigue forte de 3 secondes pour retenir l\'attention.',
+      revelation: 'RÉVÉLATION : Révélation d\'un secret d\'expert ou d\'une astuce méconnue indispensable.',
+      tendance: 'TENDANCE : Adaptation créative et humoristique d\'un concept viral ou mème du moment au secteur de la marque.',
+    }
+    typeDescription = typeMap[settings.postType] || typeMap.accroche_choc
+  } else if (platform === 'twitter') {
+    const typeMap: Record<string, string> = {
+      opinion: 'OPINION : Un avis tranché, direct et impactant sur un sujet d\'actualité ou un débat du secteur.',
+      punchline: 'PUNCHLINE : Une phrase choc ultra-percutante formulée pour faire réagir et susciter le débat.',
+      fact: 'FACT : Une statistique marquante, un chiffre insolite ou un fait précis analysé de manière synthétique.',
+    }
+    typeDescription = typeMap[settings.postType] || typeMap.opinion
+  }
+
+  // Build length details
+  let lengthDescription = ''
+  if (platform === 'linkedin') {
+    const lenMap: Record<string, string> = {
+      court: 'COURT : environ 150 mots maximum',
+      moyen: 'MOYEN : environ 200 mots',
+      long: 'LONG : environ 300 mots',
+    }
+    lengthDescription = lenMap[settings.length] || lenMap.moyen
+  } else if (platform === 'instagram') {
+    const lenMap: Record<string, string> = {
+      tres_court: 'TRÈS COURT : environ 50 mots maximum',
+      court: 'COURT : environ 80 mots',
+    }
+    lengthDescription = lenMap[settings.length] || lenMap.court
+  } else if (platform === 'facebook') {
+    const lenMap: Record<string, string> = {
+      tres_court: 'TRÈS COURT : environ 40 mots maximum',
+      court: 'COURT : environ 60 mots',
+    }
+    lengthDescription = lenMap[settings.length] || lenMap.court
+  } else if (platform === 'tiktok') {
+    lengthDescription = 'ULTRA COURT : environ 30-40 mots uniquement'
+  } else if (platform === 'twitter') {
+    const lenMap: Record<string, string> = {
+      tweet: 'TWEET UNIQUE : maximum 240 caractères',
+      thread: 'THREAD : une série de 3 à 5 tweets connectés et numérotés (ex: 1/4, 2/4...) pour développer le sujet de manière fluide.',
+    }
+    lengthDescription = lenMap[settings.length] || lenMap.tweet
+  }
+
+  return `Tu es un rédacteur et Community Manager expert qui écrit exclusivement en français.
+Génère un post performant optimisé pour la plateforme ${platform.toUpperCase()}.
 
 ${brandSection}
 
-${briefLine}
-${contextLines}
+SUJET / BRIEF DE GÉNÉRATION :
+${req.brief || 'Reste dans le secteur d\'activité et génère un contenu captivant.'}
 
-RÈGLE ABSOLUE : Tout contenu généré DOIT être directement lié à l'activité et au secteur de la marque. Ne génère jamais de contenu hors-sujet (nature, animaux, citations sans rapport, statistiques génériques, etc.).
+CONTRAINTES DE FORMAT ET DE STRUCTURE :
+- Type de post demandé : ${typeDescription}
+- Longueur demandée : ${lengthDescription}
+- Recommandations de la plateforme : ${PLATFORM_CONSTRAINTS[platform]}
 
-Contraintes par plateforme :
-${platformInstructions}
+${toneInstruction}
 
-Réponds UNIQUEMENT en JSON valide avec ce format exact :
+RÈGLES ABSOLUES ET INTERDICTIONS :
+- Rédige UNIQUEMENT en français.
+- Tout contenu généré doit être DIRECTEMENT lié au secteur et à l'activité de la marque.
+- Aucun markdown de mise en forme décorative (pas de gras, pas d'italique, etc.) sauf si structurellement requis (comme les listes à puces).
+- Ne commence jamais par des formules bateau ou typiques d'IA (ex: "Dans un monde en constante évolution...", "Aujourd'hui, découvrons...", "Il est essentiel de...").
+- Termine par une question pertinente ou un appel à l'action court et direct.
+
+FORMAT DE RÉPONSE REQUIS :
+Réponds EXCLUSIVEMENT sous la forme d'un objet JSON valide. Ne mets aucun texte explicatif avant ou après, et n'utilise pas de balises de bloc de code (comme \`\`\`json ou de \`\`\`).
+Structure JSON attendue :
 {
-  "variants": {
-    ${platforms.map(p => `"${p}": "texte du post"`).join(',\n    ')}
-  }
-}
-
-Aucun texte avant ou après le JSON.`
+  "type_detecte": "${settings.postType}",
+  "post": "Le texte du post généré ici. Respecte les sauts de ligne. Si c'est un thread Twitter, sépare chaque tweet par un double saut de ligne avec sa numérotation.",
+  "image_prompt": "An image generation prompt in English, descriptive, realistic photographic style, details about composition and lighting, no text in the image"
+}`
 }
 
 function buildWeekPrompt(req: GenerateRequest, postsCount: number): string {
@@ -328,10 +314,10 @@ async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platfor
 
   const text = response.choices[0]?.message?.content || '{}'
   const parsed = JSON.parse(text)
-  if (targetPlatform === 'linkedin' && parsed.post) {
+  if (targetPlatform && parsed.post) {
     return {
       variants: {
-        linkedin: parsed.post
+        [targetPlatform]: parsed.post
       },
       ...parsed
     } as any
@@ -352,10 +338,10 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   const parsed = JSON.parse(text.trim())
-  if (targetPlatform === 'linkedin' && parsed.post) {
+  if (targetPlatform && parsed.post) {
     return {
       variants: {
-        linkedin: parsed.post
+        [targetPlatform]: parsed.post
       },
       ...parsed
     } as any

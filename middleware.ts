@@ -66,8 +66,7 @@ export async function middleware(request: NextRequest) {
       // On utilise un client Admin pour contourner tout problème de RLS dans le middleware Edge
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
       if (serviceKey) {
-        const { createServerClient: createAdmin } = await import('@supabase/ssr')
-        const adminSupabase = createAdmin(
+        const adminSupabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           serviceKey,
           { cookies: { getAll() { return request.cookies.getAll() }, setAll() {} } }
