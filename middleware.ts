@@ -57,47 +57,8 @@ export async function middleware(request: NextRequest) {
     return redirect('/home')
   }
 
-  // Vérification onboarding — utilise un cookie pour éviter une DB query par request
-  if (user && !isPublic && !path.startsWith('/onboarding') && !path.startsWith('/api')) {
-    const onboardedCookie = request.cookies.get('onboarded')?.value
-
-    if (onboardedCookie !== '1') {
-      // Cookie absent ou expiré → vérifier en DB une seule fois
-      // On utilise un client Admin pour contourner tout problème de RLS dans le middleware Edge
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
-      if (serviceKey) {
-        const adminSupabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          serviceKey,
-          { cookies: { getAll() { return request.cookies.getAll() }, setAll() {} } }
-        )
-        const { data: brandProfile } = await adminSupabase
-          .from('brand_profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle()
-          
-        let isOnboarded = !!brandProfile
-
-        if (!isOnboarded) {
-          return redirect('/onboarding')
-        }
-      } else {
-        // Fallback ultime si aucune clé service n'est trouvée, on redirige vers onboarding
-        // L'utilisateur devra nous prévenir, mais au moins ça ne crash pas
-        return redirect('/onboarding')
-      }
-
-      // User onboardé : poser le cookie (7 jours) pour éviter future DB query
-      supabaseResponse.cookies.set('onboarded', '1', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      })
-    }
-  }
+  // La vérification de l'onboarding a été déplacée dans app/(dashboard)/layout.tsx
+  // pour éviter les timeouts 504 MIDDLEWARE_INVOCATION_TIMEOUT sur Vercel Edge.
 
   return supabaseResponse
 }
