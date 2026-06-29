@@ -23,10 +23,6 @@ const GenerateSchema = z.object({
   format:           z.enum(ALLOWED_FORMATS).optional(),
   cta:              z.enum(ALLOWED_CTAS).optional(),
   distributionMode: z.enum(ALLOWED_DIST_MODES).optional(),
-  platformSettings: z.record(z.object({
-    postType: z.string(),
-    length: z.string(),
-  })).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -80,7 +76,6 @@ export async function POST(req: NextRequest) {
     format:           parsed.data.format,
     cta:              parsed.data.cta,
     distributionMode: parsed.data.distributionMode,
-    platformSettings: parsed.data.platformSettings,
   }
 
   // Enrichir avec le profil de marque complet

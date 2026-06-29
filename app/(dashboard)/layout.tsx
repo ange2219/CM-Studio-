@@ -20,10 +20,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await getUser(authUser.id)
   if (!user) redirect('/login')
 
-  const admin = createAdminClient()
-  const { data: brandProfile } = await admin.from('brand_profiles').select('id').eq('user_id', authUser.id).maybeSingle()
-  if (!brandProfile) redirect('/onboarding')
-
   return (
     <ToastProvider>
       <UserProvider initialUser={user as any}>
