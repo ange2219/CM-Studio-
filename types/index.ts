@@ -287,3 +287,36 @@ export interface ApiError {
   error: string
   code?: string
 }
+
+export interface GenerateIdeasRequest {
+  platform: Platform
+  brand_name?: string
+  brand_description?: string
+  brand_industry?: string
+  brand_audience?: string
+  brand_pillars?: string[]
+  brand_objectives?: string[]
+}
+
+export interface GenerateIdeasResponse {
+  idees: {
+    numero: number
+    angle: string
+    type: string
+    accroche: string
+  }[]
+}
+
+export interface GenerateBriefRequest {
+  angle: string
+  post_type: string
+  accroche: string
+  brand_name?: string
+  brand_description?: string
+  brand_industry?: string
+}
+
+export interface GenerateBriefResponse {
+  brief: string
+}
+

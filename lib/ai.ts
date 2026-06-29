@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai' // utilisé pour GitHub Models (GPT-4o-mini)
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import type { GenerateRequest, GenerateResponse, Platform, Plan } from '@/types'
+import type { GenerateRequest, GenerateResponse, Platform, Plan, GenerateIdeasRequest, GenerateIdeasResponse, GenerateBriefRequest, GenerateBriefResponse } from '@/types'
 import { TONE_DEFINITIONS } from './tones'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
@@ -601,4 +601,155 @@ export async function generateWeekPosts(req: GenerateRequest, postsCount: number
     throw new Error('Réponse invalide du modèle — veuillez réessayer')
   }
   return parsed
+}
+
+// ─── Tunnel de Génération (Étape 1 & 2) ────────────────────────────────────────
+
+function buildIdeasPrompt(req: GenerateIdeasRequest): string {
+  return `Tu es un stratège en contenu LinkedIn qui écrit exclusivement en français.
+
+CONTEXTE DE LA MARQUE :
+- Nom : ${req.brand_name || 'Non spécifié'}
+- Secteur : ${req.brand_industry || 'Non spécifié'}
+- Description : ${req.brand_description || 'Non spécifié'}
+- Piliers de contenu : ${req.brand_pillars?.join(', ') || 'Non spécifiés'}
+- Objectifs : ${req.brand_objectives?.join(', ') || 'Non spécifiés'}
+- Audience cible : ${req.brand_audience || 'Non spécifiée'}
+- Plateforme : ${req.platform || 'Non spécifiée'}
+
+MISSION :
+Génère exactement 5 idées de posts adaptées à la plateforme et au profil de la marque.
+Chaque idée doit être différente — angle différent, approche différente, émotion différente.
+Aucune idée générique. Chaque idée doit sembler écrite spécifiquement pour cette marque.
+
+RÈGLES :
+- Les idées doivent couvrir des types de posts variés
+- Chaque accroche suggérée doit arrêter le scroll
+- Les angles doivent être concrets et exploitables immédiatement par l'utilisateur
+- Pas d'idée abstraite ou vague
+
+SORTIE :
+Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
+{
+  "idees": [
+    {
+      "numero": 1,
+      "angle": "...",
+      "type": "...",
+      "accroche": "..."
+    },
+    {
+      "numero": 2,
+      "angle": "...",
+      "type": "...",
+      "accroche": "..."
+    },
+    {
+      "numero": 3,
+      "angle": "...",
+      "type": "...",
+      "accroche": "..."
+    },
+    {
+      "numero": 4,
+      "angle": "...",
+      "type": "...",
+      "accroche": "..."
+    },
+    {
+      "numero": 5,
+      "angle": "...",
+      "type": "...",
+      "accroche": "..."
+    }
+  ]
+}
+`
+}
+
+function buildBriefPrompt(req: GenerateBriefRequest): string {
+  return `Tu es un stratège en contenu LinkedIn qui écrit exclusivement en français.
+
+IDÉE CHOISIE :
+- Angle : ${req.angle}
+- Type de post : ${req.post_type}
+- Accroche suggérée : ${req.accroche}
+
+CONTEXTE DE LA MARQUE :
+- Nom : ${req.brand_name || 'Non spécifié'}
+- Secteur : ${req.brand_industry || 'Non spécifié'}
+- Description : ${req.brand_description || 'Non spécifié'}
+
+MISSION :
+Génère un brief court et précis qui résume ce que le post va raconter. Ce brief sera lu par l'utilisateur avant la génération finale — il doit comprendre immédiatement l'angle, le ton et la direction du post.
+
+RÈGLES :
+- Maximum 5 phrases
+- Clair et direct — pas de jargon
+- Doit donner envie de générer le post immédiatement
+- Mentionne l'accroche de départ
+- Indique ce que le post va démontrer ou raconter
+
+SORTIE :
+Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
+{
+  "brief": "..."
+}
+`
+}
+
+export async function generateIdeas(req: GenerateIdeasRequest, plan: Plan): Promise<GenerateIdeasResponse> {
+  const prompt = buildIdeasPrompt(req)
+  const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
+
+  async function callModel(promptText: string): Promise<string> {
+    if (isFree) {
+      const response = await githubAI.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: promptText }],
+        max_tokens: 1500,
+        temperature: 0.8,
+        response_format: { type: 'json_object' },
+      })
+      return response.choices[0]?.message?.content || '{}'
+    }
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: promptText }],
+    })
+    return message.content[0].type === 'text' ? message.content[0].text : '{}'
+  }
+
+  const rawText = await callModel(prompt)
+  const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+  return JSON.parse(cleaned) as GenerateIdeasResponse
+}
+
+export async function generateBrief(req: GenerateBriefRequest, plan: Plan): Promise<GenerateBriefResponse> {
+  const prompt = buildBriefPrompt(req)
+  const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
+
+  async function callModel(promptText: string): Promise<string> {
+    if (isFree) {
+      const response = await githubAI.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: promptText }],
+        max_tokens: 1000,
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+      })
+      return response.choices[0]?.message?.content || '{}'
+    }
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: promptText }],
+    })
+    return message.content[0].type === 'text' ? message.content[0].text : '{}'
+  }
+
+  const rawText = await callModel(prompt)
+  const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+  return JSON.parse(cleaned) as GenerateBriefResponse
 }
