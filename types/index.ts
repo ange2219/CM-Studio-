@@ -164,6 +164,8 @@ export type PostLength = 'court' | 'moyen' | 'long'
 
 export type PostFormat = 'direct' | 'liste' | 'narratif' | 'question'
 
+export type LinkedInPostType = 'storytelling' | 'analyse' | 'conseil' | 'liste' | 'profil'
+
 export type PostTone = 'direct' | 'inspirant' | 'emotionnel' | 'humoristique' | 'professionnel'
 
 export type PostCTA =
@@ -272,6 +274,7 @@ export interface GenerateRequest {
   format?: PostFormat
   cta?: PostCTA
   distributionMode?: DistributionMode
+  post_type?: string
 }
 
 export interface GenerateResponse {

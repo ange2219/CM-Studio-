@@ -143,84 +143,93 @@ function buildBrandContext(req: GenerateRequest): string {
 
 function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
   if (targetPlatform === 'linkedin') {
-    return `Tu es un expert en contenu LinkedIn viral qui écrit exclusivement en français.
+    const toneDef = req.tone ? TONE_INSTRUCTIONS[req.tone] : 'Non spécifié'
+    return `Tu es un expert en copywriting LinkedIn qui écrit exclusivement en français.
+Tu t'inspires du style de Hugo Bentz, Alex Hormozi et Marc Dufraisse — direct, cash, orienté valeur, sans jargon corporate.
+Tu as accès à la recherche web.
 
 CONTEXTE DE LA MARQUE :
 - Nom : ${req.brand_name || 'Non spécifié'}
 - Secteur : ${req.brand_industry || 'Non spécifié'}
 - Description : ${req.brand_description || 'Non spécifié'}
-- Ton de communication : ${req.tone || 'Non spécifié'}
-- Piliers de contenu : ${req.brand_pillars?.join(', ') || 'Non spécifiés'}
-- Objectifs : ${req.brand_objectives?.join(', ') || 'Non spécifiés'}
-- Audience cible : ${req.brand_audience || 'Non spécifiée'}
+- Ton : ${toneDef}
+- Type de post : ${req.post_type || 'Non spécifié'}
+- Longueur : ${req.length || 'Non spécifié'}
 - Mots/sujets à éviter : ${req.brand_avoid || 'Aucun'}
 
-ÉTAPE 1 — DÉTECTION DU TYPE DE POST
-Analyse le brief et classe dans une de ces catégories :
-- STORYTELLING : récit avec tension dramatique et leçon
-- ANALYSE : opinion tranchée qui divise
-- CONSEIL : vérité inconfortable que personne ne dit
-- LISTE : révélation surprenante en points
-- PROFIL : mise en avant humaine et percutante
+ÉTAPE 1 — RECHERCHE
+Avant de générer, recherche 1 à 2 statistiques récentes et vérifiées sur le sujet du brief.
+Retiens uniquement celles qui sont surprenantes ou contre-intuitives.
+Intègre-les naturellement dans le corps du post — jamais en liste, toujours comme une révélation dans le texte.
+Si aucune statistique pertinente n'est trouvée, continue sans.
 
-ÉTAPE 2 — RÈGLES D'ACCROCHE (le plus important)
-L'accroche doit ARRÊTER LE SCROLL. Elle doit :
-- Piquer l'ego, provoquer, ou révéler un secret en 1 à 2 phrases maximum
-- S'adresser DIRECTEMENT au lecteur avec "tu" ou "vous"
-- Créer une tension immédiate — le lecteur DOIT lire la suite
-- Tenir en moins de 200 caractères (limite d'affichage LinkedIn)
-- Ne jamais être polie, générique ou rassurante
+ÉTAPE 2 — STRUCTURE DU POST
+Le post suit 4 sections dans cet ordre strict :
+HOOK (accroche) :
+1 à 2 phrases maximum — moins de 200 caractères.
+Suit exactement la définition du ton injecté depuis {tone_definition}.
+Doit arrêter le scroll immédiatement.
+Jamais polie. Jamais générique. On rentre dedans sans introduction.
 
-Exemples d'accroches qui arrêtent le scroll :
-- "Tu devrais arrêter la data science."
-- "Tu sais pourquoi tes sites ne génèrent aucun lead ?"
-- "Tu penses que tu es le meilleur dans ton domaine. Tu as probablement tort."
-- "Personne ne te dira ça en réunion. Je vais le faire."
-- "Ton problème n'est pas le budget. C'est toi."
+CORPS :
+1 à 3 idées clés développées — un paragraphe par idée.
+Chaque idée a minimum 3 à 4 phrases de développement concret.
+Intègre les statistiques trouvées naturellement dans le texte.
+Saut de ligne après chaque idée forte.
+Jamais de paragraphes de plus de 3 lignes.
+
+CONCLUSION :
+Fermeture courte et mémorable.
+Une leçon, un insight final, ou une affirmation qui résonne.
+Jamais moralisatrice. Jamais bienveillante et fade.
+
+CTA :
+Une question ouverte naturelle et directe.
+Elle doit provoquer une réaction ou forcer à se positionner.
+Pas de "Qu'en pensez-vous ?" générique — la question doit être spécifique au sujet du post.
 
 ÉTAPE 3 — RÈGLES ABSOLUES
-- Écris UNIQUEMENT en français
-- Aucun markdown : pas de gras, pas de titres, pas de italique
-- 3 à 5 hashtags maximum, uniquement à la fin
-- 0 à 3 emojis maximum, jamais en début de phrase
-- Longueur : 150 à 250 mots
-- Termine par une question qui provoque une réaction ou un CTA direct
+- Français uniquement
+- 1 000 à 1 500 caractères espaces compris
+- Aucun markdown : pas de gras, pas de titres, pas d'italique
+- 3 à 5 hashtags uniquement à la fin
+- Maximum 3 emojis, jamais en début de phrase
 - Jamais de flèche ↓
 
 ÉTAPE 4 — INTERDICTIONS STRICTES
-- "Dans le monde d'aujourd'hui..."
-- "Laissez-moi vous raconter..."
-- "Cette expérience m'a appris..."
-- "Il est crucial de..."
-- "En tant que professionnel..."
-- "Cela peut sembler contre-intuitif..."
+Ces formules sont interdites :
+- "Dans le monde d'aujourd'hui"
+- "Laissez-moi vous raconter"
+- "Cette expérience m'a appris"
+- "Il est crucial de"
+- "En tant que professionnel"
+- "Cela peut sembler contre-intuitif"
 - Toute conclusion moralisatrice ou bienveillante fade
-- L'engagement bait direct ("Commentez OUI si...")
-- Les formules qui sonnent IA
+- Engagement bait direct ("Commentez OUI si...")
+- Toute formule qui sonne générée par une IA
 
-ÉTAPE 5 — STRUCTURE SELON LE TYPE
+ÉTAPE 5 — VÉRIFICATION FINALE
+Avant de sortir le résultat, vérifie que tu as bien respecté chaque étape dans l'ordre :
+- Le hook fait moins de 200 caractères et suit le ton défini
+- Le corps a minimum 3 phrases de développement par idée
+- La statistique est intégrée naturellement
+- La conclusion n'est pas moralisatrice
+- Le CTA est spécifique et provoque une réaction
+- Aucune formule interdite n'est présente
+- La longueur est entre 1 000 et 1 500 caractères
 
-STORYTELLING :
-- Accroche provocatrice → situation tendue sans détails inutiles → tournant brutal → leçon courte et directe → question qui divise
+Si un point n'est pas respecté, réécris le post avant de sortir.
 
-ANALYSE / CONSEIL :
-- Affirmation choc → 3 arguments courts et directs → conclusion qui dérange → question ouverte
-
-LISTE :
-- Titre provocateur → points numérotés courts et percutants → conclusion inattendue
-
-PROFIL :
-- Phrase sur la personne qui surprend → parcours en 3 lignes → ce qui rend unique → CTA
-
-ÉTAPE 6 — SORTIE ATTENDUE
+ÉTAPE 6 — SORTIE
 Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
 {
   "type_detecte": "...",
+  "statistiques_trouvees": ["...", "..."],
   "post": "...",
-  "image_prompt": "... (en anglais, style photographique réaliste, adapté au contenu)"
+  "image_prompt": "... (en anglais, description photographique réaliste et détaillée, visuelle et percutante, adaptée au contenu du post, pour génération d'image IA)"
 }
 
-BRIEF UTILISATEUR : ${req.brief || 'Génère un post inspirant lié au secteur.'}`
+BRIEF : ${req.brief || 'Génère un post inspirant lié au secteur.'}`
   }
 
   const platforms = targetPlatform ? [targetPlatform] : req.platforms
@@ -363,6 +372,42 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
   return parsed as GenerateResponse
 }
 
+// ─── Génération via Gemini avec Recherche Web ────────────────────────────────
+
+async function generateWithGeminiSearch(req: GenerateRequest, targetPlatform: Platform): Promise<GenerateResponse> {
+  if (!gemini) {
+    throw new Error('GEMINI_API_KEY non configurée pour la recherche web.')
+  }
+  const prompt = buildPrompt(req, targetPlatform)
+  
+  const model = gemini.getGenerativeModel({
+    model: 'gemini-1.5-pro',
+    // @ts-expect-error - tools est supporté pour le grounding Google Search dans le SDK Node.js
+    tools: [{ googleSearch: {} }],
+  })
+  
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+    }
+  })
+  
+  const text = result.response.text()
+  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
+  const parsed = JSON.parse(cleaned)
+  
+  if (parsed.post) {
+    return {
+      variants: {
+        [targetPlatform]: parsed.post
+      },
+      ...parsed
+    } as any
+  }
+  return parsed as GenerateResponse
+}
+
 // ─── Réécriture ────────────────────────────────────────────────────────────────
 
 export async function rewritePost(content: string, platform: Platform, instruction: string, plan: Plan): Promise<string> {
@@ -455,12 +500,22 @@ export async function generateImage(prompt: string): Promise<string | null> {
   }
 }
 
-// ─── Export principal ──────────────────────────────────────────────────────────
-
 export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<GenerateResponse> {
   const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
 
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
+    if (targetPlatform === 'linkedin') {
+      if (gemini) {
+        try {
+          return await generateWithGeminiSearch(req, 'linkedin')
+        } catch (err) {
+          console.error('[ai/generatePosts] Gemini search failed, falling back to standard models:', err)
+        }
+      } else {
+        console.warn('[ai/generatePosts] gemini is null (GEMINI_API_KEY missing), falling back to standard models without search grounding.')
+      }
+    }
+
     if (isFree) {
       try {
         return await generateWithGitHub(req, targetPlatform)
@@ -494,16 +549,21 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
       const singleReq = { ...req, platforms: [platform] }
       const result = await callAI(platform)
       const text = result.variants?.[platform] || Object.values(result.variants || {}).find(v => v && v.trim()) || ''
-      return { platform, text }
+      return { platform, text, rawResult: result }
     })
   )
 
   const variants: Partial<Record<Platform, string>> = {}
-  for (const { platform, text } of results) {
+  let mergedExtra: Record<string, any> = {}
+  for (const { platform, text, rawResult } of results) {
     variants[platform] = text
+    if (platform === 'linkedin') {
+      const { variants: _, ...extra } = rawResult as any
+      mergedExtra = { ...mergedExtra, ...extra }
+    }
   }
 
-  return { variants }
+  return { variants, ...mergedExtra }
 }
 
 export async function generateWeekPosts(req: GenerateRequest, postsCount: number, plan: Plan): Promise<{ week: { day: number; topic: string; variants: Partial<Record<Platform, string>> }[] }> {
