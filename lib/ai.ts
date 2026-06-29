@@ -523,8 +523,17 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
         console.error('[ai/generatePosts] GitHub Models failed, falling back to Claude:', err instanceof Error ? err.message : err)
         return await generateWithClaude(req, targetPlatform)
       }
+    } else {
+      try {
+        return await generateWithClaude(req, targetPlatform)
+      } catch (err) {
+        console.error('[ai/generatePosts] Claude failed, falling back to GitHub Models:', err)
+        if (process.env.GITHUB_TOKEN) {
+          return await generateWithGitHub(req, targetPlatform)
+        }
+        throw err
+      }
     }
-    return await generateWithClaude(req, targetPlatform)
   }
 
   // Mode UNIFIÉ : 1 seul appel avec la plateforme principale, distribué sur toutes
@@ -713,12 +722,27 @@ export async function generateIdeas(req: GenerateIdeasRequest, plan: Plan): Prom
       })
       return response.choices[0]?.message?.content || '{}'
     }
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      messages: [{ role: 'user', content: promptText }],
-    })
-    return message.content[0].type === 'text' ? message.content[0].text : '{}'
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: promptText }],
+      })
+      return message.content[0].type === 'text' ? message.content[0].text : '{}'
+    } catch (err) {
+      console.error('[ai/generateIdeas] Claude API call failed, falling back to GitHub Models:', err)
+      if (process.env.GITHUB_TOKEN) {
+        const response = await githubAI.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: promptText }],
+          max_tokens: 1500,
+          temperature: 0.8,
+          response_format: { type: 'json_object' },
+        })
+        return response.choices[0]?.message?.content || '{}'
+      }
+      throw err
+    }
   }
 
   const rawText = await callModel(prompt)
@@ -741,12 +765,27 @@ export async function generateBrief(req: GenerateBriefRequest, plan: Plan): Prom
       })
       return response.choices[0]?.message?.content || '{}'
     }
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: promptText }],
-    })
-    return message.content[0].type === 'text' ? message.content[0].text : '{}'
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: promptText }],
+      })
+      return message.content[0].type === 'text' ? message.content[0].text : '{}'
+    } catch (err) {
+      console.error('[ai/generateBrief] Claude API call failed, falling back to GitHub Models:', err)
+      if (process.env.GITHUB_TOKEN) {
+        const response = await githubAI.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: promptText }],
+          max_tokens: 1000,
+          temperature: 0.7,
+          response_format: { type: 'json_object' },
+        })
+        return response.choices[0]?.message?.content || '{}'
+      }
+      throw err
+    }
   }
 
   const rawText = await callModel(prompt)
