@@ -522,70 +522,11 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
   const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
 
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
-    if (targetPlatform === 'linkedin') {
-      if (gemini) {
-        try {
-          return await generateWithGeminiSearch(req, 'linkedin')
-        } catch (err) {
-          console.error('[ai/generatePosts] Gemini search failed, falling back to standard models:', err)
-        }
-      } else {
-        console.warn('[ai/generatePosts] gemini is null (GEMINI_API_KEY missing), falling back to standard models without search grounding.')
-      }
-    }
-
-    if (isFree) {
-      try {
-        return await generateWithGitHub(req, targetPlatform)
-      } catch (err) {
-        console.error('[ai/generatePosts] GitHub Models failed, falling back to Claude:', err instanceof Error ? err.message : err)
-        try {
-          return await generateWithClaude(req, targetPlatform)
-        } catch (claudeErr) {
-          console.error('[ai/generatePosts] Claude fallback failed:', claudeErr)
-          if (gemini) {
-            try {
-              console.log('[ai/generatePosts] Attempting fallback to Gemini...')
-              const text = await generateWithGeminiSimple(buildPrompt(req, targetPlatform), true)
-              const parsed = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim())
-              if (targetPlatform && parsed.post) {
-                return { variants: { [targetPlatform]: parsed.post }, ...parsed }
-              }
-              return parsed
-            } catch (geminiErr) {
-              console.error('[ai/generatePosts] Gemini fallback failed:', geminiErr)
-            }
-          }
-        }
-        throw err
-      }
-    } else {
-      try {
-        return await generateWithClaude(req, targetPlatform)
-      } catch (err) {
-        console.error('[ai/generatePosts] Claude failed, falling back to GitHub Models:', err)
-        if (process.env.GITHUB_TOKEN) {
-          try {
-            return await generateWithGitHub(req, targetPlatform)
-          } catch (githubErr) {
-            console.error('[ai/generatePosts] GitHub Models fallback failed:', githubErr)
-          }
-        }
-        if (gemini) {
-          try {
-            console.log('[ai/generatePosts] Attempting fallback to Gemini...')
-            const text = await generateWithGeminiSimple(buildPrompt(req, targetPlatform), true)
-            const parsed = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim())
-            if (targetPlatform && parsed.post) {
-              return { variants: { [targetPlatform]: parsed.post }, ...parsed }
-            }
-            return parsed
-          } catch (geminiErr) {
-            console.error('[ai/generatePosts] Gemini fallback failed:', geminiErr)
-          }
-        }
-        throw err
-      }
+    try {
+      return await generateWithGitHub(req, targetPlatform)
+    } catch (err) {
+      console.error('[ai/generatePosts] GitHub Models failed:', err)
+      throw err
     }
   }
 
@@ -762,64 +703,16 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markd
 
 export async function generateIdeas(req: GenerateIdeasRequest, plan: Plan): Promise<GenerateIdeasResponse> {
   const prompt = buildIdeasPrompt(req)
-  const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
 
   async function callModel(promptText: string): Promise<string> {
-    if (isFree) {
-      try {
-        const response = await githubAI.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: promptText }],
-          max_tokens: 1500,
-          temperature: 0.8,
-          response_format: { type: 'json_object' },
-        })
-        return response.choices[0]?.message?.content || '{}'
-      } catch (err) {
-        console.error('[ai/generateIdeas] GitHub Models failed, falling back to Gemini:', err)
-        if (gemini) {
-          try {
-            return await generateWithGeminiSimple(promptText, true)
-          } catch (geminiErr) {
-            console.error('[ai/generateIdeas] Gemini fallback failed:', geminiErr)
-          }
-        }
-        throw err
-      }
-    }
-    try {
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: promptText }],
-      })
-      return message.content[0].type === 'text' ? message.content[0].text : '{}'
-    } catch (err) {
-      console.error('[ai/generateIdeas] Claude API call failed, falling back to GitHub Models:', err)
-      if (process.env.GITHUB_TOKEN) {
-        try {
-          const response = await githubAI.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'user', content: promptText }],
-            max_tokens: 1500,
-            temperature: 0.8,
-            response_format: { type: 'json_object' },
-          })
-          return response.choices[0]?.message?.content || '{}'
-        } catch (githubErr) {
-          console.error('[ai/generateIdeas] GitHub Models fallback failed:', githubErr)
-        }
-      }
-      if (gemini) {
-        try {
-          console.log('[ai/generateIdeas] Attempting fallback to Gemini...')
-          return await generateWithGeminiSimple(promptText, true)
-        } catch (geminiErr) {
-          console.error('[ai/generateIdeas] Gemini fallback failed:', geminiErr)
-        }
-      }
-      throw err
-    }
+    const response = await githubAI.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: promptText }],
+      max_tokens: 1500,
+      temperature: 0.8,
+      response_format: { type: 'json_object' },
+    })
+    return response.choices[0]?.message?.content || '{}'
   }
 
   const rawText = await callModel(prompt)
@@ -829,64 +722,16 @@ export async function generateIdeas(req: GenerateIdeasRequest, plan: Plan): Prom
 
 export async function generateBrief(req: GenerateBriefRequest, plan: Plan): Promise<GenerateBriefResponse> {
   const prompt = buildBriefPrompt(req)
-  const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
 
   async function callModel(promptText: string): Promise<string> {
-    if (isFree) {
-      try {
-        const response = await githubAI.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: promptText }],
-          max_tokens: 1000,
-          temperature: 0.7,
-          response_format: { type: 'json_object' },
-        })
-        return response.choices[0]?.message?.content || '{}'
-      } catch (err) {
-        console.error('[ai/generateBrief] GitHub Models failed, falling back to Gemini:', err)
-        if (gemini) {
-          try {
-            return await generateWithGeminiSimple(promptText, true)
-          } catch (geminiErr) {
-            console.error('[ai/generateBrief] Gemini fallback failed:', geminiErr)
-          }
-        }
-        throw err
-      }
-    }
-    try {
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: promptText }],
-      })
-      return message.content[0].type === 'text' ? message.content[0].text : '{}'
-    } catch (err) {
-      console.error('[ai/generateBrief] Claude API call failed, falling back to GitHub Models:', err)
-      if (process.env.GITHUB_TOKEN) {
-        try {
-          const response = await githubAI.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'user', content: promptText }],
-            max_tokens: 1000,
-            temperature: 0.7,
-            response_format: { type: 'json_object' },
-          })
-          return response.choices[0]?.message?.content || '{}'
-        } catch (githubErr) {
-          console.error('[ai/generateBrief] GitHub Models fallback failed:', githubErr)
-        }
-      }
-      if (gemini) {
-        try {
-          console.log('[ai/generateBrief] Attempting fallback to Gemini...')
-          return await generateWithGeminiSimple(promptText, true)
-        } catch (geminiErr) {
-          console.error('[ai/generateBrief] Gemini fallback failed:', geminiErr)
-        }
-      }
-      throw err
-    }
+    const response = await githubAI.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: promptText }],
+      max_tokens: 1000,
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    })
+    return response.choices[0]?.message?.content || '{}'
   }
 
   const rawText = await callModel(prompt)
