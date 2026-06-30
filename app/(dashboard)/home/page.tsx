@@ -170,18 +170,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── COLONNE 2 : WIDGETS ── */}
-      <div className="hidden xl:flex" style={{
-        width: '340px',
-        flexShrink: 0,
-        flexDirection: 'column',
-        gap: '12px',
-        padding: '24px 0 24px',
-        overflow: 'hidden'
-      }}>
-        <NotificationsPanel />
-        <PopularGroups />
-      </div>
+      {/* ── COLONNE DE DROITE SUPPRIMÉE SELON LA DEMANDE ── */}
 
       <WelcomeBanner firstName={firstName} />
     </div>
