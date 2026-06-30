@@ -86,7 +86,7 @@ export default function HomePage() {
         overflowY: 'auto',
         padding: '24px 0 40px'
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <StoriesSection />
 
           {/* Tabs */}
@@ -178,7 +178,7 @@ export default function HomePage() {
         width: '340px',
         flexShrink: 0,
         flexDirection: 'column',
-        gap: '16px',
+        gap: '12px',
         padding: '24px 0 24px',
         overflow: 'hidden'
       }}>

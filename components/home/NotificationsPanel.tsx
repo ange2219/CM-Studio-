@@ -10,7 +10,7 @@ const MOCK_NOTIFS = [
 
 export function NotificationsPanel() {
   return (
-    <div className="card" style={{ padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+    <div className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--t1)' }}>Notifications</span>
@@ -21,7 +21,7 @@ export function NotificationsPanel() {
         </Link>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {MOCK_NOTIFS.map(notif => (
           <div key={notif.id} style={{ display: 'flex', gap: '10px' }}>
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'var(--s2)', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>

@@ -23,8 +23,8 @@ export function WelcomeBanner({ firstName }: { firstName: string }) {
     <div style={{
       position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 500,
       background: 'var(--card)', border: '1px solid var(--b1)',
-      borderRadius: '14px', padding: '.85rem 1.2rem',
-      display: 'flex', alignItems: 'center', gap: '.75rem',
+      borderRadius: '12px', padding: '12px 16px',
+      display: 'flex', alignItems: 'center', gap: '12px',
       boxShadow: '0 16px 48px rgba(123,92,245,.12)',
       maxWidth: '280px',
       transform: visible ? 'translateY(0)' : 'translateY(20px)',

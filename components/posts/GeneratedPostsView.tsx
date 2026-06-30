@@ -427,17 +427,17 @@ function PostPlatformCard({
   return (
     <div style={{
       background: 'var(--card)', border: '1px solid var(--b1)',
-      borderRadius: '16px', overflow: 'visible',
+      borderRadius: '12px', overflow: 'visible',
       display: 'flex', flexDirection: 'column',
     }}>
 
       {/* ── Platform header ── */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '.65rem 1rem', position: 'relative',
+        padding: '.5rem .75rem', position: 'relative',
         background: isUnifiedCard ? 'var(--s2)' : `${color}0d`,
         borderBottom: '1px solid var(--b1)',
-        borderRadius: '16px 16px 0 0', overflow: 'hidden',
+        borderRadius: '12px 12px 0 0', overflow: 'hidden',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
           {isUnifiedCard ? (
@@ -483,7 +483,7 @@ function PostPlatformCard({
         const displayName = platformAccount?.platform_username || userName || 'Votre compte'
         const avatarUrl   = platformAccount?.platform_avatar_url || null
         return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.8rem 1rem .3rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.6rem .75rem .3rem' }}>
         {avatarUrl ? (
           <img src={avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
         ) : (
@@ -514,12 +514,12 @@ function PostPlatformCard({
       })()}
 
       {/* ── Textarea ── */}
-      <div style={{ padding: '.2rem 1rem .15rem' }}>
+      <div style={{ padding: '.2rem .75rem .15rem' }}>
         <textarea
           value={content}
           onChange={e => onContentChange(e.target.value)}
           style={{
-            width: '100%', minHeight: '115px',
+            width: '100%', minHeight: '75px',
             background: 'transparent', border: 'none', outline: 'none',
             fontSize: '.84rem', color: 'var(--t1)',
             lineHeight: 1.65, resize: 'none', fontFamily: 'inherit',
@@ -531,7 +531,7 @@ function PostPlatformCard({
       </div>
 
       {/* ── Réécrire / Hashtags ── */}
-      <div style={{ display: 'flex', gap: '.4rem', padding: '.15rem 1rem .6rem' }}>
+      <div style={{ display: 'flex', gap: '.4rem', padding: '.15rem .75rem .4rem' }}>
         <button
           onClick={isRewriting ? undefined : onRewrite}
           disabled={isRewriting}
@@ -554,15 +554,15 @@ function PostPlatformCard({
 
       {/* ── Image loading ── */}
       {imageLoading && (
-        <div style={{ margin: '0 1rem .6rem', borderRadius: '12px', aspectRatio: '16/9', background: 'var(--s2)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ margin: '0 .75rem .4rem', borderRadius: '10px', aspectRatio: '16/9', background: 'var(--s2)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: '24px', height: '24px', border: '3px solid rgba(123,92,245,.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
         </div>
       )}
 
       {/* ── Image display ── */}
       {imageUrl && !imageLoading && (
-        <div style={{ position: 'relative', margin: '0 1rem .6rem' }}>
-          <img src={imageUrl} alt="" style={{ width: '100%', borderRadius: '12px', display: 'block', maxHeight: '260px', objectFit: 'cover' }} />
+        <div style={{ position: 'relative', margin: '0 .75rem .4rem' }}>
+          <img src={imageUrl} alt="" style={{ width: '100%', borderRadius: '10px', display: 'block', maxHeight: '200px', objectFit: 'cover' }} />
           <button
             onClick={() => setShowImageMenu(v => !v)}
             style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', alignItems: 'center', gap: '.25rem', padding: '.25rem .55rem', borderRadius: '6px', background: 'rgba(0,0,0,.65)', border: '1px solid rgba(255,255,255,.15)', backdropFilter: 'blur(4px)', color: '#fff', cursor: 'pointer', fontSize: '.72rem', fontWeight: 500 }}
@@ -599,7 +599,7 @@ function PostPlatformCard({
         <div style={{ position: 'relative' }} ref={imageMenuRef}>
           <button
             onClick={() => setShowImageMenu(v => !v)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.7rem', padding: '.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t1)', fontSize: '.83rem', fontFamily: 'inherit', transition: '.1s' }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t1)', fontSize: '.83rem', fontFamily: 'inherit', transition: '.1s' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--s2)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
           >
@@ -625,12 +625,12 @@ function PostPlatformCard({
           )}
         </div>
 
-        <div style={{ height: '1px', background: 'var(--b1)', margin: '0 1rem' }} />
+        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0 .75rem' }} />
 
         {/* Programmer la publication */}
         <button
           onClick={onScheduleOpen}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.7rem', padding: '.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t1)', fontSize: '.83rem', fontFamily: 'inherit', transition: '.1s' }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t1)', fontSize: '.83rem', fontFamily: 'inherit', transition: '.1s' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--s2)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
         >
@@ -649,11 +649,11 @@ function PostPlatformCard({
       </div>
 
       {/* ── Footer buttons ── */}
-      <div style={{ display: 'flex', gap: '.6rem', padding: '.9rem 1rem', borderTop: '1px solid var(--b1)', borderRadius: '0 0 16px 16px' }}>
+      <div style={{ display: 'flex', gap: '.5rem', padding: '.5rem .75rem', borderTop: '1px solid var(--b1)', borderRadius: '0 0 12px 12px' }}>
         <button
           onClick={isActing ? undefined : onDraft}
           disabled={isActing}
-          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem', padding: '.65rem', borderRadius: '10px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t2)', cursor: isActing ? 'not-allowed' : 'pointer', fontSize: '.82rem', fontWeight: 600, transition: '.12s', opacity: isActing ? .6 : 1 }}
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem', padding: '.5rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t2)', cursor: isActing ? 'not-allowed' : 'pointer', fontSize: '.82rem', fontWeight: 600, transition: '.12s', opacity: isActing ? .6 : 1 }}
           onMouseEnter={e => { if (!isActing) { e.currentTarget.style.borderColor = 'var(--b2)'; e.currentTarget.style.color = 'var(--t1)' } }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.color = 'var(--t2)' }}
         >
@@ -665,7 +665,7 @@ function PostPlatformCard({
             onClick={isActing ? undefined : onPublishScheduled}
             disabled={isActing}
             className="btn-primary"
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem', padding: '.65rem', borderRadius: '10px', fontSize: '.82rem', fontWeight: 600, opacity: isActing ? .6 : 1, cursor: isActing ? 'not-allowed' : 'pointer' }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem', padding: '.5rem', borderRadius: '8px', fontSize: '.82rem', fontWeight: 600, opacity: isActing ? .6 : 1, cursor: isActing ? 'not-allowed' : 'pointer' }}
           >
             {isPublishing ? <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot .7s linear infinite', flexShrink: 0 }} /> : <Clock size={14} />}
             Programmer
@@ -675,7 +675,7 @@ function PostPlatformCard({
             onClick={isActing ? undefined : onPublish}
             disabled={isActing}
             className="btn-primary"
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem', padding: '.65rem', borderRadius: '10px', fontSize: '.82rem', fontWeight: 600, opacity: isActing ? .6 : 1, cursor: isActing ? 'not-allowed' : 'pointer' }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem', padding: '.5rem', borderRadius: '8px', fontSize: '.82rem', fontWeight: 600, opacity: isActing ? .6 : 1, cursor: isActing ? 'not-allowed' : 'pointer' }}
           >
             {isPublishing ? <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot .7s linear infinite', flexShrink: 0 }} /> : <Send size={14} />}
             Publier

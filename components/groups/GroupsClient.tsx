@@ -214,7 +214,7 @@ export default function GroupsClient({
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      gap: 20,
+      gap: 16,
       maxWidth: 1200,
       margin: '0 auto',
       paddingBottom: '3rem',
@@ -232,7 +232,7 @@ export default function GroupsClient({
       {/* Main Workspace Layout */}
       <div style={{
         display: 'flex',
-        gap: 24,
+        gap: 16,
         alignItems: 'flex-start',
         flexWrap: 'wrap',
       }}>
@@ -269,10 +269,10 @@ export default function GroupsClient({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    gap: 10,
                     width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: 12,
+                    padding: '8px 12px',
+                    borderRadius: 10,
                     border: '1px solid',
                     borderColor: isActive
                       ? 'rgba(var(--accent-rgb), 0.25)'
@@ -292,9 +292,9 @@ export default function GroupsClient({
                   }}
                 >
                   <div style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
                     background: isActive ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
                     color: isActive ? '#fff' : 'var(--t2)',
                     display: 'flex',
@@ -302,7 +302,7 @@ export default function GroupsClient({
                     justifyContent: 'center',
                     flexShrink: 0,
                   }}>
-                    {isUnlocked ? <MessageSquare size={16} /> : <Lock size={14} />}
+                    {isUnlocked ? <MessageSquare size={14} /> : <Lock size={12} />}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -327,17 +327,17 @@ export default function GroupsClient({
           minWidth: 320,
           background: 'var(--card)',
           border: '1px solid var(--b1)',
-          borderRadius: 16,
-          padding: '20px',
+          borderRadius: 12,
+          padding: '16px',
           boxSizing: 'border-box',
         }}>
           {activeGroup ? (
             <div>
               {/* Group Discussion Header */}
               <div style={{
-                paddingBottom: 16,
+                paddingBottom: 12,
                 borderBottom: '1px solid var(--b1)',
-                marginBottom: 20,
+                marginBottom: 16,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--t1)', margin: 0 }}>

@@ -332,22 +332,22 @@ export function CommunityFeed({
   const filteredPosts = posts
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {/* CREATE POST */}
-      <div style={{ background: 'var(--card)', borderRadius: '16px', padding: '16px', border: '1px solid var(--b1)' }}>
+      <div style={{ background: 'var(--card)', borderRadius: '12px', padding: '12px 16px', border: '1px solid var(--b1)' }}>
         <div style={{ display: 'flex', gap: '12px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--accent)' }}>U</div>
           <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
         </div>
 
         {uploadedImageUrl && (
-          <div style={{ padding: '8px 12px 12px 52px', position: 'relative' }}>
+          <div style={{ padding: '6px 12px 8px 52px', position: 'relative' }}>
             <img src={uploadedImageUrl} style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid var(--b1)' }} alt="Upload preview" />
             <button onClick={() => setUploadedImageUrl(null)} style={{ position: 'absolute', top: 0, left: '235px', background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✕</button>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--b1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--b1)' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
             <input type="file" id="community-image-upload" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
               const file = e.target.files?.[0]
@@ -372,7 +372,7 @@ export function CommunityFeed({
       </div>
 
       {/* POSTS LIST */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {filteredPosts.map(post => {
           const isLiked = likedIds.has(post.id)
           const isExpanded = expandedPostId === post.id
@@ -380,9 +380,9 @@ export function CommunityFeed({
           const isLoading = loadingComments[post.id]
 
           return (
-            <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '16px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
+            <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
               {/* Post Header (Facebook-style structure) */}
-              <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifySelf: 'stretch', width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ padding: '12px 16px 8px 16px', display: 'flex', alignItems: 'center', justifySelf: 'stretch', width: '100%', boxSizing: 'border-box' }}>
                 {/* Avatar with blue ring */}
                 <Link href={`/profile/${post.username || post.user_id}`} style={{
                   width: 42, height: 42, borderRadius: '50%',
@@ -587,19 +587,19 @@ export function CommunityFeed({
               </div>
 
               {/* Post Content */}
-              <div style={{ padding: '0 16px 16px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.5 }} id={`post-${post.id}`}>
+              <div style={{ padding: '0 16px 12px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.5 }} id={`post-${post.id}`}>
                 {post.content}
                 {post.image_url && (
-                  <div style={{ marginTop: '12px' }}>
-                    <img src={post.image_url} style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--b1)' }} alt="Post image" />
+                  <div style={{ marginTop: '8px' }}>
+                    <img src={post.image_url} style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--b1)' }} alt="Post image" />
                   </div>
                 )}
               </div>
 
               {/* Post Actions */}
-              <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--b1)' }}>
-                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count}</button>
-                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
+              <div style={{ padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '4px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count}</button>
+                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '4px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
                 <button onClick={() => {
                   if (navigator.share) {
                     navigator.share({
@@ -610,7 +610,7 @@ export function CommunityFeed({
                   } else {
                     navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`)
                   }
-                }} style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '8px 0' }}><Share2 size={18} /></button>
+                }} style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '4px 0' }}><Share2 size={18} /></button>
               </div>
 
               {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
@@ -628,7 +628,7 @@ export function CommunityFeed({
                         const isLiked = commentLikes.has(c.id)
 
                         return (
-                          <div key={c.id} id={`comment-container-${c.id}`} style={{ marginBottom: '16px' }}>
+                          <div key={c.id} id={`comment-container-${c.id}`} style={{ marginBottom: '12px' }}>
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
@@ -719,7 +719,7 @@ export function CommunityFeed({
                   </div>
 
                   {/* FIXED INPUT AT BOTTOM - TikTok Style */}
-                  <div style={{ padding: '12px 16px', borderTop: '1px solid var(--b1)', background: 'var(--card)' }}>
+                  <div style={{ padding: '8px 16px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'var(--card)' }}>
                     {replyingTo && replyingTo.postId === post.id && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: 'var(--accent)' }}>
                         <span>En réponse à <b>{replyingTo.name}</b></span>

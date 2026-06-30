@@ -10,7 +10,7 @@ const MOCK_GROUPS = [
 
 export function PopularGroups() {
   return (
-    <div className="card" style={{ padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+    <div className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--t1)' }}>Groupes populaires</span>
         <Link href="/groups" style={{ fontSize: '0.73rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
@@ -18,7 +18,7 @@ export function PopularGroups() {
         </Link>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {MOCK_GROUPS.map(group => (
           <div key={group.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: `${group.color}15`, color: group.color, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
