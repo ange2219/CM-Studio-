@@ -177,7 +177,7 @@ export type PostCTA =
 
 export interface GenerationParams {
   length: PostLength
-  format: PostFormat
+  post_type: LinkedInPostType
   tone: PostTone
   cta: PostCTA
 }
@@ -192,12 +192,12 @@ export const OBJECTIVE_LABELS: Record<PostObjective, string> = {
 }
 
 export const OBJECTIVE_DEFAULTS: Record<PostObjective, GenerationParams> = {
-  vendre:    { length: 'court',  format: 'direct',    tone: 'direct',        cta: 'acheter'       },
-  engager:   { length: 'court',  format: 'question',  tone: 'humoristique',  cta: 'commenter'     },
-  eduquer:   { length: 'long',   format: 'liste',     tone: 'professionnel', cta: 'en_savoir_plus' },
-  inspirer:  { length: 'moyen',  format: 'narratif',  tone: 'inspirant',     cta: 'partager'      },
-  annoncer:  { length: 'court',  format: 'direct',    tone: 'professionnel', cta: 'en_savoir_plus' },
-  fideliser: { length: 'moyen',  format: 'narratif',  tone: 'emotionnel',    cta: 'aucun'         },
+  vendre:    { length: 'court',  post_type: 'storytelling', tone: 'direct',        cta: 'acheter'       },
+  engager:   { length: 'court',  post_type: 'storytelling', tone: 'humoristique',  cta: 'commenter'     },
+  eduquer:   { length: 'long',   post_type: 'analyse',      tone: 'professionnel', cta: 'en_savoir_plus' },
+  inspirer:  { length: 'moyen',  post_type: 'storytelling', tone: 'inspirant',     cta: 'partager'      },
+  annoncer:  { length: 'court',  post_type: 'liste',        tone: 'professionnel', cta: 'en_savoir_plus' },
+  fideliser: { length: 'moyen',  post_type: 'conseil',      tone: 'emotionnel',    cta: 'aucun'         },
 }
 
 export const OBJECTIVE_DESCRIPTIONS: Record<PostObjective, string> = {

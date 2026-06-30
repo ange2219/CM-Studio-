@@ -14,7 +14,7 @@ import {
   PLATFORM_NAMES, FREE_PLATFORMS, OBJECTIVE_LABELS, OBJECTIVE_DEFAULTS, OBJECTIVE_DESCRIPTIONS,
   LENGTH_LABELS, FORMAT_LABELS, POSTTONE_LABELS, CTA_LABELS, PLATFORM_CONSTRAINTS_INFO,
   type Platform, type PostObjective, type DistributionMode, type GenerationParams,
-  type PostLength, type PostFormat, type PostTone, type PostCTA,
+  type PostLength, type LinkedInPostType, type PostTone, type PostCTA,
 } from '@/types'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -237,7 +237,7 @@ export default function CreatePage() {
   const [objective, setObjective]           = useState<string | null>(null)
   const [brief, setBrief]                   = useState('')
   const [params, setParams]                 = useState<GenerationParams>({
-    length: 'moyen', format: 'direct', tone: 'professionnel', cta: 'aucun',
+    length: 'moyen', post_type: 'storytelling', tone: 'professionnel', cta: 'aucun',
   })
   const [distributionMode, setDistributionMode] = useState<DistributionMode>('unified')
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([])
@@ -246,7 +246,6 @@ export default function CreatePage() {
   const [ideasModalOpen, setIdeasModalOpen] = useState(false)
   const [ideasLoading, setIdeasLoading] = useState(false)
   const [ideas, setIdeas] = useState<{ numero: number; angle: string; type: string; accroche: string }[]>([])
-  const [postType, setPostType] = useState<string | null>(null)
   const [generatingBrief, setGeneratingBrief] = useState(false)
 
 
@@ -424,7 +423,7 @@ export default function CreatePage() {
       if (!res.ok) throw new Error(data.error || 'Erreur lors de la génération du brief')
       if (data.brief) {
         setBrief(data.brief)
-        setPostType(idea.type)
+        setParams(prev => ({ ...prev, post_type: idea.type as LinkedInPostType }))
         // Si la plateforme n'est pas sélectionnée, on l'ajoute
         if (selectedPlatforms.length === 0) {
           setSelectedPlatforms(['linkedin'])
@@ -453,10 +452,9 @@ export default function CreatePage() {
           platforms:        selectedPlatforms,
           objective:        objective || undefined,
           length:           params.length,
-          format:           params.format,
+          post_type:        params.post_type,
           cta:              params.cta,
           distributionMode: distributionMode,
-          post_type:        postType || undefined,
         }),
       })
       const data = await res.json()
@@ -1022,16 +1020,17 @@ export default function CreatePage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Format</label>
+                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Type de post</label>
                   <select
-                    value={params.format}
-                    onChange={e => setParams({ ...params, format: e.target.value as PostFormat })}
+                    value={params.post_type}
+                    onChange={e => setParams({ ...params, post_type: e.target.value as LinkedInPostType })}
                     style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
                   >
-                    <option value="direct">Humoristique</option>
+                    <option value="storytelling">Storytelling</option>
+                    <option value="analyse">Analyse</option>
+                    <option value="conseil">Conseil</option>
                     <option value="liste">Liste</option>
-                    <option value="narratif">Narratif</option>
-                    <option value="question">Question</option>
+                    <option value="profil">Profil</option>
                   </select>
                 </div>
               </div>
