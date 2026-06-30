@@ -6,8 +6,7 @@ import { useUser } from '@/components/context/UserContext'
 import { HomeSkeleton } from '@/components/ui/Skeleton'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
-import { PopularGroups } from '@/components/home/PopularGroups'
-import { NotificationsPanel } from '@/components/home/NotificationsPanel'
+// Suppressed PopularGroups and NotificationsPanel imports
 
 type Tab = 'general' | 'suivi'
 

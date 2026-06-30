@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X, Bookmark, Star
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -129,6 +129,11 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Groupes',       icon: Users,         href: '/groups'        },
   ]
 
+  const shortcuts = [
+    { label: 'Brouillons', icon: Bookmark, href: '/workspace?tab=drafts' },
+    { label: 'Favoris',    icon: Star,     href: '/workspace?tab=favorites' },
+  ]
+
   const bottomNavItems = [
     { label: 'Accueil',       icon: Home,          href: '/home'          },
     { label: 'Workspace',     icon: Layout,        href: '/workspace'     },
@@ -201,6 +206,25 @@ export function DashboardShell({ user: initialUser, children }: {
                         {isExpanded && isMessages && unreadCount > 0 && (
                           <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
                         )}
+                      </Link>
+                    )
+                  })}
+
+                  {/* Section Raccourcis */}
+                  {isExpanded ? (
+                    <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '24px', whiteSpace: 'nowrap', opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>Raccourcis</div>
+                  ) : (
+                    <div style={{ height: '36px' }} />
+                  )}
+
+                  {shortcuts.map(item => {
+                    const active = pathname === item.href
+                    return (
+                      <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center', position: 'relative' }}>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
+                        </div>
+                        {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap', flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>{item.label}</span>}
                       </Link>
                     )
                   })}
