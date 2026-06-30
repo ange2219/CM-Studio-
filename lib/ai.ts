@@ -144,6 +144,25 @@ function buildBrandContext(req: GenerateRequest): string {
 function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
   if (targetPlatform === 'linkedin') {
     const toneDef = req.tone ? TONE_INSTRUCTIONS[req.tone] : 'Non spécifié'
+    const isConseil = req.post_type === 'conseil'
+    
+    const corpsInstruction = isConseil
+      ? `CORPS (EXCEPTION TYPE "CONSEIL") :
+Présente tes astuces/étapes sous forme de liste simple numérotée (1., 2., 3.) ou avec des flèches (→).
+Chaque point de la liste DOIT être développé avec 2 à 3 phrases minimum. Jamais un seul mot ou une seule phrase sèche.
+Intègre les statistiques trouvées naturellement dans le texte.
+Saut de ligne après chaque point développé.`
+      : `CORPS :
+1 à 3 idées clés développées — un paragraphe par idée.
+Chaque idée a minimum 3 à 4 phrases de développement concret.
+Intègre les statistiques trouvées naturellement dans le texte.
+Saut de ligne après chaque idée forte.
+Jamais de paragraphes de plus de 3 lignes.`
+
+    const markdownRule = isConseil
+      ? `- Pas de gras, pas de titres, pas d'italique. Tirets markdown interdits (utilise "1." ou "→" pour les listes).`
+      : `- Aucun markdown : pas de gras, pas de titres, pas d'italique`
+
     return `Tu es un expert en copywriting LinkedIn qui écrit exclusivement en français.
 Tu t'inspires du style de Hugo Bentz, Alex Hormozi et Marc Dufraisse — direct, cash, orienté valeur, sans jargon corporate.
 Tu as accès à la recherche web.
@@ -171,12 +190,7 @@ Suit exactement la définition du ton injecté depuis {tone_definition}.
 Doit arrêter le scroll immédiatement.
 Jamais polie. Jamais générique. On rentre dedans sans introduction.
 
-CORPS :
-1 à 3 idées clés développées — un paragraphe par idée.
-Chaque idée a minimum 3 à 4 phrases de développement concret.
-Intègre les statistiques trouvées naturellement dans le texte.
-Saut de ligne après chaque idée forte.
-Jamais de paragraphes de plus de 3 lignes.
+${corpsInstruction}
 
 CONCLUSION :
 Fermeture courte et mémorable.
@@ -191,7 +205,7 @@ Pas de "Qu'en pensez-vous ?" générique — la question doit être spécifique 
 ÉTAPE 3 — RÈGLES ABSOLUES
 - Français uniquement
 - 1 000 à 1 500 caractères espaces compris
-- Aucun markdown : pas de gras, pas de titres, pas d'italique
+${markdownRule}
 - 3 à 5 hashtags uniquement à la fin
 - Maximum 3 emojis, jamais en début de phrase
 - Jamais de flèche ↓
@@ -211,7 +225,7 @@ Ces formules sont interdites :
 ÉTAPE 5 — VÉRIFICATION FINALE
 Avant de sortir le résultat, vérifie que tu as bien respecté chaque étape dans l'ordre :
 - Le hook fait moins de 200 caractères et suit le ton défini
-- Le corps a minimum 3 phrases de développement par idée
+- Le corps développe suffisamment chaque idée (minimum 3 phrases) ou chaque astuce (minimum 2 à 3 phrases)
 - La statistique est intégrée naturellement
 - La conclusion n'est pas moralisatrice
 - Le CTA est spécifique et provoque une réaction
