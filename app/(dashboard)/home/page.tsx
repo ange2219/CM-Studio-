@@ -8,7 +8,6 @@ import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
 import { PopularGroups } from '@/components/home/PopularGroups'
 import { NotificationsPanel } from '@/components/home/NotificationsPanel'
-import { StoriesSection } from '@/components/home/StoriesSection'
 
 type Tab = 'general' | 'suivi'
 
@@ -87,8 +86,6 @@ export default function HomePage() {
         padding: '24px 0 40px'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <StoriesSection />
-
           {/* Tabs */}
           <div style={{
             display: 'flex',
