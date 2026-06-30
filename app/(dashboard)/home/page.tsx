@@ -6,7 +6,6 @@ import { useUser } from '@/components/context/UserContext'
 import { HomeSkeleton } from '@/components/ui/Skeleton'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
-// Suppressed PopularGroups and NotificationsPanel imports
 
 type Tab = 'general' | 'suivi'
 
@@ -22,19 +21,10 @@ export default function HomePage() {
 
   const supabase = createClient()
 
-  const [isMobileHome, setIsMobileHome] = useState(false)
-  useEffect(() => {
-    const check = () => setIsMobileHome(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
   useEffect(() => {
     document.title = 'Accueil — CM Studio'
     if (!user) return
     async function init() {
-      // 1. Abonnements + posts généraux + likes en parallèle
       const [followsRes, generalRes, likesRes] = await Promise.all([
         supabase.from('user_follows').select('following_id').eq('follower_id', user!.id),
         supabase
@@ -50,7 +40,6 @@ export default function HomePage() {
       if (generalRes.data) setGeneralPosts(generalRes.data)
       if (likesRes.data) setLikedIds(likesRes.data.map((l: any) => l.post_id))
 
-      // 2. "Suivi" = sous-ensemble des posts généraux déjà chargés → 0 requête extra
       if (generalRes.data && followedIds.length > 0) {
         setSuiviPosts(generalRes.data.filter((p: any) => followedIds.includes(p.user_id)))
       }
@@ -62,114 +51,96 @@ export default function HomePage() {
 
   if (loading || !user) return <HomeSkeleton />
 
-  const firstName = user.full_name?.split(' ')[0] || 'Ulrich'
+  const firstName = user.full_name?.split(' ')[0] || 'Utilisateur'
   const activePosts = activeTab === 'general' ? generalPosts : suiviPosts
 
   return (
+    /* Centrage du feed dans l'espace restant après la sidebar */
     <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      gap: isMobileHome ? '0' : '32px',
-      height: isMobileHome ? 'auto' : 'calc(100vh - 72px - 64px)',
-      maxWidth: '1200px',
-      margin: '0 auto',
       width: '100%',
-      overflow: isMobileHome ? 'visible' : 'hidden'
+      maxWidth: '640px',
+      margin: '0 auto',
+      padding: '20px 12px 40px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0',
     }}>
 
-      {/* ── COLONNE 1 : FIL ── */}
-      <div className="sb-scroll" style={{
-        flex: 1,
-        maxWidth: '680px',
-        overflowY: 'auto',
-        padding: '24px 0 40px'
+      {/* ── Tabs Général / Suivi ── */}
+      <div style={{
+        display: 'flex',
+        borderBottom: '1px solid var(--b1)',
+        gap: '4px',
+        marginBottom: '12px',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Tabs */}
-          <div style={{
-            display: 'flex',
-            borderBottom: '1px solid var(--b1)',
-            gap: '4px',
-          }}>
-            {(['general', 'suivi'] as Tab[]).map(tab => {
-              const labels: Record<Tab, string> = { general: 'Général', suivi: 'Suivi' }
-              const isActive = activeTab === tab
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                    padding: '10px 22px',
-                    fontSize: '0.9rem',
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? 'var(--accent)' : 'var(--t3)',
-                    cursor: 'pointer',
-                    transition: 'all .15s',
-                    marginBottom: '-1px',
-                  }}
-                >
-                  {labels[tab]}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Contenu du fil */}
-          {activeTab === 'suivi' && followingCount === 0 ? (
-            /* Empty state — onglet Suivi sans abonnements */
-            <div style={{
-              background: 'var(--card)',
-              border: '1px dashed var(--b1)',
-              borderRadius: '20px',
-              padding: '3.5rem 2rem',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-            }}>
-              <div style={{ fontSize: '3rem', lineHeight: 1 }}>🌱</div>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--t1)', marginBottom: '8px' }}>
-                  Vous ne suivez personne encore
-                </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--t2)', maxWidth: '340px', lineHeight: 1.6, margin: '0 auto' }}>
-                  Abonnez-vous à des créateurs depuis leur profil ou rejoignez les groupes de discussion.
-                </p>
-              </div>
-              <a
-                href="/groups"
-                style={{
-                  marginTop: '8px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  padding: '11px 24px',
-                  borderRadius: '12px',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  textDecoration: 'none',
-                }}
-              >
-                Rejoindre les groupes →
-              </a>
-            </div>
-          ) : (
-            <CommunityFeed
-              initialPosts={activePosts}
-              currentUser={user}
-              initialLikedIds={likedIds}
-            />
-          )}
-        </div>
+        {(['general', 'suivi'] as Tab[]).map(tab => {
+          const labels: Record<Tab, string> = { general: 'Général', suivi: 'Suivi' }
+          const isActive = activeTab === tab
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                background: 'none',
+                border: 'none',
+                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                padding: '10px 22px',
+                fontSize: '0.9rem',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? 'var(--accent)' : 'var(--t3)',
+                cursor: 'pointer',
+                transition: 'all .15s',
+                marginBottom: '-1px',
+              }}
+            >
+              {labels[tab]}
+            </button>
+          )
+        })}
       </div>
 
-      {/* ── COLONNE DE DROITE SUPPRIMÉE SELON LA DEMANDE ── */}
+      {/* ── Feed ── */}
+      {activeTab === 'suivi' && followingCount === 0 ? (
+        <div style={{
+          background: 'var(--card)',
+          border: '1px dashed var(--b1)',
+          borderRadius: '12px',
+          padding: '3.5rem 2rem',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+        }}>
+          <div style={{ fontSize: '3rem', lineHeight: 1 }}>🌱</div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--t1)', marginBottom: '8px' }}>
+              Vous ne suivez personne encore
+            </div>
+            <p style={{ fontSize: '0.9rem', color: 'var(--t2)', maxWidth: '340px', lineHeight: 1.6, margin: '0 auto' }}>
+              Abonnez-vous à des créateurs depuis leur profil ou rejoignez les groupes de discussion.
+            </p>
+          </div>
+          <a
+            href="/groups"
+            style={{
+              marginTop: '8px',
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: 'var(--accent)', color: '#fff',
+              padding: '11px 24px', borderRadius: '12px',
+              fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none',
+            }}
+          >
+            Rejoindre les groupes →
+          </a>
+        </div>
+      ) : (
+        <CommunityFeed
+          initialPosts={activePosts}
+          currentUser={user}
+          initialLikedIds={likedIds}
+        />
+      )}
 
       <WelcomeBanner firstName={firstName} />
     </div>

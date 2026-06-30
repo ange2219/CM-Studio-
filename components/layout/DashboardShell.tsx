@@ -7,7 +7,8 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun, Menu, X, Bookmark, Star
+  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
+  Bookmark, Star, Zap, ChevronRight
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -31,12 +32,10 @@ export function DashboardShell({ user: initialUser, children }: {
   const [user, setUser] = useState<any>(initialUser)
   const [profileOpen, setProfileOpen] = useState(false)
   const [theme, setTheme] = useState('dark')
-  const [isHovered, setIsHovered] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    // Init: read saved theme from localStorage
     const saved = localStorage.getItem('theme')
     if (saved) setTheme(saved)
   }, [])
@@ -66,11 +65,10 @@ export function DashboardShell({ user: initialUser, children }: {
         setProfileOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Messages non lus en temps réel pour le badge de la sidebar / navigation
   const [unreadCount, setUnreadCount] = useState(0)
 
   const loadUnreadCount = useCallback(async () => {
@@ -78,37 +76,27 @@ export function DashboardShell({ user: initialUser, children }: {
     const { data: myParts } = await supabase.from('conversation_participants').select('conversation_id').eq('user_id', user.id)
     if (!myParts?.length) { setUnreadCount(0); return }
     const ids = myParts.map(p => p.conversation_id)
-    
-    let total = 0
     const { data, error } = await supabase
       .from('messages')
       .select('id, message_reads!left(user_id)')
       .in('conversation_id', ids)
       .neq('sender_id', user.id)
-      
     if (data && !error) {
       const unread = data.filter(m => {
         const reads = (m as any).message_reads || []
         return !reads.some((r: any) => r.user_id === user.id)
       })
-      total = unread.length
+      setUnreadCount(unread.length)
     }
-    setUnreadCount(total)
   }, [user?.id, supabase])
 
   useEffect(() => {
     if (!user?.id) return
     loadUnreadCount()
-
     const channel = supabase.channel('sidebar-messages-unread')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        loadUnreadCount()
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reads' }, () => {
-        loadUnreadCount()
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadUnreadCount())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reads' }, () => loadUnreadCount())
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [user?.id, loadUnreadCount, supabase])
 
@@ -130,226 +118,339 @@ export function DashboardShell({ user: initialUser, children }: {
   ]
 
   const shortcuts = [
-    { label: 'Brouillons', icon: Bookmark, href: '/workspace?tab=drafts' },
-    { label: 'Favoris',    icon: Star,     href: '/workspace?tab=favorites' },
+    { label: 'Brouillons', icon: Bookmark, href: '/workspace?tab=drafts'     },
+    { label: 'Favoris',    icon: Star,     href: '/workspace?tab=favorites'   },
+    { label: 'Idées IA',   icon: Zap,      href: '/workspace?tab=ideas'       },
   ]
 
-  const bottomNavItems = [
-    { label: 'Accueil',       icon: Home,          href: '/home'          },
-    { label: 'Workspace',     icon: Layout,        href: '/workspace'     },
-    { label: 'Messagerie',    icon: MessageCircle, href: '/messages'      },
-    { label: 'Notifications', icon: Bell,          href: '/notifications' },
-    { label: 'Groupes',       icon: Users,         href: '/groups'        },
+  const suggestions = [
+    { label: 'Paramètres',     icon: Settings,     href: '/settings?tab=general'  },
+    { label: 'Mon profil',     icon: User,         href: '/profile'               },
+    { label: 'Abonnements',    icon: CreditCard,   href: '/settings?tab=billing'  },
   ]
+
+  const bottomNavItems = navItems
+
+  // ── TOPBAR HEIGHT ──
+  const TOPBAR_H = isMobile ? 56 : 64
+  // ── SIDEBAR WIDTH ──
+  const SIDEBAR_W = 280
 
   return (
-    <div style={{ position: 'relative', display: 'flex', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden' }}>
 
-      {/* Desktop Sidebar Spacer (maintient la largeur du contenu à 64px) */}
-      {!isMobile && (
-        <div style={{ 
-          width: '64px', 
-          flexShrink: 0 
-        }} />
-      )}
+      {/* ══════════════════════════
+          TOPBAR FIXE
+      ══════════════════════════ */}
+      <header style={{
+        position: 'fixed', top: 0, left: 0, right: 0,
+        height: `${TOPBAR_H}px`,
+        background: 'var(--nav-bg)',
+        borderBottom: '1px solid var(--b1)',
+        display: 'flex', alignItems: 'center',
+        padding: isMobile ? '0 12px' : '0 20px',
+        gap: isMobile ? '8px' : '16px',
+        zIndex: 100,
+        flexShrink: 0,
+      }}>
 
-      {/* Sidebar */}
-      {!isMobile && (
-        <div 
-          className="sb-scroll" 
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          style={{ 
-            position: 'absolute',
-            top: 0, left: 0, bottom: 0,
-            width: isHovered ? '240px' : '64px', 
-            background: 'var(--sidebar-bg)', 
-            borderRight: '1px solid var(--b1)', 
-            display: 'flex', flexDirection: 'column', flexShrink: 0, 
-            overflowY: 'auto', overflowX: 'hidden', 
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            zIndex: 10,
-            boxShadow: isHovered ? '4px 0 24px rgba(0,0,0,0.15)' : 'none',
-            transform: 'translateX(0)'
-          }}
-        >
-          {(() => {
-            const isExpanded = isHovered;
-            return (
-              <>
-                <div style={{ padding: isExpanded ? '24px 20px 24px 24px' : '24px 16px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: isExpanded ? 'space-between' : 'center', height: '80px', boxSizing: 'border-box' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
-                    <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
-                    {isExpanded && <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>CM Studio</span>}
-                  </div>
-                </div>
-        
-                <div style={{ flex: 1, padding: isExpanded ? '0 12px' : '0 8px' }}>
-                  {isExpanded ? (
-                    <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '12px', whiteSpace: 'nowrap', opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>Navigation</div>
-                  ) : (
-                    <div style={{ height: '36px' }} />
-                  )}
-                  
-                  {navItems.map(item => {
-                    const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
-                    const isMessages = item.href === '/messages'
-                    return (
-                      <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center', position: 'relative' }}>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
-                          {isMessages && unreadCount > 0 && !isExpanded && (
-                            <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
-                          )}
-                        </div>
-                        {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap', flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>{item.label}</span>}
-                        {isExpanded && isMessages && unreadCount > 0 && (
-                          <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
-                        )}
-                      </Link>
-                    )
-                  })}
-
-                  {/* Section Raccourcis */}
-                  {isExpanded ? (
-                    <div style={{ padding: '0 12px', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px', marginTop: '24px', whiteSpace: 'nowrap', opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>Raccourcis</div>
-                  ) : (
-                    <div style={{ height: '36px' }} />
-                  )}
-
-                  {shortcuts.map(item => {
-                    const active = pathname === item.href
-                    return (
-                      <Link key={item.label} href={item.href} title={!isExpanded ? item.label : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: isExpanded ? '10px 12px' : '10px', borderRadius: '10px', textDecoration: 'none', color: active ? 'var(--text)' : 'var(--text2)', background: active ? 'var(--accent-light)' : 'transparent', marginBottom: '4px', transition: 'all 0.2s', justifyContent: isExpanded ? 'flex-start' : 'center', position: 'relative' }}>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
-                        </div>
-                        {isExpanded && <span style={{ fontSize: '0.85rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap', flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s' }}>{item.label}</span>}
-                      </Link>
-                    )
-                  })}
-                </div>
-              </>
-            )
-          })()}
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: isMobile ? '64px' : 0 }}>
-        
-        {/* Header */}
-        <header style={{ 
-          height: isMobile ? '56px' : '72px', 
-          borderBottom: '1px solid var(--b1)', 
-          display: 'flex', alignItems: 'center', 
-          padding: isMobile ? '0 12px' : '0 32px', 
-          gap: isMobile ? '8px' : '24px', 
-          flexShrink: 0 
-        }}>
-
-
+        {/* LEFT: Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, minWidth: isMobile ? 'auto' : '220px' }}>
+          <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover' }} />
           {!isMobile && (
-            <div style={{ minWidth: '120px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-              <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap' }}>
-                {pathname === '/workspace' && 'Workspace'}
-                {pathname === '/messages' && 'Messagerie'}
-                {pathname === '/home' && 'Accueil'}
-                {pathname === '/groups' && 'Groupes'}
-                {pathname === '/notifications' && 'Notifications'}
-                {pathname === '/profile' && 'Profil'}
-                {pathname?.startsWith('/settings') && 'Paramètres'}
-              </span>
-            </div>
-          )}
-
-          {/* Search bar - hidden on mobile */}
-          {!isMobile && (
-            <div style={{ position: 'relative', flex: 1, maxWidth: '500px', margin: '0 auto' }}>
-              <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
-              <input type="text" placeholder="Rechercher sur CM Studio..." style={{ width: '100%', height: '44px', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '0 16px 0 48px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }} />
-            </div>
-          )}
-
-          {/* Mobile: show page title */}
-          {isMobile && (
-            <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>
               CM Studio
             </span>
           )}
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px', flexShrink: 0 }}>
-            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} style={{ width: isMobile ? '34px' : '40px', height: isMobile ? '34px' : '40px', borderRadius: '12px', background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {theme === 'dark' ? <Sun size={isMobile ? 16 : 20} /> : <Moon size={isMobile ? 16 : 20} />}
-            </button>
-            {/* Redundant message/notification icons removed as per user request */}
-            
-            
-            <div ref={profileRef} style={{ position: 'relative', marginLeft: isMobile ? '0' : '8px' }}>
-              <button 
-                onClick={() => setProfileOpen(!profileOpen)}
-                style={{ 
-                  width: isMobile ? '32px' : '38px', height: isMobile ? '32px' : '38px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', border: '2px solid rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0
+        {/* CENTER: Search (desktop) + Nav Icons */}
+        {!isMobile && (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+            {/* Search bar */}
+            <div style={{ position: 'relative', width: '220px', marginRight: '16px' }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                style={{
+                  width: '100%', height: '38px',
+                  background: 'var(--s2)', border: '1px solid var(--b1)',
+                  borderRadius: '20px', padding: '0 12px 0 36px',
+                  color: 'var(--text)', fontSize: '0.85rem', outline: 'none',
                 }}
-              >
-                {user?.avatar_url ? <Image src={user.avatar_url} width={38} height={38} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt=""/> : initials}
-              </button>
+              />
+            </div>
+            {/* Nav icons centrées */}
+            {navItems.map(item => {
+              const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+              const isMessages = item.href === '/messages'
+              return (
+                <Link key={item.href} href={item.href} title={item.label} style={{
+                  position: 'relative',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '52px', height: `${TOPBAR_H}px`,
+                  color: active ? 'var(--accent)' : 'var(--text2)',
+                  textDecoration: 'none',
+                  borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
+                  transition: 'all 0.15s',
+                }}>
+                  <item.icon size={22} strokeWidth={active ? 2.2 : 1.8} />
+                  {isMessages && unreadCount > 0 && (
+                    <span style={{
+                      position: 'absolute', top: '10px', right: '6px',
+                      background: '#ef4444', color: '#fff',
+                      borderRadius: 99, padding: '1px 5px',
+                      fontSize: '.6rem', fontWeight: 700, minWidth: 14, textAlign: 'center',
+                    }}>{unreadCount}</span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        )}
 
-              {profileOpen && (
-                <div className="profile-dropdown" style={{ background: '#11111F' }}>
-                  <div className="dropdown-header">
-                    <div className="av-large" style={{ overflow: 'hidden' }}>
-                      {user?.avatar_url ? (
-                        <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        initials
+        {isMobile && <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif" }}>CM Studio</span>}
+
+        {/* RIGHT: Theme toggle + Avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: isMobile ? 'auto' : '0', minWidth: isMobile ? 'auto' : '220px', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--s2)', border: '1px solid var(--b1)',
+              color: 'var(--text2)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
+          {/* Notifications bell (mobile) */}
+          {isMobile && (
+            <Link href="/notifications" style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--s2)', border: '1px solid var(--b1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+            }}>
+              <Bell size={16} color="var(--text2)" />
+            </Link>
+          )}
+
+          {/* Avatar + dropdown */}
+          <div ref={profileRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: 'rgba(var(--accent-rgb), 0.2)',
+                border: '2px solid rgba(255,255,255,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'var(--accent)', fontWeight: 700,
+                fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0,
+              }}
+            >
+              {user?.avatar_url ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : initials}
+            </button>
+
+            {profileOpen && (
+              <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
+                <div className="dropdown-header">
+                  <div className="av-large" style={{ overflow: 'hidden' }}>
+                    {user?.avatar_url ? (
+                      <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : initials}
+                  </div>
+                  <div className="u-info">
+                    <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
+                    <div className="u-email">{user?.email}</div>
+                  </div>
+                </div>
+                <div className="dropdown-divider" />
+                <Link href="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
+                <Link href="/settings?tab=billing" className="dropdown-item" onClick={() => setProfileOpen(false)}><CreditCard size={16} /> Abonnements</Link>
+                <Link href="/settings?tab=notifications" className="dropdown-item" onClick={() => setProfileOpen(false)}><BellRing size={16} /> Notifications</Link>
+                <div className="dropdown-divider" />
+                <Link href="/settings?tab=general" className="dropdown-item" onClick={() => setProfileOpen(false)}><Settings size={16} /> Réglages</Link>
+                <Link href="/settings?tab=privacy" className="dropdown-item" onClick={() => setProfileOpen(false)}><ShieldCheck size={16} /> Confidentialité</Link>
+                <div className="dropdown-divider" />
+                <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ══════════════════════════
+          BODY = SIDEBAR + CONTENT
+      ══════════════════════════ */}
+      <div style={{
+        display: 'flex',
+        marginTop: `${TOPBAR_H}px`,
+        height: `calc(100vh - ${TOPBAR_H}px)`,
+        overflow: 'hidden',
+      }}>
+
+        {/* ── LEFT SIDEBAR (desktop only) ── */}
+        {!isMobile && (
+          <aside
+            className="sb-scroll"
+            style={{
+              width: `${SIDEBAR_W}px`,
+              flexShrink: 0,
+              background: 'var(--sidebar-bg)',
+              borderRight: '1px solid var(--b1)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              padding: '12px 8px',
+              gap: 0,
+            }}
+          >
+            {/* Profile Card */}
+            <Link href="/profile" style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '10px 12px', borderRadius: '10px',
+              textDecoration: 'none', marginBottom: '8px',
+              transition: 'background 0.15s',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-light)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <div style={{
+                width: '42px', height: '42px', borderRadius: '50%',
+                background: 'rgba(var(--accent-rgb), 0.2)',
+                flexShrink: 0, overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '1rem', color: 'var(--accent)',
+              }}>
+                {user?.avatar_url
+                  ? <Image src={user.avatar_url} alt="" width={42} height={42} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : initials}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.full_name || 'Utilisateur'}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text3)', marginTop: '1px' }}>
+                  Voir mon profil
+                </div>
+              </div>
+            </Link>
+
+            {/* Nav Items */}
+            <div style={{ marginBottom: '4px' }}>
+              {navItems.map(item => {
+                const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+                const isMessages = item.href === '/messages'
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '10px 12px', borderRadius: '10px',
+                      textDecoration: 'none',
+                      color: active ? 'var(--text)' : 'var(--text2)',
+                      background: active ? 'var(--accent-light)' : 'transparent',
+                      marginBottom: '2px',
+                      transition: 'all 0.15s',
+                      fontWeight: active ? 600 : 500,
+                      position: 'relative',
+                    }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--s2)' }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <item.icon size={20} color={active ? 'var(--accent)' : 'currentColor'} style={{ flexShrink: 0 }} />
+                      {isMessages && unreadCount > 0 && (
+                        <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
                       )}
                     </div>
-                    <div className="u-info">
-                      <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
-                      <div className="u-email">{user?.email}</div>
-                    </div>
-                  </div>
-                  <div className="dropdown-divider" />
-                  <Link href="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                    <User size={16} /> Profil
+                    <span style={{ fontSize: '0.88rem', whiteSpace: 'nowrap', flex: 1 }}>{item.label}</span>
+                    {isMessages && unreadCount > 0 && (
+                      <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
+                    )}
                   </Link>
-                  <Link href="/settings?tab=billing" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                    <CreditCard size={16} /> Abonnements
-                  </Link>
-                  <Link href="/settings?tab=notifications" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                    <BellRing size={16} /> Language et notifications
-                  </Link>
-                  <div className="dropdown-divider" />
-                  <Link href="/settings?tab=general" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                    <Settings size={16} /> Réglages
-                  </Link>
-                  <Link href="/settings?tab=privacy" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                    <ShieldCheck size={16} /> Confidentialité
-                  </Link>
-                  <div className="dropdown-divider" />
-                  <button className="dropdown-item logout" onClick={handleLogout}>
-                    <LogOut size={16} /> Se déconnecter
-                  </button>
-                </div>
-              )}
+                )
+              })}
             </div>
-          </div>
-        </header>
 
-        <main className="sb-scroll" style={{ 
-          flex: 1, 
-          overflowY: pathname?.startsWith('/messages') ? 'hidden' : 'auto', 
-          padding: pathname?.startsWith('/messages') ? '0' : (isMobile ? '16px 12px' : '32px'),
-          display: pathname?.startsWith('/messages') ? 'flex' : 'block',
-          flexDirection: 'column'
-        }}>
+            {/* Separator */}
+            <div style={{ height: '1px', background: 'var(--b1)', margin: '8px 12px' }} />
+
+            {/* Shortcuts */}
+            <div style={{ padding: '4px 12px 6px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Raccourcis
+            </div>
+            {shortcuts.map(item => {
+              const active = pathname?.startsWith(item.href.split('?')[0]) && item.href.includes('?') && pathname === item.href.split('?')[0]
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '8px 12px', borderRadius: '10px',
+                    textDecoration: 'none', color: 'var(--text2)',
+                    marginBottom: '2px', fontSize: '0.88rem', fontWeight: 500,
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <item.icon size={18} style={{ flexShrink: 0, color: 'var(--text3)' }} />
+                  <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
+                </Link>
+              )
+            })}
+
+            {/* Separator */}
+            <div style={{ height: '1px', background: 'var(--b1)', margin: '8px 12px' }} />
+
+            {/* Suggestions */}
+            <div style={{ padding: '4px 12px 6px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Navigation rapide
+            </div>
+            {suggestions.map(item => (
+              <Link
+                key={item.label}
+                href={item.href}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '8px 12px', borderRadius: '10px',
+                  textDecoration: 'none', color: 'var(--text3)',
+                  marginBottom: '2px', fontSize: '0.85rem', fontWeight: 400,
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; (e.currentTarget as HTMLElement).style.color = 'var(--text2)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text3)' }}
+              >
+                <item.icon size={16} style={{ flexShrink: 0 }} />
+                <span style={{ whiteSpace: 'nowrap', flex: 1 }}>{item.label}</span>
+                <ChevronRight size={14} style={{ opacity: 0.4 }} />
+              </Link>
+            ))}
+          </aside>
+        )}
+
+        {/* ── MAIN CONTENT ── */}
+        <main
+          className="sb-scroll"
+          style={{
+            flex: 1,
+            overflowY: pathname?.startsWith('/messages') ? 'hidden' : 'auto',
+            display: pathname?.startsWith('/messages') ? 'flex' : 'block',
+            flexDirection: 'column',
+            paddingBottom: isMobile ? '64px' : 0,
+          }}
+        >
           {children}
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
+      {/* ── MOBILE BOTTOM NAV ── */}
       {isMobile && (
         <nav style={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
@@ -367,8 +468,7 @@ export function DashboardShell({ user: initialUser, children }: {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: '3px', flex: 1, padding: '6px 0',
                 textDecoration: 'none', color: active ? 'var(--accent)' : 'var(--text3)',
-                transition: 'color 0.15s',
-                position: 'relative',
+                transition: 'color 0.15s', position: 'relative',
               }}>
                 <div style={{ position: 'relative', display: 'flex' }}>
                   <item.icon size={20} strokeWidth={active ? 2.2 : 1.8} />
