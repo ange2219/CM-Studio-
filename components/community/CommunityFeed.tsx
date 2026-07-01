@@ -410,7 +410,7 @@ export function CommunityFeed({
                     <Link href={`/profile/${post.username || post.user_id}`} style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--t1)', textDecoration: 'none' }}>
                       {post.full_name || 'Utilisateur'}
                     </Link>
-                    {post.plan && post.plan !== 'Free' && (
+                    {post.plan && post.plan.toLowerCase() !== 'free' && (
                       <span style={{ fontSize: '0.65rem', fontWeight: 700, background: 'var(--accent)', color: '#fff', padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
                         {post.plan}
                       </span>
