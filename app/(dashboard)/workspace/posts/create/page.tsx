@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   Save, Send, Upload, X, ArrowLeft, Clock,
   ChevronDown, Settings2, Layers, Zap, Check, Target, Star,
-  Sparkles, Lock, Bookmark, Bold, Italic, Underline, Strikethrough, List, Link, Smile
+  Sparkles, Lock, Bookmark, Bold, Italic, Underline, Strikethrough, List, Link, Smile, Lightbulb
 } from 'lucide-react'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 import {
@@ -859,7 +859,7 @@ export default function CreatePage() {
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
-                <Bookmark size={14} /> <span className="hidden sm:inline">Trouver une idée</span> <ChevronDown size={14} />
+                <Lightbulb size={14} /> <span className="hidden sm:inline">Trouver une idée</span> <ChevronDown size={14} />
               </button>
             </div>
 
