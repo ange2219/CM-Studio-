@@ -376,7 +376,7 @@ export function CommunityFeed({
       )}
 
       {/* POSTS LIST */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="feed-list">
         {filteredPosts.map(post => {
           const isLiked = likedIds.has(post.id)
           const isExpanded = expandedPostId === post.id
@@ -384,13 +384,7 @@ export function CommunityFeed({
           const isLoading = loadingComments[post.id]
 
           return (
-            <div key={post.id} id={`post-container-${post.id}`} style={{
-              background: 'var(--card)',
-              borderRadius: '12px',
-              border: '1px solid var(--b1)',
-              overflow: 'hidden',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
-            }}>
+            <div key={post.id} id={`post-container-${post.id}`} className="post-card">
 
               {/* ── HEADER ── */}
               <div style={{ padding: '12px 12px 8px 12px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>

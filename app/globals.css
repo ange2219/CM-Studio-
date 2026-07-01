@@ -1041,5 +1041,40 @@ tbody td{padding:10px;font-size:12px;color:var(--text);}
     border-radius: 0 !important;
     margin-left: -12px !important;
     margin-right: -12px !important;
+}
+
+/* ── Feed & Post Cards ── */
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.post-card {
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--b1);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+@media (max-width: 767px) {
+  .feed-list {
+    gap: 0;
+  }
+  .post-card {
+    border-radius: 0;
+    border: none;
+    border-bottom: 3px solid var(--b2); /* Ligne un peu plus épaisse pour séparer */
+    box-shadow: none;
+    background: transparent;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .post-card:last-child {
+    border-bottom: none;
   }
 }
