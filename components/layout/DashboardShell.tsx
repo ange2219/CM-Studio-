@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
-  Bookmark, Star, Zap, ChevronRight
+  Sparkles, BarChart2, Zap
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -118,15 +118,11 @@ export function DashboardShell({ user: initialUser, children }: {
   ]
 
   const shortcuts = [
-    { label: 'Brouillons', icon: Bookmark, href: '/workspace?tab=drafts'     },
-    { label: 'Favoris',    icon: Star,     href: '/workspace?tab=favorites'   },
-    { label: 'Idées IA',   icon: Zap,      href: '/workspace?tab=ideas'       },
-  ]
-
-  const suggestions = [
-    { label: 'Paramètres',     icon: Settings,     href: '/settings?tab=general'  },
-    { label: 'Mon profil',     icon: User,         href: '/profile'               },
-    { label: 'Abonnements',    icon: CreditCard,   href: '/settings?tab=billing'  },
+    { label: 'Générer un post', icon: Sparkles,   href: '/workspace',              accent: true  },
+    { label: 'Analytics',       icon: BarChart2,  href: '/workspace?tab=analytics', accent: false },
+    { label: 'Abonnements',     icon: CreditCard, href: '/settings?tab=billing',    accent: false },
+    { label: 'Paramètres',      icon: Settings,   href: '/settings?tab=general',    accent: false },
+    { label: 'Mon profil',      icon: User,       href: '/profile',                 accent: false },
   ]
 
   const bottomNavItems = navItems
@@ -164,15 +160,14 @@ export function DashboardShell({ user: initialUser, children }: {
           )}
         </div>
 
-        {/* CENTER: Search (desktop) + Nav Icons */}
+        {/* CENTER: Search (desktop only) */}
         {!isMobile && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-            {/* Search bar */}
-            <div style={{ position: 'relative', width: '220px', marginRight: '16px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '280px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
               <input
                 type="text"
-                placeholder="Rechercher..."
+                placeholder="Rechercher sur CM Studio..."
                 style={{
                   width: '100%', height: '38px',
                   background: 'var(--s2)', border: '1px solid var(--b1)',
@@ -181,39 +176,13 @@ export function DashboardShell({ user: initialUser, children }: {
                 }}
               />
             </div>
-            {/* Nav icons centrées */}
-            {navItems.map(item => {
-              const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
-              const isMessages = item.href === '/messages'
-              return (
-                <Link key={item.href} href={item.href} title={item.label} style={{
-                  position: 'relative',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: '52px', height: `${TOPBAR_H}px`,
-                  color: active ? 'var(--accent)' : 'var(--text2)',
-                  textDecoration: 'none',
-                  borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
-                  transition: 'all 0.15s',
-                }}>
-                  <item.icon size={22} strokeWidth={active ? 2.2 : 1.8} />
-                  {isMessages && unreadCount > 0 && (
-                    <span style={{
-                      position: 'absolute', top: '10px', right: '6px',
-                      background: '#ef4444', color: '#fff',
-                      borderRadius: 99, padding: '1px 5px',
-                      fontSize: '.6rem', fontWeight: 700, minWidth: 14, textAlign: 'center',
-                    }}>{unreadCount}</span>
-                  )}
-                </Link>
-              )
-            })}
           </div>
         )}
 
         {isMobile && <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif" }}>CM Studio</span>}
 
-        {/* RIGHT: Theme toggle + Avatar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: isMobile ? 'auto' : '0', minWidth: isMobile ? 'auto' : '220px', justifyContent: 'flex-end' }}>
+        {/* RIGHT: Theme toggle only */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             style={{
@@ -226,7 +195,7 @@ export function DashboardShell({ user: initialUser, children }: {
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          {/* Notifications bell (mobile) */}
+          {/* Mobile: bell icon */}
           {isMobile && (
             <Link href="/notifications" style={{
               width: '36px', height: '36px', borderRadius: '50%',
@@ -236,48 +205,6 @@ export function DashboardShell({ user: initialUser, children }: {
               <Bell size={16} color="var(--text2)" />
             </Link>
           )}
-
-          {/* Avatar + dropdown */}
-          <div ref={profileRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              style={{
-                width: '36px', height: '36px', borderRadius: '50%',
-                background: 'rgba(var(--accent-rgb), 0.2)',
-                border: '2px solid rgba(255,255,255,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--accent)', fontWeight: 700,
-                fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0,
-              }}
-            >
-              {user?.avatar_url ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : initials}
-            </button>
-
-            {profileOpen && (
-              <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
-                <div className="dropdown-header">
-                  <div className="av-large" style={{ overflow: 'hidden' }}>
-                    {user?.avatar_url ? (
-                      <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : initials}
-                  </div>
-                  <div className="u-info">
-                    <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
-                    <div className="u-email">{user?.email}</div>
-                  </div>
-                </div>
-                <div className="dropdown-divider" />
-                <Link href="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
-                <Link href="/settings?tab=billing" className="dropdown-item" onClick={() => setProfileOpen(false)}><CreditCard size={16} /> Abonnements</Link>
-                <Link href="/settings?tab=notifications" className="dropdown-item" onClick={() => setProfileOpen(false)}><BellRing size={16} /> Notifications</Link>
-                <div className="dropdown-divider" />
-                <Link href="/settings?tab=general" className="dropdown-item" onClick={() => setProfileOpen(false)}><Settings size={16} /> Réglages</Link>
-                <Link href="/settings?tab=privacy" className="dropdown-item" onClick={() => setProfileOpen(false)}><ShieldCheck size={16} /> Confidentialité</Link>
-                <div className="dropdown-divider" />
-                <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
-              </div>
-            )}
-          </div>
         </div>
       </header>
 
@@ -380,56 +307,30 @@ export function DashboardShell({ user: initialUser, children }: {
             {/* Separator */}
             <div style={{ height: '1px', background: 'var(--b1)', margin: '8px 12px' }} />
 
-            {/* Shortcuts */}
-            <div style={{ padding: '4px 12px 6px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            {/* Raccourcis — actions fréquentes */}
+            <div style={{ padding: '4px 12px 8px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               Raccourcis
             </div>
-            {shortcuts.map(item => {
-              const active = pathname?.startsWith(item.href.split('?')[0]) && item.href.includes('?') && pathname === item.href.split('?')[0]
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '12px',
-                    padding: '8px 12px', borderRadius: '10px',
-                    textDecoration: 'none', color: 'var(--text2)',
-                    marginBottom: '2px', fontSize: '0.88rem', fontWeight: 500,
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <item.icon size={18} style={{ flexShrink: 0, color: 'var(--text3)' }} />
-                  <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
-                </Link>
-              )
-            })}
 
-            {/* Separator */}
-            <div style={{ height: '1px', background: 'var(--b1)', margin: '8px 12px' }} />
-
-            {/* Suggestions */}
-            <div style={{ padding: '4px 12px 6px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Navigation rapide
-            </div>
-            {suggestions.map(item => (
+            {shortcuts.map(item => (
               <Link
                 key={item.label}
                 href={item.href}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '8px 12px', borderRadius: '10px',
-                  textDecoration: 'none', color: 'var(--text3)',
-                  marginBottom: '2px', fontSize: '0.85rem', fontWeight: 400,
+                  padding: '9px 12px', borderRadius: '10px',
+                  textDecoration: 'none',
+                  color: (item as any).accent ? 'var(--accent)' : 'var(--text2)',
+                  background: (item as any).accent ? 'var(--accent-light)' : 'transparent',
+                  marginBottom: '2px', fontSize: '0.88rem', fontWeight: (item as any).accent ? 700 : 500,
                   transition: 'all 0.15s',
+                  border: (item as any).accent ? '1px solid rgba(var(--accent-rgb), 0.2)' : '1px solid transparent',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; (e.currentTarget as HTMLElement).style.color = 'var(--text2)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text3)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = (item as any).accent ? 'rgba(var(--accent-rgb), 0.15)' : 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = (item as any).accent ? 'var(--accent-light)' : 'transparent' }}
               >
-                <item.icon size={16} style={{ flexShrink: 0 }} />
-                <span style={{ whiteSpace: 'nowrap', flex: 1 }}>{item.label}</span>
-                <ChevronRight size={14} style={{ opacity: 0.4 }} />
+                <item.icon size={18} style={{ flexShrink: 0, color: (item as any).accent ? 'var(--accent)' : 'var(--text3)' }} />
+                <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
               </Link>
             ))}
           </aside>
