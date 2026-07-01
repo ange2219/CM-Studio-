@@ -863,7 +863,7 @@ export default function CreatePage() {
               </button>
             </div>
 
-            <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>1. Sujet</div>
+            <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>Sujet</div>
 
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
