@@ -325,27 +325,31 @@ export function DashboardShell({ user: initialUser, children }: {
               Raccourcis
             </div>
 
-            {shortcuts.map(item => (
-              <Link
-                key={item.label}
-                href={item.href}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '9px 12px', borderRadius: '10px',
-                  textDecoration: 'none',
-                  color: (item as any).accent ? 'var(--accent)' : 'var(--text2)',
-                  background: (item as any).accent ? 'var(--accent-light)' : 'transparent',
-                  marginBottom: '2px', fontSize: '0.88rem', fontWeight: (item as any).accent ? 700 : 500,
-                  transition: 'all 0.15s',
-                  border: (item as any).accent ? '1px solid rgba(var(--accent-rgb), 0.2)' : '1px solid transparent',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = (item as any).accent ? 'rgba(var(--accent-rgb), 0.15)' : 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = (item as any).accent ? 'var(--accent-light)' : 'transparent' }}
-              >
-                <item.icon size={18} style={{ flexShrink: 0, color: (item as any).accent ? 'var(--accent)' : 'var(--text3)' }} />
-                <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
-              </Link>
-            ))}
+            {shortcuts.map(item => {
+              const isAccent = (item as any).accent
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '9px 12px', borderRadius: '10px',
+                    textDecoration: 'none',
+                    color: isAccent ? '#ffffff' : 'var(--text2)',
+                    background: isAccent ? 'var(--accent)' : 'transparent',
+                    marginBottom: '4px', fontSize: '0.88rem', fontWeight: isAccent ? 600 : 500,
+                    transition: 'all 0.15s',
+                    border: 'none',
+                    boxShadow: isAccent ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = isAccent ? 'var(--accent-hover)' : 'var(--s2)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = isAccent ? 'var(--accent)' : 'transparent' }}
+                >
+                  <item.icon size={18} style={{ flexShrink: 0, color: isAccent ? '#ffffff' : 'var(--text3)' }} />
+                  <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
+                </Link>
+              )
+            })}
           </aside>
         )}
 
