@@ -43,6 +43,7 @@ export function CommunityFeed({
   currentUser,
   initialLikedIds,
   groupId,
+  hideCreatePost,
 }: {
   initialPosts: Post[]
   currentUser: any
