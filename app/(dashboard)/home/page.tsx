@@ -6,6 +6,8 @@ import { useUser } from '@/components/context/UserContext'
 import { HomeSkeleton } from '@/components/ui/Skeleton'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
+import { SquarePen } from 'lucide-react'
+import { CreatePostModal } from '@/components/community/CreatePostModal'
 
 type Tab = 'general' | 'suivi'
 
@@ -18,6 +20,14 @@ export default function HomePage() {
   const [suiviPosts, setSuiviPosts] = useState<any[]>([])
   const [likedIds, setLikedIds] = useState<string[]>([])
   const [followingCount, setFollowingCount] = useState(0)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  const handlePostCreated = (newPost: any) => {
+    setGeneralPosts([newPost, ...generalPosts])
+    if (activeTab === 'suivi') {
+      setSuiviPosts([newPost, ...suiviPosts])
+    }
+  }
 
   const supabase = createClient()
 
@@ -63,6 +73,56 @@ export default function HomePage() {
       display: 'flex',
       flexDirection: 'column',
     }}>
+
+      {/* ── CREATE POST TRIGGER ── */}
+      <div 
+        onClick={() => setIsCreateModalOpen(true)}
+        style={{
+        background: 'var(--card)',
+        borderRadius: '30px',
+        padding: '8px 16px 8px 8px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginBottom: '20px',
+        cursor: 'pointer',
+        border: '1px solid var(--b1)',
+      }}>
+        <div style={{
+          width: '40px', height: '40px', borderRadius: '50%',
+          overflow: 'hidden', flexShrink: 0,
+          background: 'rgba(var(--accent-rgb), 0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--accent)', fontWeight: 700
+        }}>
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span>{firstName.slice(0, 1).toUpperCase()}</span>
+          )}
+        </div>
+        <div style={{ flex: 1, color: 'var(--t3)', fontSize: '0.95rem' }}>
+          Quoi de neuf ?
+        </div>
+        <button style={{
+          background: 'var(--accent)',
+          border: 'none',
+          borderRadius: '50%',
+          width: '36px', height: '36px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff',
+          cursor: 'pointer'
+        }}>
+          <SquarePen size={18} />
+        </button>
+      </div>
+
+      <CreatePostModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        currentUser={user} 
+        onPostCreated={handlePostCreated} 
+      />
 
       {/* ── Tabs Général / Suivi ── */}
       <div style={{
@@ -138,6 +198,7 @@ export default function HomePage() {
           initialPosts={activePosts}
           currentUser={user}
           initialLikedIds={likedIds}
+          hideCreatePost={true}
         />
       )}
 
