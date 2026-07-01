@@ -972,7 +972,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
       {!allPosts && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem' }}>
-        <h1 className="md:hidden" style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", margin: '0 0 .5rem 0', lineHeight: 1.25 }}>
+        <h1 className="text-[1.45rem] md:text-[1.8rem] mb-2 md:mb-4" style={{ fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", lineHeight: 1.25 }}>
           Prêt à créer du contenu qui fait la différence ?
         </h1>
         {/* ── MOBILE CARDS ── */}
