@@ -57,7 +57,9 @@ export default function HomePage() {
   return (
     <div style={{
       width: '100%',
-      padding: '20px 24px 40px 24px',
+      maxWidth: '680px',
+      margin: '0 auto',
+      padding: '20px 16px 40px',
       display: 'flex',
       flexDirection: 'column',
     }}>
