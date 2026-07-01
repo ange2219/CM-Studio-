@@ -860,7 +860,7 @@ export default function CreatePage() {
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
-                <Lightbulb size={14} /> <span className="hidden sm:inline">Trouver une idée</span> <ChevronDown size={14} />
+                <Lightbulb size={14} /> <span className="hidden sm:inline">Trouver une idée</span>
               </button>
             </div>
 
@@ -889,11 +889,8 @@ export default function CreatePage() {
               />
 
               {/* Footer */}
-              <div style={{ padding: '.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ padding: '.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{brief.length} / 2000 caractères</span>
-                <button onClick={() => toast("Suggestions IA disponibles bientôt", "info")} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '.4rem .75rem', fontSize: '.75rem', color: 'var(--t2)', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--t3)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}>
-                  <Sparkles size={14} style={{ color: 'var(--t3)' }} /> Suggestions IA
-                </button>
               </div>
             </div>
 
@@ -918,14 +915,9 @@ export default function CreatePage() {
 
               {/* Bouton Générer principal */}
               <div className="flex justify-end w-full">
-                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', width: '100%' }} className="md:w-auto">
-                  <button onClick={handleGenerate} className="flex-1 md:flex-none flex items-center justify-center" style={{ background: 'var(--accent)', color: '#fff', height: '56px', padding: '0 2rem', fontSize: '1.05rem', fontWeight: 600, borderRight: '1px solid rgba(255,255,255,0.2)' }}>
-                    <Sparkles size={20} style={{ marginRight: '8px' }} /> Générer le post
-                  </button>
-                  <button onClick={() => toast("Options supplémentaires bientôt", "info")} style={{ background: 'var(--accent)', color: '#fff', width: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ChevronDown size={20} />
-                  </button>
-                </div>
+                <button onClick={handleGenerate} className="w-full md:w-auto flex items-center justify-center" style={{ background: 'var(--accent)', color: '#fff', height: '56px', padding: '0 2rem', fontSize: '1.05rem', fontWeight: 600, borderRadius: '12px' }}>
+                  <Sparkles size={20} style={{ marginRight: '8px' }} /> Générer le post
+                </button>
               </div>
 
             </div>
