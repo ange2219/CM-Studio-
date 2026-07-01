@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage, Lightbulb } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
@@ -183,7 +183,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
   // Nouveau post menu
   const [npMenuOpen, setNpMenuOpen] = useState(false)
-  const npMenuRef = useRef<HTMLDivElement>(null)
+  const npMenuRefDesktop = useRef<HTMLDivElement>(null)
+  const npMenuRefMobile = useRef<HTMLDivElement>(null)
 
   // Filtre par plateforme
   const [platformFilter, setPlatformFilter] = useState<string | null>(null)
@@ -213,7 +214,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
   useEffect(() => {
     function handleOutsideNp(e: MouseEvent) {
-      if (npMenuRef.current && !npMenuRef.current.contains(e.target as Node)) setNpMenuOpen(false)
+      if (
+        (npMenuRefDesktop.current && !npMenuRefDesktop.current.contains(e.target as Node)) &&
+        (npMenuRefMobile.current && !npMenuRefMobile.current.contains(e.target as Node))
+      ) {
+        setNpMenuOpen(false)
+      }
     }
     if (npMenuOpen) document.addEventListener('mousedown', handleOutsideNp)
     return () => document.removeEventListener('mousedown', handleOutsideNp)
@@ -966,8 +972,70 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
       {!allPosts && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem' }}>
-        {/* 4 Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
+        {/* ── MOBILE CARDS ── */}
+        <div className="grid md:hidden" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '.4rem', marginBottom: '1.5rem' }}>
+          {/* Nouveau post */}
+          <div onClick={() => setNpMenuOpen(o => !o)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', position: 'relative' }} ref={npMenuRefMobile}>
+            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <PenLine size={20} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Nouveau<br/>post</div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Créer du contenu</div>
+            </div>
+            {npMenuOpen && (
+              <div style={{ position: 'absolute', top: '100%', left: '0', width: '150px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)', marginTop: '.5rem' }}>
+                <button onClick={() => { setNpMenuOpen(false); router.push('/workspace/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.6rem .5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }}>
+                  <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Générer (IA)
+                </button>
+                <button onClick={() => {
+                  setNpMenuOpen(false)
+                  try {
+                    sessionStorage.setItem('social_ia_results', JSON.stringify({
+                      variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
+                    }))
+                  } catch {}
+                  router.push('/workspace/posts/results')
+                }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.6rem .5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }}>
+                  <PenLine size={14} style={{ color: 'var(--t2)' }} /> Créer manuellement
+                </button>
+              </div>
+            )}
+          </div>
+          {/* Calendrier */}
+          <div onClick={() => router.push('/workspace/calendrier')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar size={20} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Calendrier</div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Planifier</div>
+            </div>
+          </div>
+          {/* Analytique */}
+          <div onClick={() => router.push('/workspace/analytics')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart3 size={20} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Analytique</div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Voir les analyses</div>
+            </div>
+          </div>
+          {/* Idées */}
+          <div onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Lightbulb size={20} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Idées</div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>S'inspirer</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── DESKTOP CARDS ── */}
+        <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
           {/* Nouveau post */}
           <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
@@ -977,7 +1045,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Nouveau post</h3>
             </div>
             <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Créez ou générez du contenu avec/sans IA.</p>
-            <div style={{ position: 'relative', marginTop: '.75rem' }} ref={npMenuRef}>
+            <div style={{ position: 'relative', marginTop: '.75rem' }} ref={npMenuRefDesktop}>
               <button onClick={() => setNpMenuOpen(o => !o)} style={{ width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
                 Nouveau <ChevronDown size={12} style={{ transition: 'transform .15s', transform: npMenuOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
