@@ -118,11 +118,11 @@ export function DashboardShell({ user: initialUser, children }: {
   ]
 
   const shortcuts = [
-    { label: 'Générer un post', icon: Sparkles,   href: '/workspace',              accent: true  },
-    { label: 'Analytics',       icon: BarChart2,  href: '/workspace?tab=analytics', accent: false },
-    { label: 'Abonnements',     icon: CreditCard, href: '/settings?tab=billing',    accent: false },
-    { label: 'Paramètres',      icon: Settings,   href: '/settings?tab=general',    accent: false },
-    { label: 'Mon profil',      icon: User,       href: '/profile',                 accent: false },
+    { label: 'Générer un post', icon: Sparkles,   href: '/workspace/posts/create' },
+    { label: 'Analytics',       icon: BarChart2,  href: '/workspace/analytics'    },
+    { label: 'Abonnements',     icon: CreditCard, href: '/settings?tab=billing'   },
+    { label: 'Paramètres',      icon: Settings,   href: '/settings?tab=general'   },
+    { label: 'Mon profil',      icon: User,       href: '/profile'                },
   ]
 
   const bottomNavItems = navItems
@@ -282,8 +282,14 @@ export function DashboardShell({ user: initialUser, children }: {
             {/* Nav Items */}
             <div style={{ marginBottom: '4px' }}>
               {navItems.map(item => {
-                const active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
-                const isMessages = item.href === '/messages'
+                let active = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href))
+                
+                // Ne pas afficher Workspace comme actif si on est sur la création de post
+                if (item.href === '/workspace' && pathname?.startsWith('/workspace/posts/create')) {
+                  active = false
+                }
+
+                const isMessages = item.label === 'Messagerie'
                 return (
                   <Link
                     key={item.label}
@@ -326,7 +332,14 @@ export function DashboardShell({ user: initialUser, children }: {
             </div>
 
             {shortcuts.map(item => {
-              const isAccent = (item as any).accent
+              // Règle d'activation pour les raccourcis
+              let active = pathname === item.href || pathname?.startsWith(item.href)
+              // Exception pour les settings qui ont des tabs (pour ne pas tout activer si on va sur /settings)
+              if (item.href.includes('?')) {
+                const base = item.href.split('?')[0]
+                active = pathname === base && (typeof window !== 'undefined' ? window.location.search === '?' + item.href.split('?')[1] : false)
+              }
+
               return (
                 <Link
                   key={item.label}
@@ -335,17 +348,16 @@ export function DashboardShell({ user: initialUser, children }: {
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '9px 12px', borderRadius: '10px',
                     textDecoration: 'none',
-                    color: isAccent ? '#ffffff' : 'var(--text2)',
-                    background: isAccent ? 'var(--accent)' : 'transparent',
-                    marginBottom: '4px', fontSize: '0.88rem', fontWeight: isAccent ? 600 : 500,
+                    color: active ? 'var(--accent)' : 'var(--text2)',
+                    background: active ? 'var(--accent-light)' : 'transparent',
+                    marginBottom: '4px', fontSize: '0.88rem', fontWeight: active ? 600 : 500,
                     transition: 'all 0.15s',
-                    border: 'none',
-                    boxShadow: isAccent ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                    border: '1px solid transparent',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = isAccent ? 'var(--accent-hover)' : 'var(--s2)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = isAccent ? 'var(--accent)' : 'transparent' }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--s2)' }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <item.icon size={18} style={{ flexShrink: 0, color: isAccent ? '#ffffff' : 'var(--text3)' }} />
+                  <item.icon size={18} style={{ flexShrink: 0, color: active ? 'var(--accent)' : 'var(--text3)' }} />
                   <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
                 </Link>
               )
