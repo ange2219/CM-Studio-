@@ -7,7 +7,7 @@
 :root {
   --radius: 12px;
   /* ── Palette base — Minimalist Light ── */
-  --bg: #F5F6F8;
+  --bg: #EAECEF; /* Plus contrasté que le précédent F0F2F5 */
   --white: #ffffff;
   --accent: #004422;
   --accent-secondary: #059669;
@@ -22,14 +22,14 @@
   --text2: #4B5563;
   --text3: #9CA3AF;
   
-  --border: #E5E7EB;
+  --border: #DADCE0; /* Bordure un poil plus foncée pour délimiter les cartes */
   --sidebar-bg: #ffffff;
   --nav-bg: #ffffff;
   --card-bg: #ffffff;
-  --table-head: #F9FAFB;
-  --row-hover: #F3F4F6;
-  --input-bg: #F9FAFB;
-  --shadow: rgba(0, 0, 0, 0.03);
+  --table-head: #F3F4F6;
+  --row-hover: #F8F9FA;
+  --input-bg: #F1F3F4;
+  --shadow: rgba(0, 0, 0, 0.05);
 
   /* ── Aliases pour les composants ── */
   --t1: var(--text);
@@ -54,7 +54,7 @@
 [data-theme="dark"] {
   /* The user requested a strictly light 'blanc cassé' interface. 
      Forcing light theme variables here to unify the aesthetic. */
-  --bg: #F5F6F8;
+  --bg: #EAECEF;
   --white: #ffffff;
   --accent: #004422;
   --accent-secondary: #059669;
@@ -75,8 +75,8 @@
   --card-bg: #ffffff;
   --table-head: #F9FAFB;
   --row-hover: #F3F4F6;
-  --input-bg: #F9FAFB;
-  --shadow: rgba(0, 0, 0, 0.03);
+  --input-bg: #F3F4F6;
+  --shadow: rgba(0, 0, 0, 0.08);
 
   --t1: var(--text);
   --t2: var(--text2);
