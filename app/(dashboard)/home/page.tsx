@@ -131,6 +131,11 @@ export default function HomePage() {
         gap: '4px',
         marginBottom: '12px',
         justifyContent: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        background: 'var(--bg)',
+        paddingTop: '8px',
       }}>
         {(['general', 'suivi'] as Tab[]).map(tab => {
           const labels: Record<Tab, string> = { general: 'Général', suivi: 'Suivi' }

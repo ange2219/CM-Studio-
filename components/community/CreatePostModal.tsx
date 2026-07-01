@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Image as ImageIcon, Sparkles, Send } from 'lucide-react'
+import { X, Image as ImageIcon, Send } from 'lucide-react'
 
 export function CreatePostModal({
   isOpen,
@@ -177,13 +177,7 @@ export function CreatePostModal({
               <ImageIcon size={20} />
               <span style={{ fontSize: '0.9rem' }}>{uploadingImage ? 'Upload...' : 'Image'}</span>
             </button>
-            <button style={{
-              background: 'none', border: 'none', color: 'var(--t2)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600
-            }}>
-              <Sparkles size={20} />
-              <span style={{ fontSize: '0.9rem' }}>IA Assist</span>
-            </button>
+
           </div>
           <button
             onClick={handlePost}
