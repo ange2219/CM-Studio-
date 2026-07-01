@@ -802,7 +802,7 @@ export default function CreatePage() {
 
       {/* ── Mode IA ────────────────────────────────────────────────────── */}
       {mode === 'ai' && (
-        <div style={{ display: 'flex', gap: '2rem', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-1 min-h-0 overflow-y-auto md:overflow-hidden pb-8 md:pb-0">
 
           {/* ── Modal connexion requise ── */}
           {connectPopupPlatform && (
@@ -832,7 +832,7 @@ export default function CreatePage() {
           )}
 
           {/* ── Colonne gauche : Éditeur ── */}
-          <div style={{ flex: '1 1 500px', minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div className="flex-1 min-w-0 flex flex-col h-auto md:h-full">
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
@@ -864,9 +864,9 @@ export default function CreatePage() {
 
             <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>1. Sujet</div>
 
-            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: '350px' }}>
               {/* Toolbar */}
-              <div style={{ padding: '.75rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+              <div style={{ padding: '.75rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '.25rem', flexWrap: 'wrap' }}>
                 {[
                   { icon: Bold, label: 'Gras' }, { icon: Italic, label: 'Italique' }, { icon: Underline, label: 'Souligné' }, { icon: Strikethrough, label: 'Barré' },
                   { icon: List, label: 'Liste' }, { icon: Link, label: 'Lien' }, { icon: Smile, label: 'Emoji' }
@@ -895,12 +895,12 @@ export default function CreatePage() {
             </div>
 
             {/* Bouton générer principal */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden' }}>
-                <button onClick={handleGenerate} className="btn-primary" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, display: 'flex', alignItems: 'center', gap: '.5rem', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
+            <div className="flex md:justify-end mt-6 mb-6 md:mb-0">
+              <div className="flex rounded-lg overflow-hidden w-full md:w-auto">
+                <button onClick={handleGenerate} className="btn-primary flex-1 md:flex-none flex items-center justify-center gap-2 border-r border-white/20" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, background: '#3B82F6' }}>
                   <Sparkles size={18} /> Générer le post
                 </button>
-                <button onClick={() => toast("Options supplémentaires bientôt", "info")} className="btn-primary" style={{ padding: '.8rem .8rem', borderRadius: 0 }}>
+                <button onClick={() => toast("Options supplémentaires bientôt", "info")} className="btn-primary flex-shrink-0" style={{ padding: '.8rem .8rem', borderRadius: 0, background: '#3B82F6' }}>
                   <ChevronDown size={18} />
                 </button>
               </div>
@@ -908,7 +908,7 @@ export default function CreatePage() {
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto', paddingRight: '4px' }}>
+          <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-6 overflow-visible md:overflow-y-auto pr-0 md:pr-1">
 
             {/* Block Plateforme */}
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
@@ -942,7 +942,7 @@ export default function CreatePage() {
                         <PlatformIcon platform={p} size={18} />
                         <span style={{ fontSize: '.85rem', color: isSel ? 'var(--t1)' : 'var(--t2)', fontWeight: isSel ? 500 : 400 }}>{PLATFORM_NAMES[p]}</span>
                       </div>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '4px', border: `1px solid ${isSel ? 'var(--accent)' : 'var(--t3)'}`, background: isSel ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '4px', border: `1px solid ${isSel ? '#3B82F6' : 'var(--t3)'}`, background: isSel ? '#3B82F6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {isSel && <Check size={12} color="#fff" />}
                       </div>
                       <input type="checkbox" checked={isSel} onChange={() => {
@@ -1008,7 +1008,7 @@ export default function CreatePage() {
                         onClick={() => setParams({ ...params, length: l })}
                         style={{
                           flex: 1, padding: '.5rem', border: 'none',
-                          background: params.length === l ? 'var(--accent)' : 'transparent',
+                          background: params.length === l ? '#3B82F6' : 'transparent',
                           color: params.length === l ? '#fff' : 'var(--t3)',
                           fontSize: '.8rem', fontWeight: 500, cursor: 'pointer', transition: '.2s'
                         }}
