@@ -133,13 +133,12 @@ export function DashboardShell({ user: initialUser, children }: {
   const SIDEBAR_W = 240
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden' }}>
 
       {/* ══════════════════════════
-          TOPBAR FIXE
+          TOPBAR
       ══════════════════════════ */}
       <header style={{
-        position: 'fixed', top: 0, left: 0, right: 0,
         height: `${TOPBAR_H}px`,
         background: 'var(--nav-bg)',
         borderBottom: '1px solid var(--b1)',
@@ -257,8 +256,7 @@ export function DashboardShell({ user: initialUser, children }: {
       ══════════════════════════ */}
       <div style={{
         display: 'flex',
-        marginTop: `${TOPBAR_H}px`,
-        height: `calc(100vh - ${TOPBAR_H}px)`,
+        flex: 1,
         overflow: 'hidden',
       }}>
 
@@ -268,6 +266,7 @@ export function DashboardShell({ user: initialUser, children }: {
             className="sb-scroll"
             style={{
               width: `${SIDEBAR_W}px`,
+              height: '100%',
               flexShrink: 0,
               background: 'var(--sidebar-bg)',
               borderRight: '1px solid var(--b1)',
