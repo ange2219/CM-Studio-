@@ -972,16 +972,19 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       {/* ── NOUVEAU HEADER WORKSPACE ── */}
       {!allPosts && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem' }}>
+        <h1 className="md:hidden" style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", margin: '0 0 .5rem 0', lineHeight: 1.25 }}>
+          Prêt à créer du contenu qui fait la différence ?
+        </h1>
         {/* ── MOBILE CARDS ── */}
-        <div className="grid md:hidden" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '.4rem', marginBottom: '1.5rem' }}>
+        <div className="grid md:hidden" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '.3rem', marginBottom: '1.5rem' }}>
           {/* Nouveau post */}
           <div onClick={() => setNpMenuOpen(o => !o)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', position: 'relative' }} ref={npMenuRefMobile}>
-            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <PenLine size={20} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <PenLine size={24} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Nouveau<br/>post</div>
-              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Créer du contenu</div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Créer</div>
             </div>
             {npMenuOpen && (
               <div style={{ position: 'absolute', top: '100%', left: '0', width: '150px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)', marginTop: '.5rem' }}>
@@ -1004,8 +1007,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           </div>
           {/* Calendrier */}
           <div onClick={() => router.push('/workspace/calendrier')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={20} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar size={24} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Calendrier</div>
@@ -1014,18 +1017,18 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           </div>
           {/* Analytique */}
           <div onClick={() => router.push('/workspace/analytics')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChart3 size={20} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart3 size={24} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Analytique</div>
-              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Voir les analyses</div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Performances</div>
             </div>
           </div>
           {/* Idées */}
           <div onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-            <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Lightbulb size={20} />
+            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Lightbulb size={24} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Idées</div>
@@ -1199,19 +1202,38 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           {loading ? (
             <PostsListSkeleton />
           ) : displayPosts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ marginBottom: '.75rem', display: 'flex', justifyContent: 'center' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0-3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"/>
-            </svg>
-          </div>
-          <div style={{ color: 'var(--t3)', fontSize: '.85rem' }}>
-            {filter === 'all'       && 'Aucun post pour le moment'}
-            {filter === 'published' && 'Aucun post publié'}
-            {filter === 'draft'     && 'Aucun post dans les brouillons'}
-            {filter === 'scheduled' && 'Aucun post programmé'}
-          </div>
-        </div>
+            <div style={{ textAlign: 'center', padding: '3rem 1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 0 2rem 0' }}>
+              <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: '50%', padding: '1rem' }}>
+                <Sparkles size={36} color="var(--t3)" />
+              </div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '.5rem', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                {filter === 'all'       && 'Aucun post pour le moment'}
+                {filter === 'published' && 'Aucun post publié'}
+                {filter === 'draft'     && 'Aucun post dans les brouillons'}
+                {filter === 'scheduled' && 'Aucun post programmé'}
+              </h3>
+              {filter === 'all' && (
+                <>
+                  <p style={{ color: 'var(--t3)', fontSize: '.85rem', marginBottom: '2rem', maxWidth: '300px', lineHeight: 1.5 }}>
+                    Commencez à créer du contenu engageant et développez votre audience dès aujourd'hui.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', width: '100%', maxWidth: '260px' }}>
+                    <button 
+                      onClick={() => router.push('/workspace/posts/create')} 
+                      style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '.85rem', borderRadius: '12px', fontSize: '.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', cursor: 'pointer' }}
+                    >
+                      <Sparkles size={16} /> Créer mon premier post
+                    </button>
+                    <button 
+                      onClick={() => toast('Inspiration disponible bientôt !', 'info')}
+                      style={{ background: 'transparent', color: 'var(--t2)', border: '1px solid rgba(255,255,255,0.1)', padding: '.85rem', borderRadius: '12px', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer' }}
+                    >
+                      Découvrir des idées
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
       ) : view === 'grid' ? (
         <div>
           {(allPosts ? groupPostsByDate(displayPosts) : [{ label: '', posts: displayPosts.slice(0, 5) }]).map((group, idx) => (
