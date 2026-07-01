@@ -969,91 +969,46 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         </div>
       )}
 
-      {/* ── NOUVEAU HEADER WORKSPACE ── */}
+      {/* ── HEADER WORKSPACE ── */}
       {!allPosts && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem' }}>
-        <h1 className="text-[1.45rem] md:text-[1.8rem] mb-2 md:mb-4" style={{ fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", lineHeight: 1.25 }}>
-          Prêt à créer du contenu qui fait la différence ?
-        </h1>
-        {/* ── MOBILE CARDS ── */}
-        <div className="grid md:hidden" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '.3rem', marginBottom: '1.5rem' }}>
-          {/* Nouveau post */}
-          <div onClick={() => setNpMenuOpen(o => !o)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', position: 'relative' }} ref={npMenuRefMobile}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <PenLine size={24} />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Nouveau<br/>post</div>
-              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Créer</div>
-            </div>
-            {npMenuOpen && (
-              <div style={{ position: 'absolute', top: '100%', left: '0', width: '150px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)', marginTop: '.5rem' }}>
-                <button onClick={() => { setNpMenuOpen(false); router.push('/workspace/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.6rem .5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }}>
-                  <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Générer (IA)
-                </button>
-                <button onClick={() => {
-                  setNpMenuOpen(false)
-                  try {
-                    sessionStorage.setItem('social_ia_results', JSON.stringify({
-                      variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
-                    }))
-                  } catch {}
-                  router.push('/workspace/posts/results')
-                }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.6rem .5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }}>
-                  <PenLine size={14} style={{ color: 'var(--t2)' }} /> Créer manuellement
-                </button>
-              </div>
-            )}
-          </div>
-          {/* Calendrier */}
-          <div onClick={() => router.push('/workspace/calendrier')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={24} />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Calendrier</div>
-              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Planifier</div>
-            </div>
-          </div>
-          {/* Analytique */}
-          <div onClick={() => router.push('/workspace/analytics')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChart3 size={24} />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Analytique</div>
-              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>Performances</div>
-            </div>
-          </div>
-          {/* Idées */}
-          <div onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Lightbulb size={24} />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#fff', lineHeight: 1.1 }}>Idées</div>
-              <div style={{ fontSize: '0.58rem', color: 'var(--t3)', marginTop: '3px', lineHeight: 1.1 }}>S'inspirer</div>
-            </div>
-          </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem', marginBottom: '1.5rem' }}>
+        
+        {/* Titre et Sous-titre */}
+        <div>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", margin: '0 0 .2rem 0', lineHeight: 1.2 }}>
+            Workspace
+          </h1>
+          <p style={{ fontSize: '.85rem', color: 'var(--t3)', margin: 0 }}>
+            Votre centre de création, de planification et d'analyse.
+          </p>
         </div>
 
-        {/* ── DESKTOP CARDS ── */}
-        <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '.75rem', marginBottom: '1.5rem' }}>
+        {/* ── ACTION CARDS (Carousel mobile / Grid desktop) ── */}
+        <div className="sb-scroll flex md:grid" style={{ 
+          gap: '1rem', 
+          overflowX: 'auto', 
+          paddingBottom: '.5rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
+        }}>
           {/* Nouveau post */}
-          <div style={{ background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PenLine size={14} />
+          <div style={{ width: '200px', flexShrink: 0, background: 'rgba(28,40,65,0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.1rem', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PenLine size={20} />
               </div>
-              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Nouveau post</h3>
+              <div onClick={() => router.push('/workspace/posts/create')} style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+                <Plus size={14} />
+              </div>
             </div>
-            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Créez ou générez du contenu avec/sans IA.</p>
-            <div style={{ position: 'relative', marginTop: '.75rem' }} ref={npMenuRefDesktop}>
-              <button onClick={() => setNpMenuOpen(o => !o)} style={{ width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(59,130,246,0.15)', color: '#3B82F6', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
-                Nouveau <ChevronDown size={12} style={{ transition: 'transform .15s', transform: npMenuOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', margin: '0 0 .3rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Nouveau post</h3>
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.4, flex: 1, margin: '0 0 1rem 0' }}>Créez ou générez du contenu avec l'IA.</p>
+            
+            <div style={{ position: 'relative' }} ref={npMenuRefDesktop}>
+              <button onClick={() => setNpMenuOpen(o => !o)} style={{ width: '100%', padding: '.6rem', borderRadius: '8px', border: 'none', background: 'rgba(59,130,246,0.08)', color: '#3B82F6', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.08)'}>
+                Créer <ArrowRight size={14} />
               </button>
               {npMenuOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 5px)', left: 0, width: '100%', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
+                <div style={{ position: 'absolute', bottom: 'calc(100% + 5px)', left: 0, width: '100%', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
                   <button onClick={() => { setNpMenuOpen(false); router.push('/workspace/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Générer (IA)
                   </button>
@@ -1072,43 +1027,49 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               )}
             </div>
           </div>
+
           {/* Calendrier */}
-          <div style={{ background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Calendar size={14} />
+          <div style={{ width: '200px', flexShrink: 0, background: 'rgba(50,30,65,0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.1rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(168,85,247,0.15)', color: '#A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Calendar size={20} />
               </div>
-              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Calendrier</h3>
+              <div onClick={() => router.push('/workspace/calendrier')} style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+                <Plus size={14} />
+              </div>
             </div>
-            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Planifiez vos publications.</p>
-            <button onClick={() => router.push('/workspace/calendrier')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(168,85,247,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'}>
-              Ouvrir <ArrowRight size={12} />
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', margin: '0 0 .3rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Calendrier</h3>
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.4, flex: 1, margin: '0 0 1rem 0' }}>Planifiez et programmez vos publications.</p>
+            <button onClick={() => router.push('/workspace/calendrier')} style={{ width: '100%', padding: '.6rem', borderRadius: '8px', border: 'none', background: 'rgba(168,85,247,0.08)', color: '#A855F7', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(168,85,247,0.08)'}>
+              Ouvrir <ArrowRight size={14} />
             </button>
           </div>
+
           {/* Analytique */}
-          <div style={{ background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BarChart3 size={14} />
+          <div style={{ width: '200px', flexShrink: 0, background: 'rgba(20,50,40,0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.1rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', color: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BarChart3 size={20} />
               </div>
-              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Analytique</h3>
             </div>
-            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Suivez vos performances.</p>
-            <button onClick={() => router.push('/workspace/analytics')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(34,197,94,0.15)', color: '#22C55E', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}>
-              Analyses <ArrowRight size={12} />
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', margin: '0 0 .3rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Analytique</h3>
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.4, flex: 1, margin: '0 0 1rem 0' }}>Suivez vos performances et votre croissance.</p>
+            <button onClick={() => router.push('/workspace/analytics')} style={{ width: '100%', padding: '.6rem', borderRadius: '8px', border: 'none', background: 'rgba(34,197,94,0.08)', color: '#22C55E', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.08)'}>
+              Voir <ArrowRight size={14} />
             </button>
           </div>
-          {/* Idées */}
-          <div style={{ background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '.85rem', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.5rem' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Sparkles size={14} />
+
+          {/* Idées (4ème carte, similaire) */}
+          <div style={{ width: '200px', flexShrink: 0, background: 'rgba(65,40,20,0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '1.1rem', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(249,115,22,0.15)', color: '#F97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkles size={20} />
               </div>
-              <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: '#fff', margin: 0 }}>Inspiration</h3>
             </div>
-            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: 0 }}>Idées de contenu tendance.</p>
-            <button onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ marginTop: '.75rem', width: '100%', padding: '.45rem', borderRadius: '6px', border: 'none', background: 'rgba(249,115,22,0.15)', color: '#F97316', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,115,22,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(249,115,22,0.15)'}>
-              Explorer <ArrowRight size={12} />
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', margin: '0 0 .3rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Inspiration</h3>
+            <p style={{ fontSize: '.75rem', color: 'var(--t3)', lineHeight: 1.4, flex: 1, margin: '0 0 1rem 0' }}>Idées de contenu tendance pour vous.</p>
+            <button onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ width: '100%', padding: '.6rem', borderRadius: '8px', border: 'none', background: 'rgba(249,115,22,0.08)', color: '#F97316', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,115,22,0.15)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(249,115,22,0.08)'}>
+              Explorer <ArrowRight size={14} />
             </button>
           </div>
         </div>
