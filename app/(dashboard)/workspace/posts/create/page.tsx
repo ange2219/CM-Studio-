@@ -277,6 +277,7 @@ export default function CreatePage() {
   const [isPro, setIsPro] = useState(true)
   const [connectedPlatforms, setConnectedPlatforms] = useState<Platform[]>([])
   const [connectPopupPlatform, setConnectPopupPlatform] = useState<Platform | null>(null)
+  const [mobileModal, setMobileModal] = useState<'plateforme' | 'parametres' | null>(null)
 
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -896,24 +897,51 @@ export default function CreatePage() {
               </div>
             </div>
 
-            {/* Bouton générer principal */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden' }}>
-                <button onClick={handleGenerate} className="btn-primary" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, display: 'flex', alignItems: 'center', gap: '.5rem', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
-                  <Sparkles size={18} /> Générer le post
+            {/* ── Action Buttons (Mobile Reorganization) ── */}
+            <div className="flex flex-col mt-4 md:mt-6 mb-6">
+              
+              {/* Rangée Plateforme / Paramètres (Mobile uniquement) */}
+              <div className="flex md:hidden gap-[12px] sm:gap-[16px] mb-[20px] sm:mb-[24px]">
+                <button 
+                  onClick={() => setMobileModal('plateforme')}
+                  style={{ flex: 1, height: '54px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--t1)', fontSize: '.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  <Layers size={18} /> Plateforme
                 </button>
-                <button onClick={() => toast("Options supplémentaires bientôt", "info")} className="btn-primary" style={{ padding: '.8rem .8rem', borderRadius: 0 }}>
-                  <ChevronDown size={18} />
+                <button 
+                  onClick={() => setMobileModal('parametres')}
+                  style={{ flex: 1, height: '54px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--t1)', fontSize: '.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  <Settings2 size={18} /> Paramètres
                 </button>
               </div>
+
+              {/* Bouton Générer principal */}
+              <div className="flex justify-end w-full">
+                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', width: '100%' }} className="md:w-auto">
+                  <button onClick={handleGenerate} className="flex-1 md:flex-none flex items-center justify-center" style={{ background: 'var(--accent)', color: '#fff', height: '56px', padding: '0 2rem', fontSize: '1.05rem', fontWeight: 600, borderRight: '1px solid rgba(255,255,255,0.2)' }}>
+                    <Sparkles size={20} style={{ marginRight: '8px' }} /> Générer le post
+                  </button>
+                  <button onClick={() => toast("Options supplémentaires bientôt", "info")} style={{ background: 'var(--accent)', color: '#fff', width: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ChevronDown size={20} />
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div className="flex-1 md:flex-[0_0_320px] w-full md:w-auto flex flex-col gap-6 overflow-y-auto pr-1">
+          <div className={`${mobileModal ? 'fixed inset-0 z-[200] bg-[var(--bg)] p-5 pt-16 flex' : 'hidden md:flex'} flex-1 md:flex-[0_0_320px] w-full md:w-auto flex-col gap-6 overflow-y-auto md:pr-1`}>
+            
+            {mobileModal && (
+              <button onClick={() => setMobileModal(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-[var(--card)] flex items-center justify-center text-[var(--t1)] z-10 shadow-sm border border-white/5">
+                <X size={20} />
+              </button>
+            )}
 
             {/* Block Plateforme */}
-            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
+            <div className={mobileModal === 'parametres' ? 'hidden' : 'block'} style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: '0 0 .25rem 0' }}>Plateforme</h3>
               <p style={{ fontSize: '.75rem', color: 'var(--t3)', margin: '0 0 1.25rem 0' }}>Choisissez où publier votre contenu</p>
 
@@ -979,7 +1007,7 @@ export default function CreatePage() {
             </div>
 
             {/* Block Paramètres */}
-            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', marginBottom: '2rem' }}>
+            <div className={mobileModal === 'plateforme' ? 'hidden' : 'block'} style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', marginBottom: mobileModal ? '2rem' : '0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.25rem' }}>
                 <Settings2 size={16} color="var(--t2)" />
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>Paramètres</h3>
