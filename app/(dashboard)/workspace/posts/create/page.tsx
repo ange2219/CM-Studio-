@@ -834,31 +834,32 @@ export default function CreatePage() {
           {/* ── Colonne gauche : Éditeur ── */}
           <div className="flex-none md:flex-[1_1_500px] min-w-0 flex flex-col md:h-full">
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '.75rem' }}>
                 <button
                   onClick={() => router.push('/workspace')}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', alignItems: 'center', padding: '6px', borderRadius: '8px', transition: '.15s' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', alignItems: 'center', padding: '6px', borderRadius: '8px', transition: '.15s', flexShrink: 0 }}
                   onMouseEnter={e => { e.currentTarget.style.color = 'var(--t1)'; e.currentTarget.style.background = 'var(--s2)' }}
                   onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.background = 'none' }}
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <div>
-                  <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.4rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em', margin: 0 }}>
+                <div style={{ minWidth: 0 }}>
+                  <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     Générer un post
                   </h1>
-                  <p style={{ color: 'var(--t3)', fontSize: '.85rem', margin: '0' }}>Générez du contenu engageant avec l'IA</p>
+                  <p style={{ color: 'var(--t3)', fontSize: '.8rem', margin: '0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Générez du contenu engageant avec l'IA</p>
                 </div>
               </div>
 
               <button
                 onClick={handleFetchIdeas}
-                style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem 1rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', fontSize: '.85rem', cursor: 'pointer', transition: '.2s' }}
+                className="whitespace-nowrap flex-shrink-0"
+                style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.4rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', fontSize: '.8rem', cursor: 'pointer', transition: '.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
-                <Bookmark size={16} /> Trouver une idée <ChevronDown size={14} />
+                <Bookmark size={14} /> <span className="hidden sm:inline">Trouver une idée</span> <ChevronDown size={14} />
               </button>
             </div>
 
