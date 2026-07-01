@@ -130,7 +130,7 @@ export function DashboardShell({ user: initialUser, children }: {
   // ── TOPBAR HEIGHT ──
   const TOPBAR_H = isMobile ? 56 : 64
   // ── SIDEBAR WIDTH ──
-  const SIDEBAR_W = 280
+  const SIDEBAR_W = 240
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', color: 'var(--text)', overflow: 'hidden' }}>
@@ -181,7 +181,7 @@ export function DashboardShell({ user: initialUser, children }: {
 
         {isMobile && <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif" }}>CM Studio</span>}
 
-        {/* RIGHT: Theme toggle only */}
+        {/* RIGHT: Theme toggle + Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -205,6 +205,50 @@ export function DashboardShell({ user: initialUser, children }: {
               <Bell size={16} color="var(--text2)" />
             </Link>
           )}
+
+          {/* Avatar + dropdown (always visible) */}
+          <div ref={profileRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: 'rgba(var(--accent-rgb), 0.2)',
+                border: '2px solid rgba(255,255,255,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'var(--accent)', fontWeight: 700,
+                fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0,
+              }}
+            >
+              {user?.avatar_url
+                ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                : initials}
+            </button>
+
+            {profileOpen && (
+              <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
+                <div className="dropdown-header">
+                  <div className="av-large" style={{ overflow: 'hidden' }}>
+                    {user?.avatar_url
+                      ? <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : initials}
+                  </div>
+                  <div className="u-info">
+                    <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
+                    <div className="u-email">{user?.email}</div>
+                  </div>
+                </div>
+                <div className="dropdown-divider" />
+                <Link href="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
+                <Link href="/settings?tab=billing" className="dropdown-item" onClick={() => setProfileOpen(false)}><CreditCard size={16} /> Abonnements</Link>
+                <Link href="/settings?tab=notifications" className="dropdown-item" onClick={() => setProfileOpen(false)}><BellRing size={16} /> Notifications</Link>
+                <div className="dropdown-divider" />
+                <Link href="/settings?tab=general" className="dropdown-item" onClick={() => setProfileOpen(false)}><Settings size={16} /> Réglages</Link>
+                <Link href="/settings?tab=privacy" className="dropdown-item" onClick={() => setProfileOpen(false)}><ShieldCheck size={16} /> Confidentialité</Link>
+                <div className="dropdown-divider" />
+                <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -235,37 +279,6 @@ export function DashboardShell({ user: initialUser, children }: {
               gap: 0,
             }}
           >
-            {/* Profile Card */}
-            <Link href="/profile" style={{
-              display: 'flex', alignItems: 'center', gap: '12px',
-              padding: '10px 12px', borderRadius: '10px',
-              textDecoration: 'none', marginBottom: '8px',
-              transition: 'background 0.15s',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-light)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <div style={{
-                width: '42px', height: '42px', borderRadius: '50%',
-                background: 'rgba(var(--accent-rgb), 0.2)',
-                flexShrink: 0, overflow: 'hidden',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, fontSize: '1rem', color: 'var(--accent)',
-              }}>
-                {user?.avatar_url
-                  ? <Image src={user.avatar_url} alt="" width={42} height={42} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : initials}
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {user?.full_name || 'Utilisateur'}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text3)', marginTop: '1px' }}>
-                  Voir mon profil
-                </div>
-              </div>
-            </Link>
-
             {/* Nav Items */}
             <div style={{ marginBottom: '4px' }}>
               {navItems.map(item => {

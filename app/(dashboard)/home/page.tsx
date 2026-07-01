@@ -55,15 +55,12 @@ export default function HomePage() {
   const activePosts = activeTab === 'general' ? generalPosts : suiviPosts
 
   return (
-    /* Centrage du feed dans l'espace restant après la sidebar */
     <div style={{
       width: '100%',
       maxWidth: '640px',
-      margin: '0 auto',
-      padding: '20px 12px 40px',
+      padding: '20px 16px 40px 24px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '0',
     }}>
 
       {/* ── Tabs Général / Suivi ── */}
