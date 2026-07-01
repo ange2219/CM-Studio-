@@ -802,7 +802,7 @@ export default function CreatePage() {
 
       {/* ── Mode IA ────────────────────────────────────────────────────── */}
       {mode === 'ai' && (
-        <div className="flex flex-col md:flex-row gap-4 md:gap-[2rem] flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-[2rem] flex-1 min-h-0 overflow-y-auto md:overflow-hidden pb-8 md:pb-0">
 
           {/* ── Modal connexion requise ── */}
           {connectPopupPlatform && (
@@ -832,7 +832,7 @@ export default function CreatePage() {
           )}
 
           {/* ── Colonne gauche : Éditeur ── */}
-          <div className="flex-[0_0_60%] md:flex-[1_1_500px] min-w-0 flex flex-col h-full">
+          <div className="flex-none md:flex-[1_1_500px] min-w-0 flex flex-col md:h-full">
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
@@ -908,7 +908,7 @@ export default function CreatePage() {
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div className="flex-1 md:flex-[0_0_320px] w-full md:w-auto flex flex-col gap-6 overflow-y-auto pr-1 pb-4 md:pb-0">
+          <div className="flex-none md:flex-[0_0_320px] w-full md:w-auto flex flex-col gap-6 md:overflow-y-auto pr-1">
 
             {/* Block Plateforme */}
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
