@@ -884,7 +884,7 @@ export default function CreatePage() {
                 value={brief}
                 onChange={e => setBrief(e.target.value)}
                 placeholder="Décrivez votre idée, votre produit ou votre objectif..."
-                className="min-h-[100px] md:min-h-[300px]"
+                className="min-h-[140px] md:min-h-[300px]"
                 style={{ width: '100%', background: 'transparent', border: 'none', padding: '1rem', color: 'var(--t1)', fontSize: '.95rem', resize: 'vertical', outline: 'none' }}
               />
 
@@ -932,14 +932,16 @@ export default function CreatePage() {
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div className={`${mobileModal ? 'fixed inset-0 z-[200] bg-[var(--bg)] p-5 pt-16 flex' : 'hidden md:flex'} flex-1 md:flex-[0_0_320px] w-full md:w-auto flex-col gap-6 overflow-y-auto md:pr-1`}>
-            
-            {mobileModal && (
-              <button onClick={() => setMobileModal(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-[var(--card)] flex items-center justify-center text-[var(--t1)] z-10 shadow-sm border border-white/5">
+          {mobileModal && (
+            <div className="fixed inset-0 z-[190] bg-black/60 md:hidden" onClick={() => setMobileModal(null)}>
+              <button onClick={() => setMobileModal(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-[var(--card)] flex items-center justify-center text-[var(--t1)] shadow-sm border border-white/5">
                 <X size={20} />
               </button>
-            )}
+            </div>
+          )}
 
+          <div className={`${mobileModal ? 'fixed inset-x-4 top-[50%] -translate-y-1/2 z-[200] max-h-[80vh] rounded-xl' : 'hidden md:flex'} flex-1 md:flex-[0_0_320px] w-full md:w-auto flex-col gap-6 overflow-y-auto md:pr-1`}>
+            
             {/* Block Plateforme */}
             <div className={mobileModal === 'parametres' ? 'hidden' : 'block'} style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: '0 0 .25rem 0' }}>Plateforme</h3>
