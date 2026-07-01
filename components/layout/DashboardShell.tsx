@@ -152,7 +152,7 @@ export function DashboardShell({ user: initialUser, children }: {
 
         {/* LEFT: Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, minWidth: isMobile ? 'auto' : '220px' }}>
-          <Image src="/logo.png" alt="CM Studio Logo" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'cover' }} />
+          <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
           {!isMobile && (
             <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>
               CM Studio

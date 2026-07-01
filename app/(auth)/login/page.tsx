@@ -584,7 +584,6 @@ export default function LoginPage() {
               alt="CM Studio Logo"
               fill
               className="object-contain"
-              style={{ borderRadius: '8px' }}
             />
           </div>
 
@@ -636,7 +635,7 @@ export default function LoginPage() {
             <div className="login-form">
               {/* Logo visible only on mobile */}
               <div className="form-logo">
-                <Image src="/logo.png" alt="CM Studio Logo" width={40} height={40} style={{ borderRadius: '8px' }} />
+                <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
               </div>
 
               {mode === 'forgot' ? (
