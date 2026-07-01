@@ -17,7 +17,7 @@ import {
   type PostLength, type LinkedInPostType, type PostTone, type PostCTA,
 } from '@/types'
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇ Constantes ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 const ALL_PLATFORMS: Platform[] = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
 
@@ -28,10 +28,10 @@ const PLATFORM_COLORS: Record<Platform, string> = {
 
 const STEPS_SINGLE = [
   'Analyse du profil de marque',
-  'Recherche d\'idées créatives',
-  'Rédaction du post',
+  'Recherche d\'id├®es cr├®atives',
+  'R├®daction du post',
   'Optimisation par plateforme',
-  'Prêt pour validation',
+  'Pr├¬t pour validation',
 ]
 
 function PlatformIcon({ platform, size = 16 }: { platform: Platform; size?: number }) {
@@ -46,7 +46,7 @@ function PlatformIcon({ platform, size = 16 }: { platform: Platform; size?: numb
   }
 }
 
-// ─── Chip selector helper ──────────────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇ Chip selector helper ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 function ChipGroup<T extends string>({
   options, value, onChange,
@@ -78,10 +78,10 @@ function ChipGroup<T extends string>({
 
 
 
-// ─── Panneau aperçu live ───────────────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇ Panneau aper├ºu live ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 
-// ─── Modal action post (mode manuel) ─────────────────────────────────────────
+// ÔöÇÔöÇÔöÇ Modal action post (mode manuel) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 interface ActionModalProps {
   content: string
@@ -111,7 +111,7 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
 
   async function handleDraft() {
     setLoading(true)
-    try { await savePost(); toast('Post sauvegardé en brouillon', 'success'); onClose() }
+    try { await savePost(); toast('Post sauvegard├® en brouillon', 'success'); onClose() }
     catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur', 'error') }
     finally { setLoading(false) }
   }
@@ -131,7 +131,7 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
       const id = await savePost()
       const res = await fetch(`/api/posts/${id}/publish`, { method: 'POST' })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      toast('Post publié avec succès !', 'success'); onClose()
+      toast('Post publi├® avec succ├¿s !', 'success'); onClose()
     } catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur de publication', 'error') }
     finally { setLoading(false) }
   }
@@ -140,7 +140,7 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
     if (!checkInstagramImage()) return
     if (!schedDate || !schedTime) { toast('Choisissez une date et une heure', 'error'); return }
     const scheduledAt = new Date(`${schedDate}T${schedTime}`).toISOString()
-    if (new Date(scheduledAt) <= new Date()) { toast('La date doit être dans le futur', 'error'); return }
+    if (new Date(scheduledAt) <= new Date()) { toast('La date doit ├¬tre dans le futur', 'error'); return }
     setLoading(true)
     try {
       const id = await savePost()
@@ -149,7 +149,7 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
         body: JSON.stringify({ scheduledAt }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      toast('Post programmé avec succès !', 'success'); onClose()
+      toast('Post programm├® avec succ├¿s !', 'success'); onClose()
     } catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur de programmation', 'error') }
     finally { setLoading(false) }
   }
@@ -194,7 +194,7 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
   )
 }
 
-// ─── Icônes d'objectif (petites, colorées) ────────────────────────────────────
+// ÔöÇÔöÇÔöÇ Ic├┤nes d'objectif (petites, color├®es) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 const OBJ_COLORS: Record<string, string> = {
   vendre: '#EF4444', engager: '#7B5CF5', eduquer: '#06B6D4',
@@ -215,7 +215,7 @@ function ObjIcon({ objective, active, size = 13 }: { objective: string; active: 
   }
 }
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇ Page principale ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 export default function CreatePage() {
   const { toast }  = useToast()
@@ -223,7 +223,7 @@ export default function CreatePage() {
   const fileRef    = useRef<HTMLInputElement>(null)
   const objMenuRef = useRef<HTMLDivElement>(null)
 
-  // Mode : AI (défaut) ou manuel (?mode=manual)
+  // Mode : AI (d├®faut) ou manuel (?mode=manual)
   const [mode, setMode] = useState<'ai' | 'manual'>('ai')
 
   useEffect(() => {
@@ -233,7 +233,7 @@ export default function CreatePage() {
     }
   }, [])
 
-  // ── Paramètres IA ──
+  // ÔöÇÔöÇ Param├¿tres IA ÔöÇÔöÇ
   const [objective, setObjective]           = useState<string | null>(null)
   const [brief, setBrief]                   = useState('')
   const [params, setParams]                 = useState<GenerationParams>({
@@ -242,7 +242,7 @@ export default function CreatePage() {
   const [distributionMode, setDistributionMode] = useState<DistributionMode>('unified')
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([])
 
-  // ── Idéation & Briefs (Tunnel) ──
+  // ÔöÇÔöÇ Id├®ation & Briefs (Tunnel) ÔöÇÔöÇ
   const [ideasModalOpen, setIdeasModalOpen] = useState(false)
   const [ideasLoading, setIdeasLoading] = useState(false)
   const [ideas, setIdeas] = useState<{ numero: number; angle: string; type: string; accroche: string }[]>([])
@@ -251,19 +251,19 @@ export default function CreatePage() {
 
 
 
-  // ── Résultats IA ──
+  // ÔöÇÔöÇ R├®sultats IA ÔöÇÔöÇ
   const [variants,           setVariants]          = useState<Partial<Record<Platform, string>>>({})
   const [aiUploadedUrl,      setAiUploadedUrl]     = useState<string | null>(null)
   const [generatedImageUrl,  setGeneratedImageUrl] = useState<string | null>(null)
   const [quotaUsed,          setQuotaUsed]         = useState(0)
   const [quotaLimit,         setQuotaLimit]        = useState<number | 'unlimited'>('unlimited')
 
-  // ── Overlay ──
+  // ÔöÇÔöÇ Overlay ÔöÇÔöÇ
   const [overlayOpen,  setOverlayOpen]  = useState(false)
   const [overlaySteps, setOverlaySteps] = useState<string[]>([])
   const [stepStates,   setStepStates]   = useState<string[]>([])
 
-  // ── Mode manuel ──
+  // ÔöÇÔöÇ Mode manuel ÔöÇÔöÇ
   const [manualContent,    setManualContent]    = useState('')
   const [manualFile,       setManualFile]       = useState<File | null>(null)
   const [manualPreviewUrl, setManualPreviewUrl] = useState<string | null>(null)
@@ -273,12 +273,12 @@ export default function CreatePage() {
     content: string; platforms: Platform[]; mediaUrls?: string[]; aiGenerated: boolean
   } | null>(null)
 
-  // ── Plan ──
+  // ÔöÇÔöÇ Plan ÔöÇÔöÇ
   const [isPro, setIsPro] = useState(true)
   const [connectedPlatforms, setConnectedPlatforms] = useState<Platform[]>([])
   const [connectPopupPlatform, setConnectPopupPlatform] = useState<Platform | null>(null)
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   useEffect(() => {
     const supabase = createClient()
@@ -308,13 +308,13 @@ export default function CreatePage() {
     }).catch(() => {})
   }, [])
 
-  // Restaurer brouillon sessionStorage (brief + objective toujours vides au démarrage)
+  // Restaurer brouillon sessionStorage (brief + objective toujours vides au d├®marrage)
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem('social_ia_create_draft')
       if (saved) {
         const d = JSON.parse(saved)
-        // brief et objective ne sont PAS restaurés — toujours commencer vide
+        // brief et objective ne sont PAS restaur├®s ÔÇö toujours commencer vide
         if (d.params)                    setParams(d.params)
         if (d.selectedPlatforms)         setSelectedPlatforms(d.selectedPlatforms)
         if (d.distributionMode)          setDistributionMode(d.distributionMode)
@@ -334,7 +334,7 @@ export default function CreatePage() {
   }, [brief, params, objective, selectedPlatforms, distributionMode, variants, manualContent, aiUploadedUrl, generatedImageUrl])
 
 
-  // Auto-détecter l'objectif + paramètres optimaux à partir du brief (debounce 600ms)
+  // Auto-d├®tecter l'objectif + param├¿tres optimaux ├á partir du brief (debounce 600ms)
   const [aiDetecting, setAiDetecting] = useState(false)
   useEffect(() => {
     if (brief.trim().length < 8) {
@@ -363,7 +363,7 @@ export default function CreatePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brief, selectedPlatforms])
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   async function runOverlay(steps: string[], apiFn: () => Promise<void>) {
     setOverlaySteps(steps)
@@ -393,14 +393,14 @@ export default function CreatePage() {
         body: JSON.stringify({ platform: targetPlatform }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erreur lors du chargement des idées')
+      if (!res.ok) throw new Error(data.error || 'Erreur lors du chargement des id├®es')
       if (data.idees) {
         setIdeas(data.idees)
       } else {
-        throw new Error('Format de réponse invalide')
+        throw new Error('Format de r├®ponse invalide')
       }
     } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur lors de la recherche d\'idées', 'error')
+      toast(err instanceof Error ? err.message : 'Erreur lors de la recherche d\'id├®es', 'error')
       setIdeasModalOpen(false)
     } finally {
       setIdeasLoading(false)
@@ -420,18 +420,18 @@ export default function CreatePage() {
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erreur lors de la génération du brief')
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de la g├®n├®ration du brief')
       if (data.brief) {
         setBrief(data.brief)
         setParams(prev => ({ ...prev, post_type: idea.type as LinkedInPostType }))
-        // Si la plateforme n'est pas sélectionnée, on l'ajoute
+        // Si la plateforme n'est pas s├®lectionn├®e, on l'ajoute
         if (selectedPlatforms.length === 0) {
           setSelectedPlatforms(['linkedin'])
         }
         setIdeasModalOpen(false)
-        toast('Sujet et brief générés avec succès !', 'success')
+        toast('Sujet et brief g├®n├®r├®s avec succ├¿s !', 'success')
       } else {
-        throw new Error('Format de réponse de brief invalide')
+        throw new Error('Format de r├®ponse de brief invalide')
       }
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Erreur', 'error')
@@ -441,7 +441,7 @@ export default function CreatePage() {
   }
 
   async function handleGenerate() {
-    if (!selectedPlatforms.length) { toast('Veuillez choisir au moins une plateforme avant de générer.', 'warning'); return }
+    if (!selectedPlatforms.length) { toast('Veuillez choisir au moins une plateforme avant de g├®n├®rer.', 'warning'); return }
     await runOverlay(STEPS_SINGLE, async () => {
       const res = await fetch('/api/ai/generate', {
         method: 'POST',
@@ -461,13 +461,13 @@ export default function CreatePage() {
       if (!res.ok) {
         toast(
           data.code === 'DAILY_LIMIT_REACHED'
-            ? 'Limite journalière atteinte — passez à Premium'
-            : data.error || 'Erreur de génération',
+            ? 'Limite journali├¿re atteinte ÔÇö passez ├á Premium'
+            : data.error || 'Erreur de g├®n├®ration',
           'error'
         )
         return
       }
-      // Enregistrer les résultats et naviguer vers la page dédiée
+      // Enregistrer les r├®sultats et naviguer vers la page d├®di├®e
       sessionStorage.setItem('social_ia_results', JSON.stringify({
         variants:         data.variants,
         platforms:        selectedPlatforms,
@@ -516,7 +516,7 @@ export default function CreatePage() {
   }
 
   async function handleScheduleVariant(platform: Platform, content: string, imageUrl: string | null, scheduledAt: string) {
-    if (new Date(scheduledAt) <= new Date()) throw new Error('La date doit être dans le futur')
+    if (new Date(scheduledAt) <= new Date()) throw new Error('La date doit ├¬tre dans le futur')
     const id = await savePost(platform, content, imageUrl, 'draft')
     const res = await fetch(`/api/posts/${id}/schedule`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -525,7 +525,7 @@ export default function CreatePage() {
     if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
   }
 
-  // ── Mode manuel ──
+  // ÔöÇÔöÇ Mode manuel ÔöÇÔöÇ
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -534,8 +534,8 @@ export default function CreatePage() {
   }
 
   async function handleManualSubmit() {
-    if (!manualContent.trim()) { toast('Écrivez votre post avant de continuer', 'error'); return }
-    if (!selectedPlatforms.length) { toast('Sélectionnez au moins une plateforme', 'error'); return }
+    if (!manualContent.trim()) { toast('├ëcrivez votre post avant de continuer', 'error'); return }
+    if (!selectedPlatforms.length) { toast('S├®lectionnez au moins une plateforme', 'error'); return }
     let mediaUrl: string | undefined
     if (manualFile && !uploadedMediaUrl) {
       setUploadingFile(true)
@@ -568,28 +568,28 @@ export default function CreatePage() {
         quotaLimit: 'unlimited',
         isPro: true,
         initialImages: Object.keys(initialImages).length > 0 ? initialImages : undefined,
-        pageTitle: 'Créer un post',
+        pageTitle: 'Cr├®er un post',
         allowPlatformToggle: true,
       }))
     } catch {}
     router.push('/workspace/posts/results')
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   const hasVariants = Object.keys(variants).length > 0
 
-  // ── Label bouton objectif ──
+  // ÔöÇÔöÇ Label bouton objectif ÔöÇÔöÇ
   const objectiveBtnLabel = objective || 'Objectif'
 
   return (
     <div className="pc" style={{ maxWidth: '1200px', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Overlay génération */}
+      {/* Overlay g├®n├®ration */}
       {overlayOpen && (
         <div className="gen-ov on">
           <div className="spin" />
-          <div className="gen-label">Génération en cours…</div>
+          <div className="gen-label">G├®n├®ration en coursÔÇª</div>
           <div className="gen-steps">
             {overlaySteps.map((label, i) => (
               <div key={i} className={`gs${stepStates[i] ? ' ' + stepStates[i] : ''}`}>
@@ -611,7 +611,7 @@ export default function CreatePage() {
         />
       )}
 
-      {/* Modal Trouver une idée */}
+      {/* Modal Trouver une id├®e */}
       {ideasModalOpen && (
         <div 
           onClick={e => { if (e.target === e.currentTarget) setIdeasModalOpen(false) }}
@@ -645,10 +645,10 @@ export default function CreatePage() {
             <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: 'var(--t1)', margin: 0, display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                  <Sparkles size={20} style={{ color: 'var(--accent)' }} /> Trouver une idée de post
+                  <Sparkles size={20} style={{ color: 'var(--accent)' }} /> Trouver une id├®e de post
                 </h2>
                 <p style={{ color: 'var(--t3)', fontSize: '.85rem', margin: '.25rem 0 0 0' }}>
-                  Sélectionnez une accroche rédigée par l'IA pour générer votre brief de post.
+                  S├®lectionnez une accroche r├®dig├®e par l'IA pour g├®n├®rer votre brief de post.
                 </p>
               </div>
               <button 
@@ -666,12 +666,12 @@ export default function CreatePage() {
               {ideasLoading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 0', gap: '1rem' }}>
                   <div className="spin" style={{ width: '32px', height: '32px' }} />
-                  <div style={{ color: 'var(--t2)', fontSize: '.9rem', fontWeight: 500 }}>Recherche d'idées sur-mesure...</div>
+                  <div style={{ color: 'var(--t2)', fontSize: '.9rem', fontWeight: 500 }}>Recherche d'id├®es sur-mesure...</div>
                 </div>
               ) : generatingBrief ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 0', gap: '1rem' }}>
                   <div className="spin" style={{ width: '32px', height: '32px' }} />
-                  <div style={{ color: 'var(--t2)', fontSize: '.9rem', fontWeight: 500 }}>Rédaction de votre brief en cours...</div>
+                  <div style={{ color: 'var(--t2)', fontSize: '.9rem', fontWeight: 500 }}>R├®daction de votre brief en cours...</div>
                 </div>
               ) : ideas.length > 0 ? (
                 ideas.map((idea) => (
@@ -702,7 +702,7 @@ export default function CreatePage() {
                       <span style={{ fontSize: '.7rem', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '.05em', color: 'var(--accent)', background: 'rgba(123,92,245,0.12)', padding: '.2rem .5rem', borderRadius: '4px' }}>
                         {idea.type}
                       </span>
-                      <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Idée #{idea.numero}</span>
+                      <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>Id├®e #{idea.numero}</span>
                     </div>
 
                     <div style={{ fontSize: '.95rem', fontWeight: 600, color: 'var(--t1)', marginBottom: '.5rem', lineHeight: 1.4 }}>
@@ -716,7 +716,7 @@ export default function CreatePage() {
                 ))
               ) : (
                 <div style={{ color: 'var(--t3)', textAlign: 'center', padding: '2rem' }}>
-                  Aucune idée trouvée. Veuillez réessayer.
+                  Aucune id├®e trouv├®e. Veuillez r├®essayer.
                 </div>
               )}
             </div>
@@ -724,7 +724,7 @@ export default function CreatePage() {
         </div>
       )}
 
-      {/* ── Mode manuel ────────────────────────────────────────────────── */}
+      {/* ÔöÇÔöÇ Mode manuel ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */}
       {mode === 'manual' && (
         <div style={{ maxWidth: '480px' }}>
           {/* Header */}
@@ -738,7 +738,7 @@ export default function CreatePage() {
               <ArrowLeft size={18} />
             </button>
             <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.15rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em' }}>
-              Créer manuellement
+              Cr├®er manuellement
             </h1>
           </div>
 
@@ -774,18 +774,18 @@ export default function CreatePage() {
               })}
             </div>
             <p style={{ fontSize: '.73rem', color: 'var(--t3)', marginBottom: '1rem', lineHeight: 1.5 }}>
-              Vous rédigerez votre contenu directement dans l&apos;éditeur — une carte par plateforme.
+              Vous r├®digerez votre contenu directement dans l&apos;├®diteur ÔÇö une carte par plateforme.
             </p>
             <button
               onClick={() => {
-                if (!selectedPlatforms.length) { toast('Sélectionnez au moins une plateforme', 'error'); return }
+                if (!selectedPlatforms.length) { toast('S├®lectionnez au moins une plateforme', 'error'); return }
                 const variants: Partial<Record<string, string>> = {}
                 for (const p of selectedPlatforms) variants[p] = ''
                 try {
                   sessionStorage.setItem('social_ia_results', JSON.stringify({
                     variants, platforms: selectedPlatforms,
                     objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true,
-                    pageTitle: 'Créer un post',
+                    pageTitle: 'Cr├®er un post',
                     allowPlatformToggle: true,
                   }))
                 } catch {}
@@ -794,7 +794,7 @@ export default function CreatePage() {
               className="btn-primary"
               style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.7rem' }}
             >
-              <Send size={14} /> Ouvrir l&apos;éditeur
+              <Send size={14} /> Ouvrir l&apos;├®diteur
             </button>
           </div>
         </div>
@@ -802,9 +802,9 @@ export default function CreatePage() {
 
       {/* ── Mode IA ────────────────────────────────────────────────────── */}
       {mode === 'ai' && (
-        <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-1 min-h-0 overflow-y-auto md:overflow-hidden pb-8 md:pb-0">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-[2rem] flex-1 min-h-0 overflow-hidden">
 
-          {/* ── Modal connexion requise ── */}
+          {/* Modal connexion requise */}
           {connectPopupPlatform && (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               onClick={e => { if (e.target === e.currentTarget) setConnectPopupPlatform(null) }}
@@ -817,7 +817,7 @@ export default function CreatePage() {
                   <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--t1)' }}>Connexion requise</div>
                 </div>
                 <div style={{ fontSize: '.85rem', color: 'var(--t3)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                  Vous n'avez pas connecté votre compte {PLATFORM_NAMES[connectPopupPlatform]}. Voulez-vous vous connecter maintenant ?
+                  Vous n'avez pas connect├® votre compte {PLATFORM_NAMES[connectPopupPlatform]}. Voulez-vous vous connecter maintenant ?
                 </div>
                 <div style={{ display: 'flex', gap: '.6rem' }}>
                   <button onClick={() => setConnectPopupPlatform(null)} style={{ flex: 1, padding: '.6rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.85rem' }}>
@@ -832,7 +832,7 @@ export default function CreatePage() {
           )}
 
           {/* ── Colonne gauche : Éditeur ── */}
-          <div className="flex-1 min-w-0 flex flex-col h-auto md:h-full">
+          <div className="flex-[0_0_60%] md:flex-[1_1_500px] min-w-0 flex flex-col h-full">
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
@@ -846,9 +846,9 @@ export default function CreatePage() {
                 </button>
                 <div>
                   <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.4rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em', margin: 0 }}>
-                    Générer un post
+                    G├®n├®rer un post
                   </h1>
-                  <p style={{ color: 'var(--t3)', fontSize: '.85rem', margin: '0' }}>Générez du contenu engageant avec l'IA</p>
+                  <p style={{ color: 'var(--t3)', fontSize: '.85rem', margin: '0' }}>G├®n├®rez du contenu engageant avec l'IA</p>
                 </div>
               </div>
 
@@ -858,20 +858,20 @@ export default function CreatePage() {
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
-                <Bookmark size={16} /> Trouver une idée <ChevronDown size={14} />
+                <Bookmark size={16} /> Trouver une id├®e <ChevronDown size={14} />
               </button>
             </div>
 
             <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>1. Sujet</div>
 
-            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: '350px' }}>
+            <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
-              <div style={{ padding: '.75rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '.25rem', flexWrap: 'wrap' }}>
+              <div style={{ padding: '.75rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
                 {[
-                  { icon: Bold, label: 'Gras' }, { icon: Italic, label: 'Italique' }, { icon: Underline, label: 'Souligné' }, { icon: Strikethrough, label: 'Barré' },
+                  { icon: Bold, label: 'Gras' }, { icon: Italic, label: 'Italique' }, { icon: Underline, label: 'Soulign├®' }, { icon: Strikethrough, label: 'Barr├®' },
                   { icon: List, label: 'Liste' }, { icon: Link, label: 'Lien' }, { icon: Smile, label: 'Emoji' }
                 ].map((item, i) => (
-                  <button key={i} onClick={() => toast("Formatage disponible bientôt", "info")} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', color: 'var(--t3)', transition: '.2s', borderRadius: '4px' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.color = 'var(--t1)' }} onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--t3)' }}>
+                  <button key={i} onClick={() => toast("Formatage disponible bient├┤t", "info")} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', color: 'var(--t3)', transition: '.2s', borderRadius: '4px' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.color = 'var(--t1)' }} onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--t3)' }}>
                     <item.icon size={16} />
                   </button>
                 ))}
@@ -881,26 +881,26 @@ export default function CreatePage() {
               <textarea
                 value={brief}
                 onChange={e => setBrief(e.target.value)}
-                placeholder="Décrivez votre idée, votre produit ou votre objectif..."
+                placeholder="D├®crivez votre id├®e, votre produit ou votre objectif..."
                 style={{ width: '100%', minHeight: '300px', background: 'transparent', border: 'none', padding: '1rem', color: 'var(--t1)', fontSize: '.95rem', resize: 'vertical', outline: 'none' }}
               />
 
               {/* Footer */}
               <div style={{ padding: '.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{brief.length} / 2000 caractères</span>
-                <button onClick={() => toast("Suggestions IA disponibles bientôt", "info")} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '.4rem .75rem', fontSize: '.75rem', color: 'var(--t2)', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--t3)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}>
+                <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{brief.length} / 2000 caract├¿res</span>
+                <button onClick={() => toast("Suggestions IA disponibles bient├┤t", "info")} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '.4rem .75rem', fontSize: '.75rem', color: 'var(--t2)', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--t3)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}>
                   <Sparkles size={14} style={{ color: 'var(--t3)' }} /> Suggestions IA
                 </button>
               </div>
             </div>
 
-            {/* Bouton générer principal */}
-            <div className="flex md:justify-end mt-6 mb-6 md:mb-0">
-              <div className="flex rounded-lg overflow-hidden w-full md:w-auto">
-                <button onClick={handleGenerate} className="btn-primary flex-1 md:flex-none flex items-center justify-center gap-2 border-r border-white/20" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, background: '#3B82F6' }}>
-                  <Sparkles size={18} /> Générer le post
+            {/* Bouton g├®n├®rer principal */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden' }}>
+                <button onClick={handleGenerate} className="btn-primary" style={{ padding: '.8rem 2rem', fontSize: '.95rem', borderRadius: 0, display: 'flex', alignItems: 'center', gap: '.5rem', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
+                  <Sparkles size={18} /> G├®n├®rer le post
                 </button>
-                <button onClick={() => toast("Options supplémentaires bientôt", "info")} className="btn-primary flex-shrink-0" style={{ padding: '.8rem .8rem', borderRadius: 0, background: '#3B82F6' }}>
+                <button onClick={() => toast("Options suppl├®mentaires bient├┤t", "info")} className="btn-primary" style={{ padding: '.8rem .8rem', borderRadius: 0 }}>
                   <ChevronDown size={18} />
                 </button>
               </div>
@@ -908,12 +908,12 @@ export default function CreatePage() {
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-6 overflow-visible md:overflow-y-auto pr-0 md:pr-1">
+          <div className="flex-1 md:flex-[0_0_320px] w-full md:w-auto flex flex-col gap-6 overflow-y-auto pr-1 pb-4 md:pb-0">
 
             {/* Block Plateforme */}
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: '0 0 .25rem 0' }}>Plateforme</h3>
-              <p style={{ fontSize: '.75rem', color: 'var(--t3)', margin: '0 0 1.25rem 0' }}>Choisissez où publier votre contenu</p>
+              <p style={{ fontSize: '.75rem', color: 'var(--t3)', margin: '0 0 1.25rem 0' }}>Choisissez o├╣ publier votre contenu</p>
 
               <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.25rem' }}>
                 <button
@@ -926,7 +926,7 @@ export default function CreatePage() {
                   onClick={() => setDistributionMode('custom')}
                   style={{ flex: 1, padding: '.5rem', background: 'none', border: 'none', borderBottom: distributionMode === 'custom' ? '2px solid var(--accent)' : '2px solid transparent', color: distributionMode === 'custom' ? 'var(--accent)' : 'var(--t3)', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', transition: '.2s' }}
                 >
-                  Séparer
+                  S├®parer
                 </button>
               </div>
 
@@ -942,7 +942,7 @@ export default function CreatePage() {
                         <PlatformIcon platform={p} size={18} />
                         <span style={{ fontSize: '.85rem', color: isSel ? 'var(--t1)' : 'var(--t2)', fontWeight: isSel ? 500 : 400 }}>{PLATFORM_NAMES[p]}</span>
                       </div>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '4px', border: `1px solid ${isSel ? '#3B82F6' : 'var(--t3)'}`, background: isSel ? '#3B82F6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '4px', border: `1px solid ${isSel ? 'var(--accent)' : 'var(--t3)'}`, background: isSel ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {isSel && <Check size={12} color="#fff" />}
                       </div>
                       <input type="checkbox" checked={isSel} onChange={() => {
@@ -958,7 +958,7 @@ export default function CreatePage() {
 
                 {!isPro && (
                   <div style={{ marginTop: '.5rem', paddingTop: '.75rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Autres réseaux (PRO)</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Autres r├®seaux (PRO)</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         {(['linkedin', 'twitter', 'tiktok'] as Platform[]).map((p, i) => (
@@ -968,7 +968,7 @@ export default function CreatePage() {
                         ))}
                       </div>
                       <button onClick={() => router.push('/settings')} style={{ background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.75rem', color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }}>
-                        <Lock size={12} /> Débloquer
+                        <Lock size={12} /> D├®bloquer
                       </button>
                     </div>
                   </div>
@@ -976,11 +976,11 @@ export default function CreatePage() {
               </div>
             </div>
 
-            {/* Block Paramètres */}
+            {/* Block Param├¿tres */}
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.25rem' }}>
                 <Settings2 size={16} color="var(--t2)" />
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>Paramètres</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>Param├¿tres</h3>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -993,7 +993,7 @@ export default function CreatePage() {
                   >
                     <option value="direct">Direct</option>
                     <option value="inspirant">Inspirant</option>
-                    <option value="emotionnel">Émotionnel</option>
+                    <option value="emotionnel">├ëmotionnel</option>
                     <option value="humoristique">Humoristique</option>
                     <option value="professionnel">Professionnel</option>
                   </select>
@@ -1008,7 +1008,7 @@ export default function CreatePage() {
                         onClick={() => setParams({ ...params, length: l })}
                         style={{
                           flex: 1, padding: '.5rem', border: 'none',
-                          background: params.length === l ? '#3B82F6' : 'transparent',
+                          background: params.length === l ? 'var(--accent)' : 'transparent',
                           color: params.length === l ? '#fff' : 'var(--t3)',
                           fontSize: '.8rem', fontWeight: 500, cursor: 'pointer', transition: '.2s'
                         }}
