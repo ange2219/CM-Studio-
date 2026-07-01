@@ -1041,6 +1041,7 @@ tbody td{padding:10px;font-size:12px;color:var(--text);}
     border-radius: 0 !important;
     margin-left: -12px !important;
     margin-right: -12px !important;
+  }
 }
 
 /* ── Feed & Post Cards ── */
