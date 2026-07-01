@@ -802,7 +802,7 @@ export default function CreatePage() {
 
       {/* ── Mode IA ────────────────────────────────────────────────────── */}
       {mode === 'ai' && (
-        <div className="flex flex-col md:flex-row gap-4 md:gap-[2rem] flex-1 min-h-0 overflow-y-auto md:overflow-hidden pb-8 md:pb-0">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-[2rem] flex-1 min-h-0 overflow-hidden pb-8 md:pb-0">
 
           {/* ── Modal connexion requise ── */}
           {connectPopupPlatform && (
@@ -882,7 +882,8 @@ export default function CreatePage() {
                 value={brief}
                 onChange={e => setBrief(e.target.value)}
                 placeholder="Décrivez votre idée, votre produit ou votre objectif..."
-                style={{ width: '100%', minHeight: '300px', background: 'transparent', border: 'none', padding: '1rem', color: 'var(--t1)', fontSize: '.95rem', resize: 'vertical', outline: 'none' }}
+                className="min-h-[100px] md:min-h-[300px]"
+                style={{ width: '100%', background: 'transparent', border: 'none', padding: '1rem', color: 'var(--t1)', fontSize: '.95rem', resize: 'vertical', outline: 'none' }}
               />
 
               {/* Footer */}
@@ -908,7 +909,7 @@ export default function CreatePage() {
           </div>
 
           {/* ── Colonne droite : Paramètres ── */}
-          <div className="flex-none md:flex-[0_0_320px] w-full md:w-auto flex flex-col gap-6 md:overflow-y-auto pr-1">
+          <div className="flex-1 md:flex-[0_0_320px] w-full md:w-auto flex flex-col gap-6 overflow-y-auto pr-1">
 
             {/* Block Plateforme */}
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem' }}>
