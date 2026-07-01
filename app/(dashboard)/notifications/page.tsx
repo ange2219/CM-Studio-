@@ -76,7 +76,11 @@ export default function NotificationsPage() {
       setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n))
     }
     if (notif.action_url) {
-      router.push(notif.action_url)
+      let url = notif.action_url
+      if (url.startsWith('/community')) {
+        url = url.replace('/community', '/home')
+      }
+      router.push(url)
     }
   }
 
