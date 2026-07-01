@@ -380,237 +380,176 @@ export function CommunityFeed({
           const isLoading = loadingComments[post.id]
 
           return (
-            <div key={post.id} id={`post-container-${post.id}`} style={{ background: 'var(--card)', borderRadius: '12px', border: '1px solid var(--b1)', overflow: 'hidden' }}>
-              {/* Post Header (Facebook-style structure) */}
-              <div style={{ padding: '12px 16px 8px 16px', display: 'flex', alignItems: 'center', justifySelf: 'stretch', width: '100%', boxSizing: 'border-box' }}>
-                {/* Avatar with blue ring */}
+            <div key={post.id} id={`post-container-${post.id}`} style={{
+              background: 'var(--card)',
+              borderRadius: '12px',
+              border: '1px solid var(--b1)',
+              overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+            }}>
+
+              {/* ── HEADER ── */}
+              <div style={{ padding: '12px 12px 8px 12px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+
+                {/* Avatar */}
                 <Link href={`/profile/${post.username || post.user_id}`} style={{
-                  width: 42, height: 42, borderRadius: '50%',
+                  width: 44, height: 44, borderRadius: '50%',
                   background: 'rgba(var(--accent-rgb), 0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0, overflow: 'hidden',
-                  boxSizing: 'border-box',
-                  marginRight: 12,
+                  flexShrink: 0, overflow: 'hidden', textDecoration: 'none',
+                  border: '2px solid rgba(var(--accent-rgb), 0.3)',
                 }}>
-                  {post.avatar_url ? (
-                    <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" />
-                  ) : (
-                    <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '0.9rem' }}>{post.full_name?.slice(0, 1).toUpperCase()}</span>
-                  )}
+                  {post.avatar_url
+                    ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    : <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '1rem' }}>{post.full_name?.slice(0, 1).toUpperCase()}</span>}
                 </Link>
 
-                {/* Name, Follow, Date & Visibility */}
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', lineHeight: 1.2 }}>
-                    <Link href={`/profile/${post.username || post.user_id}`} style={{ fontWeight: 700, fontSize: '0.93rem', color: 'var(--t1)', textDecoration: 'none' }}>
+                {/* Name + meta + Suivre */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                    <Link href={`/profile/${post.username || post.user_id}`} style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--t1)', textDecoration: 'none' }}>
                       {post.full_name || 'Utilisateur'}
                     </Link>
+                    {post.plan && post.plan !== 'Free' && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, background: 'var(--accent)', color: '#fff', padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                        {post.plan}
+                      </span>
+                    )}
                     {currentUser && post.user_id !== currentUser.id && !followedIds.has(post.user_id) && (
                       <>
-                        <span style={{ color: 'var(--t3)', fontSize: '0.9rem', fontWeight: 500 }}>·</span>
+                        <span style={{ color: 'var(--t3)', fontSize: '0.9rem' }}>·</span>
                         <button
                           onClick={() => handleFollowUser(post.user_id)}
                           style={{
                             background: 'none', border: 'none',
                             color: 'var(--accent)', fontSize: '0.88rem', fontWeight: 700,
-                            cursor: 'pointer', padding: '0 4px', display: 'inline-flex',
-                            alignItems: 'center', transition: 'opacity 0.15s',
+                            cursor: 'pointer', padding: 0,
                           }}
-                          onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                          onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
                         >
                           Suivre
                         </button>
                       </>
                     )}
                   </div>
-                  
-                  <div style={{ fontSize: '0.73rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', lineHeight: 1 }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
                     <span>{getShortTimeAgo(post.created_at)}</span>
                     <span>·</span>
-                    {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté' ? (
-                      <Users size={11} style={{ opacity: 0.7 }} />
-                    ) : (
-                      <Globe size={11} style={{ opacity: 0.7 }} />
-                    )}
+                    {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté'
+                      ? <Users size={11} style={{ opacity: 0.7 }} />
+                      : <Globe size={11} style={{ opacity: 0.7 }} />}
                   </div>
                 </div>
 
-                {/* Action Controls: Options and Hide */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setOpenMenuPostId(openMenuPostId === post.id ? null : post.id)
-                    }}
-                    style={{
-                      background: 'none', border: 'none', color: 'var(--t3)',
-                      cursor: 'pointer', padding: 6, borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'background 0.2s',
-                    }}
+                {/* Options + Hide */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0, position: 'relative' }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuPostId(openMenuPostId === post.id ? null : post.id) }}
+                    style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                    title="Options"
                   >
                     <MoreHorizontal size={18} />
                   </button>
 
                   {openMenuPostId === post.id && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: 4,
-                      background: 'var(--card)',
-                      border: '1px solid var(--b1)',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                      zIndex: 100,
-                      minWidth: '240px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden'
-                    }}>
-                      <button
-                        onClick={() => {
-                          const newSaved = new Set(savedIds)
-                          if (newSaved.has(post.id)) {
-                            newSaved.delete(post.id)
-                            alert("Publication retirée des favoris !")
-                          } else {
-                            newSaved.add(post.id)
-                            alert("Publication enregistrée dans vos favoris !")
-                          }
-                          setSavedIds(newSaved)
-                          setOpenMenuPostId(null)
-                        }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--t1)',
-                          padding: '10px 14px',
-                          textAlign: 'left',
-                          fontSize: '0.85rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'background 0.2s',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                      >
-                        <Bookmark size={16} fill={savedIds.has(post.id) ? 'var(--t1)' : 'none'} />
-                        {savedIds.has(post.id) ? 'Retirer la publication des favoris' : 'Enregistrer la publication'}
+                    <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 100, minWidth: '240px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <button onClick={() => { const n = new Set(savedIds); n.has(post.id) ? n.delete(post.id) : n.add(post.id); setSavedIds(n); setOpenMenuPostId(null) }} style={{ background: 'none', border: 'none', color: 'var(--t1)', padding: '10px 14px', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                        <Bookmark size={16} fill={savedIds.has(post.id) ? 'var(--t1)' : 'none'} />{savedIds.has(post.id) ? 'Retirer des favoris' : 'Enregistrer'}
                       </button>
-
-                      <button
-                        onClick={() => {
-                          const newNotified = new Set(notifiedPostIds)
-                          if (newNotified.has(post.id)) {
-                            newNotified.delete(post.id)
-                            alert("Notifications désactivées pour cette publication.")
-                          } else {
-                            newNotified.add(post.id)
-                            alert("Notifications activées pour cette publication !")
-                          }
-                          setNotifiedPostIds(newNotified)
-                          setOpenMenuPostId(null)
-                        }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--t1)',
-                          padding: '10px 14px',
-                          textAlign: 'left',
-                          fontSize: '0.85rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'background 0.2s',
-                          borderTop: '1px solid var(--b1)'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                      >
-                        <Sparkles size={16} fill={notifiedPostIds.has(post.id) ? 'var(--t1)' : 'none'} />
-                        {notifiedPostIds.has(post.id) ? 'Désactiver les notifications' : 'Activer les notifications pour ce post'}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          const url = `${window.location.origin}/groups#post-${post.id}`
-                          navigator.clipboard.writeText(url)
-                          alert("Lien de la publication copié dans le presse-papiers !")
-                          setOpenMenuPostId(null)
-                        }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--t1)',
-                          padding: '10px 14px',
-                          textAlign: 'left',
-                          fontSize: '0.85rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'background 0.2s',
-                          borderTop: '1px solid var(--b1)'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                      >
-                        <Share2 size={16} />
-                        Copier le lien
+                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`); setOpenMenuPostId(null) }} style={{ background: 'none', border: 'none', color: 'var(--t1)', padding: '10px 14px', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid var(--b1)' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                        <Share2 size={16} />Copier le lien
                       </button>
                     </div>
                   )}
 
-                  <button 
+                  <button
                     onClick={() => handleHidePost(post.id)}
-                    style={{
-                      background: 'none', border: 'none', color: 'var(--t3)',
-                      cursor: 'pointer', padding: 6, borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'background 0.2s',
-                    }}
+                    style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                    title="Masquer la publication"
                   >
                     <X size={18} />
                   </button>
                 </div>
               </div>
 
-              {/* Post Content */}
-              <div style={{ padding: '0 16px 12px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.5 }} id={`post-${post.id}`}>
+              {/* ── TEXTE ── */}
+              <div style={{ padding: '0 14px 10px', fontSize: '0.95rem', color: 'var(--t1)', lineHeight: 1.55 }} id={`post-${post.id}`}>
                 {post.content}
-                {post.image_url && (
-                  <div style={{ marginTop: '8px' }}>
-                    <img src={post.image_url} style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--b1)' }} alt="Post image" />
-                  </div>
-                )}
               </div>
 
-              {/* Post Actions */}
-              <div style={{ padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                <button onClick={() => toggleLike(post)} style={{ background: 'none', border: 'none', color: isLiked ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '4px 0' }}><Heart size={18} fill={isLiked ? 'var(--accent)' : 'none'} /> {post.likes_count}</button>
-                <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', color: isExpanded ? 'var(--accent)' : 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '4px 0' }}><MessageCircle size={18} /> {post.comments_count}</button>
-                <button onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({
-                      title: 'Post de la communauté CM Studio',
-                      text: post.content.slice(0, 50) + '...',
-                      url: `${window.location.origin}/community#post-${post.id}`
-                    }).catch(() => { })
-                  } else {
-                    navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`)
-                  }
-                }} style={{ background: 'none', border: 'none', color: 'var(--t2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, padding: '4px 0' }}><Share2 size={18} /></button>
+              {/* ── IMAGE PLEINE LARGEUR (Facebook style) ── */}
+              {post.image_url && (
+                <div style={{ width: '100%', borderTop: '1px solid var(--b1)' }}>
+                  <img
+                    src={post.image_url}
+                    style={{ width: '100%', maxHeight: '480px', objectFit: 'cover', display: 'block' }}
+                    alt="Post image"
+                  />
+                </div>
+              )}
+
+              {/* ── BARRE D’ACTIONS ── */}
+              <div style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', borderTop: '1px solid var(--b1)' }}>
+                <button
+                  onClick={() => toggleLike(post)}
+                  style={{
+                    flex: 1, background: 'none', border: 'none',
+                    color: isLiked ? 'var(--accent)' : 'var(--t2)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '7px',
+                    padding: '8px 4px', borderRadius: '8px',
+                    fontSize: '0.88rem', fontWeight: 600,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  <Heart size={20} fill={isLiked ? 'var(--accent)' : 'none'} />
+                  <span>{post.likes_count > 0 ? post.likes_count.toLocaleString('fr') : 'J\'aime'}</span>
+                </button>
+
+                <button
+                  onClick={() => toggleComments(post.id)}
+                  style={{
+                    flex: 1, background: 'none', border: 'none',
+                    color: isExpanded ? 'var(--accent)' : 'var(--t2)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '7px',
+                    padding: '8px 4px', borderRadius: '8px',
+                    fontSize: '0.88rem', fontWeight: 600,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  <MessageCircle size={20} />
+                  <span>{post.comments_count > 0 ? post.comments_count.toLocaleString('fr') : 'Commenter'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: 'CM Studio', text: post.content.slice(0, 80), url: `${window.location.origin}/community#post-${post.id}` }).catch(() => {})
+                    } else {
+                      navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`)
+                    }
+                  }}
+                  style={{
+                    flex: 1, background: 'none', border: 'none',
+                    color: 'var(--t2)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '7px',
+                    padding: '8px 4px', borderRadius: '8px',
+                    fontSize: '0.88rem', fontWeight: 600,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  <Share2 size={20} />
+                  <span>Partager</span>
+                </button>
               </div>
 
               {/* SCROLLABLE COMMENTS SECTION (TikTok Style) */}
