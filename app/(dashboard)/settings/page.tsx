@@ -350,7 +350,7 @@ function SettingsContent() {
           <div style={{ position: 'relative', width: '56px', height: '56px', flexShrink: 0 }}>
             {avatarUrl
               ? <img src={avatarUrl} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--b1)' }} />
-              : <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 700, color: 'var(--accent)', border: '2px solid var(--b1)' }}>{initials}</div>
+              : <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--b1)' }}><User size={26} strokeWidth={1.5} color="var(--t3)" /></div>
             }
           </div>
           <div style={{ overflow: 'hidden' }}>
@@ -421,7 +421,7 @@ function SettingsContent() {
                 <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
                   {avatarUrl
                     ? <img src={avatarUrl} alt="" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--b1)' }} />
-                    : <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 700, color: 'var(--accent)', border: '2px solid var(--b1)' }}>{initials}</div>
+                    : <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--b1)' }}><User size={30} strokeWidth={1.5} color="var(--t3)" /></div>
                   }
                   <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)', opacity: 0, transition: '.15s' }}
                     onMouseEnter={e => (e.currentTarget.style.opacity = '1')} onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>

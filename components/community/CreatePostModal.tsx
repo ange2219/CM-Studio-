@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Image as ImageIcon, Send } from 'lucide-react'
+import { X, Image as ImageIcon, Send, User } from 'lucide-react'
 
 export function CreatePostModal({
   isOpen,
@@ -111,7 +111,7 @@ export function CreatePostModal({
               {currentUser?.avatar_url ? (
                 <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
               ) : (
-                currentUser?.full_name?.slice(0, 1) || 'U'
+                <User size={22} strokeWidth={1.5} color="var(--accent)" />
               )}
             </div>
             <textarea

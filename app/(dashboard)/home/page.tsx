@@ -6,7 +6,7 @@ import { useUser } from '@/components/context/UserContext'
 import { HomeSkeleton } from '@/components/ui/Skeleton'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
-import { SquarePen, UserPlus, Flame, Rocket, Code, Megaphone } from 'lucide-react'
+import { SquarePen, UserPlus, Flame, Rocket, Code, Megaphone, User } from 'lucide-react'
 import { CreatePostModal } from '@/components/community/CreatePostModal'
 import Link from 'next/link'
 
@@ -105,7 +105,7 @@ export default function HomePage() {
           {user?.avatar_url ? (
             <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <span>{firstName.slice(0, 1).toUpperCase()}</span>
+            <User size={22} strokeWidth={1.5} color="var(--accent)" />
           )}
         </div>
         <div style={{ flex: 1, color: 'var(--t3)', fontSize: '0.95rem' }}>

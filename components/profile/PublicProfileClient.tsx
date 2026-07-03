@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ export default function PublicProfileClient({
       }}>
         {url
           ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : (name?.slice(0, 1)?.toUpperCase() || '?')}
+          : <User size={Math.round(size * 0.5)} strokeWidth={1.5} color="var(--t3)" />}
       </div>
     )
   }

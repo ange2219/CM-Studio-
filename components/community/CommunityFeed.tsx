@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users, MoreHorizontal, X } from 'lucide-react'
+import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users, MoreHorizontal, X, User } from 'lucide-react'
 
 type Post = {
   id: string
@@ -399,7 +399,7 @@ export function CommunityFeed({
                 }}>
                   {post.avatar_url
                     ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                    : <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '1rem' }}>{post.full_name?.slice(0, 1).toUpperCase()}</span>}
+                    : <User size={22} strokeWidth={1.5} color="var(--accent)" />}
                 </Link>
 
                 {/* Name + meta + Suivre */}
@@ -569,7 +569,7 @@ export function CommunityFeed({
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
-                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : c.full_name?.slice(0, 1) || 'U'}
+                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={16} strokeWidth={1.5} color="var(--accent)" />}
                               </div>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -597,7 +597,7 @@ export function CommunityFeed({
                               return (
                                 <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
                                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)' }}>
-                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : r.full_name?.slice(0, 1) || 'U'}
+                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={12} strokeWidth={1.5} color="var(--accent)" />}
                                   </div>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>
@@ -665,7 +665,7 @@ export function CommunityFeed({
                     )}
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
-                        {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : currentUser?.full_name?.slice(0, 1) || 'U'}
+                        {currentUser?.avatar_url ? <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={16} strokeWidth={1.5} color="var(--accent)" />}
                       </div>
                       <form
                         onSubmit={e => { e.preventDefault(); handleCommentSubmit(post.id) }}
