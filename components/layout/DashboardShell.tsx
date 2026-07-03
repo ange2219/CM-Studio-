@@ -221,16 +221,16 @@ export function DashboardShell({ user: initialUser, children }: {
             >
               {user?.avatar_url
                 ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                : initials}
+                : <User size={20} strokeWidth={1.5} color="var(--accent)" />}
             </button>
 
             {profileOpen && (
               <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
                 <div className="dropdown-header">
-                  <div className="av-large" style={{ overflow: 'hidden' }}>
+                  <div className="av-large" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {user?.avatar_url
                       ? <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : initials}
+                      : <User size={28} strokeWidth={1.5} color="var(--accent)" />}
                   </div>
                   <div className="u-info">
                     <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
