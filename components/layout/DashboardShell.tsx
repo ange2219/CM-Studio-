@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
-  Sparkles, BarChart2, Zap
+  Sparkles, BarChart2, Zap, ChevronDown
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -211,17 +211,35 @@ export function DashboardShell({ user: initialUser, children }: {
             <button
               onClick={() => setProfileOpen(!profileOpen)}
               style={{
-                width: '36px', height: '36px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'none', border: 'none',
+                cursor: 'pointer', padding: '4px 6px',
+                borderRadius: '24px', transition: 'background 0.15s', flexShrink: 0,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--s2)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              {/* Avatar circle */}
+              <div style={{
+                width: '34px', height: '34px', borderRadius: '50%',
                 background: 'rgba(var(--accent-rgb), 0.2)',
                 border: '2px solid rgba(255,255,255,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--accent)', fontWeight: 700,
-                fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0,
-              }}
-            >
-              {user?.avatar_url
-                ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                : <User size={20} strokeWidth={1.5} color="var(--accent)" />}
+                overflow: 'hidden', flexShrink: 0,
+              }}>
+                {user?.avatar_url
+                  ? <Image src={user.avatar_url} width={34} height={34} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                  : <User size={18} strokeWidth={1.5} color="var(--accent)" />}
+              </div>
+              {/* Name + chevron (desktop only) */}
+              {!isMobile && (
+                <>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t1)', whiteSpace: 'nowrap' }}>
+                    {user?.full_name || user?.username || 'Utilisateur'}
+                  </span>
+                  <ChevronDown size={14} color="var(--t3)" style={{ transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                </>
+              )}
             </button>
 
             {profileOpen && (
