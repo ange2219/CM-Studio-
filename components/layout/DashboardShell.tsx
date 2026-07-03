@@ -279,6 +279,11 @@ export function DashboardShell({ user: initialUser, children }: {
               gap: 0,
             }}
           >
+            {/* Titre Navigation */}
+            <div style={{ padding: '4px 12px 8px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Navigation
+            </div>
+
             {/* Nav Items */}
             <div style={{ marginBottom: '4px' }}>
               {navItems.map(item => {
@@ -298,7 +303,7 @@ export function DashboardShell({ user: initialUser, children }: {
                       display: 'flex', alignItems: 'center', gap: '12px',
                       padding: '10px 12px', borderRadius: '10px',
                       textDecoration: 'none',
-                      color: active ? 'var(--text)' : 'var(--text2)',
+                      color: 'var(--text)',
                       background: active ? 'var(--accent-light)' : 'transparent',
                       marginBottom: '2px',
                       transition: 'all 0.15s',
