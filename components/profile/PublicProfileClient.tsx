@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2 } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -81,8 +82,15 @@ export default function PublicProfileClient({
   const [posts, setPosts] = useState(initialPosts)
 
   const supabase = createClient()
+  const router = useRouter()
   const isOwnProfile = currentUserId === profile.id
   const badge = planBadge(profile.plan)
+
+  // ── Logout ──────────────────────────────────────────────────────────────────
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   // ── Follow / Unfollow ──────────────────────────────────────────────────────
   async function handleFollow() {
@@ -181,16 +189,36 @@ export default function PublicProfileClient({
           display: 'flex', gap: 8,
         }}>
           {isOwnProfile ? (
-            <Link href="/profile" style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '9px 18px', borderRadius: 10,
-              background: 'var(--card)', border: '1px solid var(--b1)',
-              color: 'var(--t1)', fontSize: '0.83rem', fontWeight: 700,
-              textDecoration: 'none', transition: 'all .15s',
-            }}>
-              <Settings size={15} />
-              Modifier le profil
-            </Link>
+            <>
+              <Link href="/settings?tab=identity" style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '9px 18px', borderRadius: 10,
+                background: 'var(--card)', border: '1px solid var(--b1)',
+                color: 'var(--t1)', fontSize: '0.83rem', fontWeight: 700,
+                textDecoration: 'none', transition: 'all .15s',
+              }}>
+                <Edit2 size={15} />
+                Modifier le profil
+              </Link>
+              <Link href="/settings" style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '9px 18px', borderRadius: 10,
+                background: 'var(--card)', border: '1px solid var(--b1)',
+                color: 'var(--t1)', fontSize: '0.83rem', fontWeight: 700,
+                textDecoration: 'none', transition: 'all .15s',
+              }} title="Paramètres">
+                <Settings size={15} />
+              </Link>
+              <button onClick={handleLogout} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '9px 18px', borderRadius: 10,
+                background: '#FEE2E2', border: '1px solid #FCA5A5',
+                color: '#DC2626', fontSize: '0.83rem', fontWeight: 700,
+                cursor: 'pointer', transition: 'all .15s',
+              }} title="Se déconnecter">
+                <LogOut size={15} />
+              </button>
+            </>
           ) : (
             <>
               <button

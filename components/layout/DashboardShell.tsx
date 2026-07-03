@@ -121,8 +121,8 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Générer un post', icon: Sparkles,   href: '/workspace/posts/create' },
     { label: 'Analytics',       icon: BarChart2,  href: '/workspace/analytics'    },
     { label: 'Abonnements',     icon: CreditCard, href: '/settings?tab=billing'   },
-    { label: 'Paramètres',      icon: Settings,   href: '/settings?tab=general'   },
-    { label: 'Mon profil',      icon: User,       href: '/profile'                },
+    { label: 'Paramètres',      icon: Settings,   href: '/settings'   },
+    { label: 'Mon profil',      icon: User,       href: `/profile/${user?.username || ''}` },
   ]
 
   const bottomNavItems = navItems
@@ -238,12 +238,7 @@ export function DashboardShell({ user: initialUser, children }: {
                   </div>
                 </div>
                 <div className="dropdown-divider" />
-                <Link href="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
-                <Link href="/settings?tab=billing" className="dropdown-item" onClick={() => setProfileOpen(false)}><CreditCard size={16} /> Abonnements</Link>
-                <Link href="/settings?tab=notifications" className="dropdown-item" onClick={() => setProfileOpen(false)}><BellRing size={16} /> Notifications</Link>
-                <div className="dropdown-divider" />
-                <Link href="/settings?tab=general" className="dropdown-item" onClick={() => setProfileOpen(false)}><Settings size={16} /> Réglages</Link>
-                <Link href="/settings?tab=privacy" className="dropdown-item" onClick={() => setProfileOpen(false)}><ShieldCheck size={16} /> Confidentialité</Link>
+                <Link href={`/profile/${user?.username || ''}`} className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
                 <div className="dropdown-divider" />
                 <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
               </div>
