@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
-  Sparkles, BarChart2, Zap, Plus, ChevronDown
+  Sparkles, BarChart2, Zap
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -181,82 +181,56 @@ export function DashboardShell({ user: initialUser, children }: {
 
         {isMobile && <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif" }}>CM Studio</span>}
 
-        {/* RIGHT: Top Actions + Avatar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '18px', flexShrink: 0 }}>
-          
-          {/* Create Action Button (+) */}
-          <Link href="/workspace/posts/create" style={{
-            width: '32px', height: '32px', borderRadius: '50%',
-            border: '1.5px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--accent)', cursor: 'pointer', background: 'transparent'
-          }}>
-            <Plus size={18} strokeWidth={2.5} />
-          </Link>
+        {/* RIGHT: Theme toggle + Avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--s2)', border: '1px solid var(--b1)',
+              color: 'var(--text2)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
 
-          {/* Notifications & Messages */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Bell icon */}
-            <Link href="/notifications" style={{ position: 'relative', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bell size={20} strokeWidth={1.8} />
-              <span style={{ position: 'absolute', top: '-5px', right: '-6px', background: 'var(--accent)', color: '#fff', borderRadius: '50%', fontSize: '0.65rem', fontWeight: 800, width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--nav-bg)' }}>
-                3
-              </span>
+          {/* Mobile: bell icon */}
+          {isMobile && (
+            <Link href="/notifications" style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--s2)', border: '1px solid var(--b1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+            }}>
+              <Bell size={16} color="var(--text2)" />
             </Link>
+          )}
 
-            {/* Message icon */}
-            <Link href="/messages" style={{ position: 'relative', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MessageCircle size={20} strokeWidth={1.8} />
-              <span style={{ position: 'absolute', top: '-5px', right: '-6px', background: 'var(--accent)', color: '#fff', borderRadius: '50%', fontSize: '0.65rem', fontWeight: 800, width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--nav-bg)' }}>
-                2
-              </span>
-            </Link>
-          </div>
-
-          {!isMobile && <div style={{ width: '1px', height: '24px', background: 'var(--b1)', margin: '0 4px' }} />}
-
-          {/* Avatar + Name dropdown */}
+          {/* Avatar + dropdown (always visible) */}
           <div ref={profileRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
               style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
-                borderRadius: '24px', transition: 'background 0.15s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              {/* Avatar */}
-              <div style={{
                 width: '36px', height: '36px', borderRadius: '50%',
-                background: 'var(--b1)', border: '1px solid var(--border)',
+                background: 'rgba(var(--accent-rgb), 0.2)',
+                border: '2px solid rgba(255,255,255,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--t2)', overflow: 'hidden', flexShrink: 0,
-              }}>
-                {user?.avatar_url
-                  ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                  : <User size={20} strokeWidth={1.5} />}
-              </div>
-              
-              {/* Name (Desktop only) */}
-              {!isMobile && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingRight: '4px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t1)', whiteSpace: 'nowrap' }}>
-                    {user?.full_name || user?.username || 'Utilisateur'}
-                  </span>
-                  <ChevronDown size={14} color="var(--t3)" style={{ transform: profileOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
-                </div>
-              )}
+                cursor: 'pointer', color: 'var(--accent)', fontWeight: 700,
+                fontSize: '0.85rem', overflow: 'hidden', flexShrink: 0,
+              }}
+            >
+              {user?.avatar_url
+                ? <Image src={user.avatar_url} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                : initials}
             </button>
 
-            {/* Dropdown Menu */}
             {profileOpen && (
               <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
                 <div className="dropdown-header">
-                  <div className="av-large" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--b1)', color: 'var(--t2)' }}>
+                  <div className="av-large" style={{ overflow: 'hidden' }}>
                     {user?.avatar_url
                       ? <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <User size={28} strokeWidth={1.5} />}
+                      : initials}
                   </div>
                   <div className="u-info">
                     <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
@@ -265,10 +239,6 @@ export function DashboardShell({ user: initialUser, children }: {
                 </div>
                 <div className="dropdown-divider" />
                 <Link href={`/profile/${user?.username || ''}`} className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
-                <div className="dropdown-divider" />
-                <button className="dropdown-item" onClick={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); setProfileOpen(false); }}>
-                  {theme === 'dark' ? <><Sun size={16} /> Mode Clair</> : <><Moon size={16} /> Mode Sombre</>}
-                </button>
                 <div className="dropdown-divider" />
                 <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
               </div>
