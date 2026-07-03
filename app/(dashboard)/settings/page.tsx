@@ -343,6 +343,23 @@ function SettingsContent() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', maxWidth: '900px', margin: '0 auto' }}>
       
+      {/* ── En-tête des paramètres ── */}
+      <div style={{ padding: isMobileSettings ? '1.5rem 1rem 1rem' : '2rem 2rem 1rem' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--t1)', marginBottom: '1.5rem', letterSpacing: '-0.02em' }}>Paramètres</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ position: 'relative', width: '56px', height: '56px', flexShrink: 0 }}>
+            {avatarUrl
+              ? <img src={avatarUrl} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--b1)' }} />
+              : <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 700, color: 'var(--accent)', border: '2px solid var(--b1)' }}>{initials}</div>
+            }
+          </div>
+          <div style={{ overflow: 'hidden' }}>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{fullName || 'Mon compte'}</div>
+            <div style={{ fontSize: '.9rem', color: 'var(--t3)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{email}</div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Top Tabs ── */}
       <div style={{
         display: 'flex',
