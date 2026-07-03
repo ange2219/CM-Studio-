@@ -66,7 +66,7 @@ export default function HomePage() {
   const activePosts = activeTab === 'general' ? generalPosts : suiviPosts
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', maxWidth: '1040px', margin: '0 auto', gap: '32px', padding: '20px 16px 40px 16px' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', maxWidth: '1000px', margin: '0 auto', gap: '24px', padding: '20px 16px 40px 16px', alignItems: 'flex-start' }}>
       <style>{`
         @media (max-width: 900px) {
           .right-sidebar { display: none !important; }
@@ -218,60 +218,60 @@ export default function HomePage() {
       </div>
 
       {/* ── Right Sidebar Column (Desktop Only) ── */}
-      <div className="right-sidebar" style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '24px', flexShrink: 0 }}>
+      <div className="right-sidebar" style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '14px', flexShrink: 0, position: 'sticky', top: '20px' }}>
         
         {/* Carte 1: Suggestions à suivre */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
-              <UserPlus size={18} color="var(--accent)" /> Suggestions à suivre
+        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--t1)' }}>
+              <UserPlus size={16} color="var(--accent)" /> Suggestions à suivre
             </h3>
-            <Link href="/network" style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
+            <Link href="/network" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
               { name: 'Daniel K.', desc: '12 abonnés en commun' },
               { name: 'Sarah M.', desc: '8 abonnés en commun' },
               { name: 'Moussa T.', desc: '5 abonnés en commun' }
             ].map(u => (
               <div key={u.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent)' }}>
                     {u.name[0]}
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--t1)' }}>{u.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--t3)' }}>{u.desc}</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--t1)' }}>{u.name}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--t3)' }}>{u.desc}</div>
                   </div>
                 </div>
-                <button style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.15s' }}>Suivre</button>
+                <button style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.15s' }}>Suivre</button>
               </div>
             ))}
           </div>
         </div>
 
         {/* Carte 2: Groupes actifs */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
-              <Flame size={18} color="var(--accent)" /> Groupes actifs
+        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--t1)' }}>
+              <Flame size={16} color="var(--accent)" /> Groupes actifs
             </h3>
-            <Link href="/groups" style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
+            <Link href="/groups" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
-              { name: 'Entrepreneurs 360', desc: '128 membres actifs', icon: <Rocket size={20} color="#fff" />, color: '#4F46E5' },
-              { name: 'Développeurs CM', desc: '96 discussions', icon: <Code size={20} color="#059669" />, color: '#D1FAE5', iconCol: '#064E3B' },
-              { name: 'Marketing & Growth', desc: '74 membres actifs', icon: <Megaphone size={20} color="#D97706" />, color: '#FEF3C7', iconCol: '#78350F' }
+              { name: 'Entrepreneurs 360', desc: '128 membres actifs', icon: <Rocket size={16} color="#fff" />, color: '#4F46E5' },
+              { name: 'Développeurs CM', desc: '96 discussions', icon: <Code size={16} color="#059669" />, color: '#D1FAE5', iconCol: '#064E3B' },
+              { name: 'Marketing & Growth', desc: '74 membres actifs', icon: <Megaphone size={16} color="#D97706" />, color: '#FEF3C7', iconCol: '#78350F' }
             ].map(g => (
-              <div key={g.name} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: g.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div key={g.name} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: g.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {g.icon}
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--t1)' }}>{g.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }}/> {g.desc}
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--t1)' }}>{g.name}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent)' }}/> {g.desc}
                   </div>
                 </div>
               </div>
@@ -280,18 +280,18 @@ export default function HomePage() {
         </div>
 
         {/* Carte 3: En ligne maintenant */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2)' }}/> En ligne maintenant
+        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--t1)' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2)' }}/> En ligne maintenant
             </h3>
-            <Link href="/network" style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
+            <Link href="/network" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
           </div>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {['D', 'S', 'M', 'A', 'L'].map((u, i) => (
               <div key={i} style={{ position: 'relative' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', border: '1px solid var(--b1)' }}>{u}</div>
-                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', border: '2px solid var(--card)' }} />
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, color: 'var(--t1)', border: '1px solid var(--b1)' }}>{u}</div>
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', border: '2px solid var(--card)' }} />
               </div>
             ))}
           </div>
