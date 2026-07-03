@@ -7,11 +7,11 @@
 :root {
   --radius: 12px;
   /* ── Palette base — Minimalist Light ── */
-  --bg: #EAECEF; /* Plus contrasté que le précédent F0F2F5 */
+  --bg: #F4F6F8;
   --white: #ffffff;
   --accent: #004422;
   --accent-secondary: #059669;
-  --accent-light: rgba(0, 68, 34, 0.08);
+  --accent-light: #E8F5EE;
   --teal: #06B6D4;
   --green: #10B981;
   --orange: #F59E0B;
@@ -22,7 +22,7 @@
   --text2: #4B5563;
   --text3: #9CA3AF;
   
-  --border: #DADCE0; /* Bordure un poil plus foncée pour délimiter les cartes */
+  --border: #E5E7EB;
   --sidebar-bg: #ffffff;
   --nav-bg: #ffffff;
   --card-bg: #ffffff;
