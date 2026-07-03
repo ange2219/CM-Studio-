@@ -381,7 +381,7 @@ function SettingsContent() {
           return (
             <button
               key={item.id}
-              onClick={() => { setActive(item.id); router.replace(`/settings?tab=${item.id}`); }}
+              onClick={() => { setActive(item.id); router.replace(`/settings?tab=${item.id}`, { scroll: false }); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
