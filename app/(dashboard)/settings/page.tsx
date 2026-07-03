@@ -341,80 +341,56 @@ function SettingsContent() {
   if (loading) return <ProfileSkeleton />
 
   return (
-    <div style={{ display: 'flex', flexDirection: isMobileSettings ? 'column' : 'row', minHeight: '100%', margin: isMobileSettings ? '0' : '-20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', maxWidth: '900px', margin: '0 auto' }}>
       
-      {/* ── Sidebar / Mobile Tabs ── */}
-      {isMobileSettings ? (
-        <div style={{ borderBottom: '1px solid var(--b1)', padding: '12px 0 0', flexShrink: 0 }}>
-          <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', padding: '0 12px', WebkitOverflowScrolling: 'touch' }}>
-            {NAV_ITEMS.map(item => {
-              const Icon = item.icon
-              const isActive = active === item.id
-              return (
-                <button key={item.id} onClick={() => setActive(item.id)} style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '8px 14px', background: 'none', border: 'none',
-                  borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                  color: isActive ? 'var(--t1)' : 'var(--t3)',
-                  cursor: 'pointer', fontSize: '.78rem', fontWeight: isActive ? 600 : 400,
-                  transition: '.15s', whiteSpace: 'nowrap', flexShrink: 0,
-                }}>
-                  <Icon size={14} style={{ color: isActive ? 'var(--accent)' : 'var(--t3)' }} />
-                  {item.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      ) : (
-        <aside style={{
-          width: '240px', flexShrink: 0,
-          borderRight: '1px solid var(--b1)',
-          padding: '1.5rem 0',
-          position: 'sticky', top: 0, alignSelf: 'flex-start', maxHeight: '100vh', overflowY: 'auto',
-        }}>
-          {/* Section rapide utilisateur */}
-          <div style={{ padding: '0 1.25rem', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--t1)', marginBottom: '1.5rem' }}>Paramètres</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                {avatarUrl
-                  ? <img src={avatarUrl} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                  : <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.9rem', fontWeight: 700, color: 'var(--accent)' }}>{initials}</div>
-                }
-              </div>
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--t1)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{fullName || 'Mon compte'}</div>
-                <div style={{ fontSize: '.72rem', color: 'var(--t3)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{email}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation interne */}
-          <nav>
-            {NAV_ITEMS.map(item => {
-              const Icon = item.icon
-              const isActive = active === item.id
-              return (
-                <button key={item.id} onClick={() => { setActive(item.id); router.replace(`/settings?tab=${item.id}`); }} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '.6rem',
-                  padding: '.55rem 1.25rem', background: isActive ? 'var(--accent-light)' : 'none', border: 'none',
-                  borderRight: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                  color: isActive ? 'var(--accent)' : 'var(--t2)',
-                  cursor: 'pointer', fontSize: '.85rem', fontWeight: isActive ? 600 : 500,
-                  transition: '.15s', textAlign: 'left',
-                }}>
-                  <Icon size={16} style={{ flexShrink: 0 }} />
-                  {item.label}
-                </button>
-              )
-            })}
-          </nav>
-        </aside>
-      )}
+      {/* ── Top Tabs ── */}
+      <div style={{
+        display: 'flex',
+        borderBottom: '1px solid var(--b1)',
+        gap: '4px',
+        marginBottom: '2rem',
+        justifyContent: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        background: 'var(--bg)',
+        paddingTop: '8px',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+      }}>
+        {NAV_ITEMS.map(item => {
+          const Icon = item.icon
+          const isActive = active === item.id
+          return (
+            <button
+              key={item.id}
+              onClick={() => { setActive(item.id); router.replace(`/settings?tab=${item.id}`); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'none',
+                border: 'none',
+                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                padding: '10px 22px',
+                fontSize: '0.9rem',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? 'var(--accent)' : 'var(--t3)',
+                cursor: 'pointer',
+                transition: 'all .15s',
+                marginBottom: '-1px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Icon size={16} />
+              {item.label}
+            </button>
+          )
+        })}
+      </div>
 
       {/* ── Main Content ── */}
-      <main style={{ flex: 1, padding: isMobileSettings ? '1.5rem' : '2.5rem', maxWidth: '800px' }}>
+      <main style={{ padding: isMobileSettings ? '0 1rem 2rem' : '0 2rem 2rem' }}>
         
         {/* ── 1. IDENTITÉ & MARQUE ── */}
         {active === 'identity' && (
