@@ -323,45 +323,40 @@ export function DashboardShell({ user: initialUser, children }: {
               })}
             </div>
 
-            {/* Separator */}
-            <div style={{ height: '1px', background: 'var(--b1)', margin: '8px 12px' }} />
+            {/* Espace flexible pour pousser la carte en bas */}
+            <div style={{ flex: 1 }} />
 
-            {/* Raccourcis — actions fréquentes */}
-            <div style={{ padding: '4px 12px 8px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Raccourcis
+            {/* Carte Passez à Pro */}
+            <div style={{
+              background: 'var(--accent-light)',
+              borderRadius: '12px',
+              padding: '16px',
+              margin: '12px 8px',
+              border: '1px solid rgba(var(--accent-rgb), 0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <Sparkles size={16} color="var(--accent)" />
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent)' }}>Passez à Pro</span>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--t2)', marginBottom: '12px', lineHeight: 1.4 }}>
+                Plus d'outils, plus d'options, plus de puissance.
+              </p>
+              <Link href="/settings?tab=billing" style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px',
+                background: 'var(--accent)',
+                color: '#fff',
+                borderRadius: '8px',
+                textAlign: 'center',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                transition: 'all 0.15s'
+              }}>
+                Découvrir
+              </Link>
             </div>
-
-            {shortcuts.map(item => {
-              // Règle d'activation pour les raccourcis
-              let active = pathname === item.href || pathname?.startsWith(item.href)
-              // Exception pour les settings qui ont des tabs (pour ne pas tout activer si on va sur /settings)
-              if (item.href.includes('?')) {
-                const base = item.href.split('?')[0]
-                active = pathname === base && (typeof window !== 'undefined' ? window.location.search === '?' + item.href.split('?')[1] : false)
-              }
-
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '12px',
-                    padding: '9px 12px', borderRadius: '10px',
-                    textDecoration: 'none',
-                    color: active ? 'var(--accent)' : 'var(--text2)',
-                    background: active ? 'var(--accent-light)' : 'transparent',
-                    marginBottom: '4px', fontSize: '0.88rem', fontWeight: active ? 600 : 500,
-                    transition: 'all 0.15s',
-                    border: '1px solid transparent',
-                  }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--s2)' }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <item.icon size={18} style={{ flexShrink: 0, color: active ? 'var(--accent)' : 'var(--text3)' }} />
-                  <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
-                </Link>
-              )
-            })}
           </aside>
         )}
 
