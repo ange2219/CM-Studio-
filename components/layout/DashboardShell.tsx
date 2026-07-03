@@ -231,12 +231,17 @@ export function DashboardShell({ user: initialUser, children }: {
                   ? <Image src={user.avatar_url} width={34} height={34} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                   : <User size={18} strokeWidth={1.5} color="var(--accent)" />}
               </div>
-              {/* Name + chevron (desktop only) */}
+              {/* Name + email + chevron (desktop only) */}
               {!isMobile && (
                 <>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t1)', whiteSpace: 'nowrap' }}>
-                    {user?.full_name || user?.username || 'Utilisateur'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t1)', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                      {user?.full_name || user?.username || 'Utilisateur'}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--t3)', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                      {user?.email || ''}
+                    </span>
+                  </div>
                   <ChevronDown size={14} color="var(--t3)" style={{ transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                 </>
               )}
