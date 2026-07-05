@@ -1209,17 +1209,17 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             </button>
           </div>
 
-          {/* Analyse concurrents */}
+          {/* Hooks viraux */}
           <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Zap size={18} />
+                <Lightbulb size={18} />
               </div>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Concurrents</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Analysez la stratégie de vos concurrents.</p>
-            <button onClick={() => toast('Analyse concurrentielle bientôt disponible !', 'info')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-              Analyser <ArrowRight size={12} />
+            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Hooks Viraux</h3>
+            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Accroches et structures de posts qui cartonnent.</p>
+            <button onClick={() => toast("Banque d'accroches virales bientôt disponible !", 'info')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
+              Ouvrir <ArrowRight size={12} />
             </button>
           </div>
 
@@ -1230,24 +1230,24 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 <ImageIcon size={18} />
               </div>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Visuels & Médias</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Gerez vos médias et vos chartes graphiques.</p>
+            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Visuels & Carrousels</h3>
+            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Gérez vos templates et vos chartes graphiques.</p>
             <button onClick={() => toast('Bibliothèque de visuels bientôt disponible !', 'info')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
               Ouvrir <ArrowRight size={12} />
             </button>
           </div>
 
-          {/* E-commerce */}
+          {/* Score de viralité */}
           <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Database size={18} />
+                <Zap size={18} />
               </div>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>E-commerce</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Importez vos produits de vos e-boutiques.</p>
-            <button onClick={() => toast('Intégration E-commerce bientôt disponible !', 'info')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-              Connecter <ArrowRight size={12} />
+            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Audit de Viralité</h3>
+            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Analysez la force de votre post avant de publier.</p>
+            <button onClick={() => toast('Score de viralité IA bientôt disponible !', 'info')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
+              Auditer <ArrowRight size={12} />
             </button>
           </div>
         </div>
