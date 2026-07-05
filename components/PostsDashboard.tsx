@@ -186,6 +186,9 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const npMenuRefDesktop = useRef<HTMLDivElement>(null)
   const npMenuRefMobile = useRef<HTMLDivElement>(null)
 
+  // Nouveau post modal
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+
   // Filtre par plateforme
   const [platformFilter, setPlatformFilter] = useState<string | null>(null)
   const [pfMenuOpen, setPfMenuOpen] = useState(false)
@@ -919,6 +922,157 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         </div>
       )}
 
+      {/* ── Modal d'options de création (Interface Nouveau Post) ── */}
+      {createModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          onClick={e => { if (e.target === e.currentTarget) setCreateModalOpen(false) }}
+        >
+          <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.5rem', width: '100%', maxWidth: '640px', position: 'relative', display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+            
+            {/* Bouton fermer */}
+            <button 
+              onClick={() => setCreateModalOpen(false)} 
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: '4px', borderRadius: '50%', transition: 'background 0.15s, color 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.color = 'var(--t1)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--t3)' }}
+            >
+              <X size={18} />
+            </button>
+
+            {/* En-tête */}
+            <div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: '.25rem' }}>Que voulez-vous créer ?</div>
+              <div style={{ fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.4 }}>Choisissez l'une de nos fonctionnalités pour propulser votre présence sociale.</div>
+            </div>
+
+            {/* Grille d'options (Dense & Premium) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }} className="sb-scroll">
+              
+              {/* Option 1 : Générer par IA */}
+              <div 
+                onClick={() => {
+                  setCreateModalOpen(false)
+                  router.push('/workspace/posts/create')
+                }}
+                style={{ background: 'rgba(var(--accent-rgb), 0.03)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'rgba(var(--accent-rgb), 0.06)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'rgba(var(--accent-rgb), 0.03)' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '.2rem' }}>Générer par IA</div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Rédigez et concevez des posts optimisés pour vos réseaux sociaux avec notre IA.</div>
+                </div>
+              </div>
+
+              {/* Option 2 : Créer manuellement */}
+              <div 
+                onClick={() => {
+                  setCreateModalOpen(false)
+                  try {
+                    sessionStorage.setItem('social_ia_results', JSON.stringify({
+                      variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
+                    }))
+                  } catch {}
+                  router.push('/workspace/posts/results')
+                }}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <PenLine size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '.2rem' }}>Créer manuellement</div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Rédigez vous-même votre contenu et importez vos propres visuels.</div>
+                </div>
+              </div>
+
+              {/* Option 3 : Générer un visuel (Mockup) */}
+              <div 
+                onClick={() => toast('Génération de visuels bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ImageIcon size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Générer un visuel</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Créez des images ou carrousels uniques pour vos posts avec l'IA.</div>
+                </div>
+              </div>
+
+              {/* Option 4 : Auto-posting & Planification (Mockup) */}
+              <div 
+                onClick={() => toast('Planification automatique bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Calendar size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Auto-posting & Planning</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Planifiez et publiez automatiquement vos posts sur tous vos réseaux.</div>
+                </div>
+              </div>
+
+              {/* Option 5 : Analytics & stats (Mockup) */}
+              <div 
+                onClick={() => toast('Analytics avancés bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <BarChart3 size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Analytics & Rapports</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Suivez en profondeur vos statistiques de portée et d'engagement.</div>
+                </div>
+              </div>
+
+              {/* Option 6 : Analyse concurrents (Mockup) */}
+              <div 
+                onClick={() => toast('Analyse concurrentielle bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Zap size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Analyse concurrentielle</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Espionnez les stratégies de contenu de vos concurrents directs.</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* ── Barre de sélection flottante ── */}
       {selectedIds.size > 0 && (
         <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 100, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 8px 32px rgba(0,0,0,.6)', backdropFilter: 'blur(8px)' }}>
@@ -996,35 +1150,17 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <PenLine size={18} />
               </div>
-              <div onClick={() => router.push('/workspace/posts/create')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid var(--b1)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+              <div onClick={() => setCreateModalOpen(true)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid var(--b1)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
                 <Plus size={12} />
               </div>
             </div>
             <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Nouveau post</h3>
             <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Créez ou générez du contenu avec l'IA.</p>
             
-            <div style={{ position: 'relative' }} ref={npMenuRefDesktop}>
-              <button onClick={() => setNpMenuOpen(o => !o)} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-hover)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}>
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setCreateModalOpen(true)} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-hover)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}>
                 Créer <ArrowRight size={12} />
               </button>
-              {npMenuOpen && (
-                <div style={{ position: 'absolute', bottom: 'calc(100% + 5px)', left: 0, width: '100%', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '.3rem', zIndex: 100, boxShadow: '0 8px 24px var(--shadow)' }}>
-                  <button onClick={() => { setNpMenuOpen(false); router.push('/workspace/posts/create') }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Générer (IA)
-                  </button>
-                  <button onClick={() => {
-                    setNpMenuOpen(false)
-                    try {
-                      sessionStorage.setItem('social_ia_results', JSON.stringify({
-                        variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
-                      }))
-                    } catch {}
-                    router.push('/workspace/posts/results')
-                  }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem', borderRadius: '6px', border: 'none', background: 'transparent', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <PenLine size={14} style={{ color: 'var(--t2)' }} /> Créer manuel
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -1180,7 +1316,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', width: '100%', maxWidth: '260px' }}>
                     <button 
-                      onClick={() => router.push('/workspace/posts/create')} 
+                      onClick={() => setCreateModalOpen(true)} 
                       style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '.85rem', borderRadius: '12px', fontSize: '.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', cursor: 'pointer' }}
                     >
                       <Sparkles size={16} /> Créer mon premier post
