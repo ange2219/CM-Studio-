@@ -954,11 +954,11 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                   setCreateModalOpen(false)
                   router.push('/workspace/posts/create')
                 }}
-                style={{ background: 'rgba(var(--accent-rgb), 0.03)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'rgba(var(--accent-rgb), 0.06)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'rgba(var(--accent-rgb), 0.03)' }}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Sparkles size={18} />
                 </div>
                 <div>
@@ -967,7 +967,83 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 </div>
               </div>
 
-              {/* Option 2 : Créer manuellement */}
+              {/* Option 2 : Créer un Réel / Vidéo (Mockup) */}
+              <div 
+                onClick={() => toast('Création de Réels bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Video size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer un Réel / Vidéo</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Générez ou planifiez un Réel Instagram, TikTok ou YouTube Short.</div>
+                </div>
+              </div>
+
+              {/* Option 3 : Créer un Carrousel (Mockup) */}
+              <div 
+                onClick={() => toast('Création de carrousels bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Grid3X3 size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer un Carrousel</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Concevez un carrousel d'images engageant avec du texte généré par l'IA.</div>
+                </div>
+              </div>
+
+              {/* Option 4 : Créer une Story / Image (Mockup) */}
+              <div 
+                onClick={() => toast('Génération de Stories bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ImageIcon size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer une Story / Image</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Générez une image simple ou une story avec des prompts IA.</div>
+                </div>
+              </div>
+
+              {/* Option 5 : Planifier une publication (Mockup) */}
+              <div 
+                onClick={() => toast('Planification de campagne bientôt disponible !', 'info')}
+                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Calendar size={18} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
+                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Planifier une publication</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                  </div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Planifiez et organisez une série de posts à l'avance dans le calendrier.</div>
+                </div>
+              </div>
+
+              {/* Option 6 : Créer manuellement */}
               <div 
                 onClick={() => {
                   setCreateModalOpen(false)
@@ -988,82 +1064,6 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 <div>
                   <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '.2rem' }}>Créer manuellement</div>
                   <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Rédigez vous-même votre contenu et importez vos propres visuels.</div>
-                </div>
-              </div>
-
-              {/* Option 3 : Créer un Réel / Vidéo (Mockup) */}
-              <div 
-                onClick={() => toast('Création de Réels bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
-              >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Video size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
-                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer un Réel / Vidéo</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
-                  </div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Générez ou planifiez un Réel Instagram, TikTok ou YouTube Short.</div>
-                </div>
-              </div>
-
-              {/* Option 4 : Créer un Carrousel (Mockup) */}
-              <div 
-                onClick={() => toast('Création de carrousels bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
-              >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Grid3X3 size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
-                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer un Carrousel</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
-                  </div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Concevez un carrousel d'images engageant avec du texte généré par l'IA.</div>
-                </div>
-              </div>
-
-              {/* Option 5 : Créer une Story / Image (Mockup) */}
-              <div 
-                onClick={() => toast('Génération de Stories bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
-              >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ImageIcon size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
-                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer une Story / Image</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
-                  </div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Générez une image simple ou une story avec des prompts IA.</div>
-                </div>
-              </div>
-
-              {/* Option 6 : Planifier une publication (Mockup) */}
-              <div 
-                onClick={() => toast('Planification de campagne bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
-              >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Calendar size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
-                    <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Planifier une publication</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
-                  </div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Planifiez et organisez une série de posts à l'avance dans le calendrier.</div>
                 </div>
               </div>
 
@@ -1158,7 +1158,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Créez ou générez du contenu avec l'IA.</p>
             
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setCreateModalOpen(true)} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-hover)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}>
+              <button onClick={() => setCreateModalOpen(true)} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
                 Créer <ArrowRight size={12} />
               </button>
             </div>
