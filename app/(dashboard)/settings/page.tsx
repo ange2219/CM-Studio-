@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/Toast'
 import { createClient } from '@/lib/supabase/client'
 import { PLATFORM_NAMES, PLATFORM_COLORS } from '@/types'
 import type { Platform, SocialAccount } from '@/types'
-import { User, Link2, Unlink, Save, Camera, CreditCard, Trash2, Shield, RefreshCw, LogOut, Sparkles } from 'lucide-react'
+import { User, Link2, Unlink, Save, Camera, CreditCard, Trash2, Shield, RefreshCw, LogOut, Sparkles, Upload } from 'lucide-react'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
 import { ProfileSkeleton } from '@/components/ui/Skeleton'
 
@@ -60,11 +60,14 @@ function SettingsContent() {
   const [postsPerWeek, setPostsPerWeek] = useState(5)
   const [website, setWebsite] = useState('')
   const [targetAudience, setTargetAudience] = useState('')
-  const [audienceAge, setAudienceAge] = useState('')
-  const [audienceLocation, setAudienceLocation] = useState('')
   const [contentPillars, setContentPillars] = useState<string[]>([])
   const [avoidWords, setAvoidWords] = useState('')
   const [objectives, setObjectives] = useState<string[]>([])
+  const [valueProposition, setValueProposition] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [colorPrimary, setColorPrimary] = useState('#1E57CD')
+  const [colorSecondary, setColorSecondary] = useState('#059669')
+  const [platforms, setPlatforms] = useState<string[]>([])
   const [savingBrand, setSavingBrand] = useState(false)
 
   // --- Social / Billing / Security States ---
@@ -118,11 +121,30 @@ function SettingsContent() {
         setPostsPerWeek(brand.posts_per_week || 5)
         setWebsite(brand.website || '')
         setTargetAudience(brand.target_audience || '')
-        setAudienceAge(brand.audience_age || '')
-        setAudienceLocation(brand.audience_location || '')
         setContentPillars(brand.content_pillars || [])
         setAvoidWords(brand.avoid_words || '')
         setObjectives(brand.objectives || [])
+        
+        setValueProposition(brand.audience_interests || '')
+        
+        let logo = ''
+        let primary = '#1E57CD'
+        let secondary = '#059669'
+        let platArr: string[] = []
+        try {
+          if (brand.audience_location && brand.audience_location.startsWith('{')) {
+            const parsed = JSON.parse(brand.audience_location)
+            logo = parsed.logo_url || ''
+            primary = parsed.color_primary || '#1E57CD'
+            secondary = parsed.color_secondary || '#059669'
+            platArr = parsed.platforms || []
+          }
+        } catch (e) {}
+        
+        setLogoUrl(logo)
+        setColorPrimary(primary)
+        setColorSecondary(secondary)
+        setPlatforms(platArr)
 
         setInitialBrand({
           brandName: brand.brand_name || '',
@@ -132,17 +154,21 @@ function SettingsContent() {
           postsPerWeek: brand.posts_per_week || 5,
           website: brand.website || '',
           targetAudience: brand.target_audience || '',
-          audienceAge: brand.audience_age || '',
-          audienceLocation: brand.audience_location || '',
           contentPillars: brand.content_pillars || [],
           avoidWords: brand.avoid_words || '',
           objectives: brand.objectives || [],
+          valueProposition: brand.audience_interests || '',
+          logoUrl: logo,
+          colorPrimary: primary,
+          colorSecondary: secondary,
+          platforms: platArr,
         })
       } else {
         setInitialBrand({
           brandName: '', brandDesc: '', sector: '', defaultTone: 'professionnel',
-          postsPerWeek: 5, website: '', targetAudience: '', audienceAge: '',
-          audienceLocation: '', contentPillars: [], avoidWords: '', objectives: [],
+          postsPerWeek: 5, website: '', targetAudience: '', contentPillars: [], 
+          avoidWords: '', objectives: [], valueProposition: '', logoUrl: '', 
+          colorPrimary: '#1E57CD', colorSecondary: '#059669', platforms: [],
         })
       }
       await loadAccounts()
@@ -227,20 +253,32 @@ function SettingsContent() {
 
   async function saveBrand() {
     setSavingBrand(true)
+    const audienceLocationJson = JSON.stringify({
+      logo_url: logoUrl || '',
+      color_primary: colorPrimary || '',
+      color_secondary: colorSecondary || '',
+      platforms: platforms || [],
+    })
     const res = await fetch('/api/brand', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         brand_name: brandName, description: brandDesc, sector,
         default_tone: defaultTone, posts_per_week: postsPerWeek,
-        website, target_audience: targetAudience, audience_age: audienceAge,
-        audience_location: audienceLocation, content_pillars: contentPillars,
+        website, target_audience: targetAudience,
+        audience_interests: valueProposition, // Stores value proposition
+        audience_location: audienceLocationJson, // Stores logo, colors, platforms JSON
+        content_pillars: contentPillars,
         avoid_words: avoidWords, objectives,
       }),
     })
     setSavingBrand(false)
     if (res.ok) {
-      setInitialBrand({ brandName, brandDesc, sector, defaultTone, postsPerWeek, website, targetAudience, audienceAge, audienceLocation, contentPillars, avoidWords, objectives })
+      setInitialBrand({
+        brandName, brandDesc, sector, defaultTone, postsPerWeek, website,
+        targetAudience, contentPillars, avoidWords, objectives,
+        valueProposition, logoUrl, colorPrimary, colorSecondary, platforms
+      })
       setIsEditingBrand(false)
       toast('Profil de marque sauvegardé', 'success')
     } else {
@@ -257,11 +295,14 @@ function SettingsContent() {
       setPostsPerWeek(initialBrand.postsPerWeek)
       setWebsite(initialBrand.website)
       setTargetAudience(initialBrand.targetAudience)
-      setAudienceAge(initialBrand.audienceAge)
-      setAudienceLocation(initialBrand.audienceLocation)
       setContentPillars(initialBrand.contentPillars)
       setAvoidWords(initialBrand.avoidWords)
       setObjectives(initialBrand.objectives)
+      setValueProposition(initialBrand.valueProposition)
+      setLogoUrl(initialBrand.logoUrl)
+      setColorPrimary(initialBrand.colorPrimary)
+      setColorSecondary(initialBrand.colorSecondary)
+      setPlatforms(initialBrand.platforms)
     }
     setIsEditingBrand(false)
   }
@@ -486,34 +527,158 @@ function SettingsContent() {
                 <input className="input" style={{ maxWidth: '320px' }} value={brandName} onChange={e => setBrandName(e.target.value)} disabled={!isEditingBrand} />
               </Row>
               <Row label="Secteur d'activité">
-                <input className="input" style={{ maxWidth: '320px' }} value={sector} onChange={e => setSector(e.target.value)} disabled={!isEditingBrand} />
+                <select className="input" style={{ maxWidth: '320px', cursor: 'pointer' }} value={sector} onChange={e => setSector(e.target.value)} disabled={!isEditingBrand}>
+                  <option value="">Choisir un secteur...</option>
+                  {['Mode & Beauté', 'Tech & SaaS', 'E-commerce', 'Santé & Bien-être', 'Finance & Crypto', 'Restauration & Food', 'Immobilier', 'Sport & Fitness', 'Éducation', 'Art & Créativité', 'Voyage & Tourisme', 'Autre'].map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                </select>
               </Row>
               <Row label="Site web">
                 <input className="input" style={{ maxWidth: '320px' }} value={website} onChange={e => setWebsite(e.target.value)} disabled={!isEditingBrand} />
               </Row>
               <Row label="Ton par défaut">
                 <select className="input" style={{ maxWidth: '200px' }} value={defaultTone} onChange={e => setDefaultTone(e.target.value)} disabled={!isEditingBrand}>
-                  <option value="direct">Direct</option><option value="inspirant">Inspirant</option><option value="emotionnel">Émotionnel</option><option value="humoristique">Humoristique</option><option value="professionnel">Professionnel</option>
+                  <option value="professionnel">Professionnel</option>
+                  <option value="moderne">Moderne</option>
+                  <option value="decontracte">Décontracté</option>
+                  <option value="inspirant">Inspirant</option>
+                  <option value="premium">Premium</option>
+                  <option value="humoristique">Humoristique</option>
                 </select>
               </Row>
-              <Row label="Audience cible">
-                <input className="input" style={{ maxWidth: '320px' }} value={targetAudience} onChange={e => setTargetAudience(e.target.value)} disabled={!isEditingBrand} />
-              </Row>
-              <Row label="Tranche d'âge">
-                <select className="input" style={{ maxWidth: '200px' }} value={audienceAge} onChange={e => setAudienceAge(e.target.value)} disabled={!isEditingBrand}>
-                  <option value="">Non précisé</option>{['13-17','18-24','25-34','35-44','45-54','55+','Tous âges'].map(a => <option key={a} value={a}>{a}</option>)}
+              <Row label="Public cible">
+                <select className="input" style={{ maxWidth: '320px', cursor: 'pointer' }} value={targetAudience} onChange={e => setTargetAudience(e.target.value)} disabled={!isEditingBrand}>
+                  <option value="">Choisir la cible principale...</option>
+                  {['Grand public', 'Entrepreneurs', 'Étudiants', 'Parents', 'Professionnels', 'Entreprises', 'Autre'].map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </Row>
-              <Row label="Portée géographique">
-                <select className="input" style={{ maxWidth: '200px' }} value={audienceLocation} onChange={e => setAudienceLocation(e.target.value)} disabled={!isEditingBrand}>
-                  <option value="">Non précisé</option><option value="locale">Locale</option><option value="nationale">Nationale</option><option value="internationale">Internationale</option>
-                </select>
+              <Row label="Proposition de valeur" desc="Pourquoi les clients choisissent cette marque.">
+                <textarea className="input resize-none" rows={2.5} style={{ maxWidth: '100%' }} value={valueProposition} onChange={e => setValueProposition(e.target.value)} disabled={!isEditingBrand} />
               </Row>
-              <Row label="Piliers de contenu" desc="Séparés par des virgules.">
-                <input className="input" style={{ maxWidth: '100%' }} value={contentPillars.join(', ')} onChange={e => setContentPillars(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} disabled={!isEditingBrand} />
+              <Row label="Logo de la marque">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--b1)', flexShrink: 0 }}>
+                    {logoUrl ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Upload size={16} style={{ color: 'var(--t3)' }} />}
+                  </div>
+                  {isEditingBrand && (
+                    <div>
+                      <input type="file" accept="image/*" id="logo-settings" style={{ display: 'none' }} onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          setLogoUrl(URL.createObjectURL(file))
+                          const reader = new FileReader()
+                          reader.onload = (el) => {
+                            const img = new Image()
+                            img.onload = () => {
+                              const canvas = document.createElement('canvas')
+                              const ctx = canvas.getContext('2d')
+                              if (!ctx) return
+                              canvas.width = 50; canvas.height = 50
+                              ctx.drawImage(img, 0, 0, 50, 50)
+                              const imgData = ctx.getImageData(0, 0, 50, 50).data
+                              const colorCounts: Record<string, number> = {}
+                              for (let i = 0; i < imgData.length; i += 4) {
+                                const r = imgData[i], g = imgData[i+1], b = imgData[i+2], a = imgData[i+3]
+                                if (a < 150) continue
+                                const qr = Math.round(r / 16) * 16, qg = Math.round(g / 16) * 16, qb = Math.round(b / 16) * 16
+                                const qhex = '#' + [qr, qg, qb].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('')
+                                colorCounts[qhex] = (colorCounts[qhex] || 0) + 1
+                              }
+                              const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1])
+                              if (sorted.length >= 2) {
+                                setColorPrimary(sorted[0][0])
+                                setColorSecondary(sorted[1][0])
+                              } else if (sorted.length >= 1) {
+                                setColorPrimary(sorted[0][0])
+                                setColorSecondary(sorted[0][0])
+                              }
+                            }
+                            img.src = el.target?.result as string
+                          }
+                          reader.readAsDataURL(file)
+                        }
+                      }} />
+                      <label htmlFor="logo-settings" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer', padding: '.3rem .6rem', background: 'var(--accent-light)', borderRadius: '6px', border: '1px solid var(--accent)', display: 'inline-block' }}>
+                        Changer le logo
+                      </label>
+                    </div>
+                  )}
+                </div>
               </Row>
-              <Row label="Objectifs" desc="Séparés par des virgules.">
-                <input className="input" style={{ maxWidth: '100%' }} value={objectives.join(', ')} onChange={e => setObjectives(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} disabled={!isEditingBrand} />
+              <Row label="Couleurs de marque">
+                <div style={{ display: 'flex', gap: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                    <input type="color" value={colorPrimary} onChange={e => setColorPrimary(e.target.value)} disabled={!isEditingBrand} style={{ border: 'none', padding: 0, width: 26, height: 26, cursor: isEditingBrand ? 'pointer' : 'default', background: 'transparent' }} />
+                    <span style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--t1)' }}>{colorPrimary} (Primaire)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                    <input type="color" value={colorSecondary} onChange={e => setColorSecondary(e.target.value)} disabled={!isEditingBrand} style={{ border: 'none', padding: 0, width: 26, height: 26, cursor: isEditingBrand ? 'pointer' : 'default', background: 'transparent' }} />
+                    <span style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--t1)' }}>{colorSecondary} (Secondaire)</span>
+                  </div>
+                </div>
+              </Row>
+              <Row label="Réseaux utilisés">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                  {['facebook', 'instagram', 'tiktok', 'linkedin', 'twitter', 'pinterest', 'youtube', 'snapchat'].map(p => {
+                    const activePlat = platforms.includes(p)
+                    return (
+                      <button key={p} type="button" disabled={!isEditingBrand} onClick={() => {
+                        setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+                      }} style={{
+                        padding: '.3rem .7rem', borderRadius: '20px', fontSize: '.78rem', fontWeight: 500, cursor: isEditingBrand ? 'pointer' : 'default',
+                        border: activePlat ? '1px solid var(--accent)' : '1px solid var(--b1)',
+                        background: activePlat ? 'var(--accent-light)' : 'transparent',
+                        color: activePlat ? 'var(--accent)' : 'var(--t3)', transition: '0.15s', outline: 'none'
+                      }}>
+                        {p === 'twitter' ? 'X (Twitter)' : p.charAt(0).toUpperCase() + p.slice(1)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </Row>
+              <Row label="Types de contenus" desc="Astuces, Témoignages, Coulisses, etc.">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                  {['Conseils', 'Tutoriels', 'Coulisses', 'Promotions', 'Témoignages', 'Storytelling', 'Actualités', 'Divertissement', 'Éducation'].map(opt => {
+                    const selected = contentPillars.includes(opt)
+                    return (
+                      <button key={opt} type="button" disabled={!isEditingBrand} onClick={() => {
+                        setContentPillars(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])
+                      }} style={{
+                        padding: '.3rem .7rem', borderRadius: '20px', fontSize: '.78rem', fontWeight: 500, cursor: isEditingBrand ? 'pointer' : 'default',
+                        border: selected ? '1px solid var(--accent)' : '1px solid var(--b1)',
+                        background: selected ? 'var(--accent-light)' : 'transparent',
+                        color: selected ? 'var(--accent)' : 'var(--t3)', transition: '0.15s', outline: 'none'
+                      }}>
+                        {opt}
+                      </button>
+                    )
+                  })}
+                </div>
+              </Row>
+              <Row label="Objectifs" desc="Notoriété, Ventes, Engagement, etc.">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                  {([
+                    { value: 'notoriete', label: 'Notoriété' },
+                    { value: 'engagement', label: 'Engagement' },
+                    { value: 'ventes', label: 'Ventes' },
+                    { value: 'leads', label: 'Prospects' },
+                    { value: 'fidelisation', label: 'Fidélisation' },
+                    { value: 'communaute', label: 'Communauté' }
+                  ]).map(obj => {
+                    const selected = objectives.includes(obj.value)
+                    return (
+                      <button key={obj.value} type="button" disabled={!isEditingBrand} onClick={() => {
+                        setObjectives(prev => prev.includes(obj.value) ? prev.filter(x => x !== obj.value) : [...prev, obj.value])
+                      }} style={{
+                        padding: '.3rem .7rem', borderRadius: '20px', fontSize: '.78rem', fontWeight: 500, cursor: isEditingBrand ? 'pointer' : 'default',
+                        border: selected ? '1px solid var(--accent)' : '1px solid var(--b1)',
+                        background: selected ? 'var(--accent-light)' : 'transparent',
+                        color: selected ? 'var(--accent)' : 'var(--t3)', transition: '0.15s', outline: 'none'
+                      }}>
+                        {obj.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </Row>
               <Row label="Mots à éviter">
                 <input className="input" style={{ maxWidth: '100%' }} value={avoidWords} onChange={e => setAvoidWords(e.target.value)} disabled={!isEditingBrand} />
