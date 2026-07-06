@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   // Enrichir avec le profil de marque complet
   const { data: brandProfile } = await admin
     .from('brand_profiles')
-    .select('brand_name, description, industry, tone, target_audience, content_pillars, avoid_words, objectives')
+    .select('brand_name, description, industry, tone, target_audience, content_pillars, avoid_words, objectives, audience_interests')
     .eq('user_id', user.id)
     .single()
 
@@ -99,6 +99,7 @@ export async function POST(req: NextRequest) {
     body.brand_objectives  = Array.isArray(brandProfile.objectives) && brandProfile.objectives.length
                                ? brandProfile.objectives
                                : undefined
+    body.brand_value_proposition = brandProfile.audience_interests || undefined
     if (!body.tone && brandProfile.tone) body.tone = brandProfile.tone
   }
 

@@ -134,9 +134,10 @@ function buildBrandContext(req: GenerateRequest): string {
   const lines: string[] = []
   if (req.brand_name)        lines.push(`Marque : ${req.brand_name}`)
   if (req.brand_description) lines.push(`Description : ${req.brand_description}`)
+  if (req.brand_value_proposition) lines.push(`Proposition de valeur (pourquoi les clients nous choisissent) : ${req.brand_value_proposition}`)
   if (req.brand_industry)    lines.push(`Secteur : ${req.brand_industry}`)
   if (req.brand_audience)    lines.push(`Audience cible : ${req.brand_audience}`)
-  if (req.brand_pillars?.length) lines.push(`Piliers de contenu : ${req.brand_pillars.join(', ')}`)
+  if (req.brand_pillars?.length) lines.push(`Types de contenus publiés / Piliers : ${req.brand_pillars.join(', ')}`)
   if (req.brand_avoid)       lines.push(`À éviter absolument : ${req.brand_avoid}`)
   return lines.join('\n')
 }

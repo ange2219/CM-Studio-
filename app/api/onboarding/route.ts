@@ -4,21 +4,21 @@ import { z } from 'zod'
 
 const OnboardingSchema = z.object({
   full_name:          z.string().min(1, "Le nom et prénom sont obligatoires.").max(200),
-  account_type:       z.string().min(1).max(50).optional(),
-  brand_name:         z.string().min(1).max(100).optional(),
-  industry:           z.string().max(100).optional(),
-  description:        z.string().max(2000).optional(),
+  account_type:       z.string().min(1, "Le type de profil est obligatoire.").max(50),
+  brand_name:         z.string().min(1, "Le nom de la marque est obligatoire.").max(100),
+  industry:           z.string().min(1, "Le secteur d'activité est obligatoire.").max(100),
+  description:        z.string().min(1, "La description de la marque est obligatoire.").max(2000),
   website:            z.string().url().optional().or(z.literal('')),
-  target_audience:    z.string().max(500).optional(),
-  audience_age:       z.string().max(50).optional(),
-  audience_interests: z.string().max(500).optional(),
-  audience_location:  z.string().max(200).optional(),
-  content_pillars:    z.array(z.string().max(100)).max(10).default([]),
-  tone:               z.string().max(50).optional(),
-  avoid_words:        z.string().max(500).optional(),
-  objectives:         z.array(z.string().max(100)).max(10).optional(),
-  posts_per_week:     z.number().int().min(1).max(30).optional(),
-  username:           z.string().regex(/^[a-zA-Z0-9_-]{3,30}$/, "Le pseudo doit faire entre 3 et 30 caractères (lettres, chiffres, tirets, underscores).").optional(),
+  target_audience:    z.string().min(1, "Le public cible est obligatoire.").max(500),
+  value_proposition:  z.string().min(1, "La proposition de valeur est obligatoire.").max(2000),
+  tone:               z.string().min(1, "Le ton de communication est obligatoire.").max(50),
+  logo_url:           z.string().url().optional().or(z.literal('')),
+  color_primary:      z.string().max(20).optional().or(z.literal('')),
+  color_secondary:    z.string().max(20).optional().or(z.literal('')),
+  objectives:         z.array(z.string().max(100)).min(1, "Veuillez choisir au moins un objectif.").max(10),
+  content_pillars:    z.array(z.string().max(100)).min(1, "Veuillez choisir au moins un type de contenu.").max(15),
+  platforms:          z.array(z.string().max(50)).min(1, "Veuillez choisir au moins une plateforme.").max(10),
+  username:           z.string().regex(/^[a-zA-Z0-9_-]{3,30}$/, "Le pseudo doit faire entre 3 et 30 caractères (lettres, chiffres, tirets, underscores)."),
 })
 
 export async function POST(req: NextRequest) {
@@ -37,21 +37,23 @@ export async function POST(req: NextRequest) {
   const { error: brandError } = await admin
     .from('brand_profiles')
     .upsert({
-      user_id: user.id,
+      user_id:             user.id,
       account_type:        data.account_type,
       brand_name:          data.brand_name,
       industry:            data.industry,
       description:         data.description,
       website:             data.website,
       target_audience:     data.target_audience,
-      audience_age:        data.audience_age,
-      audience_interests:  data.audience_interests,
-      audience_location:   data.audience_location,
-      content_pillars:     data.content_pillars.filter(Boolean) as string[],
       tone:                data.tone,
-      avoid_words:         data.avoid_words,
       objectives:          data.objectives,
-      posts_per_week:      data.posts_per_week,
+      content_pillars:     data.content_pillars,
+      audience_interests:  data.value_proposition, // Storing value proposition in audience_interests
+      audience_location:   JSON.stringify({       // Storing logo, colors and platforms in audience_location
+        logo_url: data.logo_url || '',
+        color_primary: data.color_primary || '',
+        color_secondary: data.color_secondary || '',
+        platforms: data.platforms || [],
+      }),
       updated_at:          new Date().toISOString(),
     }, { onConflict: 'user_id' })
 

@@ -273,6 +273,7 @@ export interface GenerateRequest {
   length?: PostLength
   format?: PostFormat
   cta?: PostCTA
+  brand_value_proposition?: string
   distributionMode?: DistributionMode
   post_type?: string
 }
