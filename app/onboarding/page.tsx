@@ -362,6 +362,12 @@ export default function OnboardingPage() {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes shimmerOnboarding {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}} />
       <button onClick={toggleTheme} type="button" style={{ position: 'fixed', top: 20, right: 20, zIndex: 100, width: 40, height: 40, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px var(--shadow)' }}>
         {theme === 'dark'
           ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" strokeWidth="1.8" strokeLinecap="round"><path d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 12c0 5.385 4.365 9.75 9.75 9.75 4.282 0 7.937-2.764 9.002-6.998Z"/></svg>
@@ -386,10 +392,39 @@ export default function OnboardingPage() {
           <p style={{ fontSize: '.875rem', color: 'var(--t3)', lineHeight: 1.5 }}>{meta.subtitle}</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '.4rem', marginBottom: '1.75rem', position: 'relative', zIndex: 1 }}>
-          {STEPS.map((_, i) => (
-            <div key={i} style={{ height: '6px', width: i === step ? '22px' : '6px', borderRadius: '3px', background: i <= step ? 'var(--accent)' : 'var(--b1)', transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)' }} />
-          ))}
+        <div style={{ width: '100%', maxWidth: '500px', marginBottom: '1.75rem', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.6rem' }}>
+            <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--t2)' }}>
+              Étape {step + 1} sur {STEPS.length} — {STEPS[step]}
+            </span>
+            <span style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--accent)', padding: '.2rem .6rem', borderRadius: '12px', background: 'var(--accent-light)', boxShadow: '0 0 10px rgba(16, 185, 129, 0.1)' }}>
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <div style={{ height: '8px', width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '12px', overflow: 'hidden', position: 'relative', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' }}>
+            <div 
+              style={{ 
+                height: '100%', 
+                width: `${progress}%`, 
+                background: 'linear-gradient(90deg, var(--accent), var(--accent-secondary))', 
+                borderRadius: '12px', 
+                transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)', 
+                position: 'relative',
+                boxShadow: '0 0 10px var(--accent)'
+              }} 
+            >
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25) 50%, transparent)',
+                animation: 'shimmerOnboarding 2.5s infinite linear',
+                backgroundSize: '200% 100%'
+              }} />
+            </div>
+          </div>
         </div>
 
         <div style={{ width: '100%', maxWidth: '500px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '1.75rem', position: 'relative', zIndex: 1, maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
@@ -641,9 +676,6 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        <p style={{ marginTop: '1rem', fontSize: '.72rem', color: 'var(--t3)', position: 'relative', zIndex: 1 }}>
-          Étape {step + 1} sur {STEPS.length} — {STEPS[step]}
-        </p>
       </div>
     </>
   )
