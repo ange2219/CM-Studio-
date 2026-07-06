@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const OnboardingSchema = z.object({
+  full_name:          z.string().min(1, "Le nom et prénom sont obligatoires.").max(200),
   account_type:       z.string().min(1).max(50).optional(),
   brand_name:         z.string().min(1).max(100).optional(),
   industry:           z.string().max(100).optional(),
@@ -65,11 +66,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Marquer l'utilisateur comme onboardé et mettre à jour le pseudo s'il est fourni
+  // Marquer l'utilisateur comme onboardé et mettre à jour le pseudo/nom complet s'ils sont fournis
   const { error: userError } = await admin
     .from('users')
     .update({ 
       onboarded: true,
+      full_name: data.full_name.trim(),
       ...(data.username ? { username: data.username.toLowerCase().trim() } : {})
     })
     .eq('id', user.id)

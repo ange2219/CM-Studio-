@@ -7,6 +7,7 @@ import { ChevronRight, ChevronLeft, Check, Sparkles, User, Building2, Briefcase,
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
 
 interface OnboardingData {
+  full_name: string
   account_type: string
   brand_name: string
   industry: string
@@ -25,6 +26,7 @@ interface OnboardingData {
 }
 
 const INITIAL: OnboardingData = {
+  full_name: '',
   account_type: '',
   brand_name: '',
   industry: '',
@@ -43,9 +45,11 @@ const INITIAL: OnboardingData = {
 }
 
 const ACCOUNT_TYPES = [
-  { value: 'creator', label: 'Créateur / Freelance', desc: 'Marque personnelle, influenceur, consultant', icon: User },
-  { value: 'business', label: 'Entreprise / PME', desc: 'Startup, commerce, marque', icon: Building2 },
-  { value: 'agency', label: 'Agence', desc: 'Agence marketing, communication', icon: Briefcase },
+  { value: 'freelance_cm', label: 'Community Manager Freelance', desc: 'Indépendant gérant les comptes de plusieurs clients', icon: User },
+  { value: 'corporate_cm', label: 'Community Manager d\'entreprise', desc: 'Salarié gérant les comptes d\'une marque ou société', icon: Building2 },
+  { value: 'agency', label: 'Agence Social Media', desc: 'Équipe ou agence gérant plusieurs marques clients', icon: Briefcase },
+  { value: 'creator', label: 'Créateur de contenu', desc: 'Créateur, influenceur ou marque personnelle', icon: Sparkles },
+  { value: 'com_manager', label: 'Responsable communication', desc: 'Responsable de la stratégie de com globale', icon: Megaphone },
 ]
 
 const INDUSTRIES = [
@@ -89,12 +93,12 @@ const TONES = [
 ]
 
 const OBJECTIVES = [
-  { value: 'notoriete', label: 'Notoriété', icon: Megaphone },
+  { value: 'communaute', label: 'Développer la communauté', icon: Users },
   { value: 'ventes', label: 'Générer des ventes', icon: DollarSign },
-  { value: 'communaute', label: 'Construire une communauté', icon: Users },
-  { value: 'trafic', label: 'Trafic vers le site', icon: Globe },
-  { value: 'recrutement', label: 'Recrutement', icon: Target },
-  { value: 'expertise', label: 'Montrer l\'expertise', icon: Trophy },
+  { value: 'leads', label: 'Générer des leads', icon: Target },
+  { value: 'engagement', label: 'Augmenter l\'engagement', icon: Trophy },
+  { value: 'notoriete', label: 'Développer la notoriété', icon: Megaphone },
+  { value: 'fidelisation', label: 'Fidéliser les clients', icon: Globe },
 ]
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -109,12 +113,13 @@ const PLATFORM_DESC: Record<string, string> = {
   linkedin: 'Profil ou page LinkedIn',
 }
 
-const STEPS = ['Compte & Marque', 'Audience & Contenu', 'Objectifs', 'Connecter vos réseaux']
+const STEPS = ['Votre profil', 'La marque', 'Audience & Contenu', 'Objectifs', 'Connecter vos réseaux']
 
 const STEP_META = [
-  { motivation: 'Cette étape permet à l\'IA de vous représenter fidèlement', title: 'Votre marque', subtitle: 'Quelques infos pour personnaliser chaque post' },
+  { motivation: 'Cette étape permet de configurer votre identité personnelle', title: 'Votre profil', subtitle: 'Présentez-vous pour personnaliser votre espace de travail' },
+  { motivation: 'Cette étape permet à l\'IA de comprendre votre marque', title: 'La marque', subtitle: 'Quelques infos pour contextualiser chaque publication' },
   { motivation: 'Cette étape aide l\'IA à cibler parfaitement vos abonnés', title: 'Votre audience', subtitle: 'Définissez à qui vous parlez et quel ton adopter' },
-  { motivation: 'Cette étape oriente chaque contenu vers vos vrais objectifs', title: 'Vos objectifs', subtitle: 'Choisissez ce que vous voulez accomplir sur les réseaux' },
+  { motivation: 'Cette étape oriente chaque contenu vers vos objectifs réels', title: 'Vos objectifs', subtitle: 'Choisissez ce que vous voulez accomplir sur les réseaux' },
   { motivation: 'Cette étape connecte CM Studio à vos comptes', title: 'Vos réseaux', subtitle: 'Publiez directement — vous pouvez aussi le faire plus tard' },
 ]
 
@@ -174,7 +179,7 @@ export default function OnboardingPage() {
   const { toast } = useToast()
   const router = useRouter()
 
-  // Charger les comptes déjà connectés au montage
+  // Charger les comptes connectés et le profil utilisateur au montage
   useEffect(() => {
     fetch('/api/social/accounts')
       .then(r => r.json())
@@ -183,6 +188,19 @@ export default function OnboardingPage() {
         const map: Record<string, string> = {}
         for (const a of accounts) map[a.platform] = a.platform_username || a.platform
         setConnectedAccounts(map)
+      })
+      .catch(() => {})
+
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(me => {
+        if (me) {
+          setData(prev => ({
+            ...prev,
+            full_name: me.full_name || '',
+            username: me.username || '',
+          }))
+        }
       })
       .catch(() => {})
   }, [])
@@ -306,9 +324,10 @@ export default function OnboardingPage() {
   }
 
   function canNext(): boolean {
-    if (step === 0) return !!data.account_type && !!data.brand_name && !!data.industry && !!data.description && !!data.username && /^[a-zA-Z0-9_-]{3,30}$/.test(data.username)
-    if (step === 1) return !!data.target_audience && !!data.audience_age && selectedPillars.length >= 1 && !!data.tone
-    if (step === 2) return data.objectives.length >= 1
+    if (step === 0) return !!data.full_name?.trim() && !!data.account_type && !!data.username && /^[a-zA-Z0-9_-]{3,30}$/.test(data.username)
+    if (step === 1) return !!data.brand_name?.trim() && !!data.industry && !!data.description?.trim()
+    if (step === 2) return !!data.target_audience && !!data.audience_age && selectedPillars.length >= 1 && !!data.tone
+    if (step === 3) return data.objectives.length >= 1
     return true
   }
 
@@ -375,11 +394,16 @@ export default function OnboardingPage() {
 
         <div style={{ width: '100%', maxWidth: '500px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '1.75rem', position: 'relative', zIndex: 1, maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
 
-          {/* ── Step 0: Compte & Marque ── */}
+          {/* ── Step 0: Votre profil ── */}
           {step === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
-                <p style={labelStyle}>Type de compte *</p>
+                <label style={labelStyle}>Nom et prénom *</label>
+                <input style={fieldStyle} placeholder="Ex: Jean Dupont" value={data.full_name} onChange={e => update('full_name', e.target.value)} />
+              </div>
+
+              <div>
+                <p style={labelStyle}>Type de profil *</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
                   {ACCOUNT_TYPES.map(type => {
                     const selected = data.account_type === type.value
@@ -400,17 +424,22 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label style={labelStyle}>Nom de la marque / votre nom *</label>
-                <input style={fieldStyle} placeholder="Ex: Pixel Agency" value={data.brand_name} onChange={e => update('brand_name', e.target.value)} />
-              </div>
-
-              <div>
                 <label style={labelStyle}>Pseudo unique (ex: jean.dupont) *</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ color: 'var(--t3)', fontSize: '.88rem', fontWeight: 600 }}>@</span>
                   <input style={fieldStyle} placeholder="votre.pseudo" value={data.username} onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, ''))} />
                 </div>
                 <p style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.3rem' }}>Sera affiché à la place de l&apos;email. 3 caractères minimum. Lettres, chiffres, tirets, underscores.</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 1: La marque ── */}
+          {step === 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+              <div>
+                <label style={labelStyle}>Nom de la marque *</label>
+                <input style={fieldStyle} placeholder="Ex: Pixel Agency" value={data.brand_name} onChange={e => update('brand_name', e.target.value)} />
               </div>
 
               <div>
@@ -422,9 +451,9 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label style={labelStyle}>Description *</label>
-                <textarea style={{ ...fieldStyle, resize: 'none' }} rows={3} placeholder="Ce que vous faites, ce qui vous différencie, votre mission..." value={data.description} onChange={e => update('description', e.target.value)} />
-                <p style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.3rem' }}>L&apos;IA utilisera cette description pour contextualiser chaque post</p>
+                <label style={labelStyle}>Description de la marque *</label>
+                <textarea style={{ ...fieldStyle, resize: 'none' }} rows={3} placeholder="Ce que fait la marque, sa mission, sa proposition de valeur..." value={data.description} onChange={e => update('description', e.target.value)} />
+                <p style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.3rem' }}>L&apos;IA utilisera cette description pour contextualiser chaque publication</p>
               </div>
 
               <div>
@@ -434,8 +463,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ── Step 1: Audience & Contenu ── */}
-          {step === 1 && (
+          {/* ── Step 2: Audience & Contenu ── */}
+          {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
 
               <div>
@@ -511,8 +540,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ── Step 2: Objectifs ── */}
-          {step === 2 && (
+          {/* ── Step 3: Objectifs ── */}
+          {step === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem' }}>
                 {OBJECTIVES.map(obj => {
@@ -548,8 +577,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ── Step 3: Réseaux sociaux ── */}
-          {step === 3 && (
+          {/* ── Step 4: Réseaux sociaux ── */}
+          {step === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
               {([
