@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { checkGenerationLimit } from '@/lib/server-utils'
 import { z } from 'zod'
 
@@ -14,8 +14,27 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
-  let { data } = await admin.from('users').select('id, email, full_name, username, plan, avatar_url').eq('id', user.id).single()
+  let { data } = await admin.from('users').select('id, email, full_name, username, avatar_url').eq('id', user.id).single()
   if (!data) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  // Déterminer le plan (issu de l'organisation active ou fallback 'free')
+  let plan = 'free'
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    plan = activeOrg.organization.plan || 'free'
+  } catch (err) {
+    // Si pas d'organisation active trouvée, chercher la première organisation dont il est membre
+    const { data: firstMembership } = await admin
+      .from('memberships')
+      .select('organization:organizations(plan)')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle()
+      
+    if (firstMembership && (firstMembership as any).organization) {
+      plan = (firstMembership as any).organization.plan || 'free'
+    }
+  }
 
   // Synchronisation dynamique du nom complet et de l'avatar issus d'OAuth (ex: Google) s'ils sont vides
   const meta = user.user_metadata
@@ -40,9 +59,9 @@ export async function GET() {
     await admin.from('users').update(updateData).eq('id', user.id)
   }
 
-  const quota = await checkGenerationLimit(user.id, data.plan)
+  const quota = await checkGenerationLimit(user.id, plan as any)
 
-  return NextResponse.json({ ...data, generationsUsed: quota.used, generationsLimit: quota.limit })
+  return NextResponse.json({ ...data, plan, generationsUsed: quota.used, generationsLimit: quota.limit })
 }
 
 export async function PATCH(req: NextRequest) {
