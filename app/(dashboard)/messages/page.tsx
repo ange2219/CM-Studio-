@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { MessagesSkeleton } from '@/components/ui/Skeleton'
 import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft, User as UserIcon } from 'lucide-react'
 
@@ -510,13 +511,15 @@ function MessagesContent() {
                     </span>
                   )}
                 </button>
-                <Avatar user={activeConv.otherUser} size={34} />
+                <Link href={`/profile/${activeConv.otherUser.username || activeConv.otherUser.id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+                  <Avatar user={activeConv.otherUser} size={34} />
                   <div>
                     <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>{activeConv.otherUser.full_name || 'Utilisateur'}</div>
                     {activeConv.otherUser.username && (
                       <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>@{activeConv.otherUser.username}</div>
                     )}
                   </div>
+                </Link>
                 </div>
 
                 {/* Messages */}
@@ -539,7 +542,11 @@ function MessagesContent() {
                             </div>
                           )}
                           <div style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 8, alignItems: 'flex-end', marginTop: 4 }}>
-                            {!isMe && m.sender && <Avatar user={m.sender} size={24} />}
+                            {!isMe && m.sender && (
+                              <Link href={`/profile/${m.sender.username || m.sender.id}`}>
+                                <Avatar user={m.sender} size={24} />
+                              </Link>
+                            )}
                             <div style={{ maxWidth: 380 }}>
                               {m.attachment_url ? (
                                 <div style={{ padding: '.6rem 1rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'var(--accent)' : 'var(--s2)', border: isMe ? 'none' : '1px solid var(--b1)' }}>

@@ -96,10 +96,22 @@ export function CommunityFeed({
       return next
     })
     // Database insert
-    await supabase.from('user_follows').insert({
+    const { error } = await supabase.from('user_follows').insert({
       follower_id: currentUser.id,
       following_id: authorId,
     })
+    if (!error) {
+      // Notifier l'utilisateur suivi
+      await supabase.from('notifications').insert({
+        user_id: authorId,
+        type: 'follow',
+        title: 'Nouvel abonné',
+        message: `${currentUser.full_name || 'Un utilisateur'} a commencé à vous suivre.`,
+        action_url: `/profile/${currentUser.username || currentUser.id}`,
+        platform: 'cm_studio',
+        is_read: false
+      })
+    }
   }
 
   const handleHidePost = (postId: string) => {
@@ -208,8 +220,23 @@ export function CommunityFeed({
     else newLikedIds.add(post.id)
     setLikedIds(newLikedIds)
     setPosts(posts.map(p => p.id === post.id ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) } : p))
-    if (isLiked) await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUser.id })
-    else await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUser.id })
+    if (isLiked) {
+      await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUser.id })
+    } else {
+      await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUser.id })
+      // Notifier l'auteur du post
+      if (post.user_id !== currentUser.id) {
+        await supabase.from('notifications').insert({
+          user_id: post.user_id,
+          type: 'like',
+          title: 'Nouveau j\'aime',
+          message: `${currentUser.full_name || 'Un utilisateur'} a aimé votre publication.`,
+          action_url: `/home#post-${post.id}`,
+          platform: 'cm_studio',
+          is_read: false
+        })
+      }
+    }
   }
 
   async function toggleCommentLike(commentId: string, postId: string) {
@@ -228,6 +255,25 @@ export function CommunityFeed({
       }
       return updated
     })
+
+    if (isLiked) {
+      await supabase.from('community_comment_likes').delete().match({ comment_id: commentId, user_id: currentUser.id })
+    } else {
+      await supabase.from('community_comment_likes').insert({ comment_id: commentId, user_id: currentUser.id })
+      // Notifier l'auteur du commentaire
+      const commentObj = (commentsByPost[postId] || []).find(c => c.id === commentId)
+      if (commentObj && commentObj.user_id !== currentUser.id) {
+        await supabase.from('notifications').insert({
+          user_id: commentObj.user_id,
+          type: 'like',
+          title: 'Commentaire aimé',
+          message: `${currentUser.full_name || 'Un utilisateur'} a aimé votre commentaire.`,
+          action_url: `/home#comment_${commentId}_${postId}`,
+          platform: 'cm_studio',
+          is_read: false
+        })
+      }
+    }
   }
 
   async function toggleComments(postId: string) {
@@ -249,7 +295,7 @@ export function CommunityFeed({
       let usersMap: Record<string, any> = {}
       if (comments && comments.length > 0) {
         const userIds = Array.from(new Set(comments.map(c => c.user_id)))
-        const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, plan, username').in('id', userIds)
+        const { data: usersData } = await supabase.from('users').select('id, full_name, avatar_url, username').in('id', userIds)
         if (usersData) {
           usersMap = Object.fromEntries(usersData.map(u => [u.id, u]))
         }
@@ -257,7 +303,7 @@ export function CommunityFeed({
 
       const formatted = (comments || []).map(c => {
         const u = usersMap[c.user_id]
-        return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: u?.plan, username: u?.username, likes_count: 0 }
+        return { id: c.id, content: c.content, created_at: c.created_at, user_id: c.user_id, parent_id: c.parent_id, full_name: u?.full_name || 'Utilisateur', avatar_url: u?.avatar_url, plan: 'free', username: u?.username, likes_count: 0 }
       })
       setCommentsByPost(prev => ({ ...prev, [postId]: formatted }))
 
@@ -299,6 +345,36 @@ export function CommunityFeed({
       setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       setNewCommentTexts(prev => ({ ...prev, [postId]: '' }))
       setReplyingTo(null)
+
+      // Notifier l'auteur du post (si ce n'est pas nous-mêmes)
+      const post = posts.find(p => p.id === postId)
+      if (post && post.user_id !== currentUser.id) {
+        await supabase.from('notifications').insert({
+          user_id: post.user_id,
+          type: 'comment',
+          title: 'Nouveau commentaire',
+          message: `${currentUser.full_name || 'Un utilisateur'} a commenté votre publication.`,
+          action_url: `/home#comment_${data.id}_${postId}`,
+          platform: 'cm_studio',
+          is_read: false
+        })
+      }
+
+      // Notifier l'auteur du commentaire parent (si c'est une réponse et pas nous-mêmes)
+      if (payload.parent_id) {
+        const parentComment = (commentsByPost[postId] || []).find(c => c.id === payload.parent_id)
+        if (parentComment && parentComment.user_id !== currentUser.id) {
+          await supabase.from('notifications').insert({
+            user_id: parentComment.user_id,
+            type: 'comment_reply',
+            title: 'Nouvelle réponse',
+            message: `${currentUser.full_name || 'Un utilisateur'} a répondu à votre commentaire.`,
+            action_url: `/home#comment_${data.id}_${postId}`,
+            platform: 'cm_studio',
+            is_read: false
+          })
+        }
+      }
 
       if (payload.parent_id) {
         // Find the root parent ID to increment the correct visibleReplies counter
@@ -579,9 +655,9 @@ export function CommunityFeed({
                           <div key={c.id} id={`comment-container-${c.id}`} style={{ marginBottom: '12px' }}>
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
-                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>
+                              <Link href={`/profile/${c.username || c.user_id}`} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                 {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={16} strokeWidth={1.5} color="var(--accent)" />}
-                              </div>
+                              </Link>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
                                   <Link href={`/profile/${c.username || c.user_id}`} style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t2)', textDecoration: 'none' }}>{c.full_name}</Link>
@@ -607,9 +683,9 @@ export function CommunityFeed({
 
                               return (
                                 <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
-                                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--accent)' }}>
+                                  <Link href={`/profile/${r.username || r.user_id}`} style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                     {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={12} strokeWidth={1.5} color="var(--accent)" />}
-                                  </div>
+                                  </Link>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>
                                       <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
