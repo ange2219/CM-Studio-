@@ -163,7 +163,7 @@ export default function OnboardingPage() {
 
   // Charger le profil utilisateur au montage
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/auth/me?t=' + Date.now())
       .then(r => r.json())
       .then(me => {
         if (me) {
