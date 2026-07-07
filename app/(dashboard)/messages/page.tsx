@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useSearchParams } from 'next/navigation'
 import { MessagesSkeleton } from '@/components/ui/Skeleton'
-import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft } from 'lucide-react'
+import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft, User as UserIcon } from 'lucide-react'
 
 interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null; username?: string | null }
 interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User; message_reads?: { user_id: string }[]; isTemp?: boolean; error?: boolean }
@@ -26,8 +26,8 @@ function Avatar({ user, size = 40 }: { user: User; size?: number }) {
     return <img src={user.avatar_url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   }
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 600, color: 'var(--accent)', flexShrink: 0 }}>
-      {getInitials(user)}
+    <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <UserIcon size={Math.round(size * 0.55)} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
     </div>
   )
 }

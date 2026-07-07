@@ -178,9 +178,11 @@ export default function PublicProfileClient({
           fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}>
-          {profile.avatar_url
-            ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : profile.full_name?.slice(0, 1)?.toUpperCase() || '?'}
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <User size={48} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+          )}
         </div>
 
         {/* Action button(s) */}

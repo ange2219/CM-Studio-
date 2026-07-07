@@ -236,8 +236,8 @@ export default function HomePage() {
             ].map(u => (
               <div key={u.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)' }}>
-                    {u.name[0]}
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <User size={18} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
                   </div>
                   <div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--t1)' }}>{u.name}</div>
@@ -290,7 +290,9 @@ export default function HomePage() {
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {['D', 'S', 'M', 'A', 'L'].map((u, i) => (
               <div key={i} style={{ position: 'relative' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', fontWeight: 700, color: 'var(--t1)', border: '1px solid var(--b1)' }}>{u}</div>
+                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <User size={18} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+                </div>
                 <div style={{ position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', border: '2px solid var(--card)' }} />
               </div>
             ))}

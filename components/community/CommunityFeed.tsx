@@ -339,7 +339,18 @@ export function CommunityFeed({
       {!hideCreatePost && (
         <div style={{ background: 'var(--card)', borderRadius: '12px', padding: '12px 16px', border: '1px solid var(--b1)' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--accent)' }}>U</div>
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '50%',
+              background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)',
+              flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              overflow: 'hidden'
+            }}>
+              {currentUser?.avatar_url ? (
+                <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+              ) : (
+                <User size={20} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+              )}
+            </div>
             <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
           </div>
 
