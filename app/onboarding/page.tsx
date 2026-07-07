@@ -394,6 +394,7 @@ export default function OnboardingPage() {
         </div>
 
         <div style={{ width: '100%', maxWidth: '500px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.5rem', position: 'relative', zIndex: 1 }}>
+          <div key={step} style={{ animation: 'fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both' }}>
 
           {/* ── Étape 1: Votre profil ── */}
           {step === 0 && (
@@ -445,10 +446,63 @@ export default function OnboardingPage() {
 
               <div>
                 <label style={labelStyle}>Secteur d&apos;activité *</label>
-                <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.industry} onChange={e => update('industry', e.target.value)}>
-                  <option style={optionStyle} value="">Choisir un secteur...</option>
-                  {INDUSTRIES.map(ind => <option style={optionStyle} key={ind} value={ind}>{ind}</option>)}
-                </select>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  {INDUSTRIES.map(ind => {
+                    const selected = data.industry === ind
+                    return (
+                      <button
+                        key={ind}
+                        type="button"
+                        onClick={() => update('industry', ind)}
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)',
+                          background: selected ? 'var(--accent-light)' : 'var(--s2)',
+                          color: selected ? 'var(--accent)' : 'var(--t2)',
+                          fontSize: '0.82rem',
+                          fontWeight: selected ? 600 : 500,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          transform: 'scale(1)'
+                        }}
+                        onMouseEnter={e => {
+                          if (!selected) {
+                            e.currentTarget.style.background = 'var(--b1)'
+                            e.currentTarget.style.transform = 'translateY(-1px)'
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!selected) {
+                            e.currentTarget.style.background = 'var(--s2)'
+                            e.currentTarget.style.transform = 'none'
+                          }
+                        }}
+                      >
+                        <div style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          border: '1.5px solid ' + (selected ? 'var(--accent)' : 'var(--b2)'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: selected ? 'var(--accent)' : 'transparent',
+                          transition: 'all 0.15s',
+                          flexShrink: 0
+                        }}>
+                          {selected && <Check size={8} color="#fff" />}
+                        </div>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ind}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div>
@@ -469,10 +523,63 @@ export default function OnboardingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
                 <label style={labelStyle}>Public cible *</label>
-                <select style={{ ...fieldStyle, cursor: 'pointer' }} value={data.target_audience} onChange={e => update('target_audience', e.target.value)}>
-                  <option style={optionStyle} value="">Choisir la cible principale...</option>
-                  {TARGET_AUDIENCE_OPTIONS.map(o => <option style={optionStyle} key={o} value={o}>{o}</option>)}
-                </select>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  {TARGET_AUDIENCE_OPTIONS.map(o => {
+                    const selected = data.target_audience === o
+                    return (
+                      <button
+                        key={o}
+                        type="button"
+                        onClick={() => update('target_audience', o)}
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)',
+                          background: selected ? 'var(--accent-light)' : 'var(--s2)',
+                          color: selected ? 'var(--accent)' : 'var(--t2)',
+                          fontSize: '0.82rem',
+                          fontWeight: selected ? 600 : 500,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          transform: 'scale(1)'
+                        }}
+                        onMouseEnter={e => {
+                          if (!selected) {
+                            e.currentTarget.style.background = 'var(--b1)'
+                            e.currentTarget.style.transform = 'translateY(-1px)'
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!selected) {
+                            e.currentTarget.style.background = 'var(--s2)'
+                            e.currentTarget.style.transform = 'none'
+                          }
+                        }}
+                      >
+                        <div style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          border: '1.5px solid ' + (selected ? 'var(--accent)' : 'var(--b2)'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: selected ? 'var(--accent)' : 'transparent',
+                          transition: 'all 0.15s',
+                          flexShrink: 0
+                        }}>
+                          {selected && <Check size={8} color="#fff" />}
+                        </div>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div>
@@ -646,6 +753,7 @@ export default function OnboardingPage() {
               </div>
             </div>
           )}
+          </div>
 
           {/* ── Navigation ── */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--b1)' }}>
