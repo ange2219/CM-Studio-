@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { useOrg } from '@/components/context/OrgContext'
+import { useToast } from '@/components/ui/Toast'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
@@ -29,16 +31,39 @@ export function DashboardShell({ user: initialUser, children }: {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  
+  // Contexte organisationnel
+  const { activeOrganization, organizations, switchOrganization } = useOrg()
+  const { toast } = useToast()
+  
   const [user, setUser] = useState<any>(initialUser)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false)
+  const [showCreateOrgModal, setShowCreateOrgModal] = useState(false)
+  const [newOrgName, setNewOrgName] = useState('')
+  const [isCreatingOrg, setIsCreatingOrg] = useState(false)
   const [theme, setTheme] = useState('dark')
+  
   const profileRef = useRef<HTMLDivElement>(null)
+  const orgRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
 
   useEffect(() => {
     const saved = localStorage.getItem('theme')
     if (saved) setTheme(saved)
   }, [])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const msg = sessionStorage.getItem('toast_message')
+      const type = sessionStorage.getItem('toast_type') as any
+      if (msg) {
+        toast(msg, type || 'info')
+        sessionStorage.removeItem('toast_message')
+        sessionStorage.removeItem('toast_type')
+      }
+    }
+  }, [toast])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -64,10 +89,39 @@ export function DashboardShell({ user: initialUser, children }: {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false)
       }
+      if (orgRef.current && !orgRef.current.contains(event.target as Node)) {
+        setOrgDropdownOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  const handleCreateOrg = async () => {
+    if (!newOrgName.trim()) return
+    setIsCreatingOrg(true)
+    try {
+      const { data: orgId, error } = await supabase.rpc('create_organization', { org_name: newOrgName })
+      if (error) {
+        toast('Erreur lors de la création de la marque : ' + error.message, 'error')
+        return
+      }
+      setShowCreateOrgModal(false)
+      setNewOrgName('')
+      
+      // Stocker le toast pour l'afficher après la redirection et le rechargement complet de la page
+      sessionStorage.setItem('toast_message', 'Marque créée avec succès !')
+      sessionStorage.setItem('toast_type', 'success')
+      
+      // Basculer automatiquement vers la nouvelle marque (recharge la page)
+      await switchOrganization(orgId)
+    } catch (err) {
+      console.error(err)
+      toast('Une erreur est survenue lors de la création de la marque.', 'error')
+    } finally {
+      setIsCreatingOrg(false)
+    }
+  }
 
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -150,14 +204,132 @@ export function DashboardShell({ user: initialUser, children }: {
         flexShrink: 0,
       }}>
 
-        {/* LEFT: Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, minWidth: isMobile ? 'auto' : '220px' }}>
+        {/* LEFT: Logo & Org Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, minWidth: isMobile ? 'auto' : '260px' }}>
           <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
-          {!isMobile && (
-            <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>
-              CM Studio
-            </span>
-          )}
+          
+          <div ref={orgRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'var(--s2)',
+                border: '1px solid var(--b1)',
+                color: 'var(--text)',
+                cursor: 'pointer',
+                padding: '6px 12px',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                transition: 'background 0.15s',
+              }}
+            >
+              <span style={{ maxWidth: isMobile ? '80px' : '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {activeOrganization?.name || 'Sélectionner...'}
+              </span>
+              <ChevronDown size={14} color="var(--text3)" style={{ transition: 'transform 0.2s', transform: orgDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </button>
+
+            {orgDropdownOpen && (
+              <div 
+                className="profile-dropdown" 
+                style={{ 
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  marginTop: '8px',
+                  background: 'var(--card)', 
+                  border: '1px solid var(--b1)',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)',
+                  padding: '8px',
+                  minWidth: '220px',
+                  zIndex: 200,
+                  animation: 'fadeIn 0.15s ease-out'
+                }}
+              >
+                <div style={{ padding: '6px 8px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Mes Marques
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxHeight: '200px', overflowY: 'auto', margin: '4px 0' }}>
+                  {organizations.map(org => {
+                    const isActive = org.id === activeOrganization?.id
+                    return (
+                      <button
+                        key={org.id}
+                        onClick={() => {
+                          setOrgDropdownOpen(false)
+                          switchOrganization(org.id)
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: isActive ? 'var(--accent-light)' : 'transparent',
+                          color: isActive ? 'var(--accent)' : 'var(--text)',
+                          fontSize: '0.85rem',
+                          fontWeight: isActive ? 600 : 500,
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'background 0.15s'
+                        }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <div style={{
+                          width: '20px', height: '20px', borderRadius: '4px',
+                          background: 'rgba(var(--accent-rgb), 0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent)', flexShrink: 0
+                        }}>
+                          {org.name.slice(0, 1).toUpperCase()}
+                        </div>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
+                        {isActive && <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>✓</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div style={{ height: '1px', background: 'var(--b1)', margin: '6px 0' }} />
+                
+                <button
+                  onClick={() => {
+                    setOrgDropdownOpen(false)
+                    setShowCreateOrgModal(true)
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--accent)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-light)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Sparkles size={14} />
+                  <span>Créer une marque</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* CENTER: Search (desktop only) */}
@@ -431,6 +603,86 @@ export function DashboardShell({ user: initialUser, children }: {
             )
           })}
         </nav>
+      )}
+
+      {/* MODAL CRÉATION DE MARQUE */}
+      {showCreateOrgModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.65)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 999, backdropFilter: 'blur(4px)',
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'var(--card)',
+            border: '1px solid var(--b1)',
+            borderRadius: '12px',
+            padding: '20px',
+            width: '100%', maxWidth: '400px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)',
+            display: 'flex', flexDirection: 'column', gap: '16px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={20} color="var(--accent)" />
+              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)' }}>
+                Créer une nouvelle marque
+              </span>
+            </div>
+            
+            <p style={{ fontSize: '0.82rem', color: 'var(--text3)', lineHeight: 1.4 }}>
+              Chaque marque dispose de ses propres comptes réseaux sociaux, publications, calendriers et statistiques de façon étanche.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text2)' }}>Nom de la marque</label>
+              <input
+                type="text"
+                placeholder="Ex : Acme Corp, MyBrand..."
+                value={newOrgName}
+                onChange={e => setNewOrgName(e.target.value)}
+                style={{
+                  width: '100%', height: '38px',
+                  background: 'var(--s2)', border: '1px solid var(--b1)',
+                  borderRadius: '8px', padding: '0 12px',
+                  color: 'var(--text)', fontSize: '0.85rem', outline: 'none',
+                }}
+                disabled={isCreatingOrg}
+                autoFocus
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px' }}>
+              <button
+                onClick={() => {
+                  setShowCreateOrgModal(false)
+                  setNewOrgName('')
+                }}
+                style={{
+                  padding: '8px 16px', borderRadius: '8px',
+                  background: 'transparent', border: '1px solid var(--b1)',
+                  color: 'var(--text2)', cursor: 'pointer', fontSize: '0.85rem',
+                  fontWeight: 600
+                }}
+                disabled={isCreatingOrg}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleCreateOrg}
+                style={{
+                  padding: '8px 16px', borderRadius: '8px',
+                  background: 'var(--accent)', border: 'none',
+                  color: '#fff', cursor: 'pointer', fontSize: '0.85rem',
+                  fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px'
+                }}
+                disabled={isCreatingOrg || !newOrgName.trim()}
+              >
+                {isCreatingOrg ? 'Création...' : 'Créer'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <style jsx>{`

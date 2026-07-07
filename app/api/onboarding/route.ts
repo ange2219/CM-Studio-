@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const OnboardingSchema = z.object({
@@ -33,11 +33,28 @@ export async function POST(req: NextRequest) {
   const data = parsed.data
   const admin = createAdminClient()
 
+  // 1. Récupérer l'organisation active ou en créer une nouvelle si absent
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err) {
+    // Si aucune organisation/membership n'existe encore pour ce nouvel utilisateur
+    // On utilise le client utilisateur 'supabase' pour conserver le contexte de auth.uid()
+    const { data: newOrgId, error: orgError } = await supabase.rpc('create_organization', {
+      org_name: data.brand_name
+    })
+    if (orgError || !newOrgId) {
+      return NextResponse.json({ error: orgError?.message || 'Impossible de créer la marque.' }, { status: 500 })
+    }
+    orgId = newOrgId as string
+  }
+
   // Sauvegarder le profil de marque complet
   const { error: brandError } = await admin
     .from('brand_profiles')
     .upsert({
-      user_id:             user.id,
+      organization_id:     orgId,
       account_type:        data.account_type,
       brand_name:          data.brand_name,
       industry:            data.industry,
@@ -55,7 +72,7 @@ export async function POST(req: NextRequest) {
         platforms: data.platforms || [],
       }),
       updated_at:          new Date().toISOString(),
-    }, { onConflict: 'user_id' })
+    }, { onConflict: 'organization_id' })
 
   if (brandError) return NextResponse.json({ error: brandError.message }, { status: 500 })
 
@@ -86,12 +103,24 @@ export async function POST(req: NextRequest) {
   }
 
   const res = NextResponse.json({ success: true })
-  res.cookies.set('onboarded', '1', {
-    httpOnly: true,
-    secure: true,
+  
+  // Définir la marque active dans les cookies de réponse
+  res.cookies.set('active_org_id', orgId, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 365, // 1 an
     path: '/',
   })
+
+  res.cookies.set('onboarded', orgId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7, // 7 jours
+    path: '/',
+  })
+
   return res
 }
+

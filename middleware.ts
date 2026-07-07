@@ -57,13 +57,13 @@ export async function middleware(request: NextRequest) {
     return redirect('/home')
   }
 
-  // Vérification onboarding — utilise un cookie pour éviter une DB query par request
+  // Vérification onboarding & active_org_id — utilise des cookies pour éviter des DB queries répétées
   if (user && !isPublic && !path.startsWith('/onboarding') && !path.startsWith('/api')) {
-    const onboardedCookie = request.cookies.get('onboarded')?.value
+    const onboardedOrgId = request.cookies.get('onboarded')?.value
+    const activeOrgId = request.cookies.get('active_org_id')?.value
 
-    if (onboardedCookie !== '1') {
-      // Cookie absent ou expiré → vérifier en DB une seule fois
-      // On utilise un client Admin pour contourner tout problème de RLS dans le middleware Edge
+    if (onboardedOrgId !== activeOrgId || !activeOrgId) {
+      // Cookie absent, expiré ou ne correspondant pas à l'organisation active -> vérifier en DB une seule fois
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY
       if (serviceKey) {
         const { createServerClient: createAdmin } = await import('@supabase/ssr')
@@ -72,31 +72,58 @@ export async function middleware(request: NextRequest) {
           serviceKey,
           { cookies: { getAll() { return request.cookies.getAll() }, setAll() {} } }
         )
+
+        // 1. Récupérer ou valider l'activeOrgId par défaut si absent
+        let finalOrgId = activeOrgId
+        if (!finalOrgId) {
+          const { data: firstMembership } = await adminSupabase
+            .from('memberships')
+            .select('organization_id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .maybeSingle()
+
+          if (firstMembership) {
+            finalOrgId = firstMembership.organization_id
+            supabaseResponse.cookies.set('active_org_id', firstMembership.organization_id, {
+              httpOnly: false, // Doit être lisible côté client (React)
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              maxAge: 60 * 60 * 24 * 365, // 1 an
+              path: '/',
+            })
+          }
+        }
+
+        // Si aucun active_org_id n'a pu être défini (ex: nouvel utilisateur sans marque/membership)
+        if (!finalOrgId) {
+          return redirect('/onboarding')
+        }
+
+        // 2. Vérifier si cette organisation est onboardée (a un brand profile configuré)
+        let isOnboarded = false
         const { data: brandProfile } = await adminSupabase
           .from('brand_profiles')
           .select('id')
-          .eq('user_id', user.id)
+          .eq('organization_id', finalOrgId)
           .maybeSingle()
-          
-        let isOnboarded = !!brandProfile
+        isOnboarded = !!brandProfile
 
         if (!isOnboarded) {
           return redirect('/onboarding')
         }
+
+        // Poser le cookie d'onboarding lié à cette organisation
+        supabaseResponse.cookies.set('onboarded', finalOrgId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7, // 7 jours
+          path: '/',
+        })
       } else {
-        // Fallback ultime si aucune clé service n'est trouvée, on redirige vers onboarding
-        // L'utilisateur devra nous prévenir, mais au moins ça ne crash pas
         return redirect('/onboarding')
       }
-
-      // User onboardé : poser le cookie (7 jours) pour éviter future DB query
-      supabaseResponse.cookies.set('onboarded', '1', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      })
     }
   }
 
