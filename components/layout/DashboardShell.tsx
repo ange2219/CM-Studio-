@@ -107,20 +107,13 @@ export function DashboardShell({ user: initialUser, children }: {
         return
       }
 
-      // Créer un profil de marque minimal pour éviter la redirection vers l'onboarding
-      await fetch('/api/brand/init', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_id: orgId, brand_name: newOrgName }),
-      })
-
       setShowCreateOrgModal(false)
       setNewOrgName('')
-      
+
       // Toast affiché après rechargement complet
       sessionStorage.setItem('toast_message', `Marque "${newOrgName}" créée ! Configurez-la dans les Paramètres.`)
       sessionStorage.setItem('toast_type', 'success')
-      
+
       // Basculer automatiquement vers la nouvelle marque (recharge la page)
       await switchOrganization(orgId)
     } catch (err) {

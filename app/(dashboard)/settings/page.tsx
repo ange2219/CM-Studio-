@@ -265,13 +265,6 @@ function SettingsContent() {
       const { data: orgId, error } = await supabase.rpc('create_organization', { org_name: addBrandName })
       if (error) throw new Error(error.message)
 
-      // Créer un profil de marque minimal pour éviter la redirection vers l'onboarding
-      await fetch('/api/brand/init', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_id: orgId, brand_name: addBrandName }),
-      })
-
       // Basculer vers la nouvelle marque et recharger les paramètres
       const secureFlag = window.location.protocol === 'https:' ? '; Secure' : ''
       document.cookie = `active_org_id=${orgId}; path=/; max-age=${60 * 60 * 24 * 365}${secureFlag}; SameSite=Lax`
@@ -283,6 +276,7 @@ function SettingsContent() {
       setAddingBrand(false)
     }
   }
+
 
   // --- Profile Actions ---
   async function saveUserInfo() {
