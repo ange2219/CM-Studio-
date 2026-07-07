@@ -24,12 +24,19 @@ export default async function PublicProfilePage({
 
   const admin = createAdminClient()
 
-  // ── Fetch profile by username ──────────────────────────────────────────────
-  const { data: profile } = await admin
+  // ── Fetch profile by username OR ID ─────────────────────────────────────────
+  const isUuid = params.username.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+  let query = admin
     .from('users')
     .select('id, full_name, avatar_url, username, bio, created_at')
-    .eq('username', params.username)
-    .single()
+
+  if (isUuid) {
+    query = query.eq('id', params.username)
+  } else {
+    query = query.eq('username', params.username)
+  }
+
+  const { data: profile } = await query.maybeSingle()
 
   if (!profile) notFound()
 

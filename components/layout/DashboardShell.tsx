@@ -125,6 +125,7 @@ export function DashboardShell({ user: initialUser, children }: {
   }
 
   const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState(0)
 
   const loadUnreadCount = useCallback(async () => {
     if (!user?.id) return
@@ -145,15 +146,37 @@ export function DashboardShell({ user: initialUser, children }: {
     }
   }, [user?.id, supabase])
 
+  const loadUnreadNotifsCount = useCallback(async () => {
+    if (!user?.id) return
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('is_read', false)
+    if (!error) {
+      setUnreadNotifsCount(count || 0)
+    }
+  }, [user?.id, supabase])
+
   useEffect(() => {
     if (!user?.id) return
     loadUnreadCount()
-    const channel = supabase.channel('sidebar-messages-unread')
+    loadUnreadNotifsCount()
+
+    const msgChannel = supabase.channel('sidebar-messages-unread')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadUnreadCount())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reads' }, () => loadUnreadCount())
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [user?.id, loadUnreadCount, supabase])
+
+    const notifChannel = supabase.channel('sidebar-notifications-unread')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => loadUnreadNotifsCount())
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(msgChannel)
+      supabase.removeChannel(notifChannel)
+    }
+  }, [user?.id, loadUnreadCount, loadUnreadNotifsCount, supabase])
 
   if (pathname === '/onboarding') return <>{children}</>
 
@@ -368,16 +391,26 @@ export function DashboardShell({ user: initialUser, children }: {
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          {/* Mobile: bell icon */}
-          {isMobile && (
-            <Link href="/notifications" style={{
-              width: '36px', height: '36px', borderRadius: '50%',
-              background: 'var(--s2)', border: '1px solid var(--b1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
-            }}>
-              <Bell size={16} color="var(--text2)" />
-            </Link>
-          )}
+          {/* Notifications bell icon (always visible) */}
+          <Link href="/notifications" style={{
+            width: '36px', height: '36px', borderRadius: '50%',
+            background: 'var(--s2)', border: '1px solid var(--b1)',
+            color: 'var(--text2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+          }}>
+            <Bell size={16} />
+            {unreadNotifsCount > 0 && (
+              <span style={{
+                position: 'absolute', top: -3, right: -3,
+                background: '#ef4444', color: '#fff',
+                borderRadius: '50%', minWidth: '15px', height: '15px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '8px', fontWeight: 800, padding: '0 3px'
+              }}>
+                {unreadNotifsCount}
+              </span>
+            )}
+          </Link>
 
           {/* Avatar + dropdown (always visible) */}
           <div ref={profileRef} style={{ position: 'relative' }}>
@@ -486,6 +519,7 @@ export function DashboardShell({ user: initialUser, children }: {
                 }
 
                 const isMessages = item.label === 'Messagerie'
+                const isNotifications = item.label === 'Notifications'
                 return (
                   <Link
                     key={item.label}
@@ -509,10 +543,16 @@ export function DashboardShell({ user: initialUser, children }: {
                       {isMessages && unreadCount > 0 && (
                         <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
                       )}
+                      {isNotifications && unreadNotifsCount > 0 && (
+                        <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 8, height: 8 }} />
+                      )}
                     </div>
                     <span style={{ fontSize: '0.88rem', whiteSpace: 'nowrap', flex: 1 }}>{item.label}</span>
                     {isMessages && unreadCount > 0 && (
                       <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadCount}</span>
+                    )}
+                    {isNotifications && unreadNotifsCount > 0 && (
+                      <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '1px 6px', fontSize: '.7rem', fontWeight: 700 }}>{unreadNotifsCount}</span>
                     )}
                   </Link>
                 )

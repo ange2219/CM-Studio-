@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Heart, MessageSquare, Share2, ChevronRight } from 'lucide-react'
+import { Bell, Heart, MessageSquare, Share2, ChevronRight, User } from 'lucide-react'
 import Link from 'next/link'
 
 const MOCK_NOTIFS = [
@@ -25,8 +25,8 @@ export function NotificationsPanel() {
         {MOCK_NOTIFS.map(notif => (
           <div key={notif.id} style={{ display: 'flex', gap: '10px' }}>
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'var(--s2)', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '100%', height: '100%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: 'var(--accent)' }}>
-                {notif.user.slice(0, 2).toUpperCase()}
+              <div style={{ width: '100%', height: '100%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                <User size={16} strokeWidth={1.5} />
               </div>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>

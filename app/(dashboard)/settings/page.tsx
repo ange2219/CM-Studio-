@@ -1100,5 +1100,9 @@ function AccountListItem({ platform, acc, onConnect, onDisconnect, onRename, isL
 function AvatarWithFallback({ avatarUrl, label, color }: { avatarUrl?: string | null; label: string; color: string }) {
   const [imgFailed, setImgFailed] = useState(false)
   if (avatarUrl && !imgFailed) return <img src={avatarUrl} alt={label} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${color}40`, display: 'block' }} onError={() => setImgFailed(true)} />
-  return <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `${color}22`, border: `2px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color }}>{label.slice(0, 1).toUpperCase()}</div>
+  return (
+    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `${color}22`, border: `2px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <User size={22} strokeWidth={1.5} color={color} />
+    </div>
+  )
 }

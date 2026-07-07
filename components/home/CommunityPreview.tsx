@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-
+import { User } from 'lucide-react'
 
 
 function getInitials(name: string) {
@@ -54,7 +54,7 @@ export function CommunityPreview({ topPosts }: { topPosts: any[] }) {
               {post.avatar_url ? (
                 <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
               ) : (
-                getInitials(post.full_name || 'U')
+                <User size={24} strokeWidth={1.5} color={color} />
               )}
             </div>
               <div className="sugg-info">
