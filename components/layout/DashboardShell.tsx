@@ -107,6 +107,17 @@ export function DashboardShell({ user: initialUser, children }: {
         return
       }
 
+      // Initialiser un profil de marque minimal pour éviter la redirection vers l'onboarding
+      const initRes = await fetch('/api/brand/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ org_id: orgId, brand_name: newOrgName }),
+      })
+      if (!initRes.ok) {
+        const initErr = await initRes.json().catch(() => ({}))
+        throw new Error(initErr.error || 'Erreur lors de l\'initialisation de la marque')
+      }
+
       setShowCreateOrgModal(false)
       setNewOrgName('')
 
@@ -116,9 +127,9 @@ export function DashboardShell({ user: initialUser, children }: {
 
       // Basculer automatiquement vers la nouvelle marque (recharge la page)
       await switchOrganization(orgId)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      toast('Une erreur est survenue lors de la création de la marque.', 'error')
+      toast(err.message || 'Une erreur est survenue lors de la création de la marque.', 'error')
     } finally {
       setIsCreatingOrg(false)
     }

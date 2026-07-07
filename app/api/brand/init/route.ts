@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const Schema = z.object({
@@ -10,8 +10,7 @@ const Schema = z.object({
 /**
  * POST /api/brand/init
  * Crée un profil de marque minimal pour un org donné.
- * Utilisé après la création d'une nouvelle organisation pour éviter
- * la redirection vers l'onboarding.
+ * Sécurisé par les politiques RLS de brand_profiles.
  */
 export async function POST(req: NextRequest) {
   const supabase = createClient()
@@ -23,19 +22,8 @@ export async function POST(req: NextRequest) {
 
   const { org_id, brand_name } = parsed.data
 
-  // Vérifier que l'utilisateur est bien membre de cette organisation
-  const admin = createAdminClient()
-  const { data: membership } = await admin
-    .from('memberships')
-    .select('id')
-    .eq('organization_id', org_id)
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!membership) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
-
-  // Créer un profil de marque minimal (upsert pour éviter les conflits)
-  const { data, error } = await admin
+  // Insérer le profil de marque minimal via le client standard de l'utilisateur (sécurisé par RLS)
+  const { data, error } = await supabase
     .from('brand_profiles')
     .upsert(
       {
@@ -43,11 +31,15 @@ export async function POST(req: NextRequest) {
         brand_name,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'organization_id', ignoreDuplicates: true }
+      { onConflict: 'organization_id' }
     )
     .select()
     .maybeSingle()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[Brand Init Error]:', error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
   return NextResponse.json(data || { ok: true })
 }
