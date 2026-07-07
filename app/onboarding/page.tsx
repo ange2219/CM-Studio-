@@ -177,6 +177,22 @@ export default function OnboardingPage() {
       .catch(() => {})
   }, [])
 
+  // Permettre le défilement de la page entière uniquement pour l'onboarding (contournement du overflow: hidden global)
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const originalBodyOverflow = document.body.style.overflow
+      const originalHtmlOverflow = document.documentElement.style.overflow
+      
+      document.body.style.overflow = 'auto'
+      document.documentElement.style.overflow = 'auto'
+      
+      return () => {
+        document.body.style.overflow = originalBodyOverflow
+        document.documentElement.style.overflow = originalHtmlOverflow
+      }
+    }
+  }, [])
+
   function update(key: keyof OnboardingData, value: unknown) {
     setData(prev => ({ ...prev, [key]: value }))
   }
