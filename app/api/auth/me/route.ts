@@ -14,8 +14,31 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data } = await admin.from('users').select('id, email, full_name, username, plan, avatar_url').eq('id', user.id).single()
+  let { data } = await admin.from('users').select('id, email, full_name, username, plan, avatar_url').eq('id', user.id).single()
   if (!data) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  // Synchronisation dynamique du nom complet et de l'avatar issus d'OAuth (ex: Google) s'ils sont vides
+  const meta = user.user_metadata
+  const metaFullName = meta?.full_name || meta?.name
+  const metaAvatarUrl = meta?.avatar_url || meta?.picture
+
+  let needsUpdate = false
+  const updateData: any = {}
+
+  if (!data.full_name && metaFullName) {
+    updateData.full_name = metaFullName
+    data.full_name = metaFullName
+    needsUpdate = true
+  }
+  if (!data.avatar_url && metaAvatarUrl) {
+    updateData.avatar_url = metaAvatarUrl
+    data.avatar_url = metaAvatarUrl
+    needsUpdate = true
+  }
+
+  if (needsUpdate) {
+    await admin.from('users').update(updateData).eq('id', user.id)
+  }
 
   const quota = await checkGenerationLimit(user.id, data.plan)
 

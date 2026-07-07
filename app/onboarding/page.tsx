@@ -331,7 +331,7 @@ export default function OnboardingPage() {
         <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--accent),var(--accent-secondary))', width: `${progress}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 0 8px var(--accent)' }} />
       </div>
 
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '3rem 1.5rem 2rem', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '3rem 1.5rem 2rem', position: 'relative' }}>
 
         <div style={{ position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse at center,var(--accent-light) 0%,transparent 65%)', pointerEvents: 'none' }} />
 
@@ -377,7 +377,7 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        <div style={{ width: '100%', maxWidth: '500px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.5rem', position: 'relative', zIndex: 1, maxHeight: 'calc(100vh - 240px)', overflowY: 'auto' }}>
+        <div style={{ width: '100%', maxWidth: '500px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.5rem', position: 'relative', zIndex: 1 }}>
 
           {/* ── Étape 1: Votre profil ── */}
           {step === 0 && (
