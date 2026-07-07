@@ -27,11 +27,26 @@ export default async function PublicProfilePage({
   // ── Fetch profile by username ──────────────────────────────────────────────
   const { data: profile } = await admin
     .from('users')
-    .select('id, full_name, avatar_url, username, plan, bio, created_at')
+    .select('id, full_name, avatar_url, username, bio, created_at')
     .eq('username', params.username)
     .single()
 
   if (!profile) notFound()
+
+  // Déterminer le plan de cet utilisateur (propriétaire d'une organisation)
+  const { data: firstMembership } = await admin
+    .from('memberships')
+    .select('organization:organizations(plan)')
+    .eq('user_id', profile.id)
+    .eq('role', 'owner')
+    .limit(1)
+    .maybeSingle()
+
+  const userPlan = (firstMembership as any)?.organization?.plan || 'free'
+  const enrichedProfile = {
+    ...profile,
+    plan: userPlan
+  }
 
   // ── Fetch user's posts ─────────────────────────────────────────────────────
   const { data: postsData } = await admin
@@ -83,7 +98,7 @@ export default async function PublicProfilePage({
 
   return (
     <PublicProfileClient
-      profile={profile as any}
+      profile={enrichedProfile as any}
       currentUserId={authUser.id}
       isFollowing={isFollowing}
       posts={(postsData || []) as any[]}
