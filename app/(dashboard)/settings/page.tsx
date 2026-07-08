@@ -15,7 +15,6 @@ const NAV_ITEMS = [
   { id: 'identity', label: 'Identité & Marque', icon: User },
   { id: 'billing', label: 'Abonnements', icon: CreditCard },
   { id: 'security', label: 'Compte & Sécurité', icon: Shield },
-  { id: 'danger', label: 'Zone dangereuse', icon: Trash2 },
 ]
 
 export default function SettingsPage() {
@@ -441,6 +440,19 @@ function SettingsContent() {
     } finally { setUploadingAvatar(false) }
   }
 
+  async function uploadLogo(file: File): Promise<string | null> {
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      return data.url as string
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : 'Erreur upload logo', 'error')
+      return null
+    }
+  }
+
   // --- Security / Billing Actions ---
   async function handleDeleteAccount() {
     setDeleting(true)
@@ -690,10 +702,13 @@ function SettingsContent() {
                             {newLogoUrl ? <img src={newLogoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Upload size={16} style={{ color: 'var(--t3)' }} />}
                           </div>
                           <div>
-                            <input type="file" accept="image/*" id="new-logo-settings" style={{ display: 'none' }} onChange={(e) => {
+                            <input type="file" accept="image/*" id="new-logo-settings" style={{ display: 'none' }} onChange={async (e) => {
                               const file = e.target.files?.[0]
                               if (file) {
-                                setNewLogoUrl(URL.createObjectURL(file))
+                                // Prévisualisation locale immédiate
+                                const previewUrl = URL.createObjectURL(file)
+                                setNewLogoUrl(previewUrl)
+                                // Extraction couleurs depuis le canvas
                                 const reader = new FileReader()
                                 reader.onload = (el) => {
                                   const img = new Image()
@@ -719,6 +734,9 @@ function SettingsContent() {
                                   img.src = el.target?.result as string
                                 }
                                 reader.readAsDataURL(file)
+                                // Upload réel vers Supabase Storage
+                                const uploadedUrl = await uploadLogo(file)
+                                if (uploadedUrl) setNewLogoUrl(uploadedUrl)
                               }
                             }} />
                             <label htmlFor="new-logo-settings" style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer', padding: '.3rem .6rem', background: 'var(--accent-light)', borderRadius: '6px', border: '1px solid var(--accent)', display: 'inline-block' }}>Choisir le logo</label>
@@ -935,10 +953,13 @@ function SettingsContent() {
                               {logoUrl ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Upload size={16} style={{ color: 'var(--t3)' }} />}
                             </div>
                             <div>
-                              <input type="file" accept="image/*" id="logo-settings" style={{ display: 'none' }} onChange={(e) => {
+                              <input type="file" accept="image/*" id="logo-settings" style={{ display: 'none' }} onChange={async (e) => {
                                 const file = e.target.files?.[0]
                                 if (file) {
-                                  setLogoUrl(URL.createObjectURL(file))
+                                  // Prévisualisation locale immédiate
+                                  const previewUrl = URL.createObjectURL(file)
+                                  setLogoUrl(previewUrl)
+                                  // Extraction couleurs
                                   const reader = new FileReader()
                                   reader.onload = (el) => {
                                     const img = new Image()
@@ -964,6 +985,9 @@ function SettingsContent() {
                                     img.src = el.target?.result as string
                                   }
                                   reader.readAsDataURL(file)
+                                  // Upload réel vers Supabase Storage
+                                  const uploadedUrl = await uploadLogo(file)
+                                  if (uploadedUrl) setLogoUrl(uploadedUrl)
                                 }
                               }} />
                               <label htmlFor="logo-settings" style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer', padding: '.3rem .6rem', background: 'var(--accent-light)', borderRadius: '6px', border: '1px solid var(--accent)', display: 'inline-block' }}>Changer le logo</label>
@@ -1122,9 +1146,9 @@ function SettingsContent() {
               </SettingRow>
             </div>
 
-            {/* Sécurité */}
+            {/* Sécurité : mot de passe */}
             {authProvider !== 'google' && (
-              <div style={{ padding: '1.5rem', background: 'var(--card-bg)', border: '1px solid var(--b1)', borderRadius: '16px' }}>
+              <div style={{ padding: '1.5rem', background: 'var(--card-bg)', border: '1px solid var(--b1)', borderRadius: '16px', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--t1)' }}>Changer de mot de passe</h3>
                 {pwdStep === 'idle' ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -1144,39 +1168,44 @@ function SettingsContent() {
                 )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* ── 4. ZONE DANGEREUSE ── */}
-        {active === 'danger' && (
-          <div className="anim-fade-up">
-            <SectionHeader title="Zone dangereuse" desc="Suppression définitive de votre compte." />
-            <div style={{ border: '1px solid rgba(239,68,68,0.2)', padding: '2rem', borderRadius: '16px', background: 'rgba(239,68,68,0.02)' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ef4444', marginBottom: '0.75rem' }}>Supprimer le compte</h3>
-              <p style={{ fontSize: '.85rem', color: 'var(--t3)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Cette action est irréversible. Toutes vos données, posts générés, et abonnements seront définitivement effacés.</p>
-              
+            {/* Suppression de compte */}
+            <div style={{ border: '1px solid rgba(239,68,68,0.25)', padding: '1.5rem', borderRadius: '12px', background: 'rgba(239,68,68,0.03)' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ef4444', marginBottom: '0.5rem' }}>Supprimer le compte</h3>
+              <p style={{ fontSize: '.82rem', color: 'var(--t3)', marginBottom: '1.25rem', lineHeight: 1.6 }}>Action irréversible. Toutes vos données, publications et marques seront définitivement effacées.</p>
               {authProvider === 'google' ? (
-                <button 
+                <button
                   onClick={async () => {
-                    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/settings?tab=danger&action=delete` } })
+                    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/settings?tab=security&action=delete` } })
                     if (error) toast('Erreur Google', 'error')
-                  }} 
-                  className="btn-danger" 
-                  style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '0.75rem 2rem', fontWeight: 600, cursor: 'pointer' }}
+                  }}
+                  style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '0.6rem 1.5rem', fontWeight: 600, cursor: 'pointer', fontSize: '.85rem' }}
                 >
-                  Confirmer avec Google
+                  Confirmer avec Google puis supprimer
                 </button>
               ) : (
-                <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
-                  <input className="input" placeholder="Tapez 'supprimer' pour confirmer" value={confirmDelete} onChange={e => setConfirmDelete(e.target.value)} style={{ borderColor: confirmDelete === 'supprimer' ? '#ef4444' : 'var(--b1)', maxWidth: '300px' }} />
-                  <button onClick={handleDeleteAccount} disabled={confirmDelete !== 'supprimer' || deleting} className="btn-danger" style={{ background: confirmDelete === 'supprimer' ? '#ef4444' : 'rgba(239,68,68,0.2)', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 2rem', fontWeight: 600 }}>
-                    {deleting ? '...' : 'Supprimer'}
+                <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <input
+                    className="input"
+                    placeholder="Tapez 'supprimer' pour confirmer"
+                    value={confirmDelete}
+                    onChange={e => setConfirmDelete(e.target.value)}
+                    style={{ borderColor: confirmDelete === 'supprimer' ? '#ef4444' : 'var(--b1)', maxWidth: '260px' }}
+                  />
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={confirmDelete !== 'supprimer' || deleting}
+                    style={{ background: confirmDelete === 'supprimer' ? '#ef4444' : 'rgba(239,68,68,0.15)', color: confirmDelete === 'supprimer' ? '#fff' : '#ef4444', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px', padding: '0.6rem 1.5rem', fontWeight: 600, cursor: confirmDelete === 'supprimer' ? 'pointer' : 'not-allowed', fontSize: '.85rem', transition: '0.15s' }}
+                  >
+                    {deleting ? 'Suppression...' : 'Supprimer définitivement'}
                   </button>
                 </div>
               )}
             </div>
           </div>
         )}
+
+
 
       </main>
 
