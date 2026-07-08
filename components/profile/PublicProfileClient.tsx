@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, User } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, User, Camera, Upload, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -80,6 +80,47 @@ export default function PublicProfileClient({
   const [followLoading, setFollowLoading] = useState(false)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set(initialLikedIds))
   const [posts, setPosts] = useState(initialPosts)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [fullName, setFullName] = useState(profile.full_name || '')
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url || '')
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  async function handleAvatarUpload(file: File) {
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload/avatar', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Erreur d'upload")
+      setAvatarUrl(data.url)
+    } catch (err: any) {
+      alert(err.message || "Erreur lors de l'upload")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleSaveProfile() {
+    if (!fullName.trim()) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fullName.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Erreur de mise à jour")
+      setShowEditModal(false)
+      window.location.reload()
+    } catch (err: any) {
+      alert(err.message || "Erreur lors de la sauvegarde")
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const supabase = createClient()
   const router = useRouter()
@@ -178,8 +219,8 @@ export default function PublicProfileClient({
           fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}>
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <User size={48} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
           )}
@@ -191,16 +232,19 @@ export default function PublicProfileClient({
           display: 'flex', gap: 8,
         }}>
           {isOwnProfile ? (
-            <Link href="/settings?tab=identity" style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '9px 18px', borderRadius: 10,
-              background: 'var(--card)', border: '1px solid var(--b1)',
-              color: 'var(--t1)', fontSize: '0.83rem', fontWeight: 700,
-              textDecoration: 'none', transition: 'all .15s',
-            }}>
+            <button
+              onClick={() => setShowEditModal(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '9px 18px', borderRadius: 10,
+                background: 'var(--card)', border: '1px solid var(--b1)',
+                color: 'var(--t1)', fontSize: '0.83rem', fontWeight: 700,
+                cursor: 'pointer', transition: 'all .15s',
+              }}
+            >
               <Edit2 size={15} />
               Modifier le profil
-            </Link>
+            </button>
           ) : (
             <>
               <button
@@ -230,7 +274,7 @@ export default function PublicProfileClient({
         {/* Name + badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 3 }}>
           <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: 'var(--t1)', lineHeight: 1.2 }}>
-            {profile.full_name || profile.username}
+            {fullName || profile.username}
           </h1>
           {profile.plan && profile.plan !== 'free' && (
             <span style={{
@@ -494,6 +538,130 @@ export default function PublicProfileClient({
           </div>
         )}
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'var(--card)',
+            border: '1px solid var(--b1)',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '400px',
+            padding: '20px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.4)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--t1)', margin: 0 }}>Modifier le profil</h3>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Avatar Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
+                <div style={{
+                  width: '80px', height: '80px', borderRadius: '50%',
+                  background: 'rgba(var(--accent-rgb), 0.15)',
+                  overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid var(--b1)'
+                }}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <User size={36} strokeWidth={1.5} color="var(--t3)" />
+                  )}
+                </div>
+                <div style={{
+                  position: 'absolute', inset: 0, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(0,0,0,0.5)', opacity: 0, transition: 'opacity 0.15s'
+                }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
+                  <Camera size={18} color="#fff" />
+                </div>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                  onChange={e => {
+                    const f = e.target.files?.[0]
+                    if (f) handleAvatarUpload(f)
+                  }}
+                  disabled={uploading}
+                />
+              </label>
+              <span style={{ fontSize: '0.72rem', color: 'var(--t3)' }}>
+                {uploading ? 'Envoi...' : 'Cliquez pour modifier la photo'}
+              </span>
+            </div>
+
+            {/* Name Input */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--t2)' }}>Nom complet</label>
+              <input
+                type="text"
+                className="input"
+                style={{
+                  width: '100%', height: '38px',
+                  background: 'var(--s2)', border: '1px solid var(--b1)',
+                  borderRadius: '8px', padding: '0 12px',
+                  color: 'var(--t1)', fontSize: '0.85rem', outline: 'none',
+                }}
+                placeholder="Votre nom"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                disabled={saving}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px', borderTop: '1px solid var(--b1)', paddingTop: '12px' }}>
+              <button
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  padding: '8px 16px', borderRadius: '8px',
+                  background: 'transparent', border: '1px solid var(--b1)',
+                  color: 'var(--t2)', cursor: 'pointer', fontSize: '0.85rem',
+                  fontWeight: 600
+                }}
+                disabled={saving || uploading}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                style={{
+                  padding: '8px 16px', borderRadius: '8px',
+                  background: 'var(--accent)', border: 'none',
+                  color: '#fff', cursor: 'pointer', fontSize: '0.85rem',
+                  fontWeight: 600
+                }}
+                disabled={saving || uploading || !fullName.trim()}
+              >
+                {saving ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

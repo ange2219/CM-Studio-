@@ -368,8 +368,9 @@ export function DashboardShell({ user: initialUser, children }: {
                   className="dropdown-item" 
                   onClick={() => { setProfileOpen(false); setShowBrandModal(true) }}
                 >
-                  <Building2 size={16} /> MES MARQUES
+                  <Building2 size={16} /> Mes marques
                 </button>
+                <Link href="/settings" className="dropdown-item" onClick={() => setProfileOpen(false)} style={{ textDecoration: 'none', color: 'var(--text2)' }}><Settings size={16} /> Paramètres</Link>
                 <div className="dropdown-divider" />
                 <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
               </div>

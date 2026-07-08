@@ -630,10 +630,10 @@ function SettingsContent() {
               <Row label="Nom complet">
                 <input className="input" style={{ maxWidth: '320px' }} placeholder="Votre nom" value={fullName} onChange={e => setFullName(e.target.value)} disabled={!isEditingPersonal} />
               </Row>
-              <Row label="Pseudo unique">
+              <Row label="Pseudo unique" desc="Non modifiable.">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', maxWidth: '320px' }}>
                   <span style={{ color: 'var(--t3)', fontSize: '.88rem', fontWeight: 600 }}>@</span>
-                  <input className="input" style={{ flex: 1 }} placeholder="pseudo" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, ''))} disabled={!isEditingPersonal} />
+                  <input className="input" style={{ flex: 1, opacity: 0.6, cursor: 'not-allowed' }} placeholder="pseudo" value={username} disabled />
                 </div>
               </Row>
               <Row label="Adresse email">
