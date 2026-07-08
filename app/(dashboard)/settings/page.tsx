@@ -95,6 +95,8 @@ function SettingsContent() {
   const [newColorSecondary, setNewColorSecondary] = useState('#059669')
   const [newPlatforms, setNewPlatforms] = useState<string[]>([])
   const [creatingBrand, setCreatingBrand] = useState(false)
+  const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null)
+  const [confirmDeleteBrandId, setConfirmDeleteBrandId] = useState<string | null>(null)
 
   // --- Social / Billing / Security States ---
   const [accounts, setAccounts] = useState<SocialAccount[]>([])
@@ -342,6 +344,36 @@ function SettingsContent() {
 
 
   // --- Profile Actions ---
+  async function handleDeleteBrand(orgId: string, orgName: string) {
+    setDeletingBrandId(orgId)
+    try {
+      const res = await fetch('/api/brand/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ org_id: orgId }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Erreur lors de la suppression')
+
+      toast(`Marque « ${orgName} » supprimée`, 'success')
+      setConfirmDeleteBrandId(null)
+
+      // Si on supprime la marque active, basculer sur la première disponible
+      if (orgId === activeOrganization?.id) {
+        const other = organizations.find(o => o.id !== orgId)
+        if (other) {
+          const secureFlag = window.location.protocol === 'https:' ? '; Secure' : ''
+          document.cookie = `active_org_id=${other.id}; path=/; max-age=${60 * 60 * 24 * 365}${secureFlag}; SameSite=Lax`
+          document.cookie = `onboarded=; path=/; max-age=0`
+        }
+      }
+      window.location.reload()
+    } catch (err: any) {
+      toast(err.message || 'Erreur lors de la suppression', 'error')
+    } finally {
+      setDeletingBrandId(null)
+    }
+  }
   async function saveUserInfo() {
     setSavingUser(true)
     const res = await fetch('/api/auth/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: fullName, username: username }) })
@@ -845,9 +877,20 @@ function SettingsContent() {
                           {sector && <div style={{ fontSize: '.7rem', color: 'var(--t3)', marginTop: '.1rem' }}>{sector}</div>}
                         </div>
                       </div>
-                      {!isEditingBrand && (
-                        <button onClick={() => setIsEditingBrand(true)} style={{ padding: '4px 11px', fontSize: '.75rem', borderRadius: '7px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
-                      )}
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        {!isEditingBrand && (
+                          <button onClick={() => setIsEditingBrand(true)} style={{ padding: '4px 11px', fontSize: '.75rem', borderRadius: '7px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
+                        )}
+                        {confirmDeleteBrandId === activeOrganization.id ? (
+                          <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '.72rem', color: 'var(--t3)' }}>Supprimer ?</span>
+                            <button onClick={() => handleDeleteBrand(activeOrganization.id, brandName || activeOrganization.name)} disabled={deletingBrandId === activeOrganization.id} style={{ padding: '3px 9px', fontSize: '.72rem', borderRadius: '6px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{deletingBrandId === activeOrganization.id ? '...' : 'Oui'}</button>
+                            <button onClick={() => setConfirmDeleteBrandId(null)} style={{ padding: '3px 8px', fontSize: '.72rem', borderRadius: '6px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer' }}>Non</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setConfirmDeleteBrandId(activeOrganization.id)} style={{ padding: '4px 10px', fontSize: '.72rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Supprimer</button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Icônes réseaux sociaux — cliquer → popup connect/disconnect */}
@@ -1074,12 +1117,23 @@ function SettingsContent() {
                       </div>
                       <div style={{ fontWeight: 600, fontSize: '.88rem', color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</div>
                     </div>
-                    <button
-                      onClick={() => switchOrganization(org.id)}
-                      style={{ padding: '4px 12px', borderRadius: '7px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0 }}
-                    >
-                      Basculer
-                    </button>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+                      <button
+                        onClick={() => switchOrganization(org.id)}
+                        style={{ padding: '4px 12px', borderRadius: '7px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 500, whiteSpace: 'nowrap' }}
+                      >
+                        Basculer
+                      </button>
+                      {confirmDeleteBrandId === org.id ? (
+                        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '.72rem', color: 'var(--t3)', whiteSpace: 'nowrap' }}>Supprimer ?</span>
+                          <button onClick={() => handleDeleteBrand(org.id, org.name)} disabled={deletingBrandId === org.id} style={{ padding: '3px 9px', fontSize: '.72rem', borderRadius: '6px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{deletingBrandId === org.id ? '...' : 'Oui'}</button>
+                          <button onClick={() => setConfirmDeleteBrandId(null)} style={{ padding: '3px 8px', fontSize: '.72rem', borderRadius: '6px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer' }}>Non</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setConfirmDeleteBrandId(org.id)} style={{ padding: '4px 10px', fontSize: '.72rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Supprimer</button>
+                      )}
+                    </div>
                   </div>
                 ))}
 
