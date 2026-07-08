@@ -96,7 +96,11 @@ function SettingsContent() {
   const [newPlatforms, setNewPlatforms] = useState<string[]>([])
   const [creatingBrand, setCreatingBrand] = useState(false)
   const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null)
-  const [confirmDeleteBrandId, setConfirmDeleteBrandId] = useState<string | null>(null)
+  const [showBrandDeleteModal, setShowBrandDeleteModal] = useState(false)
+  const [brandDeleteId, setBrandDeleteId] = useState<string | null>(null)
+  const [brandDeleteName, setBrandDeleteName] = useState('')
+  const [brandDeletePassword, setBrandDeletePassword] = useState('')
+  const [verifyingBrandDelete, setVerifyingBrandDelete] = useState(false)
 
   // --- Social / Billing / Security States ---
   const [accounts, setAccounts] = useState<SocialAccount[]>([])
@@ -206,6 +210,14 @@ function SettingsContent() {
 
       if (searchParams.get('action') === 'delete') {
         setActive('danger')
+      }
+      if (searchParams.get('action') === 'delete_brand') {
+        const targetId = searchParams.get('target_id')
+        if (targetId) {
+          setTimeout(() => {
+            handleDeleteBrandDirectly(targetId, 'Marque')
+          }, 800)
+        }
       }
       if (searchParams.get('action') === 'add_brand') {
         setActive('identity')
@@ -345,6 +357,13 @@ function SettingsContent() {
 
   // --- Profile Actions ---
   async function handleDeleteBrand(orgId: string, orgName: string) {
+    setBrandDeleteId(orgId)
+    setBrandDeleteName(orgName)
+    setBrandDeletePassword('')
+    setShowBrandDeleteModal(true)
+  }
+
+  async function handleDeleteBrandDirectly(orgId: string, orgName: string) {
     setDeletingBrandId(orgId)
     try {
       const res = await fetch('/api/brand/delete', {
@@ -355,8 +374,9 @@ function SettingsContent() {
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Erreur lors de la suppression')
 
-      toast(`Marque « ${orgName} » supprimée`, 'success')
-      setConfirmDeleteBrandId(null)
+      const actualName = orgName !== 'Marque' ? orgName : (organizations.find(o => o.id === orgId)?.name || 'Marque')
+      toast(`Marque « ${actualName} » supprimée`, 'success')
+      setShowBrandDeleteModal(false)
 
       // Si on supprime la marque active, basculer sur la première disponible
       if (orgId === activeOrganization?.id) {
@@ -374,6 +394,34 @@ function SettingsContent() {
       setDeletingBrandId(null)
     }
   }
+
+  async function handleConfirmDeleteBrandPassword() {
+    if (!brandDeletePassword) { toast('Entrez votre mot de passe pour confirmer', 'error'); return }
+    setVerifyingBrandDelete(true)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password: brandDeletePassword })
+      if (error) { toast('Mot de passe incorrect', 'error'); return }
+      if (brandDeleteId) {
+        await handleDeleteBrandDirectly(brandDeleteId, brandDeleteName)
+      }
+    } catch (err: any) {
+      toast(err.message || 'Erreur de vérification', 'error')
+    } finally {
+      setVerifyingBrandDelete(false)
+    }
+  }
+
+  async function handleConfirmDeleteBrandGoogle() {
+    if (!brandDeleteId) return
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/settings?tab=identity&action=delete_brand&target_id=${brandDeleteId}`
+      }
+    })
+    if (error) toast('Erreur Google', 'error')
+  }
+
   async function saveUserInfo() {
     setSavingUser(true)
     const res = await fetch('/api/auth/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: fullName, username: username }) })
@@ -881,15 +929,7 @@ function SettingsContent() {
                         {!isEditingBrand && (
                           <button onClick={() => setIsEditingBrand(true)} style={{ padding: '4px 11px', fontSize: '.75rem', borderRadius: '7px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
                         )}
-                        {confirmDeleteBrandId === activeOrganization.id ? (
-                          <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                            <span style={{ fontSize: '.72rem', color: 'var(--t3)' }}>Supprimer ?</span>
-                            <button onClick={() => handleDeleteBrand(activeOrganization.id, brandName || activeOrganization.name)} disabled={deletingBrandId === activeOrganization.id} style={{ padding: '3px 9px', fontSize: '.72rem', borderRadius: '6px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{deletingBrandId === activeOrganization.id ? '...' : 'Oui'}</button>
-                            <button onClick={() => setConfirmDeleteBrandId(null)} style={{ padding: '3px 8px', fontSize: '.72rem', borderRadius: '6px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer' }}>Non</button>
-                          </div>
-                        ) : (
-                          <button onClick={() => setConfirmDeleteBrandId(activeOrganization.id)} style={{ padding: '4px 10px', fontSize: '.72rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Supprimer</button>
-                        )}
+                        <button onClick={() => handleDeleteBrand(activeOrganization.id, brandName || activeOrganization.name)} style={{ padding: '4px 10px', fontSize: '.72rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Supprimer</button>
                       </div>
                     </div>
 
@@ -1124,15 +1164,7 @@ function SettingsContent() {
                       >
                         Basculer
                       </button>
-                      {confirmDeleteBrandId === org.id ? (
-                        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '.72rem', color: 'var(--t3)', whiteSpace: 'nowrap' }}>Supprimer ?</span>
-                          <button onClick={() => handleDeleteBrand(org.id, org.name)} disabled={deletingBrandId === org.id} style={{ padding: '3px 9px', fontSize: '.72rem', borderRadius: '6px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{deletingBrandId === org.id ? '...' : 'Oui'}</button>
-                          <button onClick={() => setConfirmDeleteBrandId(null)} style={{ padding: '3px 8px', fontSize: '.72rem', borderRadius: '6px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t3)', cursor: 'pointer' }}>Non</button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setConfirmDeleteBrandId(org.id)} style={{ padding: '4px 10px', fontSize: '.72rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Supprimer</button>
-                      )}
+                      <button onClick={() => handleDeleteBrand(org.id, org.name)} style={{ padding: '4px 10px', fontSize: '.72rem', borderRadius: '7px', border: '1px solid rgba(239,68,68,.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Supprimer</button>
                     </div>
                   </div>
                 ))}
@@ -1262,6 +1294,115 @@ function SettingsContent() {
 
 
       </main>
+
+      {/* Brand Delete Confirmation Modal */}
+      {showBrandDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--b1)',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '400px',
+            padding: '20px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.4)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#ef4444', margin: 0 }}>Supprimer la marque</h3>
+              <button 
+                onClick={() => setShowBrandDeleteModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '4px', fontSize: '1rem' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.82rem', color: 'var(--t3)', lineHeight: 1.5, margin: 0 }}>
+              Cette action est irréversible. Toutes les données de la marque <strong>{brandDeleteName}</strong> (calendrier, publications, comptes réseaux) seront définitivement supprimées.
+            </p>
+
+            {authProvider === 'google' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <button
+                  onClick={handleConfirmDeleteBrandGoogle}
+                  style={{
+                    background: 'rgba(239,68,68,0.1)',
+                    color: '#ef4444',
+                    border: '1px solid rgba(239,68,68,0.25)',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '0.82rem',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  Confirmer avec Google puis supprimer
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--t2)' }}>Mot de passe actuel</label>
+                  <input
+                    type="password"
+                    className="input"
+                    placeholder="Entrez votre mot de passe"
+                    value={brandDeletePassword}
+                    onChange={e => setBrandDeletePassword(e.target.value)}
+                    disabled={verifyingBrandDelete}
+                    style={{
+                      width: '100%', height: '38px',
+                      background: 'var(--s2)', border: '1px solid var(--b1)',
+                      borderRadius: '8px', padding: '0 12px',
+                      color: 'var(--t1)', fontSize: '0.85rem', outline: 'none',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px', borderTop: '1px solid var(--b1)', paddingTop: '12px' }}>
+                  <button
+                    onClick={() => setShowBrandDeleteModal(false)}
+                    style={{
+                      padding: '8px 16px', borderRadius: '8px',
+                      background: 'transparent', border: '1px solid var(--b1)',
+                      color: 'var(--t2)', cursor: 'pointer', fontSize: '0.85rem',
+                      fontWeight: 600
+                    }}
+                    disabled={verifyingBrandDelete || deletingBrandId !== null}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleConfirmDeleteBrandPassword}
+                    style={{
+                      padding: '8px 16px', borderRadius: '8px',
+                      background: '#ef4444', border: 'none',
+                      color: '#fff', cursor: 'pointer', fontSize: '0.85rem',
+                      fontWeight: 600
+                    }}
+                    disabled={verifyingBrandDelete || deletingBrandId !== null || !brandDeletePassword}
+                  >
+                    {verifyingBrandDelete ? 'Vérification...' : 'Confirmer et supprimer'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Overlay pour fermer les popups réseaux ── */}
       {platformPopup && (
