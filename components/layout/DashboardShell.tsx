@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/Toast'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
-  Sparkles, BarChart2, Zap, ChevronDown
+  Sparkles, BarChart2, Zap, ChevronDown, Building2, Plus, X
 } from 'lucide-react'
 
 function useIsMobile(breakpoint = 768) {
@@ -43,6 +43,7 @@ export function DashboardShell({ user: initialUser, children }: {
   const [newOrgName, setNewOrgName] = useState('')
   const [isCreatingOrg, setIsCreatingOrg] = useState(false)
   const [theme, setTheme] = useState('dark')
+  const [showBrandModal, setShowBrandModal] = useState(false)
   
   const profileRef = useRef<HTMLDivElement>(null)
   const orgRef = useRef<HTMLDivElement>(null)
@@ -239,132 +240,16 @@ export function DashboardShell({ user: initialUser, children }: {
         flexShrink: 0,
       }}>
 
-        {/* LEFT: Logo & Org Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, minWidth: isMobile ? 'auto' : '260px' }}>
-          <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
-          
-          <div ref={orgRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'var(--s2)',
-                border: '1px solid var(--b1)',
-                color: 'var(--text)',
-                cursor: 'pointer',
-                padding: '6px 12px',
-                borderRadius: '10px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                transition: 'background 0.15s',
-              }}
-            >
-              <span style={{ maxWidth: isMobile ? '80px' : '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {activeOrganization?.name || 'Sélectionner...'}
+        {/* LEFT: Logo & Brand Indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+            <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
+            {!isMobile && (
+              <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', fontFamily: "'Syne', sans-serif", letterSpacing: '-0.02em' }}>
+                CM Studio
               </span>
-              <ChevronDown size={14} color="var(--text3)" style={{ transition: 'transform 0.2s', transform: orgDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-            </button>
-
-            {orgDropdownOpen && (
-              <div 
-                className="profile-dropdown" 
-                style={{ 
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  marginTop: '8px',
-                  background: 'var(--card)', 
-                  border: '1px solid var(--b1)',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)',
-                  padding: '8px',
-                  minWidth: '220px',
-                  zIndex: 200,
-                  animation: 'fadeIn 0.15s ease-out'
-                }}
-              >
-                <div style={{ padding: '6px 8px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Mes Marques
-                </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxHeight: '200px', overflowY: 'auto', margin: '4px 0' }}>
-                  {organizations.map(org => {
-                    const isActive = org.id === activeOrganization?.id
-                    return (
-                      <button
-                        key={org.id}
-                        onClick={() => {
-                          setOrgDropdownOpen(false)
-                          switchOrganization(org.id)
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          width: '100%',
-                          padding: '8px 10px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: isActive ? 'var(--accent-light)' : 'transparent',
-                          color: isActive ? 'var(--accent)' : 'var(--text)',
-                          fontSize: '0.85rem',
-                          fontWeight: isActive ? 600 : 500,
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          transition: 'background 0.15s'
-                        }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <div style={{
-                          width: '20px', height: '20px', borderRadius: '4px',
-                          background: 'rgba(var(--accent-rgb), 0.2)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent)', flexShrink: 0
-                        }}>
-                          {org.name.slice(0, 1).toUpperCase()}
-                        </div>
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
-                        {isActive && <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>✓</span>}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <div style={{ height: '1px', background: 'var(--b1)', margin: '6px 0' }} />
-                
-                <button
-                  onClick={() => {
-                    setOrgDropdownOpen(false)
-                    router.push('/settings?tab=identity&action=add_brand')
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    width: '100%',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--accent)',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'background 0.15s'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-light)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <Sparkles size={14} />
-                  <span>Créer une marque</span>
-                </button>
-              </div>
             )}
-          </div>
+          </Link>
         </div>
 
         {/* CENTER: Search (desktop only) */}
@@ -455,8 +340,8 @@ export function DashboardShell({ user: initialUser, children }: {
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--t1)', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
                       {user?.full_name || user?.username || 'Utilisateur'}
                     </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--t3)', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
-                      {user?.email || ''}
+                    <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600, whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                      {activeOrganization?.name || 'Sélectionner...'}
                     </span>
                   </div>
                   <ChevronDown size={14} color="var(--t3)" style={{ transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
@@ -477,8 +362,15 @@ export function DashboardShell({ user: initialUser, children }: {
                     <div className="u-email">{user?.email}</div>
                   </div>
                 </div>
-                <div className="dropdown-divider" />
-                <Link href={`/profile/${user?.username || ''}`} className="dropdown-item" onClick={() => setProfileOpen(false)}><User size={16} /> Profil</Link>
+                 <div className="dropdown-divider" />
+                <Link href={`/profile/${user?.username || ''}`} className="dropdown-item" onClick={() => setProfileOpen(false)} style={{ textDecoration: 'none' }}><User size={16} /> Profil</Link>
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => { setProfileOpen(false); setShowBrandModal(true) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text)', padding: '8px 12px' }}
+                >
+                  <Building2 size={16} /> Choisir la marque
+                </button>
                 <div className="dropdown-divider" />
                 <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
               </div>
@@ -731,6 +623,113 @@ export function DashboardShell({ user: initialUser, children }: {
                 disabled={isCreatingOrg || !newOrgName.trim()}
               >
                 {isCreatingOrg ? 'Création...' : 'Créer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Brand Selection Modal */}
+      {showBrandModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'var(--card)',
+            border: '1px solid var(--b1)',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '400px',
+            padding: '20px',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.4)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--t1)', margin: 0 }}>Choisir une marque</h3>
+              <button 
+                onClick={() => setShowBrandModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto' }}>
+              {organizations.map(org => {
+                const isActive = org.id === activeOrganization?.id
+                return (
+                  <button
+                    key={org.id}
+                    onClick={() => {
+                      switchOrganization(org.id)
+                      setShowBrandModal(false)
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: isActive ? '1px solid var(--accent)' : '1px solid var(--b1)',
+                      background: isActive ? 'var(--accent-light)' : 'var(--s2)',
+                      color: isActive ? 'var(--accent)' : 'var(--t1)',
+                      fontSize: '0.88rem',
+                      fontWeight: isActive ? 700 : 500,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s'
+                    }}
+                  >
+                    <div style={{
+                      width: '24px', height: '24px', borderRadius: '6px',
+                      background: isActive ? 'var(--accent)' : 'var(--b1)',
+                      color: isActive ? '#fff' : 'var(--t3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.75rem', fontWeight: 800
+                    }}>
+                      {org.name.slice(0, 1).toUpperCase()}
+                    </div>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
+                    {isActive && <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>✓</span>}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div style={{ borderTop: '1px solid var(--b1)', paddingTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowBrandModal(false)
+                  router.push('/settings?tab=identity&action=add_brand')
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'opacity 0.15s'
+                }}
+              >
+                <Plus size={14} />
+                <span>Créer une marque</span>
               </button>
             </div>
           </div>
