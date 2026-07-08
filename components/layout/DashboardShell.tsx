@@ -338,7 +338,7 @@ export function DashboardShell({ user: initialUser, children }: {
                 <button
                   onClick={() => {
                     setOrgDropdownOpen(false)
-                    setShowCreateOrgModal(true)
+                    router.push('/settings?tab=identity&action=add_brand')
                   }}
                   style={{
                     display: 'flex',

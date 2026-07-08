@@ -78,10 +78,24 @@ function SettingsContent() {
   const [platformPopup, setPlatformPopup] = useState<Platform | null>(null)
   const platformPopupRef = useRef<HTMLDivElement>(null)
 
-  // --- Add Brand modal state ---
-  const [showAddBrandModal, setShowAddBrandModal] = useState(false)
-  const [addBrandName, setAddBrandName] = useState('')
-  const [addingBrand, setAddingBrand] = useState(false)
+  // --- New Brand Form States ---
+  const [isAddingBrandForm, setIsAddingBrandForm] = useState(false)
+  const [newBrandName, setNewBrandName] = useState('')
+  const [newBrandDesc, setNewBrandDesc] = useState('')
+  const [newSector, setNewSector] = useState('')
+  const [newDefaultTone, setNewDefaultTone] = useState('professionnel')
+  const [newPostsPerWeek, setNewPostsPerWeek] = useState(5)
+  const [newWebsite, setNewWebsite] = useState('')
+  const [newTargetAudience, setNewTargetAudience] = useState('')
+  const [newContentPillars, setNewContentPillars] = useState<string[]>([])
+  const [newAvoidWords, setNewAvoidWords] = useState('')
+  const [newObjectives, setNewObjectives] = useState<string[]>([])
+  const [newValueProposition, setNewValueProposition] = useState('')
+  const [newLogoUrl, setNewLogoUrl] = useState('')
+  const [newColorPrimary, setNewColorPrimary] = useState('#1E57CD')
+  const [newColorSecondary, setNewColorSecondary] = useState('#059669')
+  const [newPlatforms, setNewPlatforms] = useState<string[]>([])
+  const [creatingBrand, setCreatingBrand] = useState(false)
 
   // --- Social / Billing / Security States ---
   const [accounts, setAccounts] = useState<SocialAccount[]>([])
@@ -192,6 +206,10 @@ function SettingsContent() {
       if (searchParams.get('action') === 'delete') {
         setActive('danger')
       }
+      if (searchParams.get('action') === 'add_brand') {
+        setActive('identity')
+        setIsAddingBrandForm(true)
+      }
 
       setLoading(false)
     }
@@ -258,33 +276,68 @@ function SettingsContent() {
     }
   }
 
-  async function handleAddBrand() {
-    if (!addBrandName.trim()) return
-    setAddingBrand(true)
-    try {
-      const { data: orgId, error } = await supabase.rpc('create_organization', { org_name: addBrandName })
-      if (error) throw new Error(error.message)
+  function resetNewBrandForm() {
+    setNewBrandName('')
+    setNewBrandDesc('')
+    setNewSector('')
+    setNewDefaultTone('professionnel')
+    setNewPostsPerWeek(5)
+    setNewWebsite('')
+    setNewTargetAudience('')
+    setNewContentPillars([])
+    setNewAvoidWords('')
+    setNewObjectives([])
+    setNewValueProposition('')
+    setNewLogoUrl('')
+    setNewColorPrimary('#1E57CD')
+    setNewColorSecondary('#059669')
+    setNewPlatforms([])
+    setIsAddingBrandForm(false)
+  }
 
-      // Initialiser un profil de marque minimal pour éviter la redirection vers l'onboarding
-      const initRes = await fetch('/api/brand/init', {
+  async function handleCreateBrandForm() {
+    if (!newBrandName.trim()) return
+    setCreatingBrand(true)
+    try {
+      const res = await fetch('/api/brand/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_id: orgId, brand_name: addBrandName }),
+        body: JSON.stringify({
+          brand_name:        newBrandName.trim(),
+          industry:          newSector,
+          description:       newBrandDesc,
+          website:           newWebsite,
+          target_audience:   newTargetAudience,
+          tone:              newDefaultTone,
+          value_proposition: newValueProposition,
+          objectives:        newObjectives,
+          content_pillars:   newContentPillars,
+          platforms:         newPlatforms,
+          avoid_words:       newAvoidWords,
+          posts_per_week:    newPostsPerWeek,
+          logo_url:          newLogoUrl,
+          color_primary:     newColorPrimary,
+          color_secondary:   newColorSecondary,
+        }),
       })
-      if (!initRes.ok) {
-        const initErr = await initRes.json().catch(() => ({}))
-        throw new Error(initErr.error || 'Erreur lors de l\'initialisation de la marque')
-      }
 
-      // Basculer vers la nouvelle marque et recharger les paramètres
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Erreur lors de la création de la marque')
+
+      const orgId = result.org_id
+
+      // Basculer vers la nouvelle marque et recharger la page
       const secureFlag = window.location.protocol === 'https:' ? '; Secure' : ''
       document.cookie = `active_org_id=${orgId}; path=/; max-age=${60 * 60 * 24 * 365}${secureFlag}; SameSite=Lax`
-      sessionStorage.setItem('toast_message', `Marque "${addBrandName}" créée ! Complétez son profil ici.`)
+      // Invalider le cookie "onboarded" pour que le middleware re-vérifie en base
+      document.cookie = `onboarded=; path=/; max-age=0`
+      sessionStorage.setItem('toast_message', `Marque "${newBrandName.trim()}" créée avec succès !`)
       sessionStorage.setItem('toast_type', 'success')
       window.location.href = '/settings?tab=identity'
     } catch (err: any) {
-      toast(err.message || 'Erreur lors de la création', 'error')
-      setAddingBrand(false)
+      toast(err.message || 'Erreur lors de la création de la marque', 'error')
+    } finally {
+      setCreatingBrand(false)
     }
   }
 
@@ -562,20 +615,202 @@ function SettingsContent() {
                   <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: 'var(--t1)', margin: 0 }}>Mes marques</h3>
                   <div style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.2rem' }}>{organizations.length} marque{organizations.length !== 1 ? 's' : ''}</div>
                 </div>
-                <button
-                  onClick={() => setShowAddBrandModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, transition: '0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--b1)'; (e.currentTarget as HTMLElement).style.color = 'var(--t2)' }}
-                >
-                  <Plus size={13} /> Ajouter une marque
-                </button>
+                {!isAddingBrandForm && (
+                  <button
+                    onClick={() => setIsAddingBrandForm(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, transition: '0.15s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--b1)'; (e.currentTarget as HTMLElement).style.color = 'var(--t2)' }}
+                  >
+                    <Plus size={13} /> Ajouter une marque
+                  </button>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
+                {/* ── Carte nouvelle marque (Formulaire vide) ── */}
+                {isAddingBrandForm && (
+                  <div className="anim-fade-up" style={{ padding: '1.25rem', background: 'var(--card-bg)', border: '1.5px solid var(--accent)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '.5rem', paddingBottom: '.5rem', borderBottom: '1px solid var(--b1)' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 9, background: newColorPrimary + '22', border: `1px solid ${newColorPrimary}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        {newLogoUrl ? <img src={newLogoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Logo" /> : <Building2 size={16} color={newColorPrimary} />}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontWeight: 700, fontSize: '.9rem', color: 'var(--t1)' }}>{newBrandName.trim() || 'Nouvelle marque'}</span>
+                          <span style={{ fontSize: '.62rem', fontWeight: 600, background: 'var(--s2)', color: 'var(--accent)', padding: '1px 7px', borderRadius: '20px', border: '1px solid var(--b1)', letterSpacing: '.02em' }}>Configuration</span>
+                        </div>
+                        <div style={{ fontSize: '.7rem', color: 'var(--t3)', marginTop: '.1rem' }}>Renseignez les détails pour ajouter cette marque</div>
+                      </div>
+                      <button onClick={resetNewBrandForm} style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex' }}><X size={16} /></button>
+                    </div>
+
+                    <div>
+                      <Row label="Nom de la marque *">
+                        <input className="input" style={{ maxWidth: '320px' }} placeholder="Ex: Nike, Coca-Cola..." value={newBrandName} onChange={e => setNewBrandName(e.target.value)} />
+                      </Row>
+
+                      <Row label="Secteur d'activité *">
+                        <select className="input" style={{ maxWidth: '320px', cursor: 'pointer' }} value={newSector} onChange={e => setNewSector(e.target.value)}>
+                          <option value="">Choisir un secteur...</option>
+                          {['Mode & Beauté', 'Tech & SaaS', 'E-commerce', 'Santé & Bien-être', 'Finance & Crypto', 'Restauration & Food', 'Immobilier', 'Sport & Fitness', 'Éducation', 'Art & Créativité', 'Voyage & Tourisme', 'Autre'].map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                        </select>
+                      </Row>
+
+                      <Row label="Site web">
+                        <input className="input" style={{ maxWidth: '320px' }} placeholder="https://exemple.com" value={newWebsite} onChange={e => setNewWebsite(e.target.value)} />
+                      </Row>
+
+                      <Row label="Ton par défaut">
+                        <select className="input" style={{ maxWidth: '200px' }} value={newDefaultTone} onChange={e => setNewDefaultTone(e.target.value)}>
+                          <option value="professionnel">Professionnel</option>
+                          <option value="moderne">Moderne</option>
+                          <option value="decontracte">Décontracté</option>
+                          <option value="inspirant">Inspirant</option>
+                          <option value="premium">Premium</option>
+                          <option value="humoristique">Humoristique</option>
+                        </select>
+                      </Row>
+
+                      <Row label="Public cible *">
+                        <select className="input" style={{ maxWidth: '320px', cursor: 'pointer' }} value={newTargetAudience} onChange={e => setNewTargetAudience(e.target.value)}>
+                          <option value="">Choisir la cible principale...</option>
+                          {['Grand public', 'Entrepreneurs', 'Étudiants', 'Parents', 'Professionnels', 'Entreprises', 'Autre'].map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </Row>
+
+                      <Row label="Proposition de valeur *" desc="Ce qui rend votre marque unique aux yeux de vos clients.">
+                        <textarea className="input resize-none" rows={2} style={{ maxWidth: '100%' }} placeholder="Ex: Nous aidons les entreprises à automatiser leur prospection commerciale grâce à l'IA..." value={newValueProposition} onChange={e => setNewValueProposition(e.target.value)} />
+                      </Row>
+
+                      <Row label="Logo de la marque">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--b1)', flexShrink: 0 }}>
+                            {newLogoUrl ? <img src={newLogoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Upload size={16} style={{ color: 'var(--t3)' }} />}
+                          </div>
+                          <div>
+                            <input type="file" accept="image/*" id="new-logo-settings" style={{ display: 'none' }} onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                setNewLogoUrl(URL.createObjectURL(file))
+                                const reader = new FileReader()
+                                reader.onload = (el) => {
+                                  const img = new Image()
+                                  img.onload = () => {
+                                    const canvas = document.createElement('canvas')
+                                    const ctx = canvas.getContext('2d')
+                                    if (!ctx) return
+                                    canvas.width = 50; canvas.height = 50
+                                    ctx.drawImage(img, 0, 0, 50, 50)
+                                    const imgData = ctx.getImageData(0, 0, 50, 50).data
+                                    const colorCounts: Record<string, number> = {}
+                                    for (let i = 0; i < imgData.length; i += 4) {
+                                      const r = imgData[i], g = imgData[i+1], b = imgData[i+2], a = imgData[i+3]
+                                      if (a < 150) continue
+                                      const qr = Math.round(r / 16) * 16, qg = Math.round(g / 16) * 16, qb = Math.round(b / 16) * 16
+                                      const qhex = '#' + [qr, qg, qb].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('')
+                                      colorCounts[qhex] = (colorCounts[qhex] || 0) + 1
+                                    }
+                                    const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1])
+                                    if (sorted.length >= 2) { setNewColorPrimary(sorted[0][0]); setNewColorSecondary(sorted[1][0]) }
+                                    else if (sorted.length >= 1) { setNewColorPrimary(sorted[0][0]); setNewColorSecondary(sorted[0][0]) }
+                                  }
+                                  img.src = el.target?.result as string
+                                }
+                                reader.readAsDataURL(file)
+                              }
+                            }} />
+                            <label htmlFor="new-logo-settings" style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer', padding: '.3rem .6rem', background: 'var(--accent-light)', borderRadius: '6px', border: '1px solid var(--accent)', display: 'inline-block' }}>Choisir le logo</label>
+                          </div>
+                        </div>
+                      </Row>
+
+                      <Row label="Couleurs de marque">
+                        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                            <input type="color" value={newColorPrimary} onChange={e => setNewColorPrimary(e.target.value)} style={{ border: 'none', padding: 0, width: 26, height: 26, cursor: 'pointer', background: 'transparent' }} />
+                            <span style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--t1)' }}>{newColorPrimary} (Primaire)</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                            <input type="color" value={newColorSecondary} onChange={e => setNewColorSecondary(e.target.value)} style={{ border: 'none', padding: 0, width: 26, height: 26, cursor: 'pointer', background: 'transparent' }} />
+                            <span style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--t1)' }}>{newColorSecondary} (Secondaire)</span>
+                          </div>
+                        </div>
+                      </Row>
+
+                      <Row label="Types de contenus *">
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                          {['Conseils', 'Tutoriels', 'Coulisses', 'Promotions', 'Témoignages', 'Storytelling', 'Actualités', 'Divertissement', 'Éducation'].map(opt => {
+                            const selected = newContentPillars.includes(opt)
+                            return (
+                              <button key={opt} type="button" onClick={() => setNewContentPillars(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])} style={{ padding: '.3rem .7rem', borderRadius: '20px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer', border: selected ? '1px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'transparent', color: selected ? 'var(--accent)' : 'var(--t3)', transition: '0.15s', outline: 'none' }}>{opt}</button>
+                            )
+                          })}
+                        </div>
+                      </Row>
+
+                      <Row label="Objectifs *">
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                          {[{ value: 'notoriete', label: 'Notoriété' }, { value: 'engagement', label: 'Engagement' }, { value: 'ventes', label: 'Ventes' }, { value: 'leads', label: 'Prospects' }, { value: 'fidelisation', label: 'Fidélisation' }, { value: 'communaute', label: 'Communauté' }].map(obj => {
+                            const selected = newObjectives.includes(obj.value)
+                            return (
+                              <button key={obj.value} type="button" onClick={() => setNewObjectives(prev => prev.includes(obj.value) ? prev.filter(x => x !== obj.value) : [...prev, obj.value])} style={{ padding: '.3rem .7rem', borderRadius: '20px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer', border: selected ? '1px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'transparent', color: selected ? 'var(--accent)' : 'var(--t3)', transition: '0.15s', outline: 'none' }}>{obj.label}</button>
+                            )
+                          })}
+                        </div>
+                      </Row>
+
+                      <Row label="Réseaux ciblés *">
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem' }}>
+                          {['facebook', 'instagram', 'linkedin', 'twitter', 'tiktok'].map(plat => {
+                            const selected = newPlatforms.includes(plat)
+                            const labels: Record<string, string> = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', twitter: 'X / Twitter', tiktok: 'TikTok' }
+                            return (
+                              <button key={plat} type="button" onClick={() => setNewPlatforms(prev => prev.includes(plat) ? prev.filter(x => x !== plat) : [...prev, plat])} style={{ padding: '.3rem .7rem', borderRadius: '20px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer', border: selected ? '1px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'transparent', color: selected ? 'var(--accent)' : 'var(--t3)', transition: '0.15s', outline: 'none' }}>{labels[plat]}</button>
+                            )
+                          })}
+                        </div>
+                      </Row>
+
+                      <Row label="Mots à éviter">
+                        <input className="input" style={{ maxWidth: '100%' }} placeholder="Ex: promo, pas cher, gratuit (séparés par des virgules)" value={newAvoidWords} onChange={e => setNewAvoidWords(e.target.value)} />
+                      </Row>
+
+                      <Row label="Posts / semaine">
+                        <input className="input" style={{ maxWidth: '100px' }} type="number" min={1} max={21} value={newPostsPerWeek} onChange={e => setNewPostsPerWeek(Number(e.target.value))} />
+                      </Row>
+
+                      <Row label="Description *">
+                        <textarea className="input resize-none" rows={3} style={{ maxWidth: '100%' }} placeholder="Présentez votre marque, vos produits et votre style..." value={newBrandDesc} onChange={e => setNewBrandDesc(e.target.value)} />
+                      </Row>
+
+                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--b1)' }}>
+                        {!(newBrandName.trim() && newSector && newBrandDesc.trim() && newTargetAudience && newValueProposition.trim() && newObjectives.length >= 1 && newContentPillars.length >= 1 && newPlatforms.length >= 1) && (
+                          <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ color: '#ef4444', fontWeight: 700 }}>*</span> Remplissez tous les champs obligatoires pour pouvoir enregistrer la marque.
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={handleCreateBrandForm}
+                            disabled={creatingBrand || !(newBrandName.trim() && newSector && newBrandDesc.trim() && newTargetAudience && newValueProposition.trim() && newObjectives.length >= 1 && newContentPillars.length >= 1 && newPlatforms.length >= 1)}
+                            className="btn-primary"
+                            style={{ padding: '5px 14px', fontSize: '.82rem' }}
+                          >
+                            {creatingBrand ? 'Création...' : 'Créer la marque'}
+                          </button>
+                          <button onClick={resetNewBrandForm} className="btn-secondary" style={{ padding: '5px 14px', fontSize: '.82rem', border: '1px solid var(--b1)', background: 'transparent' }}>
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* ── Carte marque active (détails complets) ── */}
-                {activeOrganization && (
+                {activeOrganization && !isAddingBrandForm && (
                   <div style={{ padding: '1.25rem', background: 'var(--card-bg)', border: '1px solid var(--b1)', borderRadius: '12px' }}>
 
                     {/* En-tête de la carte */}
@@ -687,9 +922,9 @@ function SettingsContent() {
                         </Row>
                         <Row label="Public cible">
                           <select className="input" style={{ maxWidth: '320px', cursor: 'pointer' }} value={targetAudience} onChange={e => setTargetAudience(e.target.value)}>
-                          <option value="">Choisir la cible principale...</option>
-                          {['Grand public', 'Entrepreneurs', 'Étudiants', 'Parents', 'Professionnels', 'Entreprises', 'Autre'].map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
+                            <option value="">Choisir la cible principale...</option>
+                            {['Grand public', 'Entrepreneurs', 'Étudiants', 'Parents', 'Professionnels', 'Entreprises', 'Autre'].map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
                         </Row>
                         <Row label="Proposition de valeur" desc="Pourquoi les clients choisissent cette marque.">
                           <textarea className="input resize-none" rows={2} style={{ maxWidth: '100%' }} value={valueProposition} onChange={e => setValueProposition(e.target.value)} />
@@ -807,7 +1042,7 @@ function SettingsContent() {
                 )}
 
                 {/* ── Autres marques (cartes compactes) ── */}
-                {organizations.filter(o => o.id !== activeOrganization?.id).map(org => (
+                {!isAddingBrandForm && organizations.filter(o => o.id !== activeOrganization?.id).map(org => (
                   <div key={org.id} style={{ padding: '1rem 1.25rem', background: 'var(--card-bg)', border: '1px solid var(--b1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                       <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--b1)', flexShrink: 0 }}>
@@ -953,40 +1188,7 @@ function SettingsContent() {
         />
       )}
 
-      {/* ── Modale : Ajouter une marque ── */}
-      {showAddBrandModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, backdropFilter: 'blur(4px)', animation: 'fadeIn 0.18s ease-out' }}>
-          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '20px', width: '100%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={18} color="var(--accent)" />
-                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--t1)' }}>Nouvelle marque</span>
-              </div>
-              <button onClick={() => { setShowAddBrandModal(false); setAddBrandName('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex' }}><X size={16} /></button>
-            </div>
-            <p style={{ fontSize: '.8rem', color: 'var(--t3)', lineHeight: 1.5, margin: 0 }}>Chaque marque dispose de ses propres comptes, publications et statistiques. Complétez le profil depuis cet onglet après création.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--t2)' }}>Nom de la marque</label>
-              <input
-                type="text"
-                placeholder="Ex : Acme Corp, MyBrand..."
-                value={addBrandName}
-                onChange={e => setAddBrandName(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && addBrandName.trim()) handleAddBrand() }}
-                autoFocus
-                disabled={addingBrand}
-                style={{ width: '100%', height: '38px', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: '8px', padding: '0 12px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button onClick={() => { setShowAddBrandModal(false); setAddBrandName('') }} disabled={addingBrand} style={{ padding: '7px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid var(--b1)', color: 'var(--t2)', cursor: 'pointer', fontSize: '.82rem', fontWeight: 600 }}>Annuler</button>
-              <button onClick={handleAddBrand} disabled={addingBrand || !addBrandName.trim()} className="btn-primary" style={{ padding: '7px 16px', fontSize: '.82rem' }}>
-                {addingBrand ? 'Création...' : 'Créer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

@@ -252,7 +252,7 @@ export async function replyToFacebookComment(commentId: string, message: string,
 /** Récupère les commentaires d'un média Instagram */
 export async function getInstagramComments(mediaId: string, token: string): Promise<{ comments: MetaComment[]; error?: string }> {
   const IG_GRAPH = 'https://graph.instagram.com/v19.0'
-  const res = await fetch(`${IG_GRAPH}/${mediaId}/comments?fields=id,text,username,timestamp&access_token=${token}`)
+  const res = await fetch(`${IG_GRAPH}/${mediaId}/comments?fields=id,text,from,timestamp&access_token=${token}`)
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     const msg: string = err?.error?.message || `Erreur ${res.status}`
@@ -269,7 +269,7 @@ export async function getInstagramComments(mediaId: string, token: string): Prom
     comments: (data.data || []).map((c: any) => ({
       id: c.id,
       message: c.text,
-      from: { id: '', name: c.username || 'Utilisateur' },
+      from: { id: c.from?.id || '', name: c.from?.username || 'Utilisateur' },
       created_time: c.timestamp,
     })) as MetaComment[],
   }

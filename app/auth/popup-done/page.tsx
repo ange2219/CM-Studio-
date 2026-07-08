@@ -10,11 +10,13 @@ export default function PopupDone() {
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
+      if (user) {
+          // Vérifier si l'utilisateur a déjà une organisation (membership)
           const { data } = await supabase
-            .from('brand_profiles')
-            .select('user_id')
+            .from('memberships')
+            .select('organization_id')
             .eq('user_id', user.id)
+            .limit(1)
             .maybeSingle()
           isNew = !data
         }
