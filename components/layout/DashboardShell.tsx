@@ -245,7 +245,7 @@ export function DashboardShell({ user: initialUser, children }: {
           <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
             <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
             {!isMobile && (
-              <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text)', fontFamily: "'Syne', sans-serif", letterSpacing: '-0.02em' }}>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>
                 CM Studio
               </span>
             )}
@@ -271,7 +271,7 @@ export function DashboardShell({ user: initialUser, children }: {
           </div>
         )}
 
-        {isMobile && <span style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: "'Syne', sans-serif" }}>CM Studio</span>}
+        {isMobile && <span style={{ flex: 1, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text)', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>CM Studio</span>}
 
         {/* RIGHT: Theme toggle + Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
@@ -363,13 +363,12 @@ export function DashboardShell({ user: initialUser, children }: {
                   </div>
                 </div>
                  <div className="dropdown-divider" />
-                <Link href={`/profile/${user?.username || ''}`} className="dropdown-item" onClick={() => setProfileOpen(false)} style={{ textDecoration: 'none' }}><User size={16} /> Profil</Link>
+                <Link href={`/profile/${user?.username || ''}`} className="dropdown-item" onClick={() => setProfileOpen(false)} style={{ textDecoration: 'none', color: 'var(--text2)' }}><User size={16} /> Profil</Link>
                 <button 
                   className="dropdown-item" 
                   onClick={() => { setProfileOpen(false); setShowBrandModal(true) }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text)', padding: '8px 12px' }}
                 >
-                  <Building2 size={16} /> Choisir la marque
+                  <Building2 size={16} /> MES MARQUES
                 </button>
                 <div className="dropdown-divider" />
                 <button className="dropdown-item logout" onClick={handleLogout}><LogOut size={16} /> Se déconnecter</button>
