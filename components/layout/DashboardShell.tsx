@@ -287,26 +287,6 @@ export function DashboardShell({ user: initialUser, children }: {
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          {/* Notifications bell icon (always visible) */}
-          <Link href="/notifications" style={{
-            width: '36px', height: '36px', borderRadius: '50%',
-            background: 'var(--s2)', border: '1px solid var(--b1)',
-            color: 'var(--text2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
-          }}>
-            <Bell size={16} />
-            {unreadNotifsCount > 0 && (
-              <span style={{
-                position: 'absolute', top: -3, right: -3,
-                background: '#ef4444', color: '#fff',
-                borderRadius: '50%', minWidth: '15px', height: '15px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '8px', fontWeight: 800, padding: '0 3px'
-              }}>
-                {unreadNotifsCount}
-              </span>
-            )}
-          </Link>
 
           {/* Avatar + dropdown (always visible) */}
           <div ref={profileRef} style={{ position: 'relative' }}>
