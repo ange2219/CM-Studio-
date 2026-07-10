@@ -60,6 +60,7 @@ export default async function PublicProfilePage({
     .from('vw_community_posts')
     .select('*')
     .eq('user_id', profile.id)
+    .is('group_id', null)
     .order('created_at', { ascending: false })
     .limit(30)
 

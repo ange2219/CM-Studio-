@@ -41,6 +41,7 @@ export default function HomePage() {
         supabase
           .from('vw_community_posts')
           .select('*')
+          .is('group_id', null)
           .order('created_at', { ascending: false })
           .limit(50),
         supabase.from('community_likes').select('post_id').eq('user_id', user!.id),
