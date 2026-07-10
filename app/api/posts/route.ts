@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const ALLOWED_PLATFORMS = ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'youtube', 'pinterest'] as const
@@ -25,10 +25,18 @@ export async function GET(req: NextRequest) {
 
   const includeDeleted = searchParams.get('includeDeleted') === 'true'
 
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Aucune marque active' }, { status: 404 })
+  }
+
   let query = supabase
     .from('posts')
     .select('*', { count: 'exact' })
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
@@ -74,6 +82,16 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+    console.log('[API POSTS] Resolved active orgId:', orgId, 'for user:', user.id)
+  } catch (err: any) {
+    console.error('[API POSTS] Failed to resolve active org:', err)
+    return NextResponse.json({ error: err.message || 'Aucune marque active' }, { status: 404 })
+  }
+
   const parsed = CreatePostSchema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
@@ -81,10 +99,13 @@ export async function POST(req: NextRequest) {
   const { content, platforms, media_urls, ai_generated, status, content_variants } = parsed.data
   const insertStatus = status ?? 'draft'
 
+  console.log('[API POSTS] Inserting post content length:', content.length, 'platforms:', platforms, 'status:', insertStatus)
+
   const { data, error } = await supabase
     .from('posts')
     .insert({
       user_id: user.id,
+      organization_id: orgId,
       content,
       platforms,
       media_urls: media_urls || [],
@@ -95,6 +116,11 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[API POSTS] Insert error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+  
+  console.log('[API POSTS] Successfully created post id:', data.id)
   return NextResponse.json(data, { status: 201 })
 }
