@@ -5,6 +5,11 @@ import type { GenerateRequest, GenerateResponse, Platform, Plan, GenerateIdeasRe
 import { TONE_DEFINITIONS } from './tones'
 import { buildFacebookPrompt } from './facebook'
 import { buildLinkedinPrompt } from './linkedin'
+import { buildInstagramPrompt } from './instagram-prompt'
+import { buildTwitterPrompt } from './twitter'
+import { buildTiktokPrompt } from './tiktok'
+import { buildYoutubePrompt } from './youtube'
+import { buildPinterestPrompt } from './pinterest'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
@@ -151,6 +156,21 @@ function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
   if (targetPlatform === 'linkedin') {
     return buildLinkedinPrompt(req)
   }
+  if (targetPlatform === 'instagram') {
+    return buildInstagramPrompt(req)
+  }
+  if (targetPlatform === 'twitter') {
+    return buildTwitterPrompt(req)
+  }
+  if (targetPlatform === 'tiktok') {
+    return buildTiktokPrompt(req)
+  }
+  if (targetPlatform === 'youtube') {
+    return buildYoutubePrompt(req)
+  }
+  if (targetPlatform === 'pinterest') {
+    return buildPinterestPrompt(req)
+  }
 
   const platforms = targetPlatform ? [targetPlatform] : req.platforms
 
@@ -257,7 +277,7 @@ async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platfor
 
   const text = response.choices[0]?.message?.content || '{}'
   const parsed = JSON.parse(text)
-  if ((targetPlatform === 'linkedin' || targetPlatform === 'facebook') && parsed.post) {
+  if (targetPlatform && parsed.post) {
     return {
       variants: {
         [targetPlatform]: parsed.post
@@ -281,7 +301,7 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   const parsed = JSON.parse(text.trim())
-  if ((targetPlatform === 'linkedin' || targetPlatform === 'facebook') && parsed.post) {
+  if (targetPlatform && parsed.post) {
     return {
       variants: {
         [targetPlatform]: parsed.post
@@ -537,7 +557,7 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
   let mergedExtra: Record<string, any> = {}
   for (const { platform, text, rawResult } of results) {
     variants[platform] = text
-    if (platform === 'linkedin' || platform === 'facebook') {
+    if (rawResult && typeof rawResult === 'object') {
       const { variants: _, ...extra } = rawResult as any
       mergedExtra = { ...mergedExtra, ...extra }
     }
