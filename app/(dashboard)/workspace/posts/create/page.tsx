@@ -725,84 +725,8 @@ export default function CreatePage() {
         </div>
       )}
 
-      {/* ── Mode manuel ────────────────────────────────────────────────── */}
-      {mode === 'manual' && (
-        <div style={{ maxWidth: '480px' }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1.5rem' }}>
-            <button
-              onClick={() => setMode('ai')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '6px', transition: '.12s' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--t1)'; e.currentTarget.style.background = 'var(--s2)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.background = 'none' }}
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.15rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em' }}>
-              Créer manuellement
-            </h1>
-          </div>
-
-          {/* Plateformes */}
-          <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'var(--t2)', marginBottom: '.75rem' }}>
-              Plateformes
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.45rem', marginBottom: '1.25rem' }}>
-              {((isPro ? ['linkedin', 'instagram', 'twitter', 'facebook', 'tiktok'] : ['facebook', 'instagram']) as Platform[]).map(p => {
-                const isSelected = selectedPlatforms.includes(p)
-                return (
-                  <button
-                    key={p}
-                    onClick={() => setSelectedPlatforms(prev =>
-                      prev.includes(p)
-                        ? prev.length > 1 ? prev.filter(x => x !== p) : prev
-                        : [...prev, p]
-                    )}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '.4rem',
-                      padding: '.35rem .75rem', borderRadius: '8px', fontSize: '.8rem', fontWeight: 500,
-                      border: `1px solid ${isSelected ? PLATFORM_COLORS[p] + '60' : 'var(--b1)'}`,
-                      background: isSelected ? PLATFORM_COLORS[p] + '12' : 'transparent',
-                      color: isSelected ? PLATFORM_COLORS[p] : 'var(--t2)',
-                      cursor: 'pointer', transition: '.12s',
-                    }}
-                  >
-                    <PlatformIcon platform={p} size={14} />
-                    {PLATFORM_NAMES[p]}
-                  </button>
-                )
-              })}
-            </div>
-            <p style={{ fontSize: '.73rem', color: 'var(--t3)', marginBottom: '1rem', lineHeight: 1.5 }}>
-              Vous rédigerez votre contenu directement dans l&apos;éditeur — une carte par plateforme.
-            </p>
-            <button
-              onClick={() => {
-                if (!selectedPlatforms.length) { toast('Sélectionnez au moins une plateforme', 'error'); return }
-                const variants: Partial<Record<string, string>> = {}
-                for (const p of selectedPlatforms) variants[p] = ''
-                try {
-                  sessionStorage.setItem('social_ia_results', JSON.stringify({
-                    variants, platforms: selectedPlatforms,
-                    objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true,
-                    pageTitle: 'Créer un post',
-                    allowPlatformToggle: true,
-                  }))
-                } catch {}
-                router.push('/workspace/posts/results')
-              }}
-              className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.7rem' }}
-            >
-              <Send size={14} /> Ouvrir l&apos;éditeur
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Mode IA ────────────────────────────────────────────────────── */}
-      {mode === 'ai' && (
+      {/* ── Mode de création (AI ou Manuel) ── */}
+      {(mode === 'ai' || mode === 'manual') && (
         <div className="flex flex-col md:flex-row gap-4 md:gap-[2rem] flex-1 min-h-0 overflow-hidden pb-8 md:pb-0">
 
           {/* ── Modal connexion requise ── */}
@@ -845,26 +769,32 @@ export default function CreatePage() {
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <div style={{ minWidth: 0 }}>
+                 <div style={{ minWidth: 0 }}>
                   <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.02em', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    Générer un post
+                    {mode === 'ai' ? 'Générer un post' : 'Créer manuellement'}
                   </h1>
-                  <p style={{ color: 'var(--t3)', fontSize: '.8rem', margin: '0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Générez du contenu engageant avec l'IA</p>
+                  <p style={{ color: 'var(--t3)', fontSize: '.8rem', margin: '0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {mode === 'ai' ? "Générez du contenu engageant avec l'IA" : 'Rédigez et publiez votre propre contenu'}
+                  </p>
                 </div>
               </div>
 
-              <button
-                onClick={handleFetchIdeas}
-                className="whitespace-nowrap flex-shrink-0"
-                style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.4rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', fontSize: '.8rem', cursor: 'pointer', transition: '.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-              >
-                <Lightbulb size={14} /> <span className="hidden sm:inline">Trouver une idée</span>
-              </button>
+              {mode === 'ai' && (
+                <button
+                  onClick={handleFetchIdeas}
+                  className="whitespace-nowrap flex-shrink-0"
+                  style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.4rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'transparent', color: 'var(--t2)', fontSize: '.8rem', cursor: 'pointer', transition: '.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  <Lightbulb size={14} /> <span className="hidden sm:inline">Trouver une idée</span>
+                </button>
+              )}
             </div>
 
-            <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>Sujet</div>
+            <div style={{ marginBottom: '.5rem', fontSize: '.9rem', color: 'var(--t1)' }}>
+              {mode === 'ai' ? 'Sujet' : 'Contenu'}
+            </div>
 
             <div style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
@@ -881,16 +811,18 @@ export default function CreatePage() {
 
               {/* Textarea */}
               <textarea
-                value={brief}
-                onChange={e => setBrief(e.target.value)}
-                placeholder="Décrivez votre idée, votre produit ou votre objectif..."
+                value={mode === 'ai' ? brief : manualContent}
+                onChange={e => mode === 'ai' ? setBrief(e.target.value) : setManualContent(e.target.value)}
+                placeholder={mode === 'ai' ? "Décrivez votre idée, votre produit ou votre objectif..." : "Écrivez votre post ici..."}
                 className="min-h-[140px] md:min-h-[300px]"
                 style={{ width: '100%', background: 'transparent', border: 'none', padding: '1rem', color: 'var(--t1)', fontSize: '.95rem', resize: 'vertical', outline: 'none' }}
               />
 
               {/* Footer */}
               <div style={{ padding: '.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{brief.length} / 2000 caractères</span>
+                <span style={{ fontSize: '.75rem', color: 'var(--t3)' }}>
+                  {(mode === 'ai' ? brief : manualContent).length} / 2000 caractères
+                </span>
               </div>
             </div>
 
@@ -905,19 +837,26 @@ export default function CreatePage() {
                 >
                   <Layers size={18} /> Plateforme
                 </button>
-                <button 
-                  onClick={() => setMobileModal('parametres')}
-                  style={{ flex: 1, height: '54px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--t1)', fontSize: '.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <Settings2 size={18} /> Paramètres
-                </button>
+                {mode === 'ai' && (
+                  <button 
+                    onClick={() => setMobileModal('parametres')}
+                    style={{ flex: 1, height: '54px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--t1)', fontSize: '.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <Settings2 size={18} /> Paramètres
+                  </button>
+                )}
               </div>
 
-              {/* Bouton Générer principal */}
               <div className="flex justify-end w-full">
-                <button onClick={handleGenerate} className="w-full md:w-auto flex items-center justify-center" style={{ background: 'var(--accent)', color: '#fff', height: '56px', padding: '0 2rem', fontSize: '1.05rem', fontWeight: 600, borderRadius: '12px' }}>
-                  <Sparkles size={20} style={{ marginRight: '8px' }} /> Générer le post
-                </button>
+                {mode === 'ai' ? (
+                  <button onClick={handleGenerate} className="w-full md:w-auto flex items-center justify-center" style={{ background: 'var(--accent)', color: '#fff', height: '56px', padding: '0 2rem', fontSize: '1.05rem', fontWeight: 600, borderRadius: '12px' }}>
+                    <Sparkles size={20} style={{ marginRight: '8px' }} /> Générer le post
+                  </button>
+                ) : (
+                  <button onClick={handleManualSubmit} className="w-full md:w-auto flex items-center justify-center" style={{ background: 'var(--accent)', color: '#fff', height: '56px', padding: '0 2rem', fontSize: '1.05rem', fontWeight: 600, borderRadius: '12px' }}>
+                    <Send size={20} style={{ marginRight: '8px' }} /> Rédiger le post
+                  </button>
+                )}
               </div>
 
             </div>
@@ -939,25 +878,28 @@ export default function CreatePage() {
               <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: '0 0 .25rem 0' }}>Plateforme</h3>
               <p style={{ fontSize: '.75rem', color: 'var(--t3)', margin: '0 0 1.25rem 0' }}>Choisissez où publier votre contenu</p>
 
-              <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.25rem' }}>
-                <button
-                  onClick={() => setDistributionMode('unified')}
-                  style={{ flex: 1, padding: '.5rem', background: 'none', border: 'none', borderBottom: distributionMode === 'unified' ? '2px solid var(--accent)' : '2px solid transparent', color: distributionMode === 'unified' ? 'var(--accent)' : 'var(--t3)', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', transition: '.2s' }}
-                >
-                  Unifier
-                </button>
-                <button
-                  onClick={() => setDistributionMode('custom')}
-                  style={{ flex: 1, padding: '.5rem', background: 'none', border: 'none', borderBottom: distributionMode === 'custom' ? '2px solid var(--accent)' : '2px solid transparent', color: distributionMode === 'custom' ? 'var(--accent)' : 'var(--t3)', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', transition: '.2s' }}
-                >
-                  Séparer
-                </button>
-              </div>
+              {/* Toggle Unifier/Séparer : Seulement en mode IA */}
+              {mode === 'ai' && (
+                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.25rem' }}>
+                  <button
+                    onClick={() => setDistributionMode('unified')}
+                    style={{ flex: 1, padding: '.5rem', background: 'none', border: 'none', borderBottom: distributionMode === 'unified' ? '2px solid var(--accent)' : '2px solid transparent', color: distributionMode === 'unified' ? 'var(--accent)' : 'var(--t3)', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', transition: '.2s' }}
+                  >
+                    Unifier
+                  </button>
+                  <button
+                    onClick={() => setDistributionMode('custom')}
+                    style={{ flex: 1, padding: '.5rem', background: 'none', border: 'none', borderBottom: distributionMode === 'custom' ? '2px solid var(--accent)' : '2px solid transparent', color: distributionMode === 'custom' ? 'var(--accent)' : 'var(--t3)', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', transition: '.2s' }}
+                  >
+                    Séparer
+                  </button>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
                 {((isPro ? ['linkedin', 'instagram', 'twitter', 'facebook', 'tiktok'] : ['facebook', 'instagram']) as Platform[]).map(p => {
                   const isSel = selectedPlatforms.includes(p)
-                  const isPriority = distributionMode === 'unified' && selectedPlatforms[0] === p
+                  const isPriority = mode === 'ai' && distributionMode === 'unified' && selectedPlatforms[0] === p
 
                   return (
                     <label key={p} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '.5rem', borderRadius: '8px', background: 'transparent', transition: '.2s' }}>
@@ -1001,64 +943,66 @@ export default function CreatePage() {
             </div>
 
             {/* Block Paramètres */}
-            <div className={mobileModal === 'plateforme' ? 'hidden' : 'block'} style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', marginBottom: mobileModal ? '2rem' : '0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.25rem' }}>
-                <Settings2 size={16} color="var(--t2)" />
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>Paramètres</h3>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Ton du contenu</label>
-                  <select
-                    value={params.tone}
-                    onChange={e => setParams({ ...params, tone: e.target.value as PostTone })}
-                    style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
-                  >
-                    <option value="direct">Direct</option>
-                    <option value="inspirant">Inspirant</option>
-                    <option value="emotionnel">Émotionnel</option>
-                    <option value="humoristique">Humoristique</option>
-                    <option value="professionnel">Professionnel</option>
-                  </select>
+            {mode === 'ai' && (
+              <div className={mobileModal === 'plateforme' ? 'hidden' : 'block'} style={{ background: 'var(--card)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', marginBottom: mobileModal ? '2rem' : '0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.25rem' }}>
+                  <Settings2 size={16} color="var(--t2)" />
+                  <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>Paramètres</h3>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Longueur</label>
-                  <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
-                    {(['court', 'moyen', 'long'] as const).map(l => (
-                      <button
-                        key={l}
-                        onClick={() => setParams({ ...params, length: l })}
-                        style={{
-                          flex: 1, padding: '.5rem', border: 'none',
-                          background: params.length === l ? 'var(--accent)' : 'transparent',
-                          color: params.length === l ? '#fff' : 'var(--t3)',
-                          fontSize: '.8rem', fontWeight: 500, cursor: 'pointer', transition: '.2s'
-                        }}
-                      >
-                        {l === 'court' ? 'Court' : l === 'moyen' ? 'Moyen' : 'Long'}
-                      </button>
-                    ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Ton du contenu</label>
+                    <select
+                      value={params.tone}
+                      onChange={e => setParams({ ...params, tone: e.target.value as PostTone })}
+                      style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="direct">Direct</option>
+                      <option value="inspirant">Inspirant</option>
+                      <option value="emotionnel">Émotionnel</option>
+                      <option value="humoristique">Humoristique</option>
+                      <option value="professionnel">Professionnel</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Longueur</label>
+                    <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', overflow: 'hidden' }}>
+                      {(['court', 'moyen', 'long'] as const).map(l => (
+                        <button
+                          key={l}
+                          onClick={() => setParams({ ...params, length: l })}
+                          style={{
+                            flex: 1, padding: '.5rem', border: 'none',
+                            background: params.length === l ? 'var(--accent)' : 'transparent',
+                            color: params.length === l ? '#fff' : 'var(--t3)',
+                            fontSize: '.8rem', fontWeight: 500, cursor: 'pointer', transition: '.2s'
+                          }}
+                        >
+                          {l === 'court' ? 'Court' : l === 'moyen' ? 'Moyen' : 'Long'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Type de post</label>
+                    <select
+                      value={params.post_type}
+                      onChange={e => setParams({ ...params, post_type: e.target.value as LinkedInPostType })}
+                      style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="storytelling">Storytelling</option>
+                      <option value="analyse">Analyse</option>
+                      <option value="conseil">Conseil</option>
+                      <option value="liste">Liste</option>
+                      <option value="profil">Profil</option>
+                    </select>
                   </div>
                 </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '.75rem', color: 'var(--t3)', marginBottom: '.5rem' }}>Type de post</label>
-                  <select
-                    value={params.post_type}
-                    onChange={e => setParams({ ...params, post_type: e.target.value as LinkedInPostType })}
-                    style={{ width: '100%', padding: '.6rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--t1)', fontSize: '.85rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}
-                  >
-                    <option value="storytelling">Storytelling</option>
-                    <option value="analyse">Analyse</option>
-                    <option value="conseil">Conseil</option>
-                    <option value="liste">Liste</option>
-                    <option value="profil">Profil</option>
-                  </select>
-                </div>
               </div>
-            </div>
+            )}
 
           </div>
 
