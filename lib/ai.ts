@@ -3,13 +3,13 @@ import OpenAI from 'openai' // utilisé pour GitHub Models (GPT-4o-mini)
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { GenerateRequest, GenerateResponse, Platform, Plan, GenerateIdeasRequest, GenerateIdeasResponse, GenerateBriefRequest, GenerateBriefResponse } from '@/types'
 import { TONE_DEFINITIONS } from './tones'
-import { buildFacebookPrompt } from './facebook'
-import { buildLinkedinPrompt } from './linkedin'
+import { buildFacebookPrompt } from './facebook-prompt'
+import { buildLinkedinPrompt } from './linkedin-prompt'
 import { buildInstagramPrompt } from './instagram-prompt'
-import { buildTwitterPrompt } from './twitter'
-import { buildTiktokPrompt } from './tiktok'
-import { buildYoutubePrompt } from './youtube'
-import { buildPinterestPrompt } from './pinterest'
+import { buildTwitterPrompt } from './twitter-prompt'
+import { buildTiktokPrompt } from './tiktok-prompt'
+import { buildYoutubePrompt } from './youtube-prompt'
+import { buildPinterestPrompt } from './pinterest-prompt'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
