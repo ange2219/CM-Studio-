@@ -151,12 +151,12 @@ function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
       ? `CORPS (EXCEPTION TYPE "CONSEIL") :
 Présente tes astuces/étapes sous forme de liste simple numérotée (1., 2., 3.) ou avec des flèches (→).
 Chaque point de la liste DOIT être développé avec 2 à 3 phrases minimum. Jamais un seul mot ou une seule phrase sèche.
-Intègre les statistiques trouvées naturellement dans le texte.
+Les statistiques, chiffres ou données ne doivent être inclus QUE si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché). Ne jamais forcer une statistique dans un post qui n'en a pas besoin (ex: post narratif, opinion, retour d'expérience personnelle, annonce). Si aucune donnée fiable n'est disponible ou pertinente, ne pas en inventer ni en insérer artificiellement.
 Saut de ligne après chaque point développé.`
       : `CORPS :
 1 à 3 idées clés développées — un paragraphe par idée.
 Chaque idée a minimum 3 à 4 phrases de développement concret.
-Intègre les statistiques trouvées naturellement dans le texte.
+Les statistiques, chiffres ou données ne doivent être inclus QUE si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché). Ne jamais forcer une statistique dans un post qui n'en a pas besoin (ex: post narratif, opinion, retour d'expérience personnelle, annonce). Si aucune donnée fiable n'est disponible ou pertinente, ne pas en inventer ni en insérer artificiellement.
 Saut de ligne après chaque idée forte.
 Jamais de paragraphes de plus de 3 lignes.`
 
@@ -178,10 +178,8 @@ CONTEXTE DE LA MARQUE :
 - Mots/sujets à éviter : ${req.brand_avoid || 'Aucun'}
 
 ÉTAPE 1 — RECHERCHE
-Avant de générer, recherche 1 à 2 statistiques récentes et vérifiées sur le sujet du brief.
-Retiens uniquement celles qui sont surprenantes ou contre-intuitives.
-Intègre-les naturellement dans le corps du post — jamais en liste, toujours comme une révélation dans le texte.
-Si aucune statistique pertinente n'est trouvée, continue sans.
+Avant de générer, si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché), recherche 1 à 2 statistiques récentes et vérifiées sur le sujet du brief.
+Les statistiques, chiffres ou données ne doivent être inclus QUE si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché). Ne jamais forcer une statistique dans un post qui n'en a pas besoin (ex: post narratif, opinion, retour d'expérience personnelle, annonce). Si aucune donnée fiable n'est disponible ou pertinente, ne pas en inventer ni en insérer artificiellement.
 
 ÉTAPE 2 — STRUCTURE DU POST
 Le post suit 4 sections dans cet ordre strict :
@@ -227,7 +225,7 @@ Ces formules sont interdites :
 Avant de sortir le résultat, vérifie que tu as bien respecté chaque étape dans l'ordre :
 - Le hook fait moins de 200 caractères et suit le ton défini
 - Le corps développe suffisamment chaque idée (minimum 3 phrases) ou chaque astuce (minimum 2 à 3 phrases)
-- La statistique est intégrée naturellement
+- Si des statistiques ou des chiffres sont inclus, ils ne sont pas artificiels ou inventés, et ne sont présents que si le sujet s'y prêtait
 - La conclusion n'est pas moralisatrice
 - Le CTA est spécifique et provoque une réaction
 - Aucune formule interdite n'est présente
