@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { PWAInstall } from '@/components/PWAInstall'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: 'CM Studio — Assistant community manager',
@@ -47,6 +48,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-RKJYNVRWPH"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-RKJYNVRWPH');
+          `}
+        </Script>
       </head>
       <body>
         {children}
