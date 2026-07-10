@@ -53,13 +53,13 @@
 
 [data-theme="dark"] {
   /* Premium Dark Mode respecting the minimal philosophy */
-  --bg: #09090B;
+  --bg: #07191E; /* Deep Onyx */
   --white: #ffffff;
-  --accent: #10B981; /* Lighter green for dark mode visibility */
-  --accent-secondary: #34D399;
-  --accent-light: rgba(16, 185, 129, 0.15);
+  --accent: #02F5A1; /* Spring Green */
+  --accent-secondary: #2bf9b4;
+  --accent-light: rgba(2, 245, 161, 0.12);
   --teal: #22D3EE;
-  --green: #34D399;
+  --green: #02F5A1;
   --orange: #FBBF24;
   --red: #F87171;
   --gold: #FBBF24;
@@ -68,13 +68,13 @@
   --text2: #9CA3AF;
   --text3: #6B7280;
   
-  --border: rgba(255, 255, 255, 0.08);
-  --sidebar-bg: #121214;
-  --nav-bg: #121214;
-  --card-bg: #121214;
-  --table-head: rgba(255, 255, 255, 0.03);
-  --row-hover: rgba(255, 255, 255, 0.05);
-  --input-bg: rgba(255, 255, 255, 0.04);
+  --border: rgba(2, 245, 161, 0.1); /* Subtle green tint border */
+  --sidebar-bg: #0d242a; /* Slightly lighter onyx for card depth */
+  --nav-bg: #0d242a;
+  --card-bg: #0d242a;
+  --table-head: rgba(2, 245, 161, 0.04);
+  --row-hover: rgba(2, 245, 161, 0.06);
+  --input-bg: rgba(2, 245, 161, 0.03);
   --shadow: rgba(0, 0, 0, 0.6);
 
   --t1: var(--text);
@@ -85,9 +85,9 @@
   --s2: var(--input-bg);
   --s3: var(--table-head);
   --b1: var(--border);
-  --b2: rgba(255, 255, 255, 0.12);
-  --accent-hover: #059669;
-  --accent-rgb: 16 185 129;
+  --b2: rgba(2, 245, 161, 0.18);
+  --accent-hover: #00d98c;
+  --accent-rgb: 2 245 161;
 
   --blue: var(--accent);
   --blue-light: var(--accent-light);
