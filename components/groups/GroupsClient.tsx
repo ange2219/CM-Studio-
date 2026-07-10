@@ -152,7 +152,7 @@ export default function GroupsClient({
             <div style={{
               width: `${progressPercent}%`,
               height: '100%',
-              background: 'linear-gradient(90deg, var(--accent) 0%, #10b981 100%)',
+              background: 'linear-gradient(90deg, var(--accent) 0%, var(--accent-secondary) 100%)',
               borderRadius: 999,
               transition: 'width 0.4s ease',
             }} />
