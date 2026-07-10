@@ -3,6 +3,7 @@ import OpenAI from 'openai' // utilisé pour GitHub Models (GPT-4o-mini)
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { GenerateRequest, GenerateResponse, Platform, Plan, GenerateIdeasRequest, GenerateIdeasResponse, GenerateBriefRequest, GenerateBriefResponse } from '@/types'
 import { TONE_DEFINITIONS } from './tones'
+import { buildFacebookPrompt } from './facebook'
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ const PLATFORM_CONSTRAINTS: Record<Platform, string> = {
 const PLATFORM_SYSTEM_PROMPTS: Record<Platform, string> = {
   linkedin:  'Tu es un expert en contenu LinkedIn viral qui écrit exclusivement en français.',
   instagram: 'Tu es un expert Instagram. Génère un post performant.',
-  facebook:  'Tu es un expert Facebook. Génère un post performant.',
+  facebook:  'Tu es un community manager expert spécialisé dans la création de contenu Facebook pour le marché ouest-africain francophone.',
   twitter:   'Tu es un expert Twitter/X. Génère un post performant.',
   tiktok:    'Tu es un expert TikTok. Génère un script de post performant.',
   youtube:   'Tu es un expert YouTube. Génère une description de vidéo performante.',
@@ -143,6 +144,9 @@ function buildBrandContext(req: GenerateRequest): string {
 }
 
 function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
+  if (targetPlatform === 'facebook') {
+    return buildFacebookPrompt(req)
+  }
   if (targetPlatform === 'linkedin') {
     const toneDef = req.tone ? TONE_INSTRUCTIONS[req.tone] : 'Non spécifié'
     const isConseil = req.post_type === 'conseil'
@@ -350,10 +354,10 @@ async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platfor
 
   const text = response.choices[0]?.message?.content || '{}'
   const parsed = JSON.parse(text)
-  if (targetPlatform === 'linkedin' && parsed.post) {
+  if ((targetPlatform === 'linkedin' || targetPlatform === 'facebook') && parsed.post) {
     return {
       variants: {
-        linkedin: parsed.post
+        [targetPlatform]: parsed.post
       },
       ...parsed
     } as any
@@ -374,10 +378,10 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
   const parsed = JSON.parse(text.trim())
-  if (targetPlatform === 'linkedin' && parsed.post) {
+  if ((targetPlatform === 'linkedin' || targetPlatform === 'facebook') && parsed.post) {
     return {
       variants: {
-        linkedin: parsed.post
+        [targetPlatform]: parsed.post
       },
       ...parsed
     } as any
@@ -397,6 +401,40 @@ async function generateWithGeminiSearch(req: GenerateRequest, targetPlatform: Pl
     model: 'gemini-1.5-pro',
     // @ts-expect-error - tools est supporté pour le grounding Google Search dans le SDK Node.js
     tools: [{ googleSearch: {} }],
+  })
+  
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+    }
+  })
+  
+  const text = result.response.text()
+  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
+  const parsed = JSON.parse(cleaned)
+  
+  if (parsed.post) {
+    return {
+      variants: {
+        [targetPlatform]: parsed.post
+      },
+      ...parsed
+    } as any
+  }
+  return parsed as GenerateResponse
+}
+
+// ─── Génération via Gemini sans Recherche Web (Grounding désactivé) ──────────
+
+async function generateWithGeminiNoSearch(req: GenerateRequest, targetPlatform: Platform): Promise<GenerateResponse> {
+  if (!gemini) {
+    throw new Error('GEMINI_API_KEY non configurée.')
+  }
+  const prompt = buildPrompt(req, targetPlatform)
+  
+  const model = gemini.getGenerativeModel({
+    model: 'gemini-1.5-flash',
   })
   
   const result = await model.generateContent({
@@ -535,6 +573,29 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
   const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
 
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
+    if (targetPlatform === 'linkedin' && gemini) {
+      try {
+        return await generateWithGeminiSearch(req, 'linkedin')
+      } catch (err) {
+        console.error('[ai/generatePosts] Gemini search for LinkedIn failed, falling back:', err)
+      }
+    }
+
+    if (targetPlatform === 'facebook' && gemini) {
+      const isFactual = req.post_type?.toLowerCase().includes('actualit') ||
+                        req.post_type?.toLowerCase().includes('factuel') ||
+                        req.post_type?.toLowerCase().includes('news')
+      try {
+        if (isFactual) {
+          return await generateWithGeminiSearch(req, 'facebook')
+        } else {
+          return await generateWithGeminiNoSearch(req, 'facebook')
+        }
+      } catch (err) {
+        console.error('[ai/generatePosts] Gemini for Facebook failed, falling back:', err)
+      }
+    }
+
     try {
       return await generateWithGitHub(req, targetPlatform)
     } catch (err) {
@@ -573,7 +634,7 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
   let mergedExtra: Record<string, any> = {}
   for (const { platform, text, rawResult } of results) {
     variants[platform] = text
-    if (platform === 'linkedin') {
+    if (platform === 'linkedin' || platform === 'facebook') {
       const { variants: _, ...extra } = rawResult as any
       mergedExtra = { ...mergedExtra, ...extra }
     }
