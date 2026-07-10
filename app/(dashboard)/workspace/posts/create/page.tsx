@@ -442,7 +442,8 @@ export default function CreatePage() {
   }
 
   async function handleGenerate() {
-    if (!selectedPlatforms.length) { toast('Veuillez choisir au moins une plateforme avant de générer.', 'warning'); return }
+    if (!brief.trim()) { toast('Veuillez saisir un sujet ou une idée de post avant de générer.', 'error'); return }
+    if (!selectedPlatforms.length) { toast('Veuillez choisir au moins une plateforme avant de générer.', 'error'); return }
     await runOverlay(STEPS_SINGLE, async () => {
       const res = await fetch('/api/ai/generate', {
         method: 'POST',
