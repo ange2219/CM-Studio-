@@ -1047,12 +1047,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               <div 
                 onClick={() => {
                   setCreateModalOpen(false)
-                  try {
-                    sessionStorage.setItem('social_ia_results', JSON.stringify({
-                      variants: { facebook: '' }, platforms: ['facebook'], objective: null, quotaUsed: 0, quotaLimit: 'unlimited', isPro: true, pageTitle: 'Créer un post', allowPlatformToggle: true
-                    }))
-                  } catch {}
-                  router.push('/workspace/posts/results')
+                  router.push('/workspace/posts/create?mode=manual')
                 }}
                 style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
