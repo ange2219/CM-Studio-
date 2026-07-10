@@ -200,7 +200,7 @@ export default function ResultsPage() {
         const content = data.variants[data.platforms[0]] || ''
         await saveUnifiedPost(content, null, 'draft')
       } else {
-        const remaining = data.platforms.filter(p => !!data.variants[p] && !actedPlatforms.has(p))
+        const remaining = data.platforms.filter(p => typeof data.variants[p] !== 'undefined' && !actedPlatforms.has(p))
         await Promise.all(
           remaining.map(p => savePost(p, data.variants[p]!, null, 'draft'))
         )
@@ -304,7 +304,7 @@ export default function ResultsPage() {
       </div>
 
       <GeneratedPostsView
-        platforms={data.platforms.filter(p => !!data.variants[p] && !actedPlatforms.has(p))}
+        platforms={data.platforms.filter(p => typeof data.variants[p] !== 'undefined' && !actedPlatforms.has(p))}
         variants={data.variants}
         objective={data.objective}
         quotaUsed={data.quotaUsed}
