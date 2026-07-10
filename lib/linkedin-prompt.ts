@@ -9,12 +9,10 @@ export function buildLinkedinPrompt(req: GenerateRequest): string {
     ? `CORPS (EXCEPTION TYPE "CONSEIL") :
 Présente tes astuces/étapes sous forme de liste simple numérotée (1., 2., 3.) ou avec des flèches (→).
 Chaque point de la liste DOIT être développé avec 2 à 3 phrases minimum. Jamais un seul mot ou une seule phrase sèche.
-Les statistiques, chiffres ou données ne doivent être inclus QUE si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché). Ne jamais forcer une statistique dans un post qui n'en a pas besoin (ex: post narratif, opinion, retour d'expérience personnelle, annonce). Si aucune donnée fiable n'est disponible ou pertinente, ne pas en inventer ni en insérer artificiellement.
 Saut de ligne après chaque point développé.`
     : `CORPS :
 1 à 3 idées clés développées — un paragraphe par idée.
 Chaque idée a minimum 3 à 4 phrases de développement concret.
-Les statistiques, chiffres ou données ne doivent être inclus QUE si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché). Ne jamais forcer une statistique dans un post qui n'en a pas besoin (ex: post narratif, opinion, retour d'expérience personnelle, annonce). Si aucune donnée fiable n'est disponible ou pertinente, ne pas en inventer ni en insérer artificiellement.
 Saut de ligne après chaque idée forte.
 Jamais de paragraphes de plus de 3 lignes.`
 
@@ -35,9 +33,13 @@ CONTEXTE DE LA MARQUE :
 - Longueur : ${req.length || 'Non spécifié'}
 - Mots/sujets à éviter : ${req.brand_avoid || 'Aucun'}
 
-ÉTAPE 1 — RECHERCHE
-Avant de générer, si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché), recherche 1 à 2 statistiques récentes et vérifiées sur le sujet du brief.
-Les statistiques, chiffres ou données ne doivent être inclus QUE si le sujet du post s'y prête naturellement (ex: post de type analyse, résultat, tendance de marché). Ne jamais forcer une statistique dans un post qui n'en a pas besoin (ex: post narratif, opinion, retour d'expérience personnelle, annonce). Si aucune donnée fiable n'est disponible ou pertinente, ne pas en inventer ni en insérer artificiellement.
+ÉTAPE 1 — RECHERCHE (CONDITIONNELLE)
+Une statistique, un chiffre ou une donnée ne doit apparaître dans le post QUE si le sujet 
+s'y prête structurellement (analyse, résultat, tendance de marché, comparaison chiffrée).
+Pour tout autre type de sujet (narratif, opinion, retour d'expérience, annonce), ne recherche 
+et n'inclus aucune donnée chiffrée — un post sans statistique est un résultat parfaitement 
+valide et souvent préférable.
+Si tu inclus une statistique, elle doit être vérifiable et récente. Ne jamais en inventer.
 
 ÉTAPE 2 — STRUCTURE DU POST
 Le post suit 4 sections dans cet ordre strict :
@@ -95,7 +97,7 @@ Si un point n'est pas respecté, réécris le post avant de sortir.
 Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
 {
   "type_detecte": "${req.post_type || 'Non spécifié'}",
-  "statistiques_trouvees": ["...", "..."],
+  "statistiques_trouvees": [],
   "post": "Le texte du post final, rédigé en suivant scrupuleusement les étapes ci-dessus.",
   "image_prompt": "... (en anglais, description photographique réaliste et détaillée, visuelle et percutante, adaptée au contenu du post, pour génération d'image IA)"
 }
