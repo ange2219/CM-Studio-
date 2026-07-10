@@ -604,13 +604,19 @@ export default function PublicProfileClient({
                   style={{ display: 'none' }} 
                   onChange={e => {
                     const f = e.target.files?.[0]
-                    if (f) handleAvatarUpload(f)
+                    if (f) {
+                      if (f.size > 5 * 1024 * 1024) {
+                        alert("L'image ne doit pas dépasser 5 Mo.")
+                        return
+                      }
+                      handleAvatarUpload(f)
+                    }
                   }}
                   disabled={uploading}
                 />
               </label>
               <span style={{ fontSize: '0.72rem', color: 'var(--t3)' }}>
-                {uploading ? 'Envoi...' : 'Cliquez pour modifier la photo'}
+                {uploading ? 'Envoi...' : 'Cliquez pour modifier la photo (Max 5 Mo)'}
               </span>
             </div>
 
