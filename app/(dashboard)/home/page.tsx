@@ -103,7 +103,7 @@ export default function HomePage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'var(--accent)', fontWeight: 700
         }}>
-          {user?.avatar_url ? (
+          {user?.avatar_url && user.avatar_url.trim() !== '' ? (
             <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <User size={22} strokeWidth={1.5} color="var(--accent)" />

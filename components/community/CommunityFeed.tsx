@@ -421,7 +421,7 @@ export function CommunityFeed({
               flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden'
             }}>
-              {currentUser?.avatar_url ? (
+              {currentUser?.avatar_url && currentUser.avatar_url.trim() !== '' ? (
                 <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
               ) : (
                 <User size={20} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
@@ -484,7 +484,7 @@ export function CommunityFeed({
                   flexShrink: 0, overflow: 'hidden', textDecoration: 'none',
                   border: '2px solid rgba(var(--accent-rgb), 0.3)',
                 }}>
-                  {post.avatar_url
+                  {post.avatar_url && post.avatar_url.trim() !== ''
                     ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                     : <User size={22} strokeWidth={1.5} color="var(--accent)" />}
                 </Link>
@@ -656,7 +656,7 @@ export function CommunityFeed({
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                               <Link href={`/profile/${c.username || c.user_id}`} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                {c.avatar_url ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={16} strokeWidth={1.5} color="var(--accent)" />}
+                                {c.avatar_url && c.avatar_url.trim() !== '' ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={16} strokeWidth={1.5} color="var(--accent)" />}
                               </Link>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -684,7 +684,7 @@ export function CommunityFeed({
                               return (
                                 <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
                                   <Link href={`/profile/${r.username || r.user_id}`} style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                    {r.avatar_url ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={12} strokeWidth={1.5} color="var(--accent)" />}
+                                    {r.avatar_url && r.avatar_url.trim() !== '' ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={12} strokeWidth={1.5} color="var(--accent)" />}
                                   </Link>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>

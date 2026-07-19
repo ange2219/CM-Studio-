@@ -659,7 +659,7 @@ function SettingsContent() {
               <h3 style={{ fontSize: '.92rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--t1)' }}>Informations personnelles</h3>
               <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer', flexShrink: 0 }}>
-                  {avatarUrl
+                  {avatarUrl && avatarUrl.trim() !== ''
                     ? <img src={avatarUrl} alt="" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--b1)' }} />
                     : <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--b1)' }}><User size={28} strokeWidth={1.5} color="var(--t3)" /></div>
                   }
@@ -1536,7 +1536,7 @@ function AccountListItem({ platform, acc, onConnect, onDisconnect, onRename, isL
 
 function AvatarWithFallback({ avatarUrl, label, color }: { avatarUrl?: string | null; label: string; color: string }) {
   const [imgFailed, setImgFailed] = useState(false)
-  if (avatarUrl && !imgFailed) return <img src={avatarUrl} alt={label} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${color}40`, display: 'block' }} onError={() => setImgFailed(true)} />
+  if (avatarUrl && avatarUrl.trim() !== '' && !imgFailed) return <img src={avatarUrl} alt={label} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${color}40`, display: 'block' }} onError={() => setImgFailed(true)} />
   return (
     <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `${color}22`, border: `2px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <User size={22} strokeWidth={1.5} color={color} />

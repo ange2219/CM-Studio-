@@ -309,7 +309,7 @@ export function DashboardShell({ user: initialUser, children }: {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 overflow: 'hidden', flexShrink: 0,
               }}>
-                {user?.avatar_url
+                {user?.avatar_url && user.avatar_url.trim() !== ''
                   ? <Image src={user.avatar_url} width={34} height={34} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                   : <User size={18} strokeWidth={1.5} color="var(--accent)" />}
               </div>
@@ -333,7 +333,7 @@ export function DashboardShell({ user: initialUser, children }: {
               <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
                 <div className="dropdown-header">
                   <div className="av-large" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {user?.avatar_url
+                    {user?.avatar_url && user.avatar_url.trim() !== ''
                       ? <Image src={user.avatar_url} alt="" width={50} height={50} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <User size={28} strokeWidth={1.5} color="var(--accent)" />}
                   </div>

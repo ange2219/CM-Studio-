@@ -182,7 +182,7 @@ export default function PublicProfileClient({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: size * 0.35, fontWeight: 700, color: 'var(--accent)',
       }}>
-        {url
+        {url && url.trim() !== ''
           ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <User size={Math.round(size * 0.5)} strokeWidth={1.5} color="var(--t3)" />}
       </div>
@@ -219,7 +219,7 @@ export default function PublicProfileClient({
           fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}>
-          {avatarUrl ? (
+          {avatarUrl && avatarUrl.trim() !== '' ? (
             <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <User size={48} strokeWidth={1.5} color="var(--t3, #9ca3af)" />

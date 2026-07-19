@@ -23,7 +23,7 @@ function avatarColor(u: User) {
 }
 
 function Avatar({ user, size = 40 }: { user: User; size?: number }) {
-  if (user.avatar_url && !user.avatar_url.startsWith('/api/social')) {
+  if (user.avatar_url && user.avatar_url.trim() !== '' && !user.avatar_url.startsWith('/api/social')) {
     return <img src={user.avatar_url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   }
   return (
