@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Image as ImageIcon, Send, User } from 'lucide-react'
+import { X, Image as ImageIcon, Send } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 
 export function CreatePostModal({
   isOpen,
@@ -101,19 +102,13 @@ export function CreatePostModal({
 
         <div style={{ padding: '20px' }}>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{
-              width: '40px', height: '40px', borderRadius: '50%',
-              background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1rem', fontWeight: 700, color: 'var(--accent)',
-              overflow: 'hidden'
-            }}>
-              {currentUser?.avatar_url ? (
-                <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-              ) : (
-                <User size={22} strokeWidth={1.5} color="var(--accent)" />
-              )}
-            </div>
+            <UserAvatar
+              avatarUrl={currentUser?.avatar_url}
+              size={40}
+              accentBg
+              fallbackColor="var(--accent)"
+              iconSize={22}
+            />
             <textarea
               value={newPostContent}
               onChange={e => setNewPostContent(e.target.value)}

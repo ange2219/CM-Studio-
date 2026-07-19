@@ -11,6 +11,7 @@ import {
   IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest,
 } from '@/components/icons/BrandIcons'
 import { Send, Save, Clock, X, Image as ImageIcon, RotateCcw, Hash, ChevronDown, ChevronRight, Check, User } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 
 // ─── Platform icon ────────────────────────────────────────────────────────────
 
@@ -484,18 +485,12 @@ function PostPlatformCard({
         const avatarUrl   = platformAccount?.platform_avatar_url || null
         return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.6rem .75rem .3rem' }}>
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-        ) : (
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-            background: 'var(--s2, #e5e7eb)',
-            border: '1px solid var(--b1, #e5e7eb)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <User size={20} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
-          </div>
-        )}
+        <UserAvatar
+          avatarUrl={avatarUrl}
+          size={36}
+          fallbackColor="var(--t3)"
+          iconSize={20}
+        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '.83rem', fontWeight: 600, color: 'var(--t1)' }}>{displayName}</div>
           {objective && (
