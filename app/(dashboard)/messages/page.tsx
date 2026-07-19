@@ -23,12 +23,18 @@ function avatarColor(u: User) {
 }
 
 function Avatar({ user, size = 40 }: { user: User; size?: number }) {
-  if (user.avatar_url && user.avatar_url.trim() !== '' && !user.avatar_url.startsWith('/api/social')) {
-    return <img src={user.avatar_url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-  }
+  const iconSize = Math.round(size * 0.55)
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      <UserIcon size={Math.round(size * 0.55)} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+    <div style={{ position: 'relative', width: size, height: size, borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+      <UserIcon size={iconSize} strokeWidth={1.5} color="var(--t3, #9ca3af)" style={{ position: 'absolute', zIndex: 1 }} />
+      {user.avatar_url && user.avatar_url.trim() !== '' && !user.avatar_url.startsWith('/api/social') && (
+        <img
+          src={user.avatar_url}
+          alt=""
+          style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
+      )}
     </div>
   )
 }

@@ -49,12 +49,16 @@ export function CommunityPreview({ topPosts }: { topPosts: any[] }) {
               alignItems: 'center', justifyContent: 'center',
               fontWeight: 600, color: color, flexShrink: 0,
               border: '1px solid var(--b1)',
-              overflow: 'hidden'
+              overflow: 'hidden', position: 'relative'
             }}>
-              {post.avatar_url && post.avatar_url.trim() !== '' ? (
-                <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-              ) : (
-                <User size={24} strokeWidth={1.5} color={color} />
+              <User size={24} strokeWidth={1.5} color={color} style={{ position: 'absolute', zIndex: 1 }} />
+              {post.avatar_url && post.avatar_url.trim() !== '' && (
+                <img
+                  src={post.avatar_url}
+                  style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+                  alt=""
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
               )}
             </div>
               <div className="sugg-info">

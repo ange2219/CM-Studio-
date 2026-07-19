@@ -180,11 +180,18 @@ export default function PublicProfileClient({
         background: 'rgba(var(--accent-rgb), 0.18)',
         flexShrink: 0, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: size * 0.35, fontWeight: 700, color: 'var(--accent)',
+        border: '1px solid var(--b1)',
+        position: 'relative'
       }}>
-        {url && url.trim() !== ''
-          ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <User size={Math.round(size * 0.5)} strokeWidth={1.5} color="var(--t3)" />}
+        <User size={Math.round(size * 0.5)} strokeWidth={1.5} color="var(--t3)" style={{ position: 'absolute', zIndex: 1 }} />
+        {url && url.trim() !== '' && (
+          <img
+            src={url}
+            alt=""
+            style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
+        )}
       </div>
     )
   }
@@ -219,10 +226,14 @@ export default function PublicProfileClient({
           fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)',
           boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}>
-          {avatarUrl && avatarUrl.trim() !== '' ? (
-            <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <User size={48} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+          <User size={48} strokeWidth={1.5} color="var(--t3, #9ca3af)" style={{ position: 'absolute', zIndex: 1 }} />
+          {avatarUrl && avatarUrl.trim() !== '' && (
+            <img
+              src={avatarUrl}
+              alt=""
+              style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
           )}
         </div>
 

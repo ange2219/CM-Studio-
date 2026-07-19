@@ -101,12 +101,16 @@ export default function HomePage() {
           overflow: 'hidden', flexShrink: 0,
           background: 'rgba(var(--accent-rgb), 0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--accent)', fontWeight: 700
+          color: 'var(--accent)', fontWeight: 700, position: 'relative'
         }}>
-          {user?.avatar_url && user.avatar_url.trim() !== '' ? (
-            <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <User size={22} strokeWidth={1.5} color="var(--accent)" />
+          <User size={22} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
+          {user?.avatar_url && user.avatar_url.trim() !== '' && (
+            <img
+              src={user.avatar_url}
+              alt=""
+              style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
           )}
         </div>
         <div style={{ flex: 1, color: 'var(--t3)', fontSize: '0.95rem' }}>

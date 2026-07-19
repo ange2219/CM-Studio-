@@ -419,12 +419,16 @@ export function CommunityFeed({
               width: '40px', height: '40px', borderRadius: '50%',
               background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)',
               flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden'
+              overflow: 'hidden', position: 'relative'
             }}>
-              {currentUser?.avatar_url && currentUser.avatar_url.trim() !== '' ? (
-                <img src={currentUser.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-              ) : (
-                <User size={20} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+              <User size={20} strokeWidth={1.5} color="var(--t3, #9ca3af)" style={{ position: 'absolute', zIndex: 1 }} />
+              {currentUser?.avatar_url && currentUser.avatar_url.trim() !== '' && (
+                <img
+                  src={currentUser.avatar_url}
+                  style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+                  alt=""
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
               )}
             </div>
             <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
@@ -483,10 +487,17 @@ export function CommunityFeed({
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0, overflow: 'hidden', textDecoration: 'none',
                   border: '2px solid rgba(var(--accent-rgb), 0.3)',
+                  position: 'relative'
                 }}>
-                  {post.avatar_url && post.avatar_url.trim() !== ''
-                    ? <img src={post.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                    : <User size={22} strokeWidth={1.5} color="var(--accent)" />}
+                  <User size={22} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
+                  {post.avatar_url && post.avatar_url.trim() !== '' && (
+                    <img
+                      src={post.avatar_url}
+                      style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+                      alt=""
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                  )}
                 </Link>
 
                 {/* Name + meta + Suivre */}
@@ -655,8 +666,16 @@ export function CommunityFeed({
                           <div key={c.id} id={`comment-container-${c.id}`} style={{ marginBottom: '12px' }}>
                             {/* Parent Comment */}
                             <div style={{ display: 'flex', gap: '12px' }}>
-                              <Link href={`/profile/${c.username || c.user_id}`} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                {c.avatar_url && c.avatar_url.trim() !== '' ? <img src={c.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={16} strokeWidth={1.5} color="var(--accent)" />}
+                              <Link href={`/profile/${c.username || c.user_id}`} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                                <User size={16} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
+                                {c.avatar_url && c.avatar_url.trim() !== '' && (
+                                  <img
+                                    src={c.avatar_url}
+                                    style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', zIndex: 2 }}
+                                    alt=""
+                                    onError={(e) => { e.currentTarget.style.display = 'none' }}
+                                  />
+                                )}
                               </Link>
                               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -683,8 +702,16 @@ export function CommunityFeed({
 
                               return (
                                 <div key={r.id} id={`comment-container-${r.id}`} style={{ display: 'flex', gap: '10px', marginTop: '12px', paddingLeft: '44px' }}>
-                                  <Link href={`/profile/${r.username || r.user_id}`} style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                    {r.avatar_url && r.avatar_url.trim() !== '' ? <img src={r.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <User size={12} strokeWidth={1.5} color="var(--accent)" />}
+                                  <Link href={`/profile/${r.username || r.user_id}`} style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(var(--accent-rgb), 0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                                    <User size={12} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
+                                    {r.avatar_url && r.avatar_url.trim() !== '' && (
+                                      <img
+                                        src={r.avatar_url}
+                                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', zIndex: 2 }}
+                                        alt=""
+                                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                                      />
+                                    )}
                                   </Link>
                                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ flex: 1 }}>

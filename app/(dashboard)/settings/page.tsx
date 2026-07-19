@@ -659,10 +659,17 @@ function SettingsContent() {
               <h3 style={{ fontSize: '.92rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--t1)' }}>Informations personnelles</h3>
               <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer', flexShrink: 0 }}>
-                  {avatarUrl && avatarUrl.trim() !== ''
-                    ? <img src={avatarUrl} alt="" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--b1)' }} />
-                    : <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--b1)' }}><User size={28} strokeWidth={1.5} color="var(--t3)" /></div>
-                  }
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--b1)', position: 'relative', overflow: 'hidden' }}>
+                    <User size={28} strokeWidth={1.5} color="var(--t3)" style={{ position: 'absolute', zIndex: 1 }} />
+                    {avatarUrl && avatarUrl.trim() !== '' && (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      />
+                    )}
+                  </div>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)', opacity: 0, transition: '.15s' }}
                     onMouseEnter={e => (e.currentTarget.style.opacity = '1')} onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
                     <Camera size={15} color="#fff" />
