@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { createProfile, getConnectUrl } from '@/lib/zernio'
 
 /**
@@ -20,10 +20,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/profile?error=missing_platform', req.url))
   }
 
+  // Récupère ou valide l'organisation active
+  let orgId: string
+  let activeOrg: any
+  try {
+    activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
   const admin = createAdminClient()
-  const { data: profile } = await admin
+  const { data: userProfile } = await admin
     .from('users')
-    .select('zernio_profile_id, full_name, email')
+    .select('full_name, email')
     .eq('id', user.id)
     .single()
 
@@ -33,17 +43,17 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    let profileId = (profile as any)?.zernio_profile_id as string | null | undefined
+    let profileId = activeOrg.organization?.zernio_profile_id as string | null | undefined
 
     if (!profileId) {
-      console.log('[social/start] Création profil Zernio pour', user.id)
-      profileId = await createProfile(user.id, (profile as any)?.full_name || (profile as any)?.email || user.id)
+      console.log('[social/start] Création profil Zernio pour l\'organisation', orgId)
+      profileId = await createProfile(orgId, activeOrg.organization?.name || userProfile?.full_name || userProfile?.email || orgId)
       console.log('[social/start] Profil Zernio créé:', profileId)
-      await admin.from('users').update({ zernio_profile_id: profileId } as any).eq('id', user.id)
+      await admin.from('organizations').update({ zernio_profile_id: profileId } as any).eq('id', orgId)
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
-    const redirectUrl = `${appUrl}/api/social/callback?platform=${platform}&userId=${user.id}`
+    const redirectUrl = `${appUrl}/api/social/callback?platform=${platform}&userId=${user.id}&orgId=${orgId}`
 
     console.log('[social/start] Récupération URL OAuth Zernio pour', platform)
     const connectUrl = await getConnectUrl(profileId, platform, redirectUrl)
@@ -56,3 +66,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL(`/profile?error=${encodeURIComponent(msg)}`, req.url))
   }
 }
+

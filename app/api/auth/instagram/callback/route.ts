@@ -18,6 +18,12 @@ export async function GET(req: NextRequest) {
   const userId = storedState.split('.')[0]
   if (!userId) return popupResponse({ error: 'State invalide' })
 
+  // Lire l'organisation active depuis le cookie active_org_id
+  const orgId = req.cookies.get('active_org_id')?.value
+  if (!orgId) {
+    return popupResponse({ error: 'Aucune organisation active sélectionnée. Veuillez d\'abord sélectionner une organisation active dans l\'application.' })
+  }
+
   try {
     const tokenData = await exchangeInstagramCode(code)
     const longTokenData = await getInstagramLongLivedTokenWithExpiry(tokenData.access_token)
@@ -30,9 +36,9 @@ export async function GET(req: NextRequest) {
     // Récupérer la photo de profil Instagram via le proxy
     let igAvatar: string | null = `/api/social/avatar?platform=instagram&pid=${igUser.id}`
 
-    await admin.from('social_accounts').delete().eq('user_id', userId).eq('platform', 'instagram')
+    await admin.from('social_accounts').delete().eq('organization_id', orgId).eq('platform', 'instagram')
     const { error } = await admin.from('social_accounts').insert({
-      user_id: userId,
+      organization_id: orgId,
       platform: 'instagram',
       platform_user_id: igUser.id,
       platform_username: igUser.name || igUser.username,
@@ -48,14 +54,14 @@ export async function GET(req: NextRequest) {
     try {
       const stats = await getInstagramStats(igUser.id, longToken)
       await admin.from('social_baselines').upsert({
-        user_id: userId,
+        organization_id: orgId,
         platform: 'instagram',
         baseline_followers: stats.followers,
         current_followers: stats.followers,
         posts_count: stats.posts,
         baseline_at: new Date().toISOString(),
         refreshed_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,platform' })
+      }, { onConflict: 'organization_id,platform' })
     } catch { /* baseline non critique */ }
 
     const response = popupResponse({ success: 'instagram', username: igUser.username })
@@ -79,6 +85,7 @@ function popupResponse(data: Record<string, string>): NextResponse {
     var d = ${payload};
     try { window.opener.postMessage(d, ${JSON.stringify(appOrigin)}) } catch(e) {}
     window.close()
-  </script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion en cours...</p></body></html>`
+  <\/script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion en cours...</p></body></html>`
   return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
 }
+

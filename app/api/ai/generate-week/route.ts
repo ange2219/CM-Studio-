@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { generateWeekPosts } from '@/lib/ai'
 import { checkGenerationLimit, recordGeneration } from '@/lib/server-utils'
 import type { GenerateRequest, Plan } from '@/types'
@@ -16,18 +16,16 @@ const GenerateWeekSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  let activeOrg: any
+  try {
+    activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
-  const admin = createAdminClient()
-  const { data: userProfile } = await admin
-    .from('users')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
-
-  const plan = (userProfile?.plan || 'free') as Plan
+  const plan = (activeOrg.organization?.plan || 'free') as Plan
 
   // Génération semaine réservée Premium / Business
   if (plan === 'free') {
@@ -43,10 +41,11 @@ export async function POST(req: NextRequest) {
   }
   const body: GenerateRequest & { posts_count?: number } = parsedBody.data
 
+  const admin = createAdminClient()
   const { data: brandProfile } = await admin
     .from('brand_profiles')
     .select('brand_name, description, posts_per_week')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .single()
 
   if (brandProfile) {
@@ -57,7 +56,7 @@ export async function POST(req: NextRequest) {
   const postsCount = body.posts_count || brandProfile?.posts_per_week || 5
 
   // Vérifier la limite journalière — une génération semaine coûte postsCount crédits
-  const { allowed, used, limit } = await checkGenerationLimit(user.id, plan)
+  const { allowed, used, limit } = await checkGenerationLimit(activeOrg.userId, plan)
   const remainingCredits = limit === 'unlimited' ? Infinity : (limit as number) - used
   if (!allowed || remainingCredits < postsCount) {
     const needed = postsCount
@@ -73,10 +72,11 @@ export async function POST(req: NextRequest) {
   try {
     const result = await generateWeekPosts(body, postsCount, plan)
     // Enregistrer postsCount crédits consommés
-    await Promise.all(Array.from({ length: postsCount }, () => recordGeneration(user.id)))
+    await Promise.all(Array.from({ length: postsCount }, () => recordGeneration(activeOrg.userId)))
     return NextResponse.json(result)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Generation failed'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+

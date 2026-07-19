@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   // ou dont on ne connaît pas encore la date d'expiration (token_expires_at IS NULL)
   const { data: accounts, error } = await admin
     .from('social_accounts')
-    .select('id, user_id, platform, access_token, token_expires_at')
+    .select('id, organization_id, platform, access_token, token_expires_at')
     .eq('connected_via', 'meta_direct')
     .eq('is_active', true)
     .or(`token_expires_at.is.null,token_expires_at.lte.${thresholdDate.toISOString()}`)
@@ -79,13 +79,14 @@ export async function GET(req: NextRequest) {
         .eq('id', account.id)
 
       refreshed++
-      console.log(`[cron/refresh-tokens] Token ${account.platform} rafraîchi pour user ${account.user_id}, expire le ${expiresAt.toISOString()}`)
+      console.log(`[cron/refresh-tokens] Token ${account.platform} rafraîchi pour l'organisation ${account.organization_id}, expire le ${expiresAt.toISOString()}`)
     } catch (err) {
       failed++
-      console.error(`[cron/refresh-tokens] Échec refresh ${account.platform} pour user ${account.user_id}:`, err instanceof Error ? err.message : err)
+      console.error(`[cron/refresh-tokens] Échec refresh ${account.platform} pour l'organisation ${account.organization_id}:`, err instanceof Error ? err.message : err)
     }
   }
 
   console.log(`[cron/refresh-tokens] ${refreshed} rafraîchis, ${failed} échoués`)
   return NextResponse.json({ refreshed, failed })
 }
+

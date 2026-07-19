@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { suggestHashtags } from '@/lib/ai'
 import type { Platform, Plan } from '@/types'
 import { z } from 'zod'
@@ -12,13 +12,14 @@ const HashtagsSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let activeOrg: any
+  try {
+    activeOrg = await getActiveOrgOrThrow()
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
-  const admin = createAdminClient()
-  const { data: userProfile } = await admin.from('users').select('plan').eq('id', user.id).single()
-  const plan = (userProfile?.plan || 'free') as Plan
+  const plan = (activeOrg.organization?.plan || 'free') as Plan
 
   const parsed = HashtagsSchema.safeParse(await req.json())
   if (!parsed.success) {
@@ -34,3 +35,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+

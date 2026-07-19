@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { getFacebookPageStats, getInstagramStats } from '@/lib/meta'
 import { decryptToken } from '@/lib/utils'
 
 /** GET — retourne les baselines stockées pour l'utilisateur */
 export async function GET() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('social_baselines')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
 
   if (error) return NextResponse.json({ baselines: [] })
   return NextResponse.json({ baselines: data || [] })
@@ -24,9 +29,13 @@ export async function GET() {
  *  Si mode = 'refresh'  : met à jour seulement current_followers
  */
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
   const { platform, mode = 'refresh' } = await req.json()
   const ALLOWED_PLATFORMS = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
@@ -39,7 +48,7 @@ export async function POST(req: NextRequest) {
   const { data: account } = await admin
     .from('social_accounts')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .eq('platform', platform)
     .eq('is_active', true)
     .single()
@@ -63,12 +72,12 @@ export async function POST(req: NextRequest) {
   const { data: existing } = await admin
     .from('social_baselines')
     .select('baseline_followers, baseline_at')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .eq('platform', platform)
     .single()
 
   const upsertData: Record<string, unknown> = {
-    user_id: user.id,
+    organization_id: orgId,
     platform,
     current_followers: stats.followers,
     posts_count: stats.posts,
@@ -83,9 +92,10 @@ export async function POST(req: NextRequest) {
 
   const { error } = await admin
     .from('social_baselines')
-    .upsert(upsertData, { onConflict: 'user_id,platform' })
+    .upsert(upsertData, { onConflict: 'organization_id,platform' })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ success: true, followers: stats.followers })
 }
+

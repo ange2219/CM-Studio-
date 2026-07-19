@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { generatePosts } from '@/lib/ai'
 import { checkGenerationLimit, recordGeneration } from '@/lib/server-utils'
 import type { GenerateRequest, Plan } from '@/types'
@@ -27,21 +27,19 @@ const GenerateSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  let activeOrg: any
+  try {
+    activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
-  const admin = createAdminClient()
-  const { data: userProfile } = await admin
-    .from('users')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
+  const plan = (activeOrg.organization?.plan || 'free') as Plan
 
-  const plan = (userProfile?.plan || 'free') as Plan
-
-  // Vérifier la limite hebdomadaire
-  const { allowed, used, limit } = await checkGenerationLimit(user.id, plan)
+  // Vérifier la limite hebdomadaire (vérifié par rapport à l'utilisateur)
+  const { allowed, used, limit } = await checkGenerationLimit(activeOrg.userId, plan)
   if (!allowed) {
     return NextResponse.json({
       error: `Limite hebdomadaire atteinte (${used}/${limit} générations utilisées)`,
@@ -80,11 +78,12 @@ export async function POST(req: NextRequest) {
     post_type:        parsed.data.post_type,
   }
 
+  const admin = createAdminClient()
   // Enrichir avec le profil de marque complet
   const { data: brandProfile } = await admin
     .from('brand_profiles')
     .select('brand_name, description, industry, tone, target_audience, content_pillars, avoid_words, objectives, audience_interests')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .single()
 
   if (brandProfile) {
@@ -105,10 +104,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await generatePosts(body, plan)
-    await recordGeneration(user.id)
+    await recordGeneration(activeOrg.userId)
     return NextResponse.json({ ...result, used: used + 1, limit })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Generation failed'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+

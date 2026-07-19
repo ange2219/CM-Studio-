@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { decryptToken } from '@/lib/utils'
 
 export const runtime = 'nodejs'
 
 export async function POST() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
   const admin = createAdminClient()
 
@@ -15,16 +19,17 @@ export async function POST() {
     admin
       .from('posts')
       .select('id, meta_post_ids, platforms, status, platform_errors')
-      .eq('user_id', user.id)
+      .eq('organization_id', orgId)
       .eq('status', 'published')
       .not('meta_post_ids', 'eq', '{}')
       .limit(50),
     admin
       .from('social_accounts')
       .select('platform, access_token, platform_user_id')
-      .eq('user_id', user.id)
+      .eq('organization_id', orgId)
       .eq('is_active', true),
   ])
+
 
   if (!posts?.length) return NextResponse.json({ updated: 0 })
 

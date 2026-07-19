@@ -27,7 +27,7 @@ export default async function PublicProfilePage({
   // ── Fetch profile by username OR ID ─────────────────────────────────────────
   const isUuid = params.username.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
   let query = admin
-    .from('users')
+    .from('user_public_profiles')
     .select('id, full_name, avatar_url, username, bio, created_at')
 
   if (isUuid) {
@@ -36,7 +36,10 @@ export default async function PublicProfilePage({
     query = query.eq('username', params.username)
   }
 
-  const { data: profile } = await query.maybeSingle()
+  const { data: profile, error: profileError } = await query.maybeSingle()
+  if (profileError) {
+    console.error('[Profile Page] Error fetching profile:', profileError)
+  }
 
   if (!profile) notFound()
 

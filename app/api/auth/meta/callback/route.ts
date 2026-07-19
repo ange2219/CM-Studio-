@@ -17,6 +17,12 @@ export async function GET(req: NextRequest) {
   const userId = storedState.split('.')[0]
   if (!userId) return popupResponse({ error: 'State invalide' })
 
+  // Lire l'organisation active depuis le cookie active_org_id
+  const orgId = req.cookies.get('active_org_id')?.value
+  if (!orgId) {
+    return popupResponse({ error: 'Aucune organisation active sélectionnée. Veuillez d\'abord sélectionner une organisation active dans l\'application.' })
+  }
+
   try {
     const tokenData = await exchangeCodeForToken(code)
     const longTokenData = await getLongLivedTokenWithExpiry(tokenData.access_token)
@@ -40,9 +46,9 @@ export async function GET(req: NextRequest) {
     fbAvatar = `/api/social/avatar?platform=facebook&pid=${fbId}`
 
     const tokenExpiresAt = longTokenData.expires_at
-    await admin.from('social_accounts').delete().eq('user_id', userId).eq('platform', 'facebook')
+    await admin.from('social_accounts').delete().eq('organization_id', orgId).eq('platform', 'facebook')
     const { error } = await admin.from('social_accounts').insert({
-      user_id: userId,
+      organization_id: orgId,
       platform: 'facebook',
       platform_user_id: fbId,
       platform_username: fbName,
@@ -58,14 +64,14 @@ export async function GET(req: NextRequest) {
     try {
       const stats = await getFacebookPageStats(fbId, fbToken)
       await admin.from('social_baselines').upsert({
-        user_id: userId,
+        organization_id: orgId,
         platform: 'facebook',
         baseline_followers: stats.followers,
         current_followers: stats.followers,
         posts_count: stats.posts,
         baseline_at: new Date().toISOString(),
         refreshed_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,platform' })
+      }, { onConflict: 'organization_id,platform' })
     } catch { /* baseline non critique */ }
 
     // ✅ Auto-abonner la Page au webhook feed (transparent pour l'utilisateur)
@@ -114,6 +120,7 @@ function popupResponse(data: Record<string, string>): NextResponse {
     var d = ${payload};
     try { window.opener.postMessage(d, ${JSON.stringify(appOrigin)}) } catch(e) {}
     window.close()
-  </script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion en cours...</p></body></html>`
+  <\/script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion en cours...</p></body></html>`
   return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
 }
+

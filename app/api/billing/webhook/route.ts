@@ -24,17 +24,17 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
-      const userId = session.metadata?.userId
-      if (!userId || !session.subscription) break
+      const orgId = session.metadata?.orgId
+      if (!orgId || !session.subscription) break
 
       const sub = await stripe.subscriptions.retrieve(session.subscription as string)
       const priceId = sub.items.data[0]?.price.id
       const plan = PRICE_TO_PLAN[priceId]
       if (!plan) break
 
-      await admin.from('users').update({ plan }).eq('id', userId)
+      await admin.from('organizations').update({ plan }).eq('id', orgId)
       await admin.from('subscriptions').upsert({
-        user_id: userId,
+        organization_id: orgId,
         stripe_subscription_id: sub.id,
         stripe_price_id: priceId,
         plan,
@@ -46,13 +46,13 @@ export async function POST(req: NextRequest) {
 
     case 'customer.subscription.updated': {
       const sub = event.data.object as Stripe.Subscription
-      const userId = sub.metadata?.userId
-      if (!userId) break
+      const orgId = sub.metadata?.orgId
+      if (!orgId) break
 
       const priceId = sub.items.data[0]?.price.id
       const plan = PRICE_TO_PLAN[priceId] || 'free'
 
-      await admin.from('users').update({ plan: sub.status === 'active' ? plan : 'free' }).eq('id', userId)
+      await admin.from('organizations').update({ plan: sub.status === 'active' ? plan : 'free' }).eq('id', orgId)
       await admin.from('subscriptions').update({
         status: sub.status,
         current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
@@ -62,10 +62,10 @@ export async function POST(req: NextRequest) {
 
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription
-      const userId = sub.metadata?.userId
-      if (!userId) break
+      const orgId = sub.metadata?.orgId
+      if (!orgId) break
 
-      await admin.from('users').update({ plan: 'free' }).eq('id', userId)
+      await admin.from('organizations').update({ plan: 'free' }).eq('id', orgId)
       await admin.from('subscriptions').update({ status: 'canceled' }).eq('stripe_subscription_id', sub.id)
       break
     }
@@ -73,3 +73,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ received: true })
 }
+

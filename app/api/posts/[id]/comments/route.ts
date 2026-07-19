@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import {
   getFacebookPostComments,
   replyToFacebookComment,
@@ -10,9 +10,13 @@ import { decryptToken } from '@/lib/utils'
 
 /** GET — récupère les commentaires d'un post publié */
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
   const admin = createAdminClient()
 
@@ -20,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     .from('posts')
     .select('platforms, meta_post_ids, status')
     .eq('id', params.id)
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .single()
 
   if (!post) return NextResponse.json({ error: 'Post introuvable' }, { status: 404 })
@@ -34,7 +38,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const { data: fbAccount } = await admin
       .from('social_accounts')
       .select('access_token')
-      .eq('user_id', user.id)
+      .eq('organization_id', orgId)
       .eq('platform', 'facebook')
       .eq('is_active', true)
       .single()
@@ -55,7 +59,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const { data: igAccount } = await admin
       .from('social_accounts')
       .select('access_token')
-      .eq('user_id', user.id)
+      .eq('organization_id', orgId)
       .eq('platform', 'instagram')
       .eq('is_active', true)
       .single()
@@ -82,9 +86,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
  *  body: { platform: 'facebook' | 'instagram', commentId: string, message: string }
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  try {
+    const activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
   const { platform, commentId, message } = await req.json()
   if (!platform || !commentId || !message?.trim()) {
@@ -93,12 +101,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const admin = createAdminClient()
 
-  // Vérifie que le post appartient bien à l'user
+  // Vérifie que le post appartient bien à l'organisation
   const { data: post } = await admin
     .from('posts')
     .select('meta_post_ids')
     .eq('id', params.id)
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .single()
 
   if (!post) return NextResponse.json({ error: 'Post introuvable' }, { status: 404 })
@@ -106,7 +114,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { data: account } = await admin
     .from('social_accounts')
     .select('access_token, platform_user_id')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .eq('platform', platform)
     .eq('is_active', true)
     .single()
@@ -135,3 +143,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+

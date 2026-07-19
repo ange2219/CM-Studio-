@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { classifyImageType, buildImagePrompt, generateBrandedImage } from '@/lib/image-generation'
 import { uploadImageFromUrl, uploadImageFromBase64 } from '@/lib/storage'
 import { checkImageLimit, recordImageGeneration } from '@/lib/server-utils'
@@ -14,21 +14,19 @@ const GenerateImageSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  let orgId: string
+  let activeOrg: any
+  try {
+    activeOrg = await getActiveOrgOrThrow()
+    orgId = activeOrg.organizationId
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+  }
 
-  const admin = createAdminClient()
-  const { data: userProfile } = await admin
-    .from('users')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
-
-  const plan = (userProfile?.plan || 'free') as Plan
+  const plan = (activeOrg.organization?.plan || 'free') as Plan
 
   // Vérifier le quota d'images hebdomadaire
-  const { allowed: imgAllowed, used: imgUsed, limit: imgLimit } = await checkImageLimit(user.id, plan)
+  const { allowed: imgAllowed, used: imgUsed, limit: imgLimit } = await checkImageLimit(activeOrg.userId, plan)
   if (!imgAllowed) {
     const msg = imgLimit === 0
       ? 'La génération d\'images est réservée aux plans Premium et Business.'
@@ -47,11 +45,12 @@ export async function POST(req: NextRequest) {
   }
   const { postContent, platform } = parsed.data as { postContent: string; platform: Platform }
 
+  const admin = createAdminClient()
   // Charger le profil de marque complet
   const { data: brandProfile } = await admin
     .from('brand_profiles')
     .select('brand_name, description, industry, tone, target_audience, color_primary, color_secondary, visual_style')
-    .eq('user_id', user.id)
+    .eq('organization_id', orgId)
     .single()
 
   const brand = {
@@ -72,7 +71,7 @@ export async function POST(req: NextRequest) {
   const ctx = { postContent, imageType, brand, platform }
   const prompt = buildImagePrompt(ctx)
 
-  console.log(`[generate-image] user=${user.id} type=${imageType} platform=${platform}`)
+  console.log(`[generate-image] user=${activeOrg.userId} type=${imageType} platform=${platform}`)
   console.log(`[generate-image] prompt=${prompt.slice(0, 200)}...`)
 
   try {
@@ -82,12 +81,12 @@ export async function POST(req: NextRequest) {
     // Upload vers Supabase Storage (URL permanente)
     let permanentUrl: string
     if (result.url.startsWith('data:')) {
-      permanentUrl = await uploadImageFromBase64(result.url, user.id)
+      permanentUrl = await uploadImageFromBase64(result.url, activeOrg.userId)
     } else {
-      permanentUrl = await uploadImageFromUrl(result.url, user.id)
+      permanentUrl = await uploadImageFromUrl(result.url, activeOrg.userId)
     }
 
-    await recordImageGeneration(user.id)
+    await recordImageGeneration(activeOrg.userId)
     return NextResponse.json({
       url: permanentUrl,
       imageType: result.imageType,
@@ -99,3 +98,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+

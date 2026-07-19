@@ -8,27 +8,28 @@ export async function GET(req: NextRequest) {
 
   const platform = searchParams.get('platform')
   const userId   = searchParams.get('userId')
+  const orgId    = searchParams.get('orgId')
   const accountId = searchParams.get('accountId') || searchParams.get('account_id') || searchParams.get('id')
 
-  if (!platform || !userId) {
+  if (!platform || !userId || !orgId) {
     return NextResponse.redirect(new URL('/profile?error=callback_params_manquants', req.url))
   }
 
   const admin = createAdminClient()
-  const { data: userProfile } = await admin
-    .from('users')
+  const { data: orgProfile } = await admin
+    .from('organizations')
     .select('zernio_profile_id')
-    .eq('id', userId)
+    .eq('id', orgId)
     .single()
 
   let finalAccountId = accountId
   let platformUsername: string = platform
   let platformAvatarUrl: string | null = null
 
-  if (userProfile?.zernio_profile_id) {
+  if (orgProfile?.zernio_profile_id) {
     try {
       console.log('[social/callback] Interroge Zernio API pour les infos du compte')
-      const accounts = await listAccounts(userProfile.zernio_profile_id)
+      const accounts = await listAccounts(orgProfile.zernio_profile_id)
       console.log('[social/callback] comptes Zernio:', JSON.stringify(accounts))
 
       const match = accounts.find((a: any) =>
@@ -54,32 +55,33 @@ export async function GET(req: NextRequest) {
   const { data: existing } = await admin
     .from('social_accounts')
     .select('access_token, connected_via')
-    .eq('user_id', userId)
+    .eq('organization_id', orgId)
     .eq('platform', platform)
-    .single()
+    .eq('platform_user_id', finalAccountId)
+    .maybeSingle()
 
   const hasMetaToken = existing?.access_token && existing.access_token !== 'zernio_managed'
   const connectedVia = hasMetaToken ? 'both' : 'zernio'
 
   // Si un token Meta existe, on ne l'écrase pas — on ajoute seulement Zernio par-dessus
   const upsertPayload: Record<string, unknown> = {
-    user_id:              userId,
+    organization_id:      orgId,
     platform,
     is_active:            true,
     platform_username:    platformUsername,
     platform_avatar_url:  platformAvatarUrl,
     connected_via:        connectedVia,
+    platform_user_id:     finalAccountId,
   }
   if (!hasMetaToken) {
     // Pas de token Meta → connexion pure Zernio
-    upsertPayload.access_token    = 'zernio_managed'
-    upsertPayload.platform_user_id = finalAccountId
+    upsertPayload.access_token = 'zernio_managed'
   }
-  // Si hasMetaToken : on ne touche ni access_token ni platform_user_id (IDs Meta conservés)
+  // Si hasMetaToken : on ne touche pas access_token (IDs Meta et token conservés)
 
   const { error } = await admin
     .from('social_accounts')
-    .upsert(upsertPayload, { onConflict: 'user_id,platform' })
+    .upsert(upsertPayload, { onConflict: 'organization_id,platform,platform_user_id' })
 
   if (error) {
     console.error('[social/callback] DB upsert error:', error.message)
@@ -98,3 +100,4 @@ export async function GET(req: NextRequest) {
   <\/script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion en cours...</p></body></html>`
   return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
 }
+

@@ -119,7 +119,7 @@ function MessagesContent() {
       }
       if (convId) {
         // Récupérer les détails de l'autre utilisateur pour pouvoir instancier la conversation locale
-        supabase.from('users').select('id,full_name,username,avatar_url').eq('id', dmUserId).single().then(({ data: otherUser }) => {
+        supabase.from('user_public_profiles').select('id,full_name,username,avatar_url').eq('id', dmUserId).single().then(({ data: otherUser }) => {
           if (otherUser) {
             const newConv: Conversation = { 
               id: convId, 
@@ -248,7 +248,7 @@ function MessagesContent() {
             localSender = currentConv.otherUser
           } else {
             // Fallback (très rare, par exemple groupe à 3 plus tard)
-            const { data } = await supabase.from('users').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
+            const { data } = await supabase.from('user_public_profiles').select('id,full_name,username,avatar_url').eq('id', nm.sender_id).single()
             if (data) localSender = data
           }
         }

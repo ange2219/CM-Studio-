@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient, getActiveOrgOrThrow } from '@/lib/supabase/server'
 import { publishPost as zernioPublish } from '@/lib/zernio'
 import { publishInstagramPost, publishFacebookPost } from '@/lib/meta'
 import { decryptToken } from '@/lib/utils'
@@ -37,29 +37,34 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const isInternalCall = internalSecret && verifyInternalSecret(internalSecret)
 
   let userId: string
+  let orgId: string
 
   if (isInternalCall) {
     const { data: postOwner } = await admin
       .from('posts')
-      .select('user_id')
+      .select('user_id, organization_id')
       .eq('id', params.id)
       .single()
     if (!postOwner) return NextResponse.json({ error: 'Post introuvable' }, { status: 404 })
     userId = postOwner.user_id
+    orgId = postOwner.organization_id
   } else {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    userId = user.id
+    try {
+      const activeOrg = await getActiveOrgOrThrow()
+      orgId = activeOrg.organizationId
+      userId = activeOrg.userId
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message || 'Unauthorized' }, { status: 401 })
+    }
   }
 
-  const [postResult, userResult] = await Promise.all([
-    admin.from('posts').select('*').eq('id', params.id).eq('user_id', userId).single(),
-    admin.from('users').select('zernio_profile_id').eq('id', userId).single(),
+  const [postResult, orgResult] = await Promise.all([
+    admin.from('posts').select('*').eq('id', params.id).eq('organization_id', orgId).single(),
+    admin.from('organizations').select('zernio_profile_id').eq('id', orgId).single(),
   ])
 
   const post = postResult.data
-  const userProfile = userResult.data
+  const orgProfile = orgResult.data
 
   if (!post) return NextResponse.json({ error: 'Post introuvable' }, { status: 404 })
   if (post.status === 'published') return NextResponse.json({ error: 'Déjà publié' }, { status: 400 })
@@ -77,7 +82,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       const { data: metaAccounts } = await admin
         .from('social_accounts')
         .select('*')
-        .eq('user_id', userId)
+        .eq('organization_id', orgId)
         .in('platform', metaPlatforms)
         .eq('is_active', true)
         .neq('access_token', 'zernio_managed')
@@ -126,7 +131,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
     // ── Zernio (TikTok, Twitter, LinkedIn, YouTube, Pinterest…) ──────────────
     if (zernioPlatforms.length > 0) {
-      if (!userProfile?.zernio_profile_id) {
+      if (!orgProfile?.zernio_profile_id) {
         for (const p of zernioPlatforms) {
           platformErrors[p] = 'Compte Zernio non configuré — connectez vos comptes dans Paramètres'
         }
@@ -134,7 +139,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
         const { data: zernioAccounts } = await admin
           .from('social_accounts')
           .select('platform, zernio_account_id')
-          .eq('user_id', userId)
+          .eq('organization_id', orgId)
           .in('platform', zernioPlatforms)
           .eq('is_active', true)
           .not('zernio_account_id', 'is', null)
@@ -224,3 +229,4 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
