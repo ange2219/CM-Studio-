@@ -9,9 +9,10 @@ import { useOrg } from '@/components/context/OrgContext'
 import { useToast } from '@/components/ui/Toast'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
-  User, CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
-  Sparkles, BarChart2, Zap, ChevronDown, Building2, Plus, X
+  CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
+  Sparkles, BarChart2, Zap, ChevronDown, Building2, Plus, X, User
 } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(false)
@@ -302,24 +303,12 @@ export function DashboardShell({ user: initialUser, children }: {
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               {/* Avatar circle */}
-              <div style={{
-                width: '34px', height: '34px', borderRadius: '50%',
-                background: 'rgba(var(--accent-rgb), 0.15)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden', flexShrink: 0, position: 'relative'
-              }}>
-                <User size={18} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
-                {user?.avatar_url && user.avatar_url.trim() !== '' && (
-                  <Image
-                    src={user.avatar_url}
-                    width={34}
-                    height={34}
-                    style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-                    alt=""
-                    onError={(e) => { e.currentTarget.style.display = 'none' }}
-                  />
-                )}
-              </div>
+              <UserAvatar
+                avatarUrl={user?.avatar_url}
+                size={34}
+                accentBg
+                fallbackColor="var(--accent)"
+              />
               {/* Name + email + chevron (desktop only) */}
               {!isMobile && (
                 <>
@@ -339,19 +328,13 @@ export function DashboardShell({ user: initialUser, children }: {
             {profileOpen && (
               <div className="profile-dropdown" style={{ background: 'var(--card)', right: 0, left: 'auto', minWidth: '220px' }}>
                 <div className="dropdown-header">
-                  <div className="av-large" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <User size={28} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
-                    {user?.avatar_url && user.avatar_url.trim() !== '' && (
-                      <Image
-                        src={user.avatar_url}
-                        alt=""
-                        width={50}
-                        height={50}
-                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-                        onError={(e) => { e.currentTarget.style.display = 'none' }}
-                      />
-                    )}
-                  </div>
+                  <UserAvatar
+                    avatarUrl={user?.avatar_url}
+                    size={50}
+                    accentBg
+                    fallbackColor="var(--accent)"
+                    iconSize={28}
+                  />
                   <div className="u-info">
                     <div className="u-name">{user?.full_name || 'Utilisateur'}</div>
                     <div className="u-email">{user?.email}</div>

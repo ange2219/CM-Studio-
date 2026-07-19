@@ -7,6 +7,7 @@ import { HomeSkeleton } from '@/components/ui/Skeleton'
 import { CommunityFeed } from '@/components/community/CommunityFeed'
 import { WelcomeBanner } from '@/components/home/WelcomeBanner'
 import { SquarePen, UserPlus, Flame, Rocket, Code, Megaphone, User } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { CreatePostModal } from '@/components/community/CreatePostModal'
 import Link from 'next/link'
 
@@ -96,23 +97,13 @@ export default function HomePage() {
         cursor: 'pointer',
         border: '1px solid var(--b1)',
       }}>
-        <div style={{
-          width: '40px', height: '40px', borderRadius: '50%',
-          overflow: 'hidden', flexShrink: 0,
-          background: 'rgba(var(--accent-rgb), 0.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--accent)', fontWeight: 700, position: 'relative'
-        }}>
-          <User size={22} strokeWidth={1.5} color="var(--accent)" style={{ position: 'absolute', zIndex: 1 }} />
-          {user?.avatar_url && user.avatar_url.trim() !== '' && (
-            <img
-              src={user.avatar_url}
-              alt=""
-              style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
-            />
-          )}
-        </div>
+        <UserAvatar
+          avatarUrl={user?.avatar_url}
+          size={40}
+          accentBg
+          fallbackColor="var(--accent)"
+          iconSize={22}
+        />
         <div style={{ flex: 1, color: 'var(--t3)', fontSize: '0.95rem' }}>
           Quoi de neuf ?
         </div>

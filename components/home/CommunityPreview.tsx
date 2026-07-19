@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { User } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Sparkles } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 
 
 function getInitials(name: string) {
@@ -43,24 +44,13 @@ export function CommunityPreview({ topPosts }: { topPosts: any[] }) {
           return (
             <div key={post.id || i} className="sugg-item" style={{ opacity: isPlaceholder ? 0.7 : 1 }}>
               {/* Avatar initiales colorées — même style que l'icône IA */}
-              <div style={{ 
-              width: 44, height: 44, borderRadius: '50%', 
-              background: bg, display: 'flex', 
-              alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, color: color, flexShrink: 0,
-              border: '1px solid var(--b1)',
-              overflow: 'hidden', position: 'relative'
-            }}>
-              <User size={24} strokeWidth={1.5} color={color} style={{ position: 'absolute', zIndex: 1 }} />
-              {post.avatar_url && post.avatar_url.trim() !== '' && (
-                <img
-                  src={post.avatar_url}
-                  style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-                  alt=""
-                  onError={(e) => { e.currentTarget.style.display = 'none' }}
-                />
-              )}
-            </div>
+            <UserAvatar
+              avatarUrl={post.avatar_url}
+              size={44}
+              fallbackColor={color}
+              style={{ background: bg }}
+              iconSize={24}
+            />
               <div className="sugg-info">
                 <div className="sugg-name" style={{ fontWeight: 600 }}>
                   {post.full_name || 'Utilisateur'}

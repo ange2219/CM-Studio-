@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, User, Camera, Upload, X } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, Camera, Upload, X } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useRouter } from 'next/navigation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -175,24 +176,12 @@ export default function PublicProfileClient({
   // ── Avatar helper ─────────────────────────────────────────────────────────
   function Avatar({ url, name, size = 40 }: { url?: string | null; name?: string | null; size?: number }) {
     return (
-      <div style={{
-        width: size, height: size, borderRadius: '50%',
-        background: 'rgba(var(--accent-rgb), 0.18)',
-        flexShrink: 0, overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '1px solid var(--b1)',
-        position: 'relative'
-      }}>
-        <User size={Math.round(size * 0.5)} strokeWidth={1.5} color="var(--t3)" style={{ position: 'absolute', zIndex: 1 }} />
-        {url && url.trim() !== '' && (
-          <img
-            src={url}
-            alt=""
-            style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-            onError={(e) => { e.currentTarget.style.display = 'none' }}
-          />
-        )}
-      </div>
+      <UserAvatar
+        avatarUrl={url}
+        size={size}
+        accentBg
+        fallbackColor="var(--accent)"
+      />
     )
   }
 
@@ -216,26 +205,17 @@ export default function PublicProfileClient({
         </div>
 
         {/* Avatar overlapping */}
-        <div style={{
-          position: 'absolute', bottom: -48, left: 24,
-          width: 96, height: 96, borderRadius: '50%',
-          border: '4px solid var(--bg)',
-          background: 'rgba(var(--accent-rgb), 0.18)',
-          overflow: 'hidden',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
-        }}>
-          <User size={48} strokeWidth={1.5} color="var(--t3, #9ca3af)" style={{ position: 'absolute', zIndex: 1 }} />
-          {avatarUrl && avatarUrl.trim() !== '' && (
-            <img
-              src={avatarUrl}
-              alt=""
-              style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
-            />
-          )}
-        </div>
+        <UserAvatar
+          avatarUrl={avatarUrl}
+          size={96}
+          accentBg
+          iconSize={48}
+          style={{
+            position: 'absolute', bottom: -48, left: 24,
+            border: '4px solid var(--bg)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          }}
+        />
 
         {/* Action button(s) */}
         <div style={{
@@ -588,18 +568,13 @@ export default function PublicProfileClient({
             {/* Avatar Section */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
-                <div style={{
-                  width: '80px', height: '80px', borderRadius: '50%',
-                  background: 'rgba(var(--accent-rgb), 0.15)',
-                  overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '2px solid var(--b1)'
-                }}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <User size={36} strokeWidth={1.5} color="var(--t3)" />
-                  )}
-                </div>
+                  <UserAvatar
+                    avatarUrl={avatarUrl}
+                    size={80}
+                    fallbackColor="var(--t3)"
+                    iconSize={36}
+                    style={{ border: '2px solid var(--b1)' }}
+                  />
                 <div style={{
                   position: 'absolute', inset: 0, borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

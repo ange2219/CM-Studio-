@@ -4,7 +4,8 @@ import { createBrowserClient } from '@supabase/ssr'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { MessagesSkeleton } from '@/components/ui/Skeleton'
-import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft, User as UserIcon } from 'lucide-react'
+import { Search, Edit3, Paperclip, Smile, Send, X, ChevronLeft } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 
 interface User { id: string; full_name: string | null; email?: string; avatar_url: string | null; username?: string | null }
 interface Message { id: string; conversation_id: string; sender_id: string; content: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; created_at: string; sender?: User; message_reads?: { user_id: string }[]; isTemp?: boolean; error?: boolean }
@@ -23,19 +24,11 @@ function avatarColor(u: User) {
 }
 
 function Avatar({ user, size = 40 }: { user: User; size?: number }) {
-  const iconSize = Math.round(size * 0.55)
   return (
-    <div style={{ position: 'relative', width: size, height: size, borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-      <UserIcon size={iconSize} strokeWidth={1.5} color="var(--t3, #9ca3af)" style={{ position: 'absolute', zIndex: 1 }} />
-      {user.avatar_url && user.avatar_url.trim() !== '' && !user.avatar_url.startsWith('/api/social') && (
-        <img
-          src={user.avatar_url}
-          alt=""
-          style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-          onError={(e) => { e.currentTarget.style.display = 'none' }}
-        />
-      )}
-    </div>
+    <UserAvatar
+      avatarUrl={user.avatar_url && !user.avatar_url.startsWith('/api/social') ? user.avatar_url : null}
+      size={size}
+    />
   )
 }
 

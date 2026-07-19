@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useOrg } from '@/components/context/OrgContext'
 import { PLATFORM_NAMES, PLATFORM_COLORS } from '@/types'
 import type { Platform, SocialAccount } from '@/types'
-import { User, Camera, CreditCard, Trash2, Shield, RefreshCw, Sparkles, Upload, Building2, Plus, X } from 'lucide-react'
+import { CreditCard, Bell, Sparkles, Key, Building2, Sliders, Laptop, Volume2, ShieldAlert, Award, Camera, Upload, Trash2, Shield, Plus, X, User } from 'lucide-react'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
 import { ProfileSkeleton } from '@/components/ui/Skeleton'
 
@@ -659,17 +660,13 @@ function SettingsContent() {
               <h3 style={{ fontSize: '.92rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--t1)' }}>Informations personnelles</h3>
               <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <label style={{ position: 'relative', display: 'inline-block', cursor: 'pointer', flexShrink: 0 }}>
-                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--b1)', position: 'relative', overflow: 'hidden' }}>
-                    <User size={28} strokeWidth={1.5} color="var(--t3)" style={{ position: 'absolute', zIndex: 1 }} />
-                    {avatarUrl && avatarUrl.trim() !== '' && (
-                      <img
-                        src={avatarUrl}
-                        alt=""
-                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }}
-                        onError={(e) => { e.currentTarget.style.display = 'none' }}
-                      />
-                    )}
-                  </div>
+                  <UserAvatar
+                    avatarUrl={avatarUrl}
+                    size={60}
+                    fallbackColor="var(--t3)"
+                    iconSize={28}
+                    style={{ border: '2px solid var(--b1)' }}
+                  />
                   <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)', opacity: 0, transition: '.15s' }}
                     onMouseEnter={e => (e.currentTarget.style.opacity = '1')} onMouseLeave={e => (e.currentTarget.style.opacity = '0')}>
                     <Camera size={15} color="#fff" />
