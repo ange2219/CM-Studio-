@@ -16,6 +16,7 @@ DROP POLICY IF EXISTS "conv: mise a jour par participant" ON public.conversation
 
 DROP POLICY IF EXISTS "participants: visibles par membre" ON public.conversation_participants;
 DROP POLICY IF EXISTS "participants: insertion libre" ON public.conversation_participants;
+DROP POLICY IF EXISTS "participants: insert participant" ON public.conversation_participants;
 
 DROP POLICY IF EXISTS "messages: lisibles par les participants" ON public.messages;
 DROP POLICY IF EXISTS "messages: envoi par participant" ON public.messages;
@@ -41,8 +42,19 @@ CREATE POLICY "participants: visibles par membre" ON public.conversation_partici
     user_id = auth.uid() OR public.check_is_conversation_member(conversation_id, auth.uid())
   );
 
-CREATE POLICY "participants: insertion libre" ON public.conversation_participants
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "participants: insert participant" ON public.conversation_participants
+  FOR INSERT WITH CHECK (
+    -- Cas 1 : Conversation neuve et l'utilisateur s'ajoute lui-même
+    (
+      auth.uid() = user_id 
+      AND NOT EXISTS (
+        SELECT 1 FROM public.conversation_participants 
+        WHERE conversation_id = conversation_participants.conversation_id
+      )
+    )
+    -- Cas 2 : L'insertion est faite par un membre existant de la conversation
+    OR public.check_is_conversation_member(conversation_id, auth.uid())
+  );
 
 -- 5. Nouvelles politiques RLS pour public.messages
 CREATE POLICY "messages: lisibles par les participants" ON public.messages
