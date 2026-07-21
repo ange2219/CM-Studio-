@@ -60,20 +60,24 @@ export default function NotificationsPage() {
 
   const handleMarkAllRead = async () => {
     if (!user) return
-    const idsToUpdate = filteredNotifs.filter(n => !n.is_read).map(n => n.id)
-    if (idsToUpdate.length === 0) return
+    const unreadNotifs = notifications.filter(n => !n.is_read)
+    if (unreadNotifs.length === 0) return
 
-    await supabase.from('notifications').update({ is_read: true }).in('id', idsToUpdate)
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id)
+      .eq('is_read', false)
     
-    setNotifications(prev => prev.map(n => 
-      idsToUpdate.includes(n.id) ? { ...n, is_read: true } : n
-    ))
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    window.dispatchEvent(new CustomEvent('notifications-updated'))
   }
 
   const handleNotifClick = async (notif: any) => {
     if (!notif.is_read) {
       await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id)
       setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n))
+      window.dispatchEvent(new CustomEvent('notifications-updated'))
     }
     if (notif.action_url) {
       let url = notif.action_url

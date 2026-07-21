@@ -225,18 +225,6 @@ export function CommunityFeed({
       await supabase.from('community_likes').delete().match({ post_id: post.id, user_id: currentUser.id })
     } else {
       await supabase.from('community_likes').insert({ post_id: post.id, user_id: currentUser.id })
-      // Notifier l'auteur du post
-      if (post.user_id !== currentUser.id) {
-        await supabase.from('notifications').insert({
-          user_id: post.user_id,
-          type: 'like',
-          title: 'Nouveau j\'aime',
-          message: `${currentUser.full_name || 'Un utilisateur'} a aimé votre publication.`,
-          action_url: `/home#post-${post.id}`,
-          platform: 'cm_studio',
-          is_read: false
-        })
-      }
     }
   }
 
@@ -261,19 +249,6 @@ export function CommunityFeed({
       await supabase.from('community_comment_likes').delete().match({ comment_id: commentId, user_id: currentUser.id })
     } else {
       await supabase.from('community_comment_likes').insert({ comment_id: commentId, user_id: currentUser.id })
-      // Notifier l'auteur du commentaire
-      const commentObj = (commentsByPost[postId] || []).find(c => c.id === commentId)
-      if (commentObj && commentObj.user_id !== currentUser.id) {
-        await supabase.from('notifications').insert({
-          user_id: commentObj.user_id,
-          type: 'like',
-          title: 'Commentaire aimé',
-          message: `${currentUser.full_name || 'Un utilisateur'} a aimé votre commentaire.`,
-          action_url: `/home#comment_${commentId}_${postId}`,
-          platform: 'cm_studio',
-          is_read: false
-        })
-      }
     }
   }
 
@@ -346,36 +321,6 @@ export function CommunityFeed({
       setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       setNewCommentTexts(prev => ({ ...prev, [postId]: '' }))
       setReplyingTo(null)
-
-      // Notifier l'auteur du post (si ce n'est pas nous-mêmes)
-      const post = posts.find(p => p.id === postId)
-      if (post && post.user_id !== currentUser.id) {
-        await supabase.from('notifications').insert({
-          user_id: post.user_id,
-          type: 'comment',
-          title: 'Nouveau commentaire',
-          message: `${currentUser.full_name || 'Un utilisateur'} a commenté votre publication.`,
-          action_url: `/home#comment_${data.id}_${postId}`,
-          platform: 'cm_studio',
-          is_read: false
-        })
-      }
-
-      // Notifier l'auteur du commentaire parent (si c'est une réponse et pas nous-mêmes)
-      if (payload.parent_id) {
-        const parentComment = (commentsByPost[postId] || []).find(c => c.id === payload.parent_id)
-        if (parentComment && parentComment.user_id !== currentUser.id) {
-          await supabase.from('notifications').insert({
-            user_id: parentComment.user_id,
-            type: 'comment_reply',
-            title: 'Nouvelle réponse',
-            message: `${currentUser.full_name || 'Un utilisateur'} a répondu à votre commentaire.`,
-            action_url: `/home#comment_${data.id}_${postId}`,
-            platform: 'cm_studio',
-            is_read: false
-          })
-        }
-      }
 
       if (payload.parent_id) {
         // Find the root parent ID to increment the correct visibleReplies counter

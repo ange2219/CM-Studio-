@@ -185,9 +185,13 @@ export function DashboardShell({ user: initialUser, children }: {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => loadUnreadNotifsCount())
       .subscribe()
 
+    const handleCustomUpdate = () => loadUnreadNotifsCount()
+    window.addEventListener('notifications-updated', handleCustomUpdate)
+
     return () => {
       supabase.removeChannel(msgChannel)
       supabase.removeChannel(notifChannel)
+      window.removeEventListener('notifications-updated', handleCustomUpdate)
     }
   }, [user?.id, loadUnreadCount, loadUnreadNotifsCount, supabase])
 
