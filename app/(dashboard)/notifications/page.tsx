@@ -1,12 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Check, ChevronDown, Bell, Globe } from 'lucide-react'
+import { Check, ChevronDown, Bell, Globe, Heart, MessageCircle, UserPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
 import { NotificationsSkeleton } from '@/components/ui/Skeleton'
 import type { Platform } from '@/types'
+
+function getNotifIcon(type: string, size = 18) {
+  switch (type) {
+    case 'like':          return <Heart          size={size} />
+    case 'comment':       return <MessageCircle  size={size} />
+    case 'comment_reply': return <MessageCircle  size={size} style={{ opacity: 0.7 }} />
+    case 'follow':        return <UserPlus       size={size} />
+    default:              return <Bell           size={size} />
+  }
+}
 
 function getShortTimeAgo(dateStr: string | null | undefined) {
   if (!dateStr) return '';
@@ -177,7 +187,7 @@ export default function NotificationsPage() {
                   
                   {/* Avatar/Icon */}
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `rgba(${accentColor}, 0.1)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: hexColor }}>
-                    {isCmStudio ? <Bell size={18} /> : <PlatformIcon platform={notif.platform as Platform} size={18} />}
+                    {isCmStudio ? getNotifIcon(notif.type) : <PlatformIcon platform={notif.platform as Platform} size={18} />}
                   </div>
 
                   {/* Content */}
