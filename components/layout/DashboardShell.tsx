@@ -210,8 +210,7 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Workspace',     icon: Layout,        href: '/workspace'     },
     { label: 'Messagerie',    icon: MessageCircle, href: '/messages'      },
     { label: 'Notifications', icon: Bell,          href: '/notifications' },
-    { label: 'Membres',       icon: UserPlus,      href: '/members'       },
-    { label: 'Groupes',       icon: Users,         href: '/groups'        },
+    { label: 'Réseau',        icon: Users,         href: '/members'       },
   ]
 
   const shortcuts = [
