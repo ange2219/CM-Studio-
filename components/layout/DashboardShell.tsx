@@ -10,8 +10,9 @@ import { useToast } from '@/components/ui/Toast'
 import { 
   Home, Layout, Users, MessageCircle, Search, Bell,
   CreditCard, BellRing, Settings, ShieldCheck, LogOut, Moon, Sun,
-  Sparkles, BarChart2, Zap, ChevronDown, Building2, Plus, X, User
+  Sparkles, BarChart2, Zap, ChevronDown, Building2, Plus, X, User, UserPlus
 } from 'lucide-react'
+
 import { UserAvatar } from '@/components/ui/UserAvatar'
 
 function useIsMobile(breakpoint = 768) {
@@ -209,6 +210,7 @@ export function DashboardShell({ user: initialUser, children }: {
     { label: 'Workspace',     icon: Layout,        href: '/workspace'     },
     { label: 'Messagerie',    icon: MessageCircle, href: '/messages'      },
     { label: 'Notifications', icon: Bell,          href: '/notifications' },
+    { label: 'Membres',       icon: UserPlus,      href: '/members'       },
     { label: 'Groupes',       icon: Users,         href: '/groups'        },
   ]
 
