@@ -1,530 +1,279 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Search, UserPlus, UserCheck, MessageCircle, Users, Lock, Sparkles, Check, ArrowRight } from 'lucide-react'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { useToast } from '@/components/ui/Toast'
-import { createClient } from '@/lib/supabase/client'
+import React, { useState } from 'react';
+import { Search, UserPlus, Check, Sparkles } from 'lucide-react';
 
-interface MemberSuggestion {
-  id: string
-  full_name: string
-  username: string
-  avatar_url: string | null
-  bio: string | null
-  created_at: string
-  is_following: boolean
-  followers_count: number
-  suggestion_reason: string
-}
+export default function MembersPage({ darkMode = false }: { darkMode?: boolean }) {
+  const [activeTab, setActiveTab] = useState('suggestions'); // 'suggestions' | 'groups'
+  const [searchTerm, setSearchTerm] = useState('');
 
-interface GroupItem {
-  id: string
-  name: string
-  description: string | null
-  min_followers_required: number
-  created_at: string
-  is_joined?: boolean
-  members_count?: number
-}
+  const [members, setMembers] = useState([
+    {
+      id: 1,
+      name: 'Julia Smith',
+      handle: '@juliasmith',
+      role: 'Social Media Manager',
+      reason: '2 groupes en commun',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      following: false,
+    },
+    {
+      id: 2,
+      name: 'Vermillion D. Gray',
+      handle: '@vermilliongray',
+      role: 'Content Creator',
+      reason: 'Recommandé pour vous',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+      following: false,
+    },
+    {
+      id: 3,
+      name: 'Mai Senpai',
+      handle: '@maisenpai',
+      role: 'DA & UI Designer',
+      reason: 'Suivi(e) par Marc & Laura',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+      following: false,
+    },
+    {
+      id: 4,
+      name: 'Azunyan U. Wu',
+      handle: '@azunyandesu',
+      role: 'Copywriter Freelance',
+      reason: 'Populaire ce mois-ci',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+      following: true,
+    },
+    {
+      id: 5,
+      name: 'Oarack Babama',
+      handle: '@obama21',
+      role: 'Growth Marketer',
+      reason: 'Nouveau membre',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      following: false,
+    },
+  ]);
 
-export default function NetworkPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const supabase = createClient()
-
-  const [activeTab, setActiveTab] = useState<'suggestions' | 'groups'>('suggestions')
-  const [search, setSearch] = useState('')
-  
-  // Suggestions state
-  const [suggestions, setSuggestions] = useState<MemberSuggestion[]>([])
-  const [loadingSuggestions, setLoadingSuggestions] = useState(true)
-  const [followingLoading, setFollowingLoading] = useState<Record<string, boolean>>({})
-
-  // Groups state
-  const [groups, setGroups] = useState<GroupItem[]>([])
-  const [loadingGroups, setLoadingGroups] = useState(true)
-  const [userFollowersCount, setUserFollowersCount] = useState(0)
-  const [groupActionLoading, setGroupActionLoading] = useState<Record<string, boolean>>({})
-
-  // Fetch suggestions
-  const fetchSuggestions = useCallback(async () => {
-    setLoadingSuggestions(true)
-    try {
-      const params = new URLSearchParams()
-      if (search.trim()) params.set('search', search.trim())
-
-      const res = await fetch(`/api/members?${params.toString()}`)
-      const data = await res.json()
-      if (res.ok) {
-        setSuggestions(data.suggestions || [])
-      } else {
-        toast(data.error || 'Erreur lors du chargement des suggestions', 'error')
-      }
-    } catch (err) {
-      console.error(err)
-      toast('Impossible de charger les suggestions', 'error')
-    } finally {
-      setLoadingSuggestions(false)
+  const [groups, setGroups] = useState([
+    {
+      id: 101,
+      name: 'Créateurs & CM Francophones',
+      membersCount: 1420,
+      description: 'Entraide, conseils et partages des meilleures stratégies social media.',
+      joined: true,
+      image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 102,
+      name: 'IA & Automatisation Content',
+      membersCount: 890,
+      description: 'Astuces, prompts et hacks pour optimiser la création de contenus avec Gemini & AI.',
+      joined: false,
+      image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 103,
+      name: 'Designers & Video Makers',
+      membersCount: 640,
+      description: 'Revue de visuels, reels, carrousels et tendances graphiques.',
+      joined: false,
+      image: 'https://images.unsplash.com/photo-1542744094-3a31727202b3?w=400&auto=format&fit=crop&q=80',
     }
-  }, [search, toast])
+  ]);
 
-  // Fetch groups
-  const fetchGroups = useCallback(async () => {
-    setLoadingGroups(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+  const toggleFollow = (id: number) => {
+    setMembers(prev => prev.map(m => m.id === id ? { ...m, following: !m.following } : m));
+  };
 
-      // Récupérer le nombre de followers de l'utilisateur
-      const { count } = await supabase
-        .from('user_follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', user.id)
+  const toggleJoinGroup = (id: number) => {
+    setGroups(prev => prev.map(g => g.id === id ? { ...g, joined: !g.joined } : g));
+  };
 
-      setUserFollowersCount(count || 0)
-
-      // Récupérer tous les groupes
-      const { data: allGroups } = await supabase
-        .from('groups')
-        .select('*')
-        .order('min_followers_required', { ascending: true })
-
-      // Récupérer mes abonnements aux groupes
-      const { data: myMemberships } = await supabase
-        .from('group_members')
-        .select('group_id')
-        .eq('user_id', user.id)
-
-      const joinedSet = new Set((myMemberships || []).map((m: any) => m.group_id))
-
-      // Compter les membres par groupe
-      const { data: allMemberships } = await supabase
-        .from('group_members')
-        .select('group_id')
-
-      const groupCounts: Record<string, number> = {}
-      if (allMemberships) {
-        allMemberships.forEach((m: any) => {
-          groupCounts[m.group_id] = (groupCounts[m.group_id] || 0) + 1
-        })
-      }
-
-      const formatted = (allGroups || []).map((g: any) => ({
-        ...g,
-        is_joined: joinedSet.has(g.id),
-        members_count: groupCounts[g.id] || 0,
-      }))
-
-      setGroups(formatted)
-    } catch (err) {
-      console.error(err)
-      toast('Impossible de charger les groupes', 'error')
-    } finally {
-      setLoadingGroups(false)
-    }
-  }, [supabase, toast])
-
-  useEffect(() => {
-    if (activeTab === 'suggestions') {
-      const timer = setTimeout(() => fetchSuggestions(), 200)
-      return () => clearTimeout(timer)
-    } else {
-      fetchGroups()
-    }
-  }, [activeTab, fetchSuggestions, fetchGroups])
-
-  const handleToggleFollow = async (member: MemberSuggestion) => {
-    const targetId = member.id
-    setFollowingLoading(prev => ({ ...prev, [targetId]: true }))
-
-    // Mise à jour optimiste du state local : on retire du tableau de suggestions si on le suit
-    const isNowFollowing = !member.is_following
-
-    if (isNowFollowing) {
-      setSuggestions(prev => prev.filter(m => m.id !== targetId))
-    }
-
-    try {
-      const res = await fetch('/api/members/follow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target_user_id: targetId }),
-      })
-      const data = await res.json()
-
-      if (!res.ok) {
-        toast(data.error || 'Erreur lors de la mise à jour du suivi', 'error')
-        fetchSuggestions()
-      } else {
-        toast(data.is_following ? `Vous suivez maintenant ${member.full_name}` : `Vous ne suivez plus ${member.full_name}`, 'success')
-      }
-    } catch (err) {
-      console.error(err)
-      toast('Erreur réseau lors de la mise à jour', 'error')
-      fetchSuggestions()
-    } finally {
-      setFollowingLoading(prev => ({ ...prev, [targetId]: false }))
-    }
-  }
-
-  const handleToggleJoinGroup = async (group: GroupItem) => {
-    const groupId = group.id
-    setGroupActionLoading(prev => ({ ...prev, [groupId]: true }))
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      if (group.is_joined) {
-        // Quitter le groupe
-        const { error } = await supabase
-          .from('group_members')
-          .delete()
-          .eq('group_id', groupId)
-          .eq('user_id', user.id)
-
-        if (error) throw error
-        toast(`Vous avez quitté le groupe ${group.name}`, 'info')
-      } else {
-        // Rejoindre le groupe
-        const { error } = await supabase
-          .from('group_members')
-          .insert({ group_id: groupId, user_id: user.id })
-
-        if (error) throw error
-        toast(`Vous avez rejoint le groupe ${group.name} !`, 'success')
-      }
-
-      fetchGroups()
-    } catch (err: any) {
-      console.error(err)
-      toast(err.message || 'Erreur lors de la mise à jour du groupe', 'error')
-    } finally {
-      setGroupActionLoading(prev => ({ ...prev, [groupId]: false }))
-    }
-  }
+  const filteredMembers = members.filter(m =>
+    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.handle.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const filteredGroups = groups.filter(g =>
-    !search.trim() ||
-    g.name.toLowerCase().includes(search.toLowerCase()) ||
-    (g.description && g.description.toLowerCase().includes(search.toLowerCase()))
-  )
+    g.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="flex-1 h-full flex flex-col gap-4 overflow-y-auto no-scrollbar pb-6 select-none">
       
-      {/* ── EN-TÊTE DE PAGE ── */}
-      <div>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text)', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Users size={24} color="var(--accent)" />
-          Réseau
-        </h1>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text3)', margin: '4px 0 0 0' }}>
-          Découvrez des personnes que vous connaissez peut-être et explorez vos communautés.
-        </p>
-      </div>
-
-      {/* ── BARRE DE NAVIGATION (2 ONGLETS) ET RECHERCHE ── */}
-      <div style={{
-        background: 'var(--card)', border: '1px solid var(--b1)',
-        borderRadius: '12px', padding: '12px 16px',
-        display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between',
-        gap: '12px'
-      }}>
-        
-        {/* Onglets */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button
-            onClick={() => setActiveTab('suggestions')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 14px', borderRadius: '8px',
-              border: 'none',
-              background: activeTab === 'suggestions' ? 'var(--accent-light)' : 'transparent',
-              color: activeTab === 'suggestions' ? 'var(--accent)' : 'var(--text2)',
-              fontSize: '0.86rem', fontWeight: activeTab === 'suggestions' ? 700 : 500,
-              cursor: 'pointer', transition: 'all 0.15s'
-            }}
-          >
-            <UserPlus size={16} />
-            <span>Suggestions</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('groups')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 14px', borderRadius: '8px',
-              border: 'none',
-              background: activeTab === 'groups' ? 'var(--accent-light)' : 'transparent',
-              color: activeTab === 'groups' ? 'var(--accent)' : 'var(--text2)',
-              fontSize: '0.86rem', fontWeight: activeTab === 'groups' ? 700 : 500,
-              cursor: 'pointer', transition: 'all 0.15s'
-            }}
-          >
-            <Users size={16} />
-            <span>Groupes</span>
-          </button>
+      {/* Top Header Card */}
+      <div className={`rounded-2xl p-4 md:p-5 shadow-card-subtle border shrink-0 transition-colors duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+        darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
+      }`}>
+        <div>
+          <h2 className={`text-base font-bold leading-tight ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+            Réseau & Communauté
+          </h2>
+          <p className={`text-[12px] mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            Découvrez d'autres créateurs et rejoignez des groupes thématiques.
+          </p>
         </div>
 
-        {/* Champ de recherche */}
-        <div style={{ position: 'relative', minWidth: '240px', flex: '1', maxWidth: '340px' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
+        {/* Search Input */}
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border w-full sm:w-[260px] ${
+          darkMode ? 'bg-[#0F172A] border-slate-700' : 'bg-slate-50 border-slate-200'
+        }`}>
+          <Search className="w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder={activeTab === 'suggestions' ? "Rechercher une personne..." : "Rechercher un groupe..."}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              width: '100%', height: '36px',
-              background: 'var(--s2)', border: '1px solid var(--b1)',
-              borderRadius: '8px', padding: '0 12px 0 36px',
-              color: 'var(--text)', fontSize: '0.85rem', outline: 'none'
-            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Rechercher..."
+            className={`w-full text-[13px] bg-transparent outline-none ${
+              darkMode ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'
+            }`}
           />
         </div>
       </div>
 
-      {/* ── CONTENU : TAB 1 - SUGGESTIONS ── */}
-      {activeTab === 'suggestions' && (
-        <>
-          {loadingSuggestions ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} style={{
-                  background: 'var(--card)', border: '1px solid var(--b1)',
-                  borderRadius: '12px', padding: '16px', height: '160px',
-                  display: 'flex', flexDirection: 'column', gap: '12px'
-                }}>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--s2)' }} />
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ width: '60%', height: '14px', background: 'var(--s2)', borderRadius: '4px' }} />
-                      <div style={{ width: '40%', height: '10px', background: 'var(--s2)', borderRadius: '4px' }} />
-                    </div>
-                  </div>
+      {/* Tabs */}
+      <div className={`flex items-center gap-4 px-2 border-b shrink-0 ${
+        darkMode ? 'border-slate-800' : 'border-slate-200'
+      }`}>
+        <button
+          onClick={() => setActiveTab('suggestions')}
+          className={`py-2 text-[13.5px] font-bold relative transition-all cursor-pointer bg-transparent border-none ${
+            activeTab === 'suggestions'
+              ? darkMode ? 'text-white' : 'text-[#1677FF]'
+              : darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <span>Suggestions de membres ({filteredMembers.length})</span>
+          {activeTab === 'suggestions' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1677FF] rounded-full" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('groups')}
+          className={`py-2 text-[13.5px] font-bold relative transition-all cursor-pointer bg-transparent border-none ${
+            activeTab === 'groups'
+              ? darkMode ? 'text-white' : 'text-[#1677FF]'
+              : darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <span>Groupes ({filteredGroups.length})</span>
+          {activeTab === 'groups' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1677FF] rounded-full" />
+          )}
+        </button>
+      </div>
+
+      {/* Content Grid */}
+      {activeTab === 'suggestions' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filteredMembers.map((member) => (
+            <div
+              key={member.id}
+              className={`rounded-2xl p-4 shadow-card-subtle border flex flex-col justify-between transition-all ${
+                darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
+              }`}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <img
+                  src={member.avatar}
+                  alt={member.name}
+                  className="w-12 h-12 rounded-full object-cover shrink-0 ring-2 ring-[#0284C7]/20"
+                />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className={`text-[14px] font-bold truncate leading-tight ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+                    {member.name}
+                  </span>
+                  <span className={`text-[12px] font-medium text-[#1677FF] dark:text-[#38BDF8] truncate mt-0.5`}>
+                    {member.handle}
+                  </span>
+                  <span className={`text-[11.5px] truncate mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {member.role}
+                  </span>
                 </div>
-              ))}
+              </div>
+
+              <div className={`py-1.5 px-2.5 rounded-xl text-[11px] font-medium mb-3 flex items-center gap-1.5 ${
+                darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'
+              }`}>
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="truncate">{member.reason}</span>
+              </div>
+
+              <button
+                onClick={() => toggleFollow(member.id)}
+                className={`w-full py-2 px-3 rounded-xl text-[12.5px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border-none ${
+                  member.following
+                    ? darkMode
+                      ? 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                    : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+                }`}
+              >
+                {member.following ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Abonné(e)</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Suivre</span>
+                  </>
+                )}
+              </button>
             </div>
-          ) : suggestions.length === 0 ? (
-            <div style={{
-              background: 'var(--card)', border: '1px solid var(--b1)',
-              borderRadius: '12px', padding: '40px 20px',
-              textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
-            }}>
-              <UserPlus size={40} color="var(--text3)" />
-              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>Aucune suggestion pour le moment</div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text3)', maxWidth: '380px', margin: 0 }}>
-                {search ? `Aucun résultat pour "${search}".` : 'Vous êtes déjà connecté aux membres de vos communautés !'}
-              </p>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filteredGroups.map((group) => (
+            <div
+              key={group.id}
+              className={`rounded-2xl overflow-hidden shadow-card-subtle border flex flex-col justify-between transition-all ${
+                darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
+              }`}
+            >
+              <div className="h-28 w-full overflow-hidden relative">
+                <img
+                  src={group.image}
+                  alt={group.name}
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute bottom-2 right-2 bg-slate-900/80 text-white text-[10.5px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                  {group.membersCount} membres
+                </span>
+              </div>
+
+              <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                <div>
+                  <h4 className={`text-[14px] font-bold leading-tight ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+                    {group.name}
+                  </h4>
+                  <p className={`text-[12px] leading-relaxed mt-1.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {group.description}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => toggleJoinGroup(group.id)}
+                  className={`w-full py-2 px-3 rounded-xl text-[12.5px] font-bold transition-all cursor-pointer border-none ${
+                    group.joined
+                      ? darkMode
+                        ? 'bg-slate-800 text-slate-300 border border-slate-700'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                      : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+                  }`}
+                >
+                  {group.joined ? 'Membre (Quitter)' : 'Rejoindre le groupe'}
+                </button>
+              </div>
             </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
-              {suggestions.map(member => {
-                const isPending = followingLoading[member.id]
-                return (
-                  <div
-                    key={member.id}
-                    style={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--b1)',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      transition: 'border-color 0.15s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(var(--accent-rgb), 0.3)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)' }}
-                  >
-                    {/* Infos Membre */}
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <Link href={`/profile/${member.username || ''}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
-                        <UserAvatar
-                          avatarUrl={member.avatar_url}
-                          size={48}
-                          accentBg
-                          fallbackColor="var(--accent)"
-                        />
-                      </Link>
-
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Link
-                          href={`/profile/${member.username || ''}`}
-                          style={{
-                            textDecoration: 'none',
-                            color: 'var(--text)',
-                            fontSize: '0.92rem',
-                            fontWeight: 700,
-                            display: 'block',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {member.full_name}
-                        </Link>
-
-                        {member.username && (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text3)', display: 'block' }}>
-                            @{member.username}
-                          </span>
-                        )}
-
-                        {/* Badge de motif de suggestion */}
-                        <div style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '4px',
-                          background: 'var(--accent-light)', color: 'var(--accent)',
-                          padding: '2px 8px', borderRadius: '6px',
-                          fontSize: '0.7rem', fontWeight: 600, marginTop: '6px'
-                        }}>
-                          <Sparkles size={11} />
-                          <span>{member.suggestion_reason}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--b1)' }}>
-                      <button
-                        onClick={() => handleToggleFollow(member)}
-                        disabled={isPending}
-                        style={{
-                          flex: 1, height: '34px', borderRadius: '8px',
-                          border: 'none', background: 'var(--accent)', color: '#fff',
-                          fontSize: '0.82rem', fontWeight: 600,
-                          cursor: isPending ? 'not-allowed' : 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          transition: 'all 0.15s', opacity: isPending ? 0.7 : 1
-                        }}
-                      >
-                        <UserPlus size={15} />
-                        <span>Se connecter</span>
-                      </button>
-
-                      <button
-                        onClick={() => router.push(`/messages?user=${member.id}`)}
-                        title="Envoyer un message"
-                        style={{
-                          width: '34px', height: '34px', borderRadius: '8px',
-                          background: 'var(--s2)', border: '1px solid var(--b1)',
-                          color: 'var(--text2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer', flexShrink: 0
-                        }}
-                      >
-                        <MessageCircle size={16} />
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
-      {/* ── CONTENU : TAB 2 - GROUPES ── */}
-      {activeTab === 'groups' && (
-        <>
-          {loadingGroups ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '16px', height: '140px' }} />
-              ))}
-            </div>
-          ) : filteredGroups.length === 0 ? (
-            <div style={{
-              background: 'var(--card)', border: '1px solid var(--b1)',
-              borderRadius: '12px', padding: '40px 20px',
-              textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
-            }}>
-              <Users size={40} color="var(--text3)" />
-              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>Aucun groupe trouvé</div>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '12px' }}>
-              {filteredGroups.map(group => {
-                const isUnlocked = userFollowersCount >= group.min_followers_required || true // Premium / Unlocked
-                const isPending = groupActionLoading[group.id]
-
-                return (
-                  <div
-                    key={group.id}
-                    style={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--b1)',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      transition: 'border-color 0.15s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(var(--accent-rgb), 0.3)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)' }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
-                          {group.name}
-                        </h3>
-                        {group.is_joined && (
-                          <span style={{
-                            background: 'var(--accent-light)', color: 'var(--accent)',
-                            padding: '2px 8px', borderRadius: '6px',
-                            fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px'
-                          }}>
-                            <Check size={12} /> Rejoint
-                          </span>
-                        )}
-                      </div>
-
-                      {group.description && (
-                        <p style={{
-                          fontSize: '0.8rem', color: 'var(--text2)',
-                          margin: '6px 0 0 0', lineHeight: 1.4,
-                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
-                        }}>
-                          {group.description}
-                        </p>
-                      )}
-
-                      <div style={{ fontSize: '0.74rem', color: 'var(--text3)', marginTop: '8px', fontWeight: 500 }}>
-                        {group.members_count || 0} {group.members_count && group.members_count > 1 ? 'membres' : 'membre'}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--b1)' }}>
-                      <button
-                        onClick={() => handleToggleJoinGroup(group)}
-                        disabled={isPending}
-                        style={{
-                          flex: 1, height: '34px', borderRadius: '8px',
-                          border: group.is_joined ? '1px solid var(--b1)' : 'none',
-                          background: group.is_joined ? 'var(--s2)' : 'var(--accent)',
-                          color: group.is_joined ? 'var(--text2)' : '#fff',
-                          fontSize: '0.82rem', fontWeight: 600,
-                          cursor: isPending ? 'not-allowed' : 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          transition: 'all 0.15s'
-                        }}
-                      >
-                        {group.is_joined ? 'Quitter' : 'Rejoindre le groupe'}
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </>
-      )}
     </div>
-  )
+  );
 }

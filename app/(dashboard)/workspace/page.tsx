@@ -1,6 +1,6 @@
 'use client'
 
-import PostsDashboard from '@/components/PostsDashboard'
+import { PostsDashboard } from '@/components/workspace/PostsDashboard'
 
 export default function WorkspacePage() {
   return <PostsDashboard />
