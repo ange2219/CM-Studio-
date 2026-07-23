@@ -118,7 +118,6 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
 
         setExpandedPostIds(prev => new Set(prev).add(postId));
         setHighlightedCommentIds(prev => ({ ...prev, [postId]: commentId }));
-        pollAndScrollElement(`post-container-${postId}`);
         window.history.replaceState(null, '', window.location.pathname);
       }
     }

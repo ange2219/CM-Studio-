@@ -158,7 +158,7 @@ export function CommentsThread({
     fetchComments();
   }, [postId, supabase, currentUser?.id, highlightCommentId]);
 
-  // Polling scroll effect when highlightCommentId is active (inner container + page scroll)
+  // Polling scroll effect when highlightCommentId is active
   useEffect(() => {
     if (loading || !highlightCommentId) return;
 
@@ -168,21 +168,12 @@ export function CommentsThread({
     const timer = setInterval(() => {
       attempts++;
       const targetEl = document.getElementById(`comment-container-${highlightCommentId}`);
-      const container = commentsContainerRef.current;
 
-      if (targetEl && container) {
+      if (targetEl) {
         clearInterval(timer);
 
-        // Calculate relative position within inner scroll container
-        const containerRect = container.getBoundingClientRect();
-        const targetRect = targetEl.getBoundingClientRect();
-        const relativeTop = targetRect.top - containerRect.top + container.scrollTop;
-        const scrollTo = relativeTop - container.clientHeight / 2 + targetEl.clientHeight / 2;
-
-        container.scrollTo({
-          top: Math.max(0, scrollTo),
-          behavior: 'smooth'
-        });
+        // Single page scroll directly to target comment
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         // Apply blue highlight
         const originalBg = targetEl.style.backgroundColor;
@@ -309,8 +300,11 @@ export function CommentsThread({
   return (
     <div className={`flex flex-col border-t ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100'}`}>
       
-      {/* SCROLLABLE COMMENTS SECTION (Exact TikTok Style) */}
-      <div ref={commentsContainerRef} className="flex-1 max-h-[220px] overflow-y-auto p-4 pb-0">
+      {/* SCROLLABLE COMMENTS SECTION (Unconstrained height during highlight) */}
+      <div 
+        ref={commentsContainerRef} 
+        className={`flex-1 p-4 pb-0 ${highlightCommentId ? 'max-h-none overflow-visible' : 'max-h-[220px] overflow-y-auto'}`}
+      >
         {loading ? (
           <div className="text-[0.8rem] text-slate-400 text-center pb-4">Chargement...</div>
         ) : comments.length === 0 ? (
