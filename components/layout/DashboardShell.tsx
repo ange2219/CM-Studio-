@@ -1,5 +1,6 @@
 'use client'
 
+import { FeatherLogo } from '@/components/FeatherLogo'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -248,8 +249,8 @@ export function DashboardShell({ user: initialUser, children }: {
 
         {/* LEFT: Logo & Brand Indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-          <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-            <Image src="/logo.png" alt="CM Studio Logo" width={44} height={44} style={{ objectFit: 'contain' }} />
+          <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <FeatherLogo className="w-8 h-8" darkMode={theme === 'dark'} />
             {!isMobile && (
               <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>
                 CM Studio
