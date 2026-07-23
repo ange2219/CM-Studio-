@@ -12,10 +12,12 @@ import {
   Check, 
   Sparkles 
 } from 'lucide-react';
+import Link from 'next/link';
 import { useTheme } from '@/components/context/ThemeContext';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/context/UserContext';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { useFollow } from '@/hooks/useFollow';
 
 import { CommentsThread } from './CommentsThread';
 
@@ -23,6 +25,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
   const { user } = useUser();
+  const { isFollowing, toggleFollow } = useFollow();
   const supabase = createClient();
 
   const [liked, setLiked] = useState(post.initialLiked || false);
@@ -137,24 +140,49 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <UserAvatar
-            avatarUrl={post.author?.avatar}
-            size={40}
-            className="ring-2 ring-[#0284C7] ring-offset-1 shrink-0"
-          />
-          <div className="flex flex-col">
-            <span className={`text-[14px] font-bold leading-tight flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
-              {post.author?.name || 'Membre'}
-              {post.author?.verified && (
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline-block" />
-              )}
-            </span>
-            <span className={`text-[12px] font-medium leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`}>
-              {post.time}
-            </span>
-          </div>
+        <div className="flex items-center gap-2 min-w-0">
+          <Link
+            href={`/profile/${post.author?.username || post.user_id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-3 no-underline group min-w-0"
+          >
+            <UserAvatar
+              avatarUrl={post.author?.avatar}
+              size={40}
+              className="ring-2 ring-[#0284C7] ring-offset-1 shrink-0 group-hover:opacity-90 transition-opacity"
+            />
+            <div className="flex flex-col min-w-0">
+              <span className={`text-[14px] font-bold leading-tight flex items-center gap-1.5 truncate group-hover:underline ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+                {post.author?.name || 'Membre'}
+                {post.author?.verified && (
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline-block shrink-0" />
+                )}
+              </span>
+              <span className={`text-[12px] font-medium leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`}>
+                {post.time}
+              </span>
+            </div>
+          </Link>
+
+          {/* Follow Button: NEVER display on own post (user.id === post.user_id) */}
+          {user?.id && user.id !== post.user_id && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFollow(post.user_id, post.author?.name);
+              }}
+              className={`ml-2 px-3 py-1 rounded-full text-[12px] font-bold transition-all cursor-pointer border-none shrink-0 ${
+                isFollowing(post.user_id)
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
+                  : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+              }`}
+            >
+              {isFollowing(post.user_id) ? 'Abonné' : '+ Suivre'}
+            </button>
+          )}
         </div>
+
         <button className={`transition-colors p-1.5 rounded-full cursor-pointer border-none bg-transparent ${darkMode ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800' : 'text-[#CBD5E1] hover:text-slate-600 hover:bg-slate-100'}`}>
           <MoreHorizontal className="w-5.5 h-5.5" />
         </button>

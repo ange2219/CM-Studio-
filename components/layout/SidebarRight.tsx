@@ -6,16 +6,16 @@ import { createClient } from '@/lib/supabase/client'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useTheme } from '@/components/context/ThemeContext'
 import Link from 'next/link'
+import { useFollow } from '@/hooks/useFollow'
 
 export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean }) {
   const { darkMode: ctxDarkMode } = useTheme()
   const darkMode = propDarkMode ?? ctxDarkMode
   const supabase = createClient()
+  const { isFollowing, toggleFollow } = useFollow()
 
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [onlineUsers, setOnlineUsers] = useState<any[]>([])
-  const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
-  const [currentUser, setCurrentUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,16 +26,6 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
         setLoading(false)
         return
       }
-      setCurrentUser(user)
-
-      // Fetch user's existing follows
-      const { data: follows } = await supabase
-        .from('user_follows')
-        .select('following_id')
-        .eq('follower_id', user.id)
-
-      const followedSet = new Set<string>(follows?.map((f: any) => f.following_id) || [])
-      setFollowedIds(followedSet)
 
       // Fetch suggested user profiles (REAL PEOPLE from Supabase user_public_profiles)
       const { data: profiles } = await supabase
@@ -52,28 +42,6 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
     }
     loadData()
   }, [supabase])
-
-  const toggleFollow = async (targetUserId: string) => {
-    if (!currentUser) return
-
-    const isFollowing = followedIds.has(targetUserId)
-    const nextSet = new Set(followedIds)
-
-    if (isFollowing) {
-      nextSet.delete(targetUserId)
-      setFollowedIds(nextSet)
-      await supabase
-        .from('user_follows')
-        .delete()
-        .match({ follower_id: currentUser.id, following_id: targetUserId })
-    } else {
-      nextSet.add(targetUserId)
-      setFollowedIds(nextSet)
-      await supabase
-        .from('user_follows')
-        .insert({ follower_id: currentUser.id, following_id: targetUserId })
-    }
-  }
 
   return (
     <aside className="w-[300px] xl:w-[320px] shrink-0 h-full flex flex-col gap-4 hidden lg:flex select-none">
@@ -98,27 +66,30 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
             <div className="text-[12px] text-slate-400 py-2 text-center">Aucun membre suggéré pour le moment.</div>
           ) : (
             suggestions.slice(0, 4).map((person) => {
-              const isFollowed = followedIds.has(person.id)
+              const isFollowed = isFollowing(person.id)
               return (
                 <div key={person.id} className="flex items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <Link
+                    href={`/profile/${person.username || person.id}`}
+                    className="flex items-center gap-2.5 min-w-0 no-underline group"
+                  >
                     <UserAvatar
                       avatarUrl={person.avatar_url}
                       size={36}
-                      className="ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
+                      className="ring-1 ring-slate-200 dark:ring-slate-700 shrink-0 group-hover:opacity-90 transition-opacity"
                     />
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-[13px] font-bold truncate leading-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+                      <span className={`text-[13px] font-bold truncate leading-tight group-hover:underline ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
                         {person.full_name || 'Membre'}
                       </span>
                       <span className={`text-[11px] truncate leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                         {person.role || (person.username ? `@${person.username}` : 'Membre CM Studio')}
                       </span>
                     </div>
-                  </div>
+                  </Link>
 
                   <button
-                    onClick={() => toggleFollow(person.id)}
+                    onClick={() => toggleFollow(person.id, person.full_name || person.username)}
                     title={isFollowed ? "Abonné" : "Ajouter / Suivre"}
                     className={`w-7.5 h-7.5 rounded-full flex items-center justify-center transition-all cursor-pointer border-none shrink-0 ${
                       isFollowed
@@ -156,14 +127,19 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
             <span className="text-[12px] text-slate-400">Aucun membre en ligne</span>
           ) : (
             onlineUsers.map((u) => (
-              <div key={u.id} className="relative group cursor-pointer shrink-0" title={u.full_name || 'Membre'}>
+              <Link
+                key={u.id}
+                href={`/profile/${u.username || u.id}`}
+                className="relative group cursor-pointer shrink-0"
+                title={u.full_name || 'Membre'}
+              >
                 <UserAvatar
                   avatarUrl={u.avatar_url}
                   size={40}
                   className="ring-2 ring-emerald-500 ring-offset-1"
                 />
                 <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1E293B]" />
-              </div>
+              </Link>
             ))
           )}
         </div>

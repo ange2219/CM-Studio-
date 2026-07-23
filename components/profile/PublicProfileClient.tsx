@@ -7,6 +7,7 @@ import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, Log
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useRouter } from 'next/navigation'
 import { PostCard } from '@/components/community/PostCard'
+import { useFollow } from '@/hooks/useFollow'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -77,7 +78,8 @@ export default function PublicProfileClient({
   initialLikedIds: string[]
   thresholds?: { threshold: number; label: string }[]
 }) {
-  const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
+  const { isFollowing: checkIsFollowing, toggleFollow: sharedToggleFollow } = useFollow()
+  const isFollowing = checkIsFollowing(profile.id)
   const [followersCount, setFollowersCount] = useState(initialFollowersCount)
   const [followLoading, setFollowLoading] = useState(false)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set(initialLikedIds))
@@ -195,24 +197,11 @@ export default function PublicProfileClient({
 
   // ── Follow / Unfollow ──────────────────────────────────────────────────────
   async function handleFollow() {
-    if (followLoading) return
+    if (followLoading || isOwnProfile) return
     setFollowLoading(true)
-
-    if (isFollowing) {
-      setIsFollowing(false)
-      setFollowersCount(c => c - 1)
-      await supabase.from('user_follows').delete().match({
-        follower_id: currentUserId,
-        following_id: profile.id,
-      })
-    } else {
-      setIsFollowing(true)
-      setFollowersCount(c => c + 1)
-      await supabase.from('user_follows').insert({
-        follower_id: currentUserId,
-        following_id: profile.id,
-      })
-    }
+    const nextState = !isFollowing
+    setFollowersCount(c => c + (nextState ? 1 : -1))
+    await sharedToggleFollow(profile.id, profile.full_name || profile.username)
     setFollowLoading(false)
   }
 
