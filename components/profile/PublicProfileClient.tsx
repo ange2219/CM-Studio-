@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, Camera, Upload, X } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, Settings, Share2, Edit2, LogOut, Camera, Upload, X, Bookmark } from 'lucide-react'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { useRouter } from 'next/navigation'
+import { PostCard } from '@/components/community/PostCard'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -127,6 +128,64 @@ export default function PublicProfileClient({
   const router = useRouter()
   const isOwnProfile = currentUserId === profile.id
   const badge = planBadge(profile.plan)
+
+  const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts')
+  const [savedPosts, setSavedPosts] = useState<any[]>([])
+  const [loadingSaved, setLoadingSaved] = useState(false)
+
+  // Fetch saved posts explicitly scoped to currentUserId if activeTab === 'saved' & isOwnProfile
+  useEffect(() => {
+    async function loadSavedPosts() {
+      if (activeTab !== 'saved' || !isOwnProfile) return
+      setLoadingSaved(true)
+      try {
+        const { data: bookmarkRows } = await supabase
+          .from('community_bookmarks')
+          .select('post_id, created_at')
+          .eq('user_id', currentUserId)
+          .order('created_at', { ascending: false })
+
+        if (bookmarkRows && bookmarkRows.length > 0) {
+          const postIds = bookmarkRows.map(b => b.post_id)
+          const { data: postsData } = await supabase
+            .from('vw_community_posts')
+            .select('*')
+            .in('id', postIds)
+
+          if (postsData) {
+            const postsMap = new Map(postsData.map(p => [p.id, p]))
+            const formatted = bookmarkRows
+              .map(b => postsMap.get(b.post_id))
+              .filter(Boolean)
+              .map(p => ({
+                id: p.id,
+                db_id: p.id,
+                user_id: p.user_id,
+                author: {
+                  name: p.full_name || 'Membre CM Studio',
+                  avatar: p.avatar_url,
+                  verified: p.plan ? p.plan.toLowerCase() !== 'free' : false,
+                },
+                time: getTimeAgo(p.created_at),
+                content: p.content,
+                images: p.image_url ? [p.image_url] : [],
+                likesCount: p.likes_count || 0,
+                commentsCount: p.comments_count || 0,
+                sharesCount: (p as any).shares_count || 0,
+              }))
+            setSavedPosts(formatted)
+          }
+        } else {
+          setSavedPosts([])
+        }
+      } catch (err) {
+        console.error('Erreur lors du chargement des posts sauvegardés:', err)
+      } finally {
+        setLoadingSaved(false)
+      }
+    }
+    loadSavedPosts()
+  }, [activeTab, isOwnProfile, currentUserId, supabase])
 
   // ── Logout ──────────────────────────────────────────────────────────────────
   async function handleLogout() {
@@ -408,125 +467,113 @@ export default function PublicProfileClient({
         })()}
       </div>
 
-      {/* ── Posts ── */}
+      {/* ── Posts Section ── */}
       <div style={{ padding: '0 24px' }}>
+        {/* Navigation Tabs */}
         <div style={{
-          fontSize: '0.82rem', fontWeight: 700, color: 'var(--t3)',
-          textTransform: 'uppercase', letterSpacing: '0.08em',
+          display: 'flex', alignItems: 'center', gap: 24,
+          borderBottom: '1px solid var(--b1)',
           marginBottom: 16,
         }}>
-          Publications
+          <button
+            type="button"
+            onClick={() => setActiveTab('posts')}
+            style={{
+              padding: '8px 0', background: 'none', border: 'none',
+              fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
+              color: activeTab === 'posts' ? 'var(--t1)' : 'var(--t3)',
+              borderBottom: activeTab === 'posts' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+              transition: 'all .15s',
+            }}
+          >
+            Publications ({posts.length})
+          </button>
+
+          {isOwnProfile && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('saved')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 0', background: 'none', border: 'none',
+                fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
+                color: activeTab === 'saved' ? 'var(--t1)' : 'var(--t3)',
+                borderBottom: activeTab === 'saved' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+                transition: 'all .15s',
+              }}
+            >
+              <Bookmark size={15} />
+              Sauvegardés
+            </button>
+          )}
         </div>
 
-        {posts.length === 0 ? (
-          <div style={{
-            background: 'var(--card)', border: '1px dashed var(--b1)',
-            borderRadius: 14, padding: '3rem',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '2rem', marginBottom: 10 }}>📝</div>
-            <div style={{ color: 'var(--t2)', fontSize: '0.9rem' }}>
-              Aucune publication pour l'instant.
+        {/* Tab Content: Publications */}
+        {activeTab === 'posts' && (
+          posts.length === 0 ? (
+            <div style={{
+              background: 'var(--card)', border: '1px dashed var(--b1)',
+              borderRadius: 14, padding: '3rem',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: 10 }}>📝</div>
+              <div style={{ color: 'var(--t2)', fontSize: '0.9rem' }}>
+                Aucune publication pour l'instant.
+              </div>
             </div>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {posts.map(post => {
-              const isLiked = likedIds.has(post.id)
-              return (
-                <article key={post.id} style={{
-                  background: 'var(--card)', borderRadius: 14,
-                  border: '1px solid var(--b1)', overflow: 'hidden',
-                  transition: 'box-shadow .2s',
-                }}>
-                  {/* Post header */}
-                  <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Avatar url={profile.avatar_url} name={profile.full_name} size={36} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.87rem', color: 'var(--t1)' }}>
-                        {profile.full_name || profile.username}
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--t3)' }}>
-                        {getTimeAgo(post.created_at)}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const url = `${window.location.origin}/groups#post-${post.id}`
-                        if (navigator.share) {
-                          navigator.share({ title: 'Post', text: post.content.slice(0, 60), url }).catch(() => {})
-                        } else {
-                          navigator.clipboard.writeText(url)
-                        }
-                      }}
-                      style={{
-                        background: 'none', border: 'none',
-                        color: 'var(--t3)', cursor: 'pointer', padding: 6,
-                      }}
-                      title="Partager"
-                    >
-                      <Share2 size={15} />
-                    </button>
-                  </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {posts.map(p => {
+                const formattedPost = {
+                  id: p.id,
+                  db_id: p.id,
+                  user_id: p.user_id,
+                  author: {
+                    name: profile.full_name || profile.username,
+                    avatar: profile.avatar_url,
+                    verified: profile.plan ? profile.plan.toLowerCase() !== 'free' : false,
+                  },
+                  time: getTimeAgo(p.created_at),
+                  content: p.content,
+                  images: p.image_url ? [p.image_url] : [],
+                  likesCount: p.likes_count || 0,
+                  commentsCount: p.comments_count || 0,
+                  sharesCount: (p as any).shares_count || 0,
+                  initialLiked: likedIds.has(p.id),
+                }
+                return <PostCard key={p.id} post={formattedPost} />
+              })}
+            </div>
+          )
+        )}
 
-                  {/* Content */}
-                  <div style={{
-                    padding: '0 16px 14px',
-                    fontSize: '0.93rem', color: 'var(--t1)', lineHeight: 1.62,
-                    whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                  }}>
-                    {post.content}
-                    {post.image_url && (
-                      <div style={{ marginTop: 10 }}>
-                        <img
-                          src={post.image_url}
-                          alt=""
-                          style={{
-                            maxWidth: '100%', borderRadius: 10,
-                            border: '1px solid var(--b1)', display: 'block',
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{
-                    padding: '8px 16px', borderTop: '1px solid var(--b1)',
-                    display: 'flex', alignItems: 'center', gap: 16,
-                  }}>
-                    <button
-                      onClick={() => toggleLike(post.id, post.likes_count)}
-                      style={{
-                        background: 'none', border: 'none',
-                        color: isLiked ? 'var(--accent)' : 'var(--t2)',
-                        cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        fontSize: '0.85rem', fontWeight: 600, padding: '6px 0',
-                        transition: 'color .15s',
-                      }}
-                    >
-                      <Heart size={16} fill={isLiked ? 'var(--accent)' : 'none'} />
-                      {post.likes_count}
-                    </button>
-
-                    <Link
-                      href={`/groups#post-${post.id}`}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        fontSize: '0.85rem', fontWeight: 600,
-                        color: 'var(--t2)', textDecoration: 'none',
-                        padding: '6px 0',
-                      }}
-                    >
-                      <MessageCircle size={16} />
-                      {post.comments_count}
-                    </Link>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
+        {/* Tab Content: Posts Sauvegardés (Uniquement isOwnProfile) */}
+        {activeTab === 'saved' && isOwnProfile && (
+          loadingSaved ? (
+            <div style={{ color: 'var(--t3)', fontSize: '0.88rem', textAlign: 'center', padding: '2rem' }}>
+              Chargement des posts sauvegardés...
+            </div>
+          ) : savedPosts.length === 0 ? (
+            <div style={{
+              background: 'var(--card)', border: '1px dashed var(--b1)',
+              borderRadius: 14, padding: '3rem',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: 10 }}>🔖</div>
+              <div style={{ color: 'var(--t2)', fontSize: '0.9rem', fontWeight: 600 }}>
+                Aucun post sauvegardé pour l'instant
+              </div>
+              <div style={{ color: 'var(--t3)', fontSize: '0.8rem', marginTop: 4 }}>
+                Les publications que vous sauvegardez dans le fil apparaîtront ici.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {savedPosts.map(post => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          )
         )}
       </div>
 

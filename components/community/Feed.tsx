@@ -92,9 +92,9 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
         db_id: inserted.id,
         user_id: user?.id,
         author: {
-          name: user?.full_name || 'Alexandra Borke',
+          name: user?.full_name || user?.email?.split('@')[0] || 'Membre CM Studio',
           avatar: user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          verified: true,
+          verified: user?.plan ? user.plan.toLowerCase() !== 'free' : false,
         },
         time: "À l'instant",
         content: inserted.content,
