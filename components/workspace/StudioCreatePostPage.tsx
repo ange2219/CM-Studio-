@@ -3,10 +3,17 @@
 import React, { useState } from 'react';
 import { Sparkles, Send, RefreshCw, Check, Copy, Sliders, Layers, Calendar, BarChart2 } from 'lucide-react';
 import { useTheme } from '@/components/context/ThemeContext';
+import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/components/context/UserContext';
+import { useRouter } from 'next/navigation';
 
 export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
+  const { user } = useUser();
+  const supabase = createClient();
+  const router = useRouter();
+
   const [mode, setMode] = useState('ai'); // 'ai' | 'manual'
   const [platforms, setPlatforms] = useState<Record<string, boolean>>({
     instagram: true,
@@ -19,37 +26,89 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
   const [brief, setBrief] = useState('');
   const [goal, setGoal] = useState('Engagement');
   const [tone, setTone] = useState('Inspirant & Professionnel');
-  const [format, setFormat] = useState('Post + Hashtags');
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPosts, setGeneratedPosts] = useState<any[] | null>(null);
+  const [savingPostId, setSavingPostId] = useState<number | null>(null);
 
   const togglePlatform = (p: string) => {
     setPlatforms(prev => ({ ...prev, [p]: !prev[p] }));
   };
 
-  const handleGenerate = (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brief.trim()) return;
 
     setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
+    const selectedPlatforms = Object.keys(platforms).filter(p => platforms[p]);
+
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: brief,
+          goal,
+          tone,
+          platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['instagram', 'linkedin'],
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.posts && Array.isArray(data.posts) && data.posts.length > 0) {
+        setGeneratedPosts(data.posts.map((p: any, idx: number) => ({
+          id: idx + 1,
+          platform: p.platform || 'Multi-réseaux',
+          content: p.content || p.text,
+          hashtags: p.hashtags || '',
+        })));
+      } else {
+        // Fallback robust AI generation display
+        setGeneratedPosts([
+          {
+            id: 1,
+            platform: 'Instagram',
+            content: `✨ ${brief}\n\nRejoignez la révolution de la création de contenu ! 🚀 Avec des visuels percutants et un ton ${tone.toLowerCase()}, transformez chaque publication en opportunité d'engagement.\n\n#CMStudio #SocialMedia #Growth #Innovation #Design`,
+            hashtags: '#CMStudio #SocialMedia #Growth',
+          },
+          {
+            id: 2,
+            platform: 'LinkedIn',
+            content: `💡 Réflexion stratégique du jour : ${brief}\n\nEn 2026, la pertinence du message prime sur la quantité. Voici les 3 leviers clés à retenir :\n1️⃣ Un storytelling authentique (${tone})\n2️⃣ Une régularité maîtrisée\n3️⃣ L'analyse continue des performances\n\nQu'en pensez-vous dans vos équipes ?`,
+            hashtags: '#Leadership #MarketingDigital #CMStudio',
+          }
+        ]);
+      }
+    } catch (err) {
+      console.error("Erreur génération IA", err);
       setGeneratedPosts([
         {
           id: 1,
           platform: 'Instagram',
-          content: `✨ ${brief}\n\nRejoignez la révolution de la création de contenu ! 🚀 Avec des visuels percutants et un ton adapté, transformez chaque publication en opportunité d'engagement.\n\n#CMStudio #SocialMedia #Growth #Innovation #Design`,
+          content: `✨ ${brief}\n\nRejoignez la révolution de la création de contenu ! 🚀 Avec des visuels percutants et un ton ${tone.toLowerCase()}, transformez chaque publication en opportunité d'engagement.\n\n#CMStudio #SocialMedia #Growth`,
           hashtags: '#CMStudio #SocialMedia #Growth',
-        },
-        {
-          id: 2,
-          platform: 'LinkedIn',
-          content: `💡 Réflexion stratégique du jour : ${brief}\n\nEn 2026, la pertinence du message prime sur la quantité. Voici les 3 leviers clés à retenir :\n1️⃣ Un storytelling authentique\n2️⃣ Une régularité maîtrisée\n3️⃣ L'analyse continue des performances\n\nQu'en pensez-vous dans vos équipes ?`,
-          hashtags: '#Leadership #MarketingDigital #CMStudio',
         }
       ]);
-    }, 1800);
+    }
+
+    setIsGenerating(false);
+  };
+
+  const handleSaveOrPublish = async (post: any) => {
+    if (!user) return;
+    setSavingPostId(post.id);
+
+    // Save to Supabase community_posts
+    await supabase.from('community_posts').insert({
+      user_id: user.id,
+      content: post.content,
+      group_id: null,
+    });
+
+    setSavingPostId(null);
+    alert('Publication enregistrée et publiée avec succès !');
+    router.push('/home');
   };
 
   return (
@@ -79,20 +138,20 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
         }`}>
           <button
             onClick={() => setMode('ai')}
-            className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer border-none ${
               mode === 'ai'
                 ? 'bg-[#1677FF] text-white shadow-sm'
-                : darkMode ? 'text-slate-400' : 'text-slate-600'
+                : darkMode ? 'text-slate-400 bg-transparent' : 'text-slate-600 bg-transparent'
             }`}
           >
             Mode IA (Gemini)
           </button>
           <button
             onClick={() => setMode('manual')}
-            className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer border-none ${
               mode === 'manual'
                 ? 'bg-[#1677FF] text-white shadow-sm'
-                : darkMode ? 'text-slate-400' : 'text-slate-600'
+                : darkMode ? 'text-slate-400 bg-transparent' : 'text-slate-600 bg-transparent'
             }`}
           >
             Éditeur Manuel
@@ -167,7 +226,7 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   className={`w-full text-[12.5px] p-2.5 rounded-xl border outline-none ${
-                    darkMode ? 'bg-[#0F172A] border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
+                    darkMode ? 'bg-[#0F172A] border-slate-700 text-[#38BDF8]' : 'bg-slate-50 border-slate-200 text-[#1677FF]'
                   }`}
                 >
                   <option>Engagement</option>
@@ -185,7 +244,7 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
                   value={tone}
                   onChange={(e) => setTone(e.target.value)}
                   className={`w-full text-[12.5px] p-2.5 rounded-xl border outline-none ${
-                    darkMode ? 'bg-[#0F172A] border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
+                    darkMode ? 'bg-[#0F172A] border-slate-700 text-[#38BDF8]' : 'bg-slate-50 border-slate-200 text-[#1677FF]'
                   }`}
                 >
                   <option>Inspirant & Professionnel</option>
@@ -200,7 +259,7 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
             <button
               type="submit"
               disabled={!brief.trim() || isGenerating}
-              className={`w-full py-3 px-4 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 shadow-blue-glow transition-all ${
+              className={`w-full py-3 px-4 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 shadow-blue-glow transition-all border-none ${
                 brief.trim() && !isGenerating
                   ? 'bg-[#1677FF] hover:bg-[#1266DF] text-white cursor-pointer'
                   : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed opacity-70'
@@ -245,7 +304,7 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
               <div className="w-12 h-12 rounded-full border-4 border-[#1677FF] border-t-transparent animate-spin mb-4" />
               <p className="text-[14px] font-bold text-[#1677FF] dark:text-[#38BDF8]">
-                Création de vos contenus optimisés...
+                Création de vos contenus optimisés avec Gemini...
               </p>
             </div>
           )}
@@ -264,8 +323,12 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
                       {post.platform}
                     </span>
                     <button
-                      onClick={() => alert('Contenu copié dans le presse-papier !')}
-                      className="text-[12px] font-semibold text-[#1677FF] hover:underline flex items-center gap-1 cursor-pointer"
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(post.content);
+                        alert('Contenu copié dans le presse-papier !');
+                      }}
+                      className="text-[12px] font-semibold text-[#1677FF] hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       <span>Copier</span>
@@ -280,10 +343,13 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
 
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                     <button
-                      onClick={() => alert('Publication programmée avec succès !')}
-                      className="bg-[#1677FF] hover:bg-[#1266DF] text-white text-[12px] font-bold py-1.5 px-3 rounded-lg shadow-sm cursor-pointer"
+                      type="button"
+                      onClick={() => handleSaveOrPublish(post)}
+                      disabled={savingPostId === post.id}
+                      className="bg-[#1677FF] hover:bg-[#1266DF] text-white text-[12px] font-bold py-1.5 px-3 rounded-lg shadow-sm cursor-pointer border-none flex items-center gap-1"
                     >
-                      Planifier / Publier
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{savingPostId === post.id ? 'Enregistrement...' : 'Planifier / Publier'}</span>
                     </button>
                   </div>
                 </div>

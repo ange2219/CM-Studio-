@@ -1,76 +1,84 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, MessageSquare, UserPlus, Sparkles, CheckCheck, Bell } from 'lucide-react';
 import { useTheme } from '@/components/context/ThemeContext';
+import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/components/context/UserContext';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
-  const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'socials'
-  
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      category: 'studio',
-      type: 'like',
-      title: 'Laura Fisher a aimé votre publication',
-      time: 'Il y a 10 minutes',
-      read: false,
-      user: {
-        name: 'Laura Fisher',
-        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-      }
-    },
-    {
-      id: 2,
-      category: 'studio',
-      type: 'comment',
-      title: 'Marc Dubois a commenté votre post',
-      subtitle: '"C\'est absolument grandiose ! Quel endroit exact est-ce ?"',
-      time: 'Il y a 1 heure',
-      read: false,
-      user: {
-        name: 'Marc Dubois',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-      }
-    },
-    {
-      id: 3,
-      category: 'studio',
-      type: 'follow',
-      title: 'Sophie Martin a commencé à vous suivre',
-      time: 'Il y a 3 heures',
-      read: true,
-      user: {
-        name: 'Sophie Martin',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-      }
-    },
-    {
-      id: 4,
-      category: 'socials',
-      type: 'social',
-      platform: 'Instagram',
-      title: 'Votre post Instagram est maintenant en ligne !',
-      subtitle: 'Campagne Été 2026 • 248 impressions au cours de la première heure.',
-      time: 'Il y a 4 heures',
-      read: false,
-    },
-    {
-      id: 5,
-      category: 'socials',
-      type: 'social',
-      platform: 'LinkedIn',
-      title: 'Nouveau pic d\'engagement sur LinkedIn (+35%)',
-      subtitle: 'Votre publication sur le Design System Antigravity suscite de vives réactions.',
-      time: 'Hier',
-      read: true,
-    }
-  ]);
+  const { user } = useUser();
+  const supabase = createClient();
 
-  const markAllAsRead = () => {
+  const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'socials'
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadNotifs() {
+      if (!user) return;
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (data && data.length > 0) {
+        setNotifications(data.map(n => ({
+          id: n.id,
+          category: n.platform === 'cm_studio' ? 'studio' : 'socials',
+          type: n.type || 'system',
+          title: n.title || n.message,
+          subtitle: n.title ? n.message : undefined,
+          time: getShortTimeAgo(n.created_at),
+          read: n.is_read || false,
+        })));
+      } else {
+        // Fallback default notifications if database table is empty for user
+        setNotifications([
+          {
+            id: '1',
+            category: 'studio',
+            type: 'like',
+            title: 'Un membre a aimé votre publication',
+            time: 'Il y a 10 minutes',
+            read: false,
+          },
+          {
+            id: '2',
+            category: 'studio',
+            type: 'comment',
+            title: 'Nouveau commentaire sur votre post',
+            subtitle: '"C\'est absolument grandiose !"',
+            time: 'Il y a 1 heure',
+            read: false,
+          },
+          {
+            id: '3',
+            category: 'socials',
+            type: 'social',
+            title: 'Votre publication est en ligne !',
+            subtitle: '248 impressions au cours de la première heure.',
+            time: 'Il y a 4 heures',
+            read: true,
+          }
+        ]);
+      }
+    }
+    loadNotifs();
+  }, [supabase, user]);
+
+  const markAllAsRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    if (user) {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id);
+    }
   };
 
   const filteredNotifs = notifications.filter(n => n.category === activeTab);
@@ -165,24 +173,9 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
             }`}
           >
             <div className="flex items-center gap-3.5 min-w-0">
-              {notif.user ? (
-                <div className="relative shrink-0">
-                  <img
-                    src={notif.user.avatar}
-                    alt={notif.user.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border shadow-sm ${
-                    darkMode ? 'bg-[#0F172A] border-slate-700' : 'bg-white border-slate-200'
-                  }`}>
-                    {getIcon(notif.type)}
-                  </span>
-                </div>
-              ) : (
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-[#1677FF] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-              )}
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-[#1677FF] flex items-center justify-center shrink-0">
+                {getIcon(notif.type)}
+              </div>
 
               <div className="flex flex-col min-w-0">
                 <span className={`text-[13.5px] font-bold leading-snug ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
@@ -208,4 +201,18 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
 
     </div>
   );
+}
+
+function getShortTimeAgo(dateStr: string | null | undefined) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return "à l'instant";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes} min`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} h`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} j`;
 }

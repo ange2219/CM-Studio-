@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   MessageCircle, 
@@ -12,48 +12,124 @@ import {
   Check, 
   Sparkles 
 } from 'lucide-react';
-
 import { useTheme } from '@/components/context/ThemeContext';
+import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/components/context/UserContext';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode?: boolean }) {
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
+  const { user } = useUser();
+  const supabase = createClient();
+
   const [liked, setLiked] = useState(post.initialLiked || false);
   const [likesCount, setLikesCount] = useState(post.likesCount || 0);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState(post.comments || []);
+  const [comments, setComments] = useState<any[]>(post.comments || []);
+  const [loadingComments, setLoadingComments] = useState(false);
   const [newCommentText, setNewCommentText] = useState('');
   const [copiedShare, setCopiedShare] = useState(false);
 
-  const toggleLike = () => {
+  // Check if current user liked this post
+  useEffect(() => {
+    async function checkLiked() {
+      if (!user || !post.db_id) return;
+      const { data } = await supabase
+        .from('community_likes')
+        .select('id')
+        .eq('post_id', post.db_id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data) setLiked(true);
+    }
+    checkLiked();
+  }, [supabase, user, post.db_id]);
+
+  const toggleLike = async () => {
+    if (!user || !post.db_id) return;
+
     if (liked) {
       setLiked(false);
-      setLikesCount((prev: number) => prev - 1);
+      setLikesCount((prev: number) => Math.max(0, prev - 1));
+      await supabase
+        .from('community_likes')
+        .delete()
+        .match({ post_id: post.db_id, user_id: user.id });
     } else {
       setLiked(true);
       setLikesCount((prev: number) => prev + 1);
+      await supabase
+        .from('community_likes')
+        .insert({ post_id: post.db_id, user_id: user.id });
     }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const loadComments = async () => {
+    if (!post.db_id) return;
+    setLoadingComments(true);
+    const { data } = await supabase
+      .from('vw_community_comments')
+      .select('*')
+      .eq('post_id', post.db_id)
+      .order('created_at', { ascending: true });
+
+    if (data) {
+      setComments(data.map(c => ({
+        id: c.id,
+        name: c.full_name || 'Membre CM Studio',
+        avatar: c.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        time: 'Récemment',
+        text: c.content,
+      })));
+    }
+    setLoadingComments(false);
+  };
+
+  const handleToggleComments = () => {
+    const nextState = !showComments;
+    setShowComments(nextState);
+    if (nextState && comments.length === 0) {
+      loadComments();
+    }
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCommentText.trim()) return;
+    if (!newCommentText.trim() || !user || !post.db_id) return;
 
-    const newComment = {
-      id: Date.now(),
-      name: 'Alexandra Borke',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-      time: 'À l\'instant',
-      text: newCommentText,
-    };
-
-    setComments([newComment, ...comments]);
+    const commentText = newCommentText.trim();
     setNewCommentText('');
-    if (!showComments) setShowComments(true);
+
+    const { data: inserted } = await supabase
+      .from('community_comments')
+      .insert({
+        post_id: post.db_id,
+        user_id: user.id,
+        content: commentText,
+      })
+      .select('*')
+      .single();
+
+    if (inserted) {
+      const newCommentObj = {
+        id: inserted.id,
+        name: user.full_name || 'Alexandra Borke',
+        avatar: user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        time: "À l'instant",
+        text: commentText,
+      };
+      setComments([...comments, newCommentObj]);
+      if (!showComments) setShowComments(true);
+    }
   };
 
   const handleShare = () => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`);
+    }
     setCopiedShare(true);
     setTimeout(() => setCopiedShare(false), 2200);
   };
@@ -72,10 +148,10 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img
-            src={post.author?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-            alt={post.author?.name || 'Auteur'}
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-[#0284C7] ring-offset-1"
+          <UserAvatar
+            avatarUrl={post.author?.avatar}
+            size={40}
+            className="ring-2 ring-[#0284C7] ring-offset-1 shrink-0"
           />
           <div className="flex flex-col">
             <span className={`text-[14px] font-bold leading-tight flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
@@ -89,7 +165,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
             </span>
           </div>
         </div>
-        <button className={`transition-colors p-1.5 rounded-full cursor-pointer ${darkMode ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800' : 'text-[#CBD5E1] hover:text-slate-600 hover:bg-slate-100'}`}>
+        <button className={`transition-colors p-1.5 rounded-full cursor-pointer border-none bg-transparent ${darkMode ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800' : 'text-[#CBD5E1] hover:text-slate-600 hover:bg-slate-100'}`}>
           <MoreHorizontal className="w-5.5 h-5.5" />
         </button>
       </div>
@@ -144,7 +220,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setShowComments(!showComments)}
+            onClick={handleToggleComments}
             className="hover:underline transition-all cursor-pointer bg-transparent border-none p-0 text-inherit font-medium"
           >
             {comments.length} {comments.length > 1 ? "commentaires" : "commentaire"}
@@ -179,7 +255,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
 
         {/* Comment Button */}
         <button
-          onClick={() => setShowComments(!showComments)}
+          onClick={handleToggleComments}
           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
             showComments
               ? darkMode ? 'text-[#1677FF] bg-blue-500/10' : 'text-[#1677FF] bg-blue-50'
@@ -226,10 +302,10 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
       <div className="mt-2 flex flex-col gap-3">
         {/* Comment Input Box */}
         <form onSubmit={handleAddComment} className="flex items-center gap-2.5 pt-1">
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-            alt="Votre avatar"
-            className="w-8 h-8 rounded-full object-cover shrink-0"
+          <UserAvatar
+            avatarUrl={user?.avatar_url}
+            size={32}
+            className="shrink-0"
           />
           <div className={`flex-1 flex items-center gap-2 px-3.5 py-2 rounded-full border transition-all ${
             darkMode 
@@ -266,26 +342,32 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
         </form>
 
         {/* Expandable Comments List */}
-        {showComments && comments.length > 0 && (
+        {showComments && (
           <div className="flex flex-col gap-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-800 animate-in fade-in duration-200">
-            {comments.map((comment: any) => (
-              <div key={comment.id} className="flex gap-2.5 text-[13px]">
-                <img
-                  src={comment.avatar}
-                  alt={comment.name}
-                  className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5"
-                />
-                <div className={`flex-1 p-2.5 px-3 rounded-2xl ${
-                  darkMode ? 'bg-[#0F172A]/80 text-slate-200' : 'bg-slate-100/80 text-slate-800'
-                }`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-[12px]">{comment.name}</span>
-                    <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{comment.time}</span>
+            {loadingComments ? (
+              <div className="text-[12px] text-slate-400 py-2 text-center">Chargement des commentaires...</div>
+            ) : comments.length === 0 ? (
+              <div className="text-[12px] text-slate-400 py-2 text-center">Aucun commentaire pour le moment. Soyez le premier !</div>
+            ) : (
+              comments.map((comment: any) => (
+                <div key={comment.id} className="flex gap-2.5 text-[13px]">
+                  <UserAvatar
+                    avatarUrl={comment.avatar}
+                    size={28}
+                    className="shrink-0 mt-0.5"
+                  />
+                  <div className={`flex-1 p-2.5 px-3 rounded-2xl ${
+                    darkMode ? 'bg-[#0F172A]/80 text-slate-200' : 'bg-slate-100/80 text-slate-800'
+                  }`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-[12px]">{comment.name}</span>
+                      <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{comment.time}</span>
+                    </div>
+                    <p className="text-[12.5px] leading-snug">{comment.text}</p>
                   </div>
-                  <p className="text-[12.5px] leading-snug">{comment.text}</p>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>

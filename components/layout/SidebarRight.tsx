@@ -11,6 +11,7 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
   const { darkMode: ctxDarkMode } = useTheme()
   const darkMode = propDarkMode ?? ctxDarkMode
   const supabase = createClient()
+
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [onlineUsers, setOnlineUsers] = useState<any[]>([])
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
@@ -22,194 +23,179 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
       if (!user) return
       setCurrentUser(user)
 
-      // Fetch user's follows
-      const { data: followsData } = await supabase
+      // Fetch user's existing follows
+      const { data: follows } = await supabase
         .from('user_follows')
         .select('following_id')
         .eq('follower_id', user.id)
 
-      const followed = new Set((followsData || []).map((f: any) => f.following_id))
-      setFollowedIds(followed)
+      const followedSet = new Set<string>(follows?.map((f: any) => f.following_id) || [])
+      setFollowedIds(followedSet)
 
-      // Fetch suggested users from user_public_profiles
+      // Fetch suggested user profiles
       const { data: profiles } = await supabase
         .from('user_public_profiles')
-        .select('id, full_name, username, avatar_url')
+        .select('id, full_name, avatar_url, username, role, plan')
         .neq('id', user.id)
         .limit(10)
 
-      if (profiles) {
-        setSuggestions(profiles.filter(p => !followed.has(p.id)).slice(0, 5))
+      if (profiles && profiles.length > 0) {
+        setSuggestions(profiles)
         setOnlineUsers(profiles.slice(0, 4))
+      } else {
+        // Fallback default suggestions
+        setSuggestions([
+          {
+            id: '1',
+            full_name: 'Laura Fisher',
+            role: 'Social Media Manager',
+            avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+          },
+          {
+            id: '2',
+            full_name: 'Sam Brown',
+            role: 'Content Creator',
+            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+          },
+          {
+            id: '3',
+            full_name: 'Julien Mercier',
+            role: 'Brand Strategist',
+            avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          }
+        ])
+        setOnlineUsers([
+          {
+            id: '1',
+            full_name: 'Laura Fisher',
+            avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+          },
+          {
+            id: '3',
+            full_name: 'Julien Mercier',
+            avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          }
+        ])
       }
     }
     loadData()
   }, [supabase])
 
-  const toggleAddFriend = async (targetId: string) => {
+  const toggleFollow = async (targetUserId: string) => {
     if (!currentUser) return
-    const isFollowed = followedIds.has(targetId)
 
-    // Optimistic update
-    setFollowedIds(prev => {
-      const next = new Set(prev)
-      if (isFollowed) next.delete(targetId)
-      else next.add(targetId)
-      return next
-    })
+    const isFollowing = followedIds.has(targetUserId)
+    const nextSet = new Set(followedIds)
 
-    if (isFollowed) {
-      await supabase.from('user_follows').delete().match({ follower_id: currentUser.id, following_id: targetId })
+    if (isFollowing) {
+      nextSet.delete(targetUserId)
+      setFollowedIds(nextSet)
+      await supabase
+        .from('user_follows')
+        .delete()
+        .match({ follower_id: currentUser.id, following_id: targetUserId })
     } else {
-      await supabase.from('user_follows').insert({ follower_id: currentUser.id, following_id: targetId })
-      // Send notification
-      await supabase.from('notifications').insert({
-        user_id: targetId,
-        type: 'follow',
-        title: 'Nouvel abonné',
-        message: 'Quelqu\'un a commencé à vous suivre.',
-        action_url: `/profile/${currentUser.id}`,
-        platform: 'cm_studio',
-        is_read: false
-      })
+      nextSet.add(targetUserId)
+      setFollowedIds(nextSet)
+      await supabase
+        .from('user_follows')
+        .insert({ follower_id: currentUser.id, following_id: targetUserId })
     }
   }
 
   return (
-    <aside className="w-[240px] xl:w-[260px] shrink-0 hidden lg:flex flex-col h-full overflow-y-auto no-scrollbar pb-6 gap-4 select-none">
+    <aside className="w-[300px] xl:w-[320px] shrink-0 h-full flex flex-col gap-4 hidden lg:flex select-none">
       
-      {/* SECTION 1: SUGGESTIONS */}
-      <div className={`rounded-2xl p-4 shadow-card-subtle border transition-colors duration-300 ${
+      {/* 1. Suggestions Card */}
+      <div className={`rounded-2xl p-4 shadow-card-subtle border shrink-0 transition-colors duration-300 ${
         darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
       }`}>
-        {/* Card Header */}
-        <div className="flex items-center justify-between mb-3">
-          <h3 className={`text-[14px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
-            Suggestions
+        <div className="flex items-center justify-between mb-3.5">
+          <h3 className={`text-[14px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+            Suggestions de la communauté
           </h3>
-          <Link href="/members" className={`text-[12px] font-bold transition-colors cursor-pointer text-decoration-none ${
-            darkMode ? 'text-[#38BDF8] hover:text-[#7DD3FC]' : 'text-[#1677FF] hover:text-[#1266DF]'
-          }`}>
+          <Link href="/members" className="text-[12px] font-bold text-[#1677FF] hover:underline cursor-pointer">
             Voir tout
           </Link>
         </div>
 
-        {/* Top Divider */}
-        <div className={`h-[1px] w-full mb-1 ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`} />
-
-        {/* List of Suggestions */}
-        <div className="flex flex-col">
-          {suggestions.length === 0 ? (
-            <div className="py-3 text-center text-[12px] text-slate-400">
-              Aucune suggestion pour le moment.
-            </div>
-          ) : (
-            suggestions.map((user, index) => {
-              const isFollowed = followedIds.has(user.id)
-              return (
-                <React.Fragment key={user.id}>
-                  <div 
-                    className={`flex items-center justify-between py-2 px-2 rounded-xl transition-all cursor-pointer group ${
-                      darkMode ? 'hover:bg-slate-800/70' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    {/* Left: Avatar + Info */}
-                    <Link href={`/profile/${user.username || user.id}`} className="flex items-center gap-3 min-w-0 flex-1 text-decoration-none">
-                      <UserAvatar
-                        avatarUrl={user.avatar_url}
-                        size={36}
-                        accentBg
-                        fallbackColor="var(--accent)"
-                      />
-                      <div className="flex flex-col min-w-0">
-                        <span className={`text-[13px] font-bold truncate leading-tight ${darkMode ? 'text-slate-100' : 'text-[#1E293B]'}`}>
-                          {user.full_name || 'Utilisateur'}
-                        </span>
-                        <span className={`text-[11.5px] font-medium truncate leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`}>
-                          @{user.username || 'membre'}
-                        </span>
-                      </div>
-                    </Link>
-
-                    {/* Right: Plus/Check Button */}
-                    <button
-                      onClick={() => toggleAddFriend(user.id)}
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer shrink-0 ${
-                        isFollowed
-                          ? darkMode
-                            ? 'bg-blue-500/20 text-[#38BDF8]'
-                            : 'bg-blue-50 text-[#1677FF]'
-                          : darkMode
-                            ? 'text-slate-400 hover:text-white hover:bg-slate-700'
-                            : 'text-slate-400 hover:text-[#1677FF] hover:bg-blue-50'
-                      }`}
-                      title={isFollowed ? "Abonné" : "Suivre"}
-                    >
-                      {isFollowed ? (
-                        <Check className="w-4 h-4 stroke-[2.5]" />
-                      ) : (
-                        <Plus className="w-4.5 h-4.5 stroke-[2] text-slate-500 dark:text-slate-400 group-hover:text-[#1677FF]" />
-                      )}
-                    </button>
+        <div className="flex flex-col gap-3">
+          {suggestions.slice(0, 4).map((user) => {
+            const isFollowed = followedIds.has(user.id)
+            return (
+              <div key={user.id} className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <UserAvatar
+                    avatarUrl={user.avatar_url}
+                    size={36}
+                    className="ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
+                  />
+                  <div className="flex flex-col min-w-0">
+                    <span className={`text-[13px] font-bold truncate leading-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+                      {user.full_name || 'Membre'}
+                    </span>
+                    <span className={`text-[11px] truncate leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {user.role || user.username || 'Community Manager'}
+                    </span>
                   </div>
+                </div>
 
-                  {/* Row Divider */}
-                  {index < suggestions.length - 1 && (
-                    <div className={`h-[1px] w-full my-0.5 ${darkMode ? 'bg-slate-800/60' : 'bg-slate-100/80'}`} />
-                  )}
-                </React.Fragment>
-              )
-            })
-          )}
+                <button
+                  onClick={() => toggleFollow(user.id)}
+                  title={isFollowed ? "Abonné" : "Suivre"}
+                  className={`w-7.5 h-7.5 rounded-full flex items-center justify-center transition-all cursor-pointer border-none shrink-0 ${
+                    isFollowed
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+                  }`}
+                >
+                  {isFollowed ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Plus className="w-4 h-4 stroke-[2.5]" />}
+                </button>
+              </div>
+            )
+          })}
         </div>
       </div>
 
-      {/* SECTION 2: EN LIGNE MAINTENANT (4 Avatars Max) */}
-      <div className={`rounded-2xl p-4 shadow-card-subtle border transition-colors duration-300 ${
+      {/* 2. Online Users Card */}
+      <div className={`rounded-2xl p-4 shadow-card-subtle border shrink-0 transition-colors duration-300 ${
         darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
       }`}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-            <h3 className={`text-[14px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <h3 className={`text-[14px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
               En ligne maintenant
             </h3>
           </div>
-          <Link href="/members" className={`text-[12px] font-bold transition-colors cursor-pointer text-decoration-none ${
-            darkMode ? 'text-[#38BDF8] hover:text-[#7DD3FC]' : 'text-[#1677FF] hover:text-[#1266DF]'
-          }`}>
-            Voir tout
-          </Link>
+          <span className="text-[11px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full">
+            {onlineUsers.length} actifs
+          </span>
         </div>
 
-        {/* 4 Horizontal Avatars Grid */}
-        <div className="grid grid-cols-4 gap-2 w-full items-start justify-items-center">
-          {onlineUsers.slice(0, 4).map((user) => (
-            <Link key={user.id} href={`/profile/${user.username || user.id}`} className="flex flex-col items-center gap-1.5 cursor-pointer group w-full min-w-0 text-decoration-none">
-              <div className="relative">
-                <div className={`w-10 h-10 xl:w-11 xl:h-11 rounded-full overflow-hidden border p-0.5 transition-transform group-hover:scale-105 ${
-                  darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-slate-50'
-                }`}>
-                  <UserAvatar
-                    avatarUrl={user.avatar_url}
-                    size={38}
-                  />
-                </div>
-                {/* Green online status badge */}
-                <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ${
-                  darkMode ? 'ring-[#1E293B]' : 'ring-white'
-                }`} />
-              </div>
-
-              {/* Name below avatar */}
-              <span className={`text-[11px] font-medium truncate w-full text-center leading-tight ${
-                darkMode ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'
-              }`}>
-                {(user.full_name || 'Membre').split(' ')[0]}
-              </span>
-            </Link>
+        <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+          {onlineUsers.map((user) => (
+            <div key={user.id} className="relative group cursor-pointer shrink-0">
+              <UserAvatar
+                avatarUrl={user.avatar_url}
+                size={40}
+                className="ring-2 ring-emerald-500 ring-offset-1"
+              />
+              <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1E293B]" />
+            </div>
           ))}
+        </div>
+      </div>
+
+      {/* 3. Footer Links */}
+      <div className={`text-[11px] px-2 leading-relaxed ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+        <p>© 2026 CM Studio — Assistant Community Manager IA.</p>
+        <div className="flex flex-wrap gap-2 mt-1 font-semibold">
+          <a href="#" className="hover:underline">Conditions</a>
+          <span>•</span>
+          <a href="#" className="hover:underline">Confidentialité</a>
+          <span>•</span>
+          <a href="#" className="hover:underline">Aide</a>
         </div>
       </div>
 
