@@ -283,13 +283,23 @@ export default function HomePage() {
             </h3>
             <Link href="/network" style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
           </div>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {['D', 'S', 'M', 'A', 'L'].map((u, i) => (
-              <div key={i} style={{ position: 'relative' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <User size={18} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+            {[
+              { name: 'Daniel', color: 'var(--accent)' },
+              { name: 'Sarah', color: '#10B981' },
+              { name: 'Moussa', color: '#F59E0B' },
+              { name: 'Alice', color: '#EC4899' }
+            ].map((u, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--s2)', border: '1.5px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <User size={20} strokeWidth={1.5} color="var(--t2)" />
+                  </div>
+                  <div style={{ position: 'absolute', bottom: 1, right: 1, width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', border: '2px solid var(--card)' }} />
                 </div>
-                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', border: '2px solid var(--card)' }} />
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--t2)', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '52px' }}>
+                  {u.name}
+                </span>
               </div>
             ))}
           </div>
