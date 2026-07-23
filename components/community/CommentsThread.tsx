@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Send, Heart } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -36,6 +36,7 @@ export function CommentsThread({
 }: CommentsThreadProps) {
   const { user: currentUser } = useUser();
   const supabase = createClient();
+  const commentsContainerRef = useRef<HTMLDivElement>(null);
 
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -157,7 +158,7 @@ export function CommentsThread({
     fetchComments();
   }, [postId, supabase, currentUser?.id, highlightCommentId]);
 
-  // Polling scroll effect when highlightCommentId is active
+  // Polling scroll effect when highlightCommentId is active (inner container + page scroll)
   useEffect(() => {
     if (loading || !highlightCommentId) return;
 
@@ -166,16 +167,31 @@ export function CommentsThread({
 
     const timer = setInterval(() => {
       attempts++;
-      const el = document.getElementById(`comment-container-${highlightCommentId}`);
-      if (el) {
+      const targetEl = document.getElementById(`comment-container-${highlightCommentId}`);
+      const container = commentsContainerRef.current;
+
+      if (targetEl && container) {
         clearInterval(timer);
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const originalBg = el.style.backgroundColor;
-        el.style.transition = 'background-color 0.5s ease';
-        el.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+
+        // Calculate relative position within inner scroll container
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+        const relativeTop = targetRect.top - containerRect.top + container.scrollTop;
+        const scrollTo = relativeTop - container.clientHeight / 2 + targetEl.clientHeight / 2;
+
+        container.scrollTo({
+          top: Math.max(0, scrollTo),
+          behavior: 'smooth'
+        });
+
+        // Apply blue highlight
+        const originalBg = targetEl.style.backgroundColor;
+        targetEl.style.transition = 'background-color 0.5s ease';
+        targetEl.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
         setTimeout(() => {
-          el.style.backgroundColor = originalBg;
+          targetEl.style.backgroundColor = originalBg;
         }, 2000);
+
         onHighlightHandled?.();
       } else if (attempts >= maxAttempts) {
         clearInterval(timer);
@@ -294,7 +310,7 @@ export function CommentsThread({
     <div className={`flex flex-col border-t ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100'}`}>
       
       {/* SCROLLABLE COMMENTS SECTION (Exact TikTok Style) */}
-      <div className="flex-1 max-h-[220px] overflow-y-auto p-4 pb-0">
+      <div ref={commentsContainerRef} className="flex-1 max-h-[220px] overflow-y-auto p-4 pb-0">
         {loading ? (
           <div className="text-[0.8rem] text-slate-400 text-center pb-4">Chargement...</div>
         ) : comments.length === 0 ? (
