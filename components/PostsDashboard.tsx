@@ -945,7 +945,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               <div style={{ fontSize: '.82rem', color: 'var(--t3)', lineHeight: 1.4 }}>Choisissez l'une de nos fonctionnalités pour propulser votre présence sociale.</div>
             </div>
 
-            {/* Grille d'options (Dense & Premium) */}
+            {/* Grille d'options (Dense & Premium - 6 Options) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }} className="sb-scroll">
               
               {/* Option 1 : Générer par IA */}
@@ -954,12 +954,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                   setCreateModalOpen(false)
                   router.push('/workspace/posts/create')
                 }}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+                style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'var(--card)' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Sparkles size={18} />
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={20} />
                 </div>
                 <div>
                   <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '.2rem' }}>Générer par IA</div>
@@ -967,77 +967,77 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 </div>
               </div>
 
-              {/* Option 2 : Créer un Réel / Vidéo (Mockup) */}
+              {/* Option 2 : Créer un Réel / Vidéo */}
               <div 
                 onClick={() => toast('Création de Réels bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+                style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.85 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'var(--card)' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Video size={18} />
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Video size={20} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
                     <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer un Réel / Vidéo</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--accent-light)', color: 'var(--accent)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid rgba(22, 119, 255, 0.2)' }}>Bientôt</span>
                   </div>
                   <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Générez ou planifiez un Réel Instagram, TikTok ou YouTube Short.</div>
                 </div>
               </div>
 
-              {/* Option 3 : Créer un Carrousel (Mockup) */}
+              {/* Option 3 : Créer un Carrousel */}
               <div 
                 onClick={() => toast('Création de carrousels bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+                style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.85 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'var(--card)' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Grid3X3 size={18} />
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Grid3X3 size={20} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
                     <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer un Carrousel</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--accent-light)', color: 'var(--accent)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid rgba(22, 119, 255, 0.2)' }}>Bientôt</span>
                   </div>
                   <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Concevez un carrousel d'images engageant avec du texte généré par l'IA.</div>
                 </div>
               </div>
 
-              {/* Option 4 : Créer une Story / Image (Mockup) */}
+              {/* Option 4 : Créer une Story / Image */}
               <div 
                 onClick={() => toast('Génération de Stories bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+                style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.85 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'var(--card)' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ImageIcon size={18} />
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ImageIcon size={20} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
                     <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Créer une Story / Image</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--accent-light)', color: 'var(--accent)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid rgba(22, 119, 255, 0.2)' }}>Bientôt</span>
                   </div>
                   <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Générez une image simple ou une story avec des prompts IA.</div>
                 </div>
               </div>
 
-              {/* Option 5 : Planifier une publication (Mockup) */}
+              {/* Option 5 : Planifier une publication */}
               <div 
                 onClick={() => toast('Planification de campagne bientôt disponible !', 'info')}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.8 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+                style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start', opacity: 0.85 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'var(--card)' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Calendar size={18} />
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Calendar size={20} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.4rem', marginBottom: '.2rem' }}>
                     <span style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)' }}>Planifier une publication</span>
-                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--s2)', color: 'var(--t3)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid var(--b1)' }}>Bientôt</span>
+                    <span style={{ fontSize: '.58rem', fontWeight: 700, background: 'var(--accent-light)', color: 'var(--accent)', padding: '.15rem .4rem', borderRadius: '6px', border: '1px solid rgba(22, 119, 255, 0.2)' }}>Bientôt</span>
                   </div>
                   <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Planifiez et organisez une série de posts à l'avance dans le calendrier.</div>
                 </div>
@@ -1049,16 +1049,16 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                   setCreateModalOpen(false)
                   router.push('/workspace/posts/create?mode=manual')
                 }}
-                style={{ background: 'transparent', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'border-color 0.18s, transform 0.18s, background-color 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--s2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'transparent' }}
+                style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', gap: '.75rem', alignItems: 'flex-start' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-light)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.background = 'var(--card)' }}
               >
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <PenLine size={18} />
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <PenLine size={20} />
                 </div>
                 <div>
                   <div style={{ fontSize: '.88rem', fontWeight: 700, color: 'var(--t1)', marginBottom: '.2rem' }}>Créer manuellement</div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Rédigez vous-même votre contenu et importez vos propres visuels.</div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.35 }}>Rédigez vous-même votre contenu et publiez-le directement.</div>
                 </div>
               </div>
 
