@@ -4,6 +4,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom exact pixel shadows and micro-details from premier */
+.shadow-app-container {
+  box-shadow: 0px 24px 60px -12px rgba(15, 23, 42, 0.09), 0px 10px 20px -5px rgba(15, 23, 42, 0.04);
+}
+
+.shadow-card-subtle {
+  box-shadow: 0px 3px 12px -2px rgba(15, 23, 42, 0.03), 0px 1px 3px rgba(15, 23, 42, 0.02);
+}
+
+.shadow-blue-glow {
+  box-shadow: 0px 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.shadow-story-card {
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 :root {
   --radius: 12px;
   /* ── Palette Officielle CM Studio — Light Mode ── */

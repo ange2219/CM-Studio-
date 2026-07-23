@@ -45,8 +45,8 @@ export function DashboardShell({
       {/* Full Width Top Navigation Bar */}
       <Header 
         darkMode={darkMode} 
-        setDarkMode={setDarkMode}
-        activeView={getActiveView()}
+        onToggleDarkMode={() => setDarkMode(!darkMode)}
+        onSelectView={() => {}}
       />
 
       {/* Main Workspace Layout */}
