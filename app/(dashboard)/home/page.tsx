@@ -87,36 +87,42 @@ export default function HomePage() {
       <div 
         onClick={() => setIsCreateModalOpen(true)}
         style={{
-        background: 'var(--card)',
-        borderRadius: '30px',
-        padding: '8px 16px 8px 8px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        marginBottom: '20px',
-        cursor: 'pointer',
-        border: '1px solid var(--b1)',
-      }}>
+          background: 'var(--card)',
+          borderRadius: '16px',
+          padding: '10px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '20px',
+          cursor: 'pointer',
+          border: '1px solid var(--b1)',
+          boxShadow: 'var(--shadow)'
+        }}
+      >
         <UserAvatar
           avatarUrl={user?.avatar_url}
-          size={40}
+          size={38}
           accentBg
           fallbackColor="var(--accent)"
-          iconSize={22}
+          iconSize={20}
         />
-        <div style={{ flex: 1, color: 'var(--t3)', fontSize: '0.95rem' }}>
-          Quoi de neuf ?
+        <div style={{ flex: 1, color: 'var(--t3)', fontSize: '0.88rem', fontWeight: 500 }}>
+          Quoi de neuf, {firstName} ?
         </div>
         <button style={{
-          background: 'var(--accent)',
+          background: '#1677FF',
           border: 'none',
-          borderRadius: '50%',
-          width: '36px', height: '36px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff',
-          cursor: 'pointer'
+          borderRadius: '20px',
+          padding: '6px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+          color: '#ffffff',
+          fontWeight: 700,
+          fontSize: '0.82rem',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(22, 119, 255, 0.3)'
         }}>
-          <SquarePen size={18} />
+          <SquarePen size={15} />
+          <span>Publier !</span>
         </button>
       </div>
 
@@ -150,11 +156,11 @@ export default function HomePage() {
               style={{
                 background: 'none',
                 border: 'none',
-                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                borderBottom: isActive ? '2.5px solid #1677FF' : '2.5px solid transparent',
                 padding: '10px 22px',
                 fontSize: '0.9rem',
                 fontWeight: isActive ? 700 : 500,
-                color: isActive ? 'var(--accent)' : 'var(--t3)',
+                color: isActive ? 'var(--t1)' : 'var(--t3)',
                 cursor: 'pointer',
                 transition: 'all .15s',
                 marginBottom: '-1px',
@@ -216,79 +222,59 @@ export default function HomePage() {
       {/* ── Right Sidebar Column (Desktop Only) ── */}
       <div className="right-sidebar" style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, position: 'sticky', top: '20px' }}>
         
-        {/* Carte 1: Suggestions à suivre */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
-              <UserPlus size={18} color="var(--accent)" /> Suggestions à suivre
+        {/* Carte 1: Suggestions */}
+        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '16px', boxShadow: 'var(--shadow)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--t1)', margin: 0 }}>
+              Suggestions
             </h3>
-            <Link href="/network" style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
+            <Link href="/network" style={{ fontSize: '0.8rem', color: '#1677FF', fontWeight: 700, textDecoration: 'none' }}>Voir tout</Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { name: 'Daniel K.', desc: '12 abonnés en commun' },
-              { name: 'Sarah M.', desc: '8 abonnés en commun' },
-              { name: 'Moussa T.', desc: '5 abonnés en commun' }
-            ].map(u => (
-              <div key={u.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2, #e5e7eb)', border: '1px solid var(--b1, #e5e7eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <User size={18} strokeWidth={1.5} color="var(--t3, #9ca3af)" />
+              { id: 1, name: 'Julia Smith', handle: '@juliasmith', added: false },
+              { id: 2, name: 'Vermillion D. Gray', handle: '@vermillongray', added: false },
+              { id: 3, name: 'Mai Senpai', handle: '@maisenpai', added: false },
+              { id: 4, name: 'Azunyan U. Wu', handle: '@azunyandesu', added: true },
+              { id: 5, name: 'Oarack Babama', handle: '@obama21', added: false },
+            ].map((u) => (
+              <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '4px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <User size={18} strokeWidth={1.5} color="var(--t2)" />
                   </div>
-                  <div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--t1)' }}>{u.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--t3)' }}>{u.desc}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--t3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.handle}</span>
                   </div>
                 </div>
-                <button style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.15s' }}>Suivre</button>
+                <button style={{
+                  width: '28px', height: '28px', borderRadius: '8px', border: 'none',
+                  background: u.added ? '#1677FF' : 'var(--s2)',
+                  color: u.added ? '#ffffff' : 'var(--t2)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  {u.added ? <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>✓</span> : <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>+</span>}
+                </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Carte 2: Groupes actifs */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
-              <Flame size={18} color="var(--accent)" /> Groupes actifs
-            </h3>
-            <Link href="/groups" style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {[
-              { name: 'Entrepreneurs 360', desc: '128 membres actifs', icon: <Rocket size={18} color="#fff" />, color: '#4F46E5' },
-              { name: 'Développeurs CM', desc: '96 discussions', icon: <Code size={18} color="#059669" />, color: '#D1FAE5', iconCol: '#064E3B' },
-              { name: 'Marketing & Growth', desc: '74 membres actifs', icon: <Megaphone size={18} color="#D97706" />, color: '#FEF3C7', iconCol: '#78350F' }
-            ].map(g => (
-              <div key={g.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: g.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {g.icon}
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--t1)' }}>{g.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent)' }}/> {g.desc}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Carte 3: En ligne maintenant */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '16px' }}>
+        {/* Carte 2: En ligne maintenant */}
+        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '16px', boxShadow: 'var(--shadow)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <h3 style={{ fontSize: '0.92rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2)' }}/> En ligne maintenant
             </h3>
-            <Link href="/network" style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Voir tout</Link>
+            <Link href="/network" style={{ fontSize: '0.8rem', color: '#1677FF', fontWeight: 700, textDecoration: 'none' }}>Voir tout</Link>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
             {[
-              { name: 'Daniel', color: 'var(--accent)' },
-              { name: 'Sarah', color: '#10B981' },
-              { name: 'Moussa', color: '#F59E0B' },
-              { name: 'Alice', color: '#EC4899' }
+              { name: 'Amanda', color: 'var(--accent)' },
+              { name: 'Melissa', color: '#10B981' },
+              { name: 'Katty', color: '#F59E0B' },
+              { name: 'Lucas', color: '#EC4899' }
             ].map((u, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                 <div style={{ position: 'relative' }}>
