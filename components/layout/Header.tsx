@@ -160,10 +160,10 @@ export function Header({
 
             {/* User Name in Bold with Active Organization underneath */}
             <div className="flex flex-col text-left leading-tight hidden sm:flex">
-              <span className="text-[13.5px] font-bold truncate max-w-[130px]">
+              <span className="text-[14.5px] font-bold truncate max-w-[160px]">
                 {displayName}
               </span>
-              <span className="text-[11px] font-semibold text-[#1677FF] dark:text-[#38BDF8] truncate max-w-[130px]">
+              <span className="text-[12px] font-semibold text-[#1677FF] dark:text-[#38BDF8] truncate max-w-[160px]">
                 {displayOrg}
               </span>
             </div>
