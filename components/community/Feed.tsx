@@ -130,18 +130,48 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
             type="text"
             value={postContent}
             onChange={(e) => setPostContent(e.target.value)}
-            placeholder={`Quoi de neuf, ${(user?.full_name || 'Alexandra').split(' ')[0]} ?`}
+            placeholder={`Quoi de neuf, ${(user?.full_name || 'Membre').split(' ')[0]} ?`}
             className={`text-[13px] font-normal flex-1 outline-none bg-transparent ${darkMode ? 'text-slate-100 placeholder-slate-400' : 'text-slate-700 placeholder-[#94A3B8]'}`}
           />
+
+          {/* Image Upload Trigger */}
+          <label className="p-1.5 text-slate-400 hover:text-[#1677FF] dark:hover:text-blue-400 cursor-pointer rounded-full transition-colors shrink-0" title="Ajouter une image">
+            <ImageIcon className="w-4.5 h-4.5" />
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingImage}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploadingImage(true);
+                try {
+                  const fd = new FormData();
+                  fd.append('file', file);
+                  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                  const data = await res.json();
+                  if (data.url) {
+                    setUploadedImageUrl(data.url);
+                  }
+                } catch (err) {
+                  console.error('Image upload error:', err);
+                } finally {
+                  setUploadingImage(false);
+                }
+              }}
+            />
+          </label>
+
           <button 
             type="submit"
-            disabled={(!postContent.trim() && !uploadedImageUrl) || isPosting}
+            disabled={(!postContent.trim() && !uploadedImageUrl) || isPosting || uploadingImage}
             className={`bg-[#1677FF] hover:bg-[#1266DF] text-white text-[12px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-blue-glow transition-all cursor-pointer shrink-0 border-none ${
-              (!postContent.trim() && !uploadedImageUrl) || isPosting ? 'opacity-50 cursor-not-allowed' : ''
+              (!postContent.trim() && !uploadedImageUrl) || isPosting || uploadingImage ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             <Link2 className="w-4 h-4 stroke-[2.5] transform rotate-45" />
-            <span>{isPosting ? 'Envoi...' : 'Publier !'}</span>
+            <span>{uploadingImage ? 'Upload...' : isPosting ? 'Envoi...' : 'Publier !'}</span>
           </button>
         </div>
 
