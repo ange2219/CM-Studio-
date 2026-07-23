@@ -23,9 +23,17 @@ interface CommentsThreadProps {
   postId: string;
   onCommentAdded?: () => void;
   darkMode?: boolean;
+  highlightCommentId?: string | null;
+  onHighlightHandled?: () => void;
 }
 
-export function CommentsThread({ postId, onCommentAdded, darkMode = false }: CommentsThreadProps) {
+export function CommentsThread({ 
+  postId, 
+  onCommentAdded, 
+  darkMode = false,
+  highlightCommentId,
+  onHighlightHandled
+}: CommentsThreadProps) {
   const { user: currentUser } = useUser();
   const supabase = createClient();
 
@@ -116,6 +124,26 @@ export function CommentsThread({ postId, onCommentAdded, darkMode = false }: Com
         formatted.filter(c => !c.parent_id).forEach(c => {
           initialVisible[c.id] = 0;
         });
+
+        // Auto-expand replies if highlightCommentId matches a reply
+        if (highlightCommentId) {
+          const target = formatted.find(c => c.id === highlightCommentId);
+          if (target) {
+            let rootId = target.parent_id || target.id;
+            let curr = target;
+            while (curr && curr.parent_id) {
+              const parent = formatted.find(x => x.id === curr.parent_id);
+              if (parent) {
+                rootId = parent.id;
+                curr = parent;
+              } else {
+                break;
+              }
+            }
+            initialVisible[rootId] = 999; // Expand all replies under root
+          }
+        }
+
         setVisibleReplies(initialVisible);
 
       } catch (err) {
@@ -127,7 +155,36 @@ export function CommentsThread({ postId, onCommentAdded, darkMode = false }: Com
     }
 
     fetchComments();
-  }, [postId, supabase, currentUser?.id]);
+  }, [postId, supabase, currentUser?.id, highlightCommentId]);
+
+  // Polling scroll effect when highlightCommentId is active
+  useEffect(() => {
+    if (loading || !highlightCommentId) return;
+
+    let attempts = 0;
+    const maxAttempts = 30; // 3 seconds max (30 * 100ms)
+
+    const timer = setInterval(() => {
+      attempts++;
+      const el = document.getElementById(`comment-container-${highlightCommentId}`);
+      if (el) {
+        clearInterval(timer);
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const originalBg = el.style.backgroundColor;
+        el.style.transition = 'background-color 0.5s ease';
+        el.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+        setTimeout(() => {
+          el.style.backgroundColor = originalBg;
+        }, 2000);
+        onHighlightHandled?.();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(timer);
+        onHighlightHandled?.();
+      }
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [loading, highlightCommentId, onHighlightHandled]);
 
   // Handle submit comment / reply
   const handleCommentSubmit = async (e: React.FormEvent) => {

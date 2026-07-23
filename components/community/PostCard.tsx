@@ -25,12 +25,16 @@ export function PostCard({
   post, 
   darkMode: propDarkMode,
   showComments: propShowComments,
-  onToggleComments
+  onToggleComments,
+  highlightCommentId,
+  onHighlightHandled
 }: { 
   post: any; 
   darkMode?: boolean;
   showComments?: boolean;
   onToggleComments?: (show: boolean) => void;
+  highlightCommentId?: string | null;
+  onHighlightHandled?: () => void;
 }) {
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
@@ -348,9 +352,11 @@ export function PostCard({
       {/* 3. Embedded Standalone CommentsThread Component */}
       {showComments && (
         <CommentsThread
-          postId={post.db_id}
+          postId={post.db_id || post.id}
           onCommentAdded={() => setCommentsCount((prev: number) => prev + 1)}
           darkMode={darkMode}
+          highlightCommentId={highlightCommentId}
+          onHighlightHandled={onHighlightHandled}
         />
       )}
 

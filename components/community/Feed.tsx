@@ -23,6 +23,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
   const [postsList, setPostsList] = useState<any[]>([]);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
+  const [highlightedCommentIds, setHighlightedCommentIds] = useState<Record<string, string | null>>({});
 
   // Load real posts & user follows from Supabase
   useEffect(() => {
@@ -69,20 +70,20 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
     loadData();
   }, [supabase, user]);
 
-  // Handle URL hash anchor scrolling & opening comments
+  // Handle URL hash anchor scrolling & opening comments with polling
   useEffect(() => {
     if (postsList.length === 0) return;
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
     if (!hash) return;
 
-    if (hash.startsWith('#post-')) {
-      const raw = hash.replace('#post-', '');
-      const isComments = raw.endsWith('-comments');
-      const postId = isComments ? raw.replace('-comments', '') : raw;
-
-      setTimeout(() => {
-        const el = document.getElementById(`post-container-${postId}`);
+    const pollAndScrollElement = (elementId: string, onFound?: () => void) => {
+      let attempts = 0;
+      const maxAttempts = 30; // 30 * 100ms = 3s
+      const timer = setInterval(() => {
+        attempts++;
+        const el = document.getElementById(elementId);
         if (el) {
+          clearInterval(timer);
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           const originalBg = el.style.backgroundColor;
           el.style.transition = 'background-color 0.5s ease';
@@ -90,12 +91,24 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
           setTimeout(() => {
             el.style.backgroundColor = originalBg;
           }, 2000);
+          onFound?.();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(timer);
         }
-        if (isComments) {
-          setExpandedPostIds(prev => new Set(prev).add(postId));
-        }
-        window.history.replaceState(null, '', window.location.pathname);
-      }, 400);
+      }, 100);
+    };
+
+    if (hash.startsWith('#post-')) {
+      const raw = hash.replace('#post-', '');
+      const isComments = raw.endsWith('-comments');
+      const postId = isComments ? raw.replace('-comments', '') : raw;
+
+      if (isComments) {
+        setExpandedPostIds(prev => new Set(prev).add(postId));
+      }
+      pollAndScrollElement(`post-container-${postId}`);
+      window.history.replaceState(null, '', window.location.pathname);
+
     } else if (hash.startsWith('#comment_')) {
       // Format: #comment_[commentId]_[postId]
       const parts = hash.replace('#comment_', '').split('_');
@@ -103,29 +116,10 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
         const commentId = parts[0];
         const postId = parts[1];
 
-        setTimeout(() => {
-          const el = document.getElementById(`post-container-${postId}`);
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setExpandedPostIds(prev => new Set(prev).add(postId));
-
-            setTimeout(() => {
-              const cEl = document.getElementById(`comment-container-${commentId}`);
-              if (cEl) {
-                cEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                const originalBg = cEl.style.backgroundColor;
-                cEl.style.transition = 'background-color 0.5s ease';
-                cEl.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
-                setTimeout(() => {
-                  cEl.style.backgroundColor = originalBg;
-                }, 2000);
-              }
-              window.history.replaceState(null, '', window.location.pathname);
-            }, 600);
-          } else {
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-        }, 400);
+        setExpandedPostIds(prev => new Set(prev).add(postId));
+        setHighlightedCommentIds(prev => ({ ...prev, [postId]: commentId }));
+        pollAndScrollElement(`post-container-${postId}`);
+        window.history.replaceState(null, '', window.location.pathname);
       }
     }
   }, [postsList]);
@@ -297,6 +291,10 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
                 else next.delete(post.id);
                 return next;
               });
+            }}
+            highlightCommentId={highlightedCommentIds[post.id] || null}
+            onHighlightHandled={() => {
+              setHighlightedCommentIds(prev => ({ ...prev, [post.id]: null }));
             }}
           />
         ))}
