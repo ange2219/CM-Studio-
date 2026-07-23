@@ -21,8 +21,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { useTheme } from '@/components/context/ThemeContext';
+
 export function PostsDashboard({
-  darkMode = false,
+  darkMode: propDarkMode,
   onNavigateCreate,
   onSelectView
 }: {
@@ -30,6 +32,8 @@ export function PostsDashboard({
   onNavigateCreate?: () => void;
   onSelectView?: (view: string) => void;
 }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [selectedIds, setSelectedIds] = useState(new Set<string>());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showInspirationModal, setShowInspirationModal] = useState(false);

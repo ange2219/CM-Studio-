@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Link2 } from 'lucide-react';
 import { PostCard } from './PostCard';
+import { useTheme } from '@/components/context/ThemeContext';
 
 const MOCK_POSTS = [
   {
@@ -91,7 +92,9 @@ const MOCK_POSTS = [
   }
 ];
 
-export function Feed({ darkMode = false }: { darkMode?: boolean }) {
+export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [activeTab, setActiveTab] = useState('general'); // 'general' | 'suivi'
   const [postContent, setPostContent] = useState('');
   const [postsList, setPostsList] = useState(MOCK_POSTS);

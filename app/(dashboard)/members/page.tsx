@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { Search, UserPlus, Check, Sparkles } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export default function MembersPage({ darkMode = false }: { darkMode?: boolean }) {
+export default function MembersPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [activeTab, setActiveTab] = useState('suggestions'); // 'suggestions' | 'groups'
   const [searchTerm, setSearchTerm] = useState('');
 

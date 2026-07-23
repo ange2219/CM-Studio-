@@ -4,9 +4,12 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { UserAvatar } from '@/components/ui/UserAvatar'
+import { useTheme } from '@/components/context/ThemeContext'
 import Link from 'next/link'
 
-export function SidebarRight({ darkMode }: { darkMode: boolean }) {
+export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme()
+  const darkMode = propDarkMode ?? ctxDarkMode
   const supabase = createClient()
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [onlineUsers, setOnlineUsers] = useState<any[]>([])

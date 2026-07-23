@@ -1,30 +1,20 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Header } from '@/components/layout/Header'
 import { SidebarLeft } from '@/components/layout/SidebarLeft'
+import { ThemeProvider, useTheme } from '@/components/context/ThemeContext'
 import { usePathname } from 'next/navigation'
 
-export function DashboardShell({
+function DashboardShellContent({
   user,
   children
 }: {
   user: any;
   children: React.ReactNode;
 }) {
-  const [darkMode, setDarkMode] = useState(false)
+  const { darkMode, toggleDarkMode } = useTheme()
   const pathname = usePathname()
-
-  useEffect(() => {
-    // Sync dark mode class with html element
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-      document.documentElement.setAttribute('data-theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      document.documentElement.setAttribute('data-theme', 'light')
-    }
-  }, [darkMode])
 
   const getActiveView = () => {
     if (!pathname) return 'home'
@@ -45,7 +35,7 @@ export function DashboardShell({
       {/* Full Width Top Navigation Bar */}
       <Header 
         darkMode={darkMode} 
-        onToggleDarkMode={() => setDarkMode(!darkMode)}
+        onToggleDarkMode={toggleDarkMode}
         onSelectView={() => {}}
       />
 
@@ -64,5 +54,21 @@ export function DashboardShell({
       </div>
 
     </div>
+  )
+}
+
+export function DashboardShell({
+  user,
+  children
+}: {
+  user: any;
+  children: React.ReactNode;
+}) {
+  return (
+    <ThemeProvider>
+      <DashboardShellContent user={user}>
+        {children}
+      </DashboardShellContent>
+    </ThemeProvider>
   )
 }

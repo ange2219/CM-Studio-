@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { Settings as SettingsIcon, Building, CreditCard, Shield, Check } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export default function SettingsPage({ darkMode = false }: { darkMode?: boolean }) {
+export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [activeTab, setActiveTab] = useState('identity'); // 'identity' | 'billing' | 'security'
 
   const [brandName, setBrandName] = useState('Antigravity Studio');

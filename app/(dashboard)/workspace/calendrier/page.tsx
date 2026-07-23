@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export default function CalendarPage({ darkMode = false }: { darkMode?: boolean }) {
+export default function CalendarPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [currentMonth, setCurrentMonth] = useState('Juillet 2026');
 
   const scheduledPosts = [

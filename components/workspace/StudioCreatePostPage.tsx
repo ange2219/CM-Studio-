@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Send, RefreshCw, Check, Copy, Sliders, Layers, Calendar, BarChart2 } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export function StudioCreatePostPage({ darkMode = false }: { darkMode?: boolean }) {
+export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [mode, setMode] = useState('ai'); // 'ai' | 'manual'
   const [platforms, setPlatforms] = useState<Record<string, boolean>>({
     instagram: true,

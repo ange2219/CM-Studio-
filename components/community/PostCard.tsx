@@ -13,7 +13,11 @@ import {
   Sparkles 
 } from 'lucide-react';
 
-export function PostCard({ post, darkMode = false }: { post: any; darkMode?: boolean }) {
+import { useTheme } from '@/components/context/ThemeContext';
+
+export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [liked, setLiked] = useState(post.initialLiked || false);
   const [likesCount, setLikesCount] = useState(post.likesCount || 0);
   const [saved, setSaved] = useState(false);

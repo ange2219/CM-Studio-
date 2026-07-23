@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { Search, Send, Smile, Paperclip, MoreVertical, CheckCheck, Image as ImageIcon } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export default function MessagesPage({ darkMode = false }: { darkMode?: boolean }) {
+export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [conversations, setConversations] = useState([
     {
       id: 1,

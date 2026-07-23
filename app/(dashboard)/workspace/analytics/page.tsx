@@ -2,8 +2,11 @@
 
 import React from 'react';
 import { BarChart2, TrendingUp, Eye, Heart, MessageSquare } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export default function AnalyticsPage({ darkMode = false }: { darkMode?: boolean }) {
+export default function AnalyticsPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const kpis = [
     { title: 'Impressions Totales', value: '128,450', change: '+24.5%', isUp: true, icon: Eye, color: 'text-[#1677FF] bg-blue-50 dark:bg-blue-500/10' },
     { title: 'Taux d\'engagement', value: '5.82%', change: '+1.2%', isUp: true, icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' },

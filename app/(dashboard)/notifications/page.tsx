@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { Heart, MessageSquare, UserPlus, Sparkles, CheckCheck, Bell } from 'lucide-react';
+import { useTheme } from '@/components/context/ThemeContext';
 
-export default function NotificationsPage({ darkMode = false }: { darkMode?: boolean }) {
+export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
+  const { darkMode: ctxDarkMode } = useTheme();
+  const darkMode = propDarkMode ?? ctxDarkMode;
   const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'socials'
   
   const [notifications, setNotifications] = useState([
