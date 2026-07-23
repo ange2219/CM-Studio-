@@ -37,35 +37,7 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
           read: n.is_read || false,
         })));
       } else {
-        // Fallback default notifications if database table is empty for user
-        setNotifications([
-          {
-            id: '1',
-            category: 'studio',
-            type: 'like',
-            title: 'Un membre a aimé votre publication',
-            time: 'Il y a 10 minutes',
-            read: false,
-          },
-          {
-            id: '2',
-            category: 'studio',
-            type: 'comment',
-            title: 'Nouveau commentaire sur votre post',
-            subtitle: '"C\'est absolument grandiose !"',
-            time: 'Il y a 1 heure',
-            read: false,
-          },
-          {
-            id: '3',
-            category: 'socials',
-            type: 'social',
-            title: 'Votre publication est en ligne !',
-            subtitle: '248 impressions au cours de la première heure.',
-            time: 'Il y a 4 heures',
-            read: true,
-          }
-        ]);
+        setNotifications([]);
       }
     }
     loadNotifs();

@@ -13,76 +13,51 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
   const { user } = useUser();
   const supabase = createClient();
 
-  const [conversations, setConversations] = useState<any[]>([
-    {
-      id: '1',
-      name: 'Laura Fisher',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-      lastMessage: 'Super ! On valide le visuel pour demain ? 🚀',
-      time: '14:32',
-      unread: 2,
-      online: true,
-      messages: [
-        { id: 1, sender: 'them', text: 'Coucou Alexandra ! J\'ai fini la maquette pour la campagne.', time: '14:28' },
-        { id: 2, sender: 'me', text: 'Génial Laura ! Tu peux me partager l\'aperçu ?', time: '14:30' },
-        { id: 3, sender: 'them', text: 'Super ! On valide le visuel pour demain ? 🚀', time: '14:32' },
-      ]
-    },
-    {
-      id: '2',
-      name: 'Sam Brown',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-      lastMessage: 'Merci pour le retour sur la publication LinkedIn !',
-      time: 'Hier',
-      unread: 0,
-      online: false,
-      messages: [
-        { id: 1, sender: 'them', text: 'Salut ! As-tu jeté un œil à la métrique de la semaine ?', time: 'Hier 18:10' },
-        { id: 2, sender: 'me', text: 'Oui, l\'engagement a augmenté de +18% !', time: 'Hier 18:15' },
-        { id: 3, sender: 'them', text: 'Merci pour le retour sur la publication LinkedIn !', time: 'Hier 18:20' }
-      ]
-    }
-  ]);
-
-  const [activeConvId, setActiveConvId] = useState<string | number>('1');
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Load real profiles for messaging from Supabase
+  // Load real profiles and messages from Supabase
   useEffect(() => {
-    async function loadRealProfiles() {
-      if (!user) return;
+    async function loadRealConversations() {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+
       const { data: profiles } = await supabase
         .from('user_public_profiles')
         .select('id, full_name, avatar_url, username')
         .neq('id', user.id)
-        .limit(10);
+        .limit(20);
 
       if (profiles && profiles.length > 0) {
         const realConvs = profiles.map((p, idx) => ({
           id: p.id,
-          name: p.full_name || 'Membre CM Studio',
-          avatar: p.avatar_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`,
-          lastMessage: 'Message initial de bienvenue',
-          time: '12:00',
-          unread: idx === 0 ? 1 : 0,
+          name: p.full_name || p.username || 'Membre CM Studio',
+          avatar: p.avatar_url,
+          lastMessage: 'Démarrez une discussion',
+          time: '',
+          unread: 0,
           online: true,
-          messages: [
-            { id: 101, sender: 'them', text: `Bonjour ! Bienvenue sur la messagerie CM Studio.`, time: '12:00' }
-          ]
+          messages: []
         }));
         setConversations(realConvs);
         setActiveConvId(realConvs[0].id);
       }
+      setLoading(false);
     }
-    loadRealProfiles();
+    loadRealConversations();
   }, [supabase, user]);
 
-  const activeConv = conversations.find(c => c.id === activeConvId) || conversations[0];
+  const activeConv = conversations.find(c => c.id === activeConvId);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !user) return;
+    if (!inputText.trim() || !user || !activeConvId) return;
 
     const msgText = inputText.trim();
     setInputText('');
@@ -106,7 +81,6 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
       return conv;
     }));
 
-    // Send to Supabase direct_messages table if configured
     await supabase.from('direct_messages').insert({
       sender_id: user.id,
       recipient_id: activeConvId,
@@ -134,7 +108,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
               Messagerie
             </h2>
             <span className="bg-[#1677FF] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
-              {conversations.reduce((acc, curr) => acc + (curr.unread || 0), 0)} non lus
+              {conversations.length} membres
             </span>
           </div>
 
@@ -146,7 +120,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Rechercher une discussion..."
+              placeholder="Rechercher un membre..."
               className={`w-full text-[13px] bg-transparent outline-none ${
                 darkMode ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'
               }`}
@@ -156,62 +130,58 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
 
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto no-scrollbar p-2 flex flex-col gap-1">
-          {filteredConvs.map((conv) => {
-            const isActive = conv.id === activeConvId;
-            return (
-              <div
-                key={conv.id}
-                onClick={() => {
-                  setActiveConvId(conv.id);
-                  setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread: 0 } : c));
-                }}
-                className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer ${
-                  isActive
-                    ? darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white shadow-sm border border-slate-200/80'
-                    : darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/60'
-                }`}
-              >
-                <div className="relative shrink-0">
-                  <UserAvatar
-                    avatarUrl={conv.avatar}
-                    size={40}
-                  />
-                  {conv.online && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1E293B]" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className={`text-[13.5px] font-bold truncate ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
-                      {conv.name}
-                    </span>
-                    <span className={`text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                      {conv.time}
-                    </span>
+          {loading ? (
+            <div className="text-[12px] text-slate-400 p-4 text-center">Chargement des membres...</div>
+          ) : filteredConvs.length === 0 ? (
+            <div className="text-[12px] text-slate-400 p-4 text-center">Aucun membre disponible.</div>
+          ) : (
+            filteredConvs.map((conv) => {
+              const isActive = conv.id === activeConvId;
+              return (
+                <div
+                  key={conv.id}
+                  onClick={() => {
+                    setActiveConvId(conv.id);
+                    setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread: 0 } : c));
+                  }}
+                  className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer ${
+                    isActive
+                      ? darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white shadow-sm border border-slate-200/80'
+                      : darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-white/60'
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <UserAvatar
+                      avatarUrl={conv.avatar}
+                      size={40}
+                    />
+                    {conv.online && (
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1E293B]" />
+                    )}
                   </div>
-                  <p className={`text-[12px] truncate ${
-                    conv.unread > 0 
-                      ? darkMode ? 'font-bold text-white' : 'font-bold text-slate-900'
-                      : darkMode ? 'text-slate-400' : 'text-slate-500'
-                  }`}>
-                    {conv.lastMessage}
-                  </p>
-                </div>
 
-                {conv.unread > 0 && (
-                  <span className="bg-[#FF3B30] text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0">
-                    {conv.unread}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className={`text-[13.5px] font-bold truncate ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+                        {conv.name}
+                      </span>
+                      <span className={`text-[11px] ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+                        {conv.time}
+                      </span>
+                    </div>
+                    <p className={`text-[12px] truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {conv.lastMessage}
+                    </p>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
       {/* Right Chat Stream Column */}
-      {activeConv && (
+      {activeConv ? (
         <div className="flex-1 flex flex-col h-full bg-transparent">
           
           {/* Chat Active Header */}
@@ -247,37 +217,35 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
 
           {/* Messages Stream Body */}
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 no-scrollbar">
-            <div className="text-center my-2">
-              <span className={`text-[11px] font-semibold px-3 py-1 rounded-full ${
-                darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'
-              }`}>
-                Aujourd'hui
-              </span>
-            </div>
-
-            {activeConv.messages.map((msg: any) => {
-              const isMe = msg.sender === 'me';
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[75%] ${isMe ? 'ml-auto' : 'mr-auto'}`}
-                >
-                  <div className={`p-3 px-4 rounded-2xl text-[13.5px] leading-relaxed shadow-sm ${
-                    isMe
-                      ? 'bg-[#1677FF] text-white rounded-br-none'
-                      : darkMode
-                        ? 'bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700/60'
-                        : 'bg-slate-100 text-slate-800 rounded-bl-none'
-                  }`}>
-                    {msg.text}
+            {activeConv.messages.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-center text-[13px] text-slate-400">
+                Envoyez un premier message à {activeConv.name} pour démarrer l'échange.
+              </div>
+            ) : (
+              activeConv.messages.map((msg: any) => {
+                const isMe = msg.sender === 'me';
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[75%] ${isMe ? 'ml-auto' : 'mr-auto'}`}
+                  >
+                    <div className={`p-3 px-4 rounded-2xl text-[13.5px] leading-relaxed shadow-sm ${
+                      isMe
+                        ? 'bg-[#1677FF] text-white rounded-br-none'
+                        : darkMode
+                          ? 'bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700/60'
+                          : 'bg-slate-100 text-slate-800 rounded-bl-none'
+                    }`}>
+                      {msg.text}
+                    </div>
+                    <div className="flex items-center gap-1 mt-1 text-[10.5px] text-slate-400 px-1">
+                      <span>{msg.time}</span>
+                      {isMe && <CheckCheck className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 mt-1 text-[10.5px] text-slate-400 px-1">
-                    <span>{msg.time}</span>
-                    {isMe && <CheckCheck className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* Chat Input Footer */}
@@ -322,6 +290,10 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
             </button>
           </form>
 
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-[13px] text-slate-400">
+          Sélectionnez un membre pour démarrer une discussion.
         </div>
       )}
     </div>

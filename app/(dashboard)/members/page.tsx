@@ -44,29 +44,7 @@ export default function MembersPage({ darkMode: propDarkMode }: { darkMode?: boo
       if (profiles && profiles.length > 0) {
         setMembers(profiles);
       } else {
-        setMembers([
-          {
-            id: '1',
-            full_name: 'Laura Fisher',
-            role: 'Social Media Lead',
-            avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-            bio: 'Spécialiste de la stratégie de marque et des campagnes virales.',
-          },
-          {
-            id: '2',
-            full_name: 'Sam Brown',
-            role: 'Content Strategist',
-            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-            bio: 'Passionné par l\'optimisation de l\'engagement et l\'analyse de données.',
-          },
-          {
-            id: '3',
-            full_name: 'Julien Mercier',
-            role: 'Brand Manager',
-            avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-            bio: 'Expert en création de contenu visuel et stratégie multi-canal.',
-          }
-        ]);
+        setMembers([]);
       }
 
       // Load groups
@@ -78,20 +56,7 @@ export default function MembersPage({ darkMode: propDarkMode }: { darkMode?: boo
       if (groupsData && groupsData.length > 0) {
         setGroups(groupsData);
       } else {
-        setGroups([
-          {
-            id: '101',
-            name: 'Growth & Social Media 2026',
-            description: 'Espace d\'échange dédié aux stratégies d\'acquisition et de croissance sociale.',
-            membersCount: 1420,
-          },
-          {
-            id: '102',
-            name: 'Créateurs & Prompt Engineers IA',
-            description: 'Partage des meilleurs workflows de génération visuelle et textuelle IA.',
-            membersCount: 890,
-          }
-        ]);
+        setGroups([]);
       }
     }
 

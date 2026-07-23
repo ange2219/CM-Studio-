@@ -57,33 +57,7 @@ export function PostsDashboard({
           content: p.content,
         })));
       } else {
-        // Fallback default sample posts if DB table is empty
-        setPostsList([
-          {
-            id: '1',
-            title: 'Lancement officiel de la campagne Été 2026',
-            platform: 'Instagram & Facebook',
-            status: 'scheduled',
-            date: '24 Juillet 2026 • 14:00',
-            content: 'Découvrez nos nouveautés estivales en avant-première !',
-          },
-          {
-            id: '2',
-            title: 'Top 5 des conseils pour optimiser votre présence LinkedIn',
-            platform: 'LinkedIn',
-            status: 'published',
-            date: '21 Juillet 2026',
-            content: 'La régularité et l\'engagement sont les clés du succès.',
-          },
-          {
-            id: '3',
-            title: 'Annonce partenariat stratégique CM Studio',
-            platform: 'Multi-réseaux',
-            status: 'draft',
-            date: 'Brouillon enregistré',
-            content: 'Nous sommes fiers d\'annoncer notre nouveau partenariat.',
-          }
-        ]);
+        setPostsList([]);
       }
       setLoading(false);
     }

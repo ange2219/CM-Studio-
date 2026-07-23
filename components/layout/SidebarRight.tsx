@@ -16,11 +16,16 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
   const [onlineUsers, setOnlineUsers] = useState<any[]>([])
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        setLoading(false)
+        return
+      }
       setCurrentUser(user)
 
       // Fetch user's existing follows
@@ -32,51 +37,18 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
       const followedSet = new Set<string>(follows?.map((f: any) => f.following_id) || [])
       setFollowedIds(followedSet)
 
-      // Fetch suggested user profiles
+      // Fetch suggested user profiles (REAL PEOPLE from Supabase user_public_profiles)
       const { data: profiles } = await supabase
         .from('user_public_profiles')
         .select('id, full_name, avatar_url, username, role, plan')
         .neq('id', user.id)
         .limit(10)
 
-      if (profiles && profiles.length > 0) {
+      if (profiles) {
         setSuggestions(profiles)
-        setOnlineUsers(profiles.slice(0, 4))
-      } else {
-        // Fallback default suggestions
-        setSuggestions([
-          {
-            id: '1',
-            full_name: 'Laura Fisher',
-            role: 'Social Media Manager',
-            avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-          },
-          {
-            id: '2',
-            full_name: 'Sam Brown',
-            role: 'Content Creator',
-            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-          },
-          {
-            id: '3',
-            full_name: 'Julien Mercier',
-            role: 'Brand Strategist',
-            avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-          }
-        ])
-        setOnlineUsers([
-          {
-            id: '1',
-            full_name: 'Laura Fisher',
-            avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-          },
-          {
-            id: '3',
-            full_name: 'Julien Mercier',
-            avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-          }
-        ])
+        setOnlineUsers(profiles.slice(0, 5))
       }
+      setLoading(false)
     }
     loadData()
   }, [supabase])
@@ -112,7 +84,7 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
       }`}>
         <div className="flex items-center justify-between mb-3.5">
           <h3 className={`text-[14px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
-            Suggestions de la communauté
+            Suggestions
           </h3>
           <Link href="/members" className="text-[12px] font-bold text-[#1677FF] hover:underline cursor-pointer">
             Voir tout
@@ -120,40 +92,46 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
         </div>
 
         <div className="flex flex-col gap-3">
-          {suggestions.slice(0, 4).map((user) => {
-            const isFollowed = followedIds.has(user.id)
-            return (
-              <div key={user.id} className="flex items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <UserAvatar
-                    avatarUrl={user.avatar_url}
-                    size={36}
-                    className="ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
-                  />
-                  <div className="flex flex-col min-w-0">
-                    <span className={`text-[13px] font-bold truncate leading-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
-                      {user.full_name || 'Membre'}
-                    </span>
-                    <span className={`text-[11px] truncate leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {user.role || user.username || 'Community Manager'}
-                    </span>
+          {loading ? (
+            <div className="text-[12px] text-slate-400 py-2 text-center">Chargement des suggestions...</div>
+          ) : suggestions.length === 0 ? (
+            <div className="text-[12px] text-slate-400 py-2 text-center">Aucun membre suggéré pour le moment.</div>
+          ) : (
+            suggestions.slice(0, 4).map((person) => {
+              const isFollowed = followedIds.has(person.id)
+              return (
+                <div key={person.id} className="flex items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <UserAvatar
+                      avatarUrl={person.avatar_url}
+                      size={36}
+                      className="ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
+                    />
+                    <div className="flex flex-col min-w-0">
+                      <span className={`text-[13px] font-bold truncate leading-tight ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+                        {person.full_name || 'Membre'}
+                      </span>
+                      <span className={`text-[11px] truncate leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {person.role || (person.username ? `@${person.username}` : 'Membre CM Studio')}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <button
-                  onClick={() => toggleFollow(user.id)}
-                  title={isFollowed ? "Abonné" : "Suivre"}
-                  className={`w-7.5 h-7.5 rounded-full flex items-center justify-center transition-all cursor-pointer border-none shrink-0 ${
-                    isFollowed
-                      ? 'bg-emerald-500 text-white shadow-sm'
-                      : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
-                  }`}
-                >
-                  {isFollowed ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Plus className="w-4 h-4 stroke-[2.5]" />}
-                </button>
-              </div>
-            )
-          })}
+                  <button
+                    onClick={() => toggleFollow(person.id)}
+                    title={isFollowed ? "Abonné" : "Ajouter / Suivre"}
+                    className={`w-7.5 h-7.5 rounded-full flex items-center justify-center transition-all cursor-pointer border-none shrink-0 ${
+                      isFollowed
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+                    }`}
+                  >
+                    {isFollowed ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Plus className="w-4 h-4 stroke-[2.5]" />}
+                  </button>
+                </div>
+              )
+            })
+          )}
         </div>
       </div>
 
@@ -174,16 +152,20 @@ export function SidebarRight({ darkMode: propDarkMode }: { darkMode?: boolean })
         </div>
 
         <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
-          {onlineUsers.map((user) => (
-            <div key={user.id} className="relative group cursor-pointer shrink-0">
-              <UserAvatar
-                avatarUrl={user.avatar_url}
-                size={40}
-                className="ring-2 ring-emerald-500 ring-offset-1"
-              />
-              <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1E293B]" />
-            </div>
-          ))}
+          {onlineUsers.length === 0 ? (
+            <span className="text-[12px] text-slate-400">Aucun membre en ligne</span>
+          ) : (
+            onlineUsers.map((u) => (
+              <div key={u.id} className="relative group cursor-pointer shrink-0" title={u.full_name || 'Membre'}>
+                <UserAvatar
+                  avatarUrl={u.avatar_url}
+                  size={40}
+                  className="ring-2 ring-emerald-500 ring-offset-1"
+                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1E293B]" />
+              </div>
+            ))
+          )}
         </div>
       </div>
 
