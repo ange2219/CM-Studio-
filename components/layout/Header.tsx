@@ -25,18 +25,15 @@ export function Header({
   const router = useRouter()
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showBrandMenu, setShowBrandMenu] = useState(false);
+  const [showBrandList, setShowBrandList] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const brandRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
-      }
-      if (brandRef.current && !brandRef.current.contains(event.target as Node)) {
-        setShowBrandMenu(false);
+        setShowBrandList(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -54,69 +51,20 @@ export function Header({
   const displayOrg = activeOrganization?.name || 'Ma Marque';
 
   return (
-    <header className={`h-[64px] w-full px-4 md:px-8 flex items-center justify-between border-b transition-colors duration-300 ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90'} shrink-0 z-20 shadow-xs relative`}>
+    <header className={`h-[64px] w-full px-8 flex items-center justify-between border-b transition-colors duration-300 ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90'} shrink-0 z-20 shadow-xs relative`}>
       {/* Left: Logo CM Studio avec Plume */}
-      <div className="flex items-center gap-4">
-        <Link 
-          href="/home" 
-          onClick={() => onSelectView && onSelectView('home')}
-          className="flex items-center gap-2.5 cursor-pointer group select-none text-decoration-none"
-        >
-          <FeatherLogo className="w-6 h-6" darkMode={darkMode} />
-          <span className={`font-extrabold text-[19px] tracking-tight font-['Inter'] ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
-            CM Studio
-          </span>
-        </Link>
-
-        {/* Real Brand / Org Selector Dropdown */}
-        {organizations && organizations.length > 0 && (
-          <div className="relative" ref={brandRef}>
-            <button
-              type="button"
-              onClick={() => setShowBrandMenu(!showBrandMenu)}
-              className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-[12px] font-semibold border transition-all cursor-pointer ${
-                darkMode 
-                  ? 'bg-[#0F172A] border-slate-700 text-slate-200 hover:border-slate-600' 
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-bold truncate max-w-[120px]">{displayOrg}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-
-            {showBrandMenu && (
-              <div className={`absolute top-full left-0 mt-2 w-52 rounded-xl border shadow-xl p-1 z-50 animate-in fade-in zoom-in duration-150 ${
-                darkMode ? 'bg-[#1E293B] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'
-              }`}>
-                <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Mes Organisations
-                </div>
-                {organizations.map((org: any) => (
-                  <button
-                    key={org.id}
-                    onClick={() => {
-                      switchOrganization(org.id);
-                      setShowBrandMenu(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12px] font-semibold transition-all cursor-pointer border-none text-left ${
-                      activeOrganization?.id === org.id
-                        ? darkMode ? 'bg-slate-800 text-[#38BDF8]' : 'bg-blue-50 text-[#1677FF]'
-                        : darkMode ? 'hover:bg-slate-800/60 text-slate-300' : 'hover:bg-slate-50 text-slate-700'
-                    }`}
-                  >
-                    <span className="truncate">{org.name}</span>
-                    {activeOrganization?.id === org.id && <Check className="w-3.5 h-3.5" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      <div 
+        onClick={() => onSelectView && onSelectView('home')}
+        className="flex items-center gap-2.5 cursor-pointer group select-none"
+      >
+        <FeatherLogo className="w-6 h-6" darkMode={darkMode} />
+        <span className={`font-extrabold text-[19px] tracking-tight font-['Inter'] ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+          CM Studio
+        </span>
       </div>
 
       {/* Middle: Search Input */}
-      <div className={`flex items-center gap-2.5 h-10 px-4 rounded-full w-[200px] sm:w-[260px] md:w-[340px] lg:w-[400px] transition-colors ${darkMode ? 'bg-[#334155]' : 'bg-[#F3F5F9]'}`}>
+      <div className={`flex items-center gap-2.5 h-10 px-4 rounded-full w-[260px] md:w-[340px] lg:w-[400px] transition-colors ${darkMode ? 'bg-[#334155]' : 'bg-[#F3F5F9]'}`}>
         <Search className={`w-4.5 h-4.5 shrink-0 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`} />
         <input
           type="text"
@@ -201,15 +149,48 @@ export function Header({
                   <span>Mon Profil</span>
                 </Link>
 
-                <Link
-                  href="/settings"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors text-decoration-none ${darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-50 text-slate-700'
+                {/* Mes Marques with sub-list context menu */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowBrandList(!showBrandList)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors cursor-pointer border-none ${
+                      darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-50 text-slate-700'
                     }`}
-                >
-                  <Award className="w-4.5 h-4.5 text-[#1677FF]" />
-                  <span>Mes marques ({organizations?.length || 1})</span>
-                </Link>
+                  >
+                    <div className="flex items-center gap-3">
+                      <Award className="w-4.5 h-4.5 text-[#1677FF]" />
+                      <span>Mes marques ({organizations?.length || 1})</span>
+                    </div>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showBrandList ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showBrandList && organizations && organizations.length > 0 && (
+                    <div className={`mt-1 ml-4 pl-2 border-l flex flex-col gap-1 ${
+                      darkMode ? 'border-slate-700' : 'border-slate-200'
+                    }`}>
+                      {organizations.map((org: any) => (
+                        <button
+                          key={org.id}
+                          type="button"
+                          onClick={() => {
+                            switchOrganization(org.id);
+                            setIsMenuOpen(false);
+                            setShowBrandList(false);
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer border-none text-left ${
+                            activeOrganization?.id === org.id
+                              ? darkMode ? 'bg-slate-800 text-[#38BDF8]' : 'bg-blue-50 text-[#1677FF]'
+                              : darkMode ? 'hover:bg-slate-800/60 text-slate-300' : 'hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          <span className="truncate">{org.name}</span>
+                          {activeOrganization?.id === org.id && <Check className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 <Link
                   href="/settings"
