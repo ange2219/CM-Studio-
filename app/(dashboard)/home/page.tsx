@@ -9,6 +9,7 @@ import { WelcomeBanner } from '@/components/home/WelcomeBanner'
 import { SquarePen, UserPlus, Flame, Rocket, Code, Megaphone, User } from 'lucide-react'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { CreatePostModal } from '@/components/community/CreatePostModal'
+import { SidebarRight } from '@/components/layout/SidebarRight'
 import Link from 'next/link'
 
 type Tab = 'general' | 'suivi'
@@ -220,78 +221,7 @@ export default function HomePage() {
       </div>
 
       {/* ── Right Sidebar Column (Desktop Only) ── */}
-      <div className="right-sidebar" style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, position: 'sticky', top: '20px' }}>
-        
-        {/* Carte 1: Suggestions */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '16px', boxShadow: 'var(--shadow)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--t1)', margin: 0 }}>
-              Suggestions
-            </h3>
-            <Link href="/network" style={{ fontSize: '0.8rem', color: '#1677FF', fontWeight: 700, textDecoration: 'none' }}>Voir tout</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {[
-              { id: 1, name: 'Julia Smith', handle: '@juliasmith', added: false },
-              { id: 2, name: 'Vermillion D. Gray', handle: '@vermillongray', added: false },
-              { id: 3, name: 'Mai Senpai', handle: '@maisenpai', added: false },
-              { id: 4, name: 'Azunyan U. Wu', handle: '@azunyandesu', added: true },
-              { id: 5, name: 'Oarack Babama', handle: '@obama21', added: false },
-            ].map((u) => (
-              <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '4px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <User size={18} strokeWidth={1.5} color="var(--t2)" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</span>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--t3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.handle}</span>
-                  </div>
-                </div>
-                <button style={{
-                  width: '28px', height: '28px', borderRadius: '8px', border: 'none',
-                  background: u.added ? '#1677FF' : 'var(--s2)',
-                  color: u.added ? '#ffffff' : 'var(--t2)',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                }}>
-                  {u.added ? <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>✓</span> : <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>+</span>}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Carte 2: En ligne maintenant */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '16px', boxShadow: 'var(--shadow)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--t1)' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2)' }}/> En ligne maintenant
-            </h3>
-            <Link href="/network" style={{ fontSize: '0.8rem', color: '#1677FF', fontWeight: 700, textDecoration: 'none' }}>Voir tout</Link>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-            {[
-              { name: 'Amanda', color: 'var(--accent)' },
-              { name: 'Melissa', color: '#10B981' },
-              { name: 'Katty', color: '#F59E0B' },
-              { name: 'Lucas', color: '#EC4899' }
-            ].map((u, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--s2)', border: '1.5px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <User size={20} strokeWidth={1.5} color="var(--t2)" />
-                  </div>
-                  <div style={{ position: 'absolute', bottom: 1, right: 1, width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', border: '2px solid var(--card)' }} />
-                </div>
-                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--t2)', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '52px' }}>
-                  {u.name}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
+      <SidebarRight darkMode={false} />
 
     </div>
   )

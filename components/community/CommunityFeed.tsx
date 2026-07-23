@@ -359,18 +359,18 @@ export function CommunityFeed({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {/* CREATE POST */}
       {!hideCreatePost && (
-        <div style={{ background: 'var(--card)', borderRadius: '12px', padding: '12px 16px', border: '1px solid var(--b1)' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ background: 'var(--card)', borderRadius: '16px', padding: '12px 16px', border: '1px solid var(--b1)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <UserAvatar
               avatarUrl={currentUser?.avatar_url}
-              size={40}
+              size={38}
             />
-            <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Partagez quelque chose avec la communauté..." style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.95rem', paddingTop: '8px' }} rows={1} />
+            <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder={`Quoi de neuf, ${(currentUser?.full_name || 'membre').split(' ')[0]} ?`} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--t1)', outline: 'none', resize: 'none', fontSize: '0.92rem', paddingTop: '8px' }} rows={1} />
           </div>
 
           {uploadedImageUrl && (
             <div style={{ padding: '6px 12px 8px 52px', position: 'relative' }}>
-              <img src={uploadedImageUrl} style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid var(--b1)' }} alt="Upload preview" />
+              <img src={uploadedImageUrl} style={{ maxWidth: '200px', borderRadius: '12px', border: '1px solid var(--b1)' }} alt="Upload preview" />
               <button onClick={() => setUploadedImageUrl(null)} style={{ position: 'absolute', top: 0, left: '235px', background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✕</button>
             </div>
           )}
@@ -392,10 +392,10 @@ export function CommunityFeed({
                 }
                 setUploadingImage(false)
               }} />
-              <button onClick={() => document.getElementById('community-image-upload')?.click()} disabled={uploadingImage} style={{ background: 'none', border: 'none', color: uploadedImageUrl ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>{uploadingImage ? 'Upload...' : 'Image'}</span></button>
-              <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
+              <button onClick={() => document.getElementById('community-image-upload')?.click()} disabled={uploadingImage} style={{ background: 'none', border: 'none', color: uploadedImageUrl ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}><ImageIcon size={18} /> <span style={{ fontSize: '0.8rem' }}>{uploadingImage ? 'Upload...' : 'Image'}</span></button>
+              <button style={{ background: 'none', border: 'none', color: 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}><Sparkles size={18} /> <span style={{ fontSize: '0.8rem' }}>IA Assist</span></button>
             </div>
-            <button onClick={handlePost} disabled={(!newPostContent.trim() && !uploadedImageUrl) || isPosting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: (!newPostContent.trim() && !uploadedImageUrl) ? 0.5 : 1 }}>Publier</button>
+            <button onClick={handlePost} disabled={(!newPostContent.trim() && !uploadedImageUrl) || isPosting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', opacity: (!newPostContent.trim() && !uploadedImageUrl) ? 0.5 : 1, boxShadow: '0 2px 8px rgba(22, 119, 255, 0.25)' }}>Publier !</button>
           </div>
         </div>
       )}

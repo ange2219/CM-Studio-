@@ -451,30 +451,34 @@ export function DashboardShell({ user: initialUser, children }: {
 
             {/* Carte Passez à Pro */}
             <div style={{
-              background: 'var(--accent-light)',
-              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #1677FF 0%, #0066FF 50%, #0047BA 100%)',
+              borderRadius: '16px',
               padding: '16px',
               margin: '12px 8px',
-              border: '1px solid rgba(var(--accent-rgb), 0.1)'
+              color: '#ffffff',
+              boxShadow: '0 8px 20px rgba(22, 119, 255, 0.3)',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <Sparkles size={16} color="var(--accent)" />
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent)' }}>Passez à Pro</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <Sparkles size={18} color="#FBBF24" fill="#FBBF24" />
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff' }}>+ Passez à Pro</span>
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--t2)', marginBottom: '12px', lineHeight: 1.4 }}>
+              <p style={{ fontSize: '0.78rem', color: '#DBEAFE', marginBottom: '12px', lineHeight: 1.35, fontWeight: 500 }}>
                 Plus d'outils, plus d'options, plus de puissance.
               </p>
               <Link href="/settings?tab=billing" style={{
                 display: 'block',
                 width: '100%',
                 padding: '8px',
-                background: 'var(--accent)',
-                color: '#fff',
-                borderRadius: '8px',
+                background: '#ffffff',
+                color: '#1677FF',
+                borderRadius: '12px',
                 textAlign: 'center',
                 textDecoration: 'none',
-                fontWeight: 600,
+                fontWeight: 800,
                 fontSize: '0.85rem',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 transition: 'all 0.15s'
               }}>
                 Découvrir
