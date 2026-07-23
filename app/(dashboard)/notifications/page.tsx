@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Heart, MessageSquare, UserPlus, Sparkles, CheckCheck, Bell } from 'lucide-react';
 import { useTheme } from '@/components/context/ThemeContext';
 import { createClient } from '@/lib/supabase/client';
@@ -11,6 +12,7 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
   const { user } = useUser();
+  const router = useRouter();
   const supabase = createClient();
 
   const [activeTab, setActiveTab] = useState('studio'); // 'studio' | 'socials'
@@ -35,6 +37,7 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
           subtitle: n.title ? n.message : undefined,
           time: getShortTimeAgo(n.created_at),
           read: n.is_read || false,
+          action_url: n.action_url || null,
         })));
       } else {
         setNotifications([]);
@@ -42,6 +45,26 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
     }
     loadNotifs();
   }, [supabase, user]);
+
+  const handleNotifClick = async (notif: any) => {
+    if (!notif.read) {
+      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
+      if (user) {
+        await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('id', notif.id);
+      }
+    }
+
+    if (notif.action_url) {
+      let url = notif.action_url;
+      if (url.startsWith('/community')) {
+        url = url.replace('/community', '/home');
+      }
+      router.push(url);
+    }
+  };
 
   const markAllAsRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -138,7 +161,10 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
         {filteredNotifs.map((notif) => (
           <div
             key={notif.id}
-            className={`rounded-2xl p-4 shadow-card-subtle border flex items-center justify-between transition-all cursor-pointer ${
+            onClick={() => handleNotifClick(notif)}
+            className={`rounded-2xl p-4 shadow-card-subtle border flex items-center justify-between transition-all ${
+              notif.action_url ? 'cursor-pointer hover:border-blue-400/50' : 'cursor-default'
+            } ${
               !notif.read
                 ? darkMode ? 'bg-[#1E293B] border-blue-500/30' : 'bg-blue-50/40 border-blue-100'
                 : darkMode ? 'bg-[#1E293B]/70 border-slate-800/80' : 'bg-white border-slate-100'

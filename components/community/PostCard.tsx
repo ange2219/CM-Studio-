@@ -21,7 +21,17 @@ import { useFollow } from '@/hooks/useFollow';
 
 import { CommentsThread } from './CommentsThread';
 
-export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode?: boolean }) {
+export function PostCard({ 
+  post, 
+  darkMode: propDarkMode,
+  showComments: propShowComments,
+  onToggleComments
+}: { 
+  post: any; 
+  darkMode?: boolean;
+  showComments?: boolean;
+  onToggleComments?: (show: boolean) => void;
+}) {
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
   const { user } = useUser();
@@ -34,8 +44,22 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
   const [sharesCount, setSharesCount] = useState(post.sharesCount || 0);
   const [saved, setSaved] = useState(false);
   const [shared, setShared] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(propShowComments || false);
   const [copiedShare, setCopiedShare] = useState(false);
+
+  useEffect(() => {
+    if (propShowComments !== undefined) {
+      setShowComments(propShowComments);
+    }
+  }, [propShowComments]);
+
+  const toggleCommentsVisibility = () => {
+    const next = !showComments;
+    setShowComments(next);
+    if (onToggleComments) {
+      onToggleComments(next);
+    }
+  };
 
   // Check if current user liked, saved, or shared this post
   useEffect(() => {
@@ -128,7 +152,10 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
   };
 
   return (
-    <article className={`rounded-2xl p-4 md:p-5 shadow-card-subtle border shrink-0 transition-colors duration-300 relative select-none ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'}`}>
+    <article
+      id={`post-container-${post.id || post.db_id}`}
+      className={`rounded-2xl p-4 md:p-5 shadow-card-subtle border shrink-0 transition-colors duration-300 relative select-none ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'}`}
+    >
       
       {/* Toast Notification for Sharing */}
       {copiedShare && (
@@ -238,7 +265,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setShowComments(!showComments)}
+            onClick={toggleCommentsVisibility}
             className="hover:underline transition-all cursor-pointer bg-transparent border-none p-0 text-inherit font-medium"
           >
             {commentsCount} {commentsCount > 1 ? "commentaires" : "commentaire"}
@@ -273,7 +300,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
 
         {/* Comment Button */}
         <button
-          onClick={() => setShowComments(!showComments)}
+          onClick={toggleCommentsVisibility}
           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
             showComments
               ? darkMode ? 'text-[#1677FF] bg-blue-500/10' : 'text-[#1677FF] bg-blue-50'

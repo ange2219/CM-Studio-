@@ -22,6 +22,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
 
   const [postsList, setPostsList] = useState<any[]>([]);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
 
   // Load real posts & user follows from Supabase
   useEffect(() => {
@@ -67,6 +68,67 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
     }
     loadData();
   }, [supabase, user]);
+
+  // Handle URL hash anchor scrolling & opening comments
+  useEffect(() => {
+    if (postsList.length === 0) return;
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (!hash) return;
+
+    if (hash.startsWith('#post-')) {
+      const raw = hash.replace('#post-', '');
+      const isComments = raw.endsWith('-comments');
+      const postId = isComments ? raw.replace('-comments', '') : raw;
+
+      setTimeout(() => {
+        const el = document.getElementById(`post-container-${postId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const originalBg = el.style.backgroundColor;
+          el.style.transition = 'background-color 0.5s ease';
+          el.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+          setTimeout(() => {
+            el.style.backgroundColor = originalBg;
+          }, 2000);
+        }
+        if (isComments) {
+          setExpandedPostIds(prev => new Set(prev).add(postId));
+        }
+        window.history.replaceState(null, '', window.location.pathname);
+      }, 400);
+    } else if (hash.startsWith('#comment_')) {
+      // Format: #comment_[commentId]_[postId]
+      const parts = hash.replace('#comment_', '').split('_');
+      if (parts.length >= 2) {
+        const commentId = parts[0];
+        const postId = parts[1];
+
+        setTimeout(() => {
+          const el = document.getElementById(`post-container-${postId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setExpandedPostIds(prev => new Set(prev).add(postId));
+
+            setTimeout(() => {
+              const cEl = document.getElementById(`comment-container-${commentId}`);
+              if (cEl) {
+                cEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const originalBg = cEl.style.backgroundColor;
+                cEl.style.transition = 'background-color 0.5s ease';
+                cEl.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+                setTimeout(() => {
+                  cEl.style.backgroundColor = originalBg;
+                }, 2000);
+              }
+              window.history.replaceState(null, '', window.location.pathname);
+            }, 600);
+          } else {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }, 400);
+      }
+    }
+  }, [postsList]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,7 +285,20 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
       {/* Posts Stream */}
       <div className="flex flex-col gap-4 pb-6">
         {filteredPosts.map((post) => (
-          <PostCard key={post.id} post={post} darkMode={darkMode} />
+          <PostCard
+            key={post.id}
+            post={post}
+            darkMode={darkMode}
+            showComments={expandedPostIds.has(post.id)}
+            onToggleComments={(show) => {
+              setExpandedPostIds(prev => {
+                const next = new Set(prev);
+                if (show) next.add(post.id);
+                else next.delete(post.id);
+                return next;
+              });
+            }}
+          />
         ))}
       </div>
     </main>
