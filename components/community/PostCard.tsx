@@ -28,24 +28,48 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
   const [liked, setLiked] = useState(post.initialLiked || false);
   const [likesCount, setLikesCount] = useState(post.likesCount || 0);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+  const [sharesCount, setSharesCount] = useState(post.sharesCount || 0);
   const [saved, setSaved] = useState(false);
+  const [shared, setShared] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
-  // Check if current user liked this post
+  // Check if current user liked, saved, or shared this post
   useEffect(() => {
-    async function checkLiked() {
+    async function checkUserInteractions() {
       if (!user || !post.db_id) return;
-      const { data } = await supabase
+
+      // Check liked
+      const { data: lData } = await supabase
         .from('community_likes')
         .select('id')
         .eq('post_id', post.db_id)
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (data) setLiked(true);
+      if (lData) setLiked(true);
+
+      // Check saved
+      const { data: bData } = await supabase
+        .from('community_bookmarks')
+        .select('id')
+        .eq('post_id', post.db_id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (bData) setSaved(true);
+
+      // Check shared
+      const { data: sData } = await supabase
+        .from('community_shares')
+        .select('id')
+        .eq('post_id', post.db_id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (sData) setShared(true);
     }
-    checkLiked();
+    checkUserInteractions();
   }, [supabase, user, post.db_id]);
 
   const toggleLike = async () => {
@@ -67,12 +91,37 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
     }
   };
 
-  const handleShare = () => {
+  const toggleSave = async () => {
+    if (!user || !post.db_id) return;
+
+    if (saved) {
+      setSaved(false);
+      await supabase
+        .from('community_bookmarks')
+        .delete()
+        .match({ post_id: post.db_id, user_id: user.id });
+    } else {
+      setSaved(true);
+      await supabase
+        .from('community_bookmarks')
+        .insert({ post_id: post.db_id, user_id: user.id });
+    }
+  };
+
+  const handleShare = async () => {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(`${window.location.origin}/community#post-${post.id}`);
     }
     setCopiedShare(true);
     setTimeout(() => setCopiedShare(false), 2200);
+
+    if (user && post.db_id && !shared) {
+      setShared(true);
+      setSharesCount((prev: number) => prev + 1);
+      await supabase
+        .from('community_shares')
+        .insert({ post_id: post.db_id, user_id: user.id });
+    }
   };
 
   return (
@@ -168,7 +217,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
           </button>
           <span>•</span>
           <button onClick={handleShare} className="hover:underline transition-all cursor-pointer bg-transparent border-none p-0 text-inherit font-medium">
-            {post.sharesCount || 12} partages
+            {sharesCount} {sharesCount > 1 ? "partages" : "partage"}
           </button>
         </div>
       </div>
@@ -213,9 +262,11 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
         <button
           onClick={handleShare}
           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
-            darkMode 
-              ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 bg-transparent' 
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 bg-transparent'
+            shared
+              ? 'text-blue-500 bg-blue-50 dark:bg-blue-500/10'
+              : darkMode 
+                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 bg-transparent' 
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 bg-transparent'
           }`}
         >
           <Share2 className="w-4.5 h-4.5 stroke-[2]" />
@@ -224,7 +275,7 @@ export function PostCard({ post, darkMode: propDarkMode }: { post: any; darkMode
 
         {/* Bookmark Button */}
         <button
-          onClick={() => setSaved(!saved)}
+          onClick={toggleSave}
           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
             saved
               ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10'

@@ -60,7 +60,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
           images: p.image_url ? [p.image_url] : [],
           likesCount: p.likes_count || 0,
           commentsCount: p.comments_count || 0,
-          sharesCount: 12,
+          sharesCount: p.shares_count || 0,
         }));
         setPostsList(formatted);
       }
