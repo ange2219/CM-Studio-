@@ -230,11 +230,11 @@ export function PostCard({
 
       {/* Media Content */}
       {post.images && post.images.length === 1 && (
-        <div className="w-full overflow-hidden rounded-xl max-h-[500px] bg-slate-100/50 dark:bg-slate-800/40 flex items-center justify-center border border-slate-100 dark:border-slate-800/80">
+        <div className="w-full overflow-hidden rounded-xl max-h-[500px] bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
           <img
             src={post.images[0]}
             alt="Post media"
-            className="w-full h-auto max-h-[500px] object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+            className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
           />
         </div>
       )}
@@ -242,11 +242,11 @@ export function PostCard({
       {post.images && post.images.length === 2 && (
         <div className="grid grid-cols-2 gap-2.5 h-[250px] lg:h-[280px] rounded-xl overflow-hidden">
           {post.images.map((imgUrl: string, idx: number) => (
-            <div key={idx} className="w-full h-full overflow-hidden rounded-xl">
+            <div key={idx} className="w-full h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
               <img
                 src={imgUrl}
                 alt={`Gallery item ${idx + 1}`}
-                className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+                className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
               />
             </div>
           ))}
@@ -255,20 +255,20 @@ export function PostCard({
 
       {post.images && post.images.length === 3 && (
         <div className="grid grid-cols-2 gap-2.5 h-[250px] lg:h-[280px] rounded-xl overflow-hidden">
-          <div className="w-full h-full overflow-hidden rounded-xl">
+          <div className="w-full h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
             <img
               src={post.images[0]}
               alt="Gallery item 1"
-              className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+              className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
             />
           </div>
           <div className="flex flex-col gap-2.5 h-full">
             {post.images.slice(1, 3).map((imgUrl: string, idx: number) => (
-              <div key={idx} className="h-[121px] lg:h-[136px] w-full overflow-hidden rounded-xl">
+              <div key={idx} className="h-[121px] lg:h-[136px] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
                 <img
                   src={imgUrl}
                   alt={`Gallery item ${idx + 2}`}
-                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
                 />
               </div>
             ))}
@@ -279,19 +279,19 @@ export function PostCard({
       {post.images && post.images.length >= 4 && (
         <div className="grid grid-cols-2 gap-2.5 h-[250px] lg:h-[280px] rounded-xl overflow-hidden">
           {post.images.slice(0, 3).map((imgUrl: string, idx: number) => (
-            <div key={idx} className="w-full h-full overflow-hidden rounded-xl">
+            <div key={idx} className="w-full h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
               <img
                 src={imgUrl}
                 alt={`Gallery item ${idx + 1}`}
-                className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+                className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
               />
             </div>
           ))}
-          <div className="w-full h-full overflow-hidden rounded-xl relative">
+          <div className="w-full h-full overflow-hidden rounded-xl relative bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
             <img
               src={post.images[3]}
               alt="Gallery item 4"
-              className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+              className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
             />
             {post.images.length > 4 && (
               <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-extrabold text-lg rounded-xl">
