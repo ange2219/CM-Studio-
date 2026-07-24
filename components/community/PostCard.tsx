@@ -196,16 +196,17 @@ export function PostCard({
             </div>
           )}
 
-          {/* 2 Images: 2 equal columns */}
+          {/* 2 Images: 50%/50% width, height preserved & capped at 500px max */}
           {post.images.length === 2 && (
-            <div className="grid grid-cols-2 gap-0.5 h-[320px] md:h-[360px]">
+            <div className="grid grid-cols-2 gap-0.5 w-full max-h-[500px]">
               {post.images.map((url: string, i: number) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Media ${i + 1}`}
-                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                />
+                <div key={i} className="w-full flex items-center justify-center max-h-[500px] overflow-hidden">
+                  <img
+                    src={url}
+                    alt={`Media ${i + 1}`}
+                    className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                  />
+                </div>
               ))}
             </div>
           )}
