@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Heart, 
   MessageCircle, 
@@ -52,6 +52,26 @@ function useTwoImageAspects(images: string[] = []) {
   return aspects;
 }
 
+function useContainerWidth(ref: React.RefObject<HTMLDivElement | null>) {
+  const [width, setWidth] = useState(500);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const updateWidth = () => {
+      if (ref.current) {
+        const w = ref.current.getBoundingClientRect().width;
+        if (w > 0) setWidth(w);
+      }
+    };
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return width;
+}
+
 export function PostCard({ 
   post, 
   darkMode: propDarkMode,
@@ -74,6 +94,8 @@ export function PostCard({
   const supabase = createClient();
 
   const twoAspects = useTwoImageAspects(post.images);
+  const mediaRef = useRef<HTMLDivElement | null>(null);
+  const containerWidth = useContainerWidth(mediaRef);
 
   if (highlightCommentId) {
     console.log('[STEP 5 POSTCARD] Received highlightCommentId:', highlightCommentId, 'for post:', post.id || post.db_id, 'showComments:', propShowComments);
@@ -220,7 +242,7 @@ export function PostCard({
 
       {/* Media Content - Single Unified Gallery Block per Post */}
       {post.images && post.images.length > 0 && (
-        <div className="w-full rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50">
+        <div ref={mediaRef} className="w-full rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50">
           {/* 1 Image */}
           {post.images.length === 1 && (
             <div className="w-full flex items-center justify-center max-h-[500px]">
@@ -232,7 +254,7 @@ export function PostCard({
             </div>
           )}
 
-          {/* 2 Images: Smart Orientation (2 Squares Side-by-Side vs 2 Superposed Horizontal Rows) */}
+          {/* 2 Images: Smart Orientation (2 Columns Side-by-Side vs 2 Superposed Horizontal Rows) */}
           {post.images.length === 2 && (() => {
             const { r0, r1 } = twoAspects;
             // Superposition condition: if both are landscape (r > 1.2) OR if one is landscape and one is square/landscape (r > 1.35)
@@ -262,9 +284,17 @@ export function PostCard({
               );
             }
 
-            // In all other cases (2 Portraits, 2 Squares, Square + Portrait): 2 TALL VERTICAL COLUMNS SIDE-BY-SIDE
+            // Side-by-side 50%/50% width: preserve smaller image height, capped at 500px max
+            const colWidth = (containerWidth || 500) / 2;
+            const h0 = colWidth / (r0 || 1.0);
+            const h1 = colWidth / (r1 || 1.0);
+            const targetHeight = Math.min(500, Math.max(200, Math.round(Math.min(h0, h1))));
+
             return (
-              <div className="grid grid-cols-2 gap-0.5 w-full h-[420px] md:h-[480px] max-h-[500px]">
+              <div
+                className="grid grid-cols-2 gap-0.5 w-full overflow-hidden"
+                style={{ height: `${targetHeight}px` }}
+              >
                 {post.images.map((url: string, i: number) => (
                   <div key={i} className="w-full h-full overflow-hidden">
                     <img
