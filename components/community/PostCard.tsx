@@ -230,11 +230,11 @@ export function PostCard({
 
       {/* Media Content */}
       {post.images && post.images.length === 1 && (
-        <div className="h-[250px] md:h-[290px] w-full overflow-hidden rounded-xl">
+        <div className="w-full overflow-hidden rounded-xl max-h-[500px] bg-slate-100/50 dark:bg-slate-800/40 flex items-center justify-center border border-slate-100 dark:border-slate-800/80">
           <img
             src={post.images[0]}
             alt="Post media"
-            className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+            className="w-full h-auto max-h-[500px] object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
           />
         </div>
       )}
