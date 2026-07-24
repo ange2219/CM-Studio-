@@ -70,17 +70,17 @@ export function CreatePostModal({
           id: data.id,
           db_id: data.id,
           user_id: currentUser.id,
+          author: {
+            name: currentUser?.full_name || currentUser?.email?.split('@')[0] || 'Membre CM Studio',
+            avatar: currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            verified: currentUser?.plan ? currentUser.plan.toLowerCase() !== 'free' : false,
+          },
+          time: "À l'instant",
           content: newPostContent.trim(),
-          created_at: data.created_at,
-          full_name: currentUser.full_name || 'Utilisateur',
-          avatar_url: currentUser.avatar_url,
-          plan: currentUser.plan || 'Free',
-          likes_count: 0,
-          comments_count: 0,
-          image_url: uploadedImageUrls[0] || undefined,
           images: uploadedImageUrls,
-          group_name: groupId ? 'Groupe' : 'Communauté',
-          is_community: true
+          likesCount: 0,
+          commentsCount: 0,
+          sharesCount: 0,
         }
 
         onPostCreated(newPost)
