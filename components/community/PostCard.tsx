@@ -262,9 +262,9 @@ export function PostCard({
               );
             }
 
-            // In all other cases (2 Portraits, 2 Squares, Square + Portrait): 2 EQUAL SQUARES SIDE-BY-SIDE
+            // In all other cases (2 Portraits, 2 Squares, Square + Portrait): 2 TALL VERTICAL COLUMNS SIDE-BY-SIDE
             return (
-              <div className="grid grid-cols-2 gap-0.5 w-full aspect-[2/1] max-h-[500px]">
+              <div className="grid grid-cols-2 gap-0.5 w-full h-[420px] md:h-[480px] max-h-[500px]">
                 {post.images.map((url: string, i: number) => (
                   <div key={i} className="w-full h-full overflow-hidden">
                     <img
