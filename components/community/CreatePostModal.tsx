@@ -229,6 +229,7 @@ export function CreatePostModal({
                   console.error("Erreur lors de l'upload multi-images:", err);
                 } finally {
                   setUploadingImage(false);
+                  e.target.value = '';
                 }
               }}
             />

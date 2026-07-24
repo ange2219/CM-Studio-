@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = file.type.split('/')[1].replace('quicktime', 'mov')
-    const path = `${user.id}/${Date.now()}.${ext}`
+    const uniqueSuffix = Math.random().toString(36).substring(2, 9)
+    const path = `${user.id}/${Date.now()}_${uniqueSuffix}.${ext}`
     const buffer = Buffer.from(await file.arrayBuffer())
 
     // Vérification magic number pour les images (premiers bytes)
