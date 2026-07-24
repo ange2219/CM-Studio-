@@ -17,6 +17,7 @@ import { useUser } from '@/components/context/UserContext';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { useFollow } from '@/hooks/useFollow';
 import { CommentsThread } from './CommentsThread';
+import { PostDetailModal } from './PostDetailModal';
 
 const globalAspectCache = new Map<string, number>();
 
@@ -109,6 +110,13 @@ export function PostCard({
   const [shared, setShared] = useState(false);
   const [showComments, setShowComments] = useState(propShowComments || false);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+
+  const openDetailModal = (imgIndex = 0) => {
+    setSelectedImageIdx(imgIndex);
+    setIsDetailModalOpen(true);
+  };
 
   React.useEffect(() => {
     if (propShowComments !== undefined) {
@@ -242,7 +250,10 @@ export function PostCard({
         <div ref={mediaRef} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50 mb-3">
           {/* 1 Image with Ambient Dynamic Blurred Color Background */}
           {post.images.length === 1 && (
-            <div className="w-full flex items-center justify-center max-h-[500px] relative overflow-hidden bg-slate-950/20">
+            <div
+              onClick={() => openDetailModal(0)}
+              className="w-full flex items-center justify-center max-h-[500px] relative overflow-hidden bg-slate-950/20 cursor-pointer"
+            >
               {/* Dynamic Ambient Blurred Background */}
               <img
                 src={post.images[0]}
@@ -254,7 +265,7 @@ export function PostCard({
               <img
                 src={post.images[0]}
                 alt="Post media"
-                className="w-full h-auto max-h-[500px] object-contain relative z-10 hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                className="w-full h-auto max-h-[500px] object-contain relative z-10 hover:scale-[1.01] transition-transform duration-300"
               />
             </div>
           )}
@@ -269,18 +280,18 @@ export function PostCard({
               const bottomIdx = topIdx === 0 ? 1 : 0;
               return (
                 <div className="flex flex-col gap-0.5 h-[340px] md:h-[380px] max-h-[500px] w-full">
-                  <div className="w-full h-1/2 overflow-hidden">
+                  <div onClick={() => openDetailModal(topIdx)} className="w-full h-1/2 overflow-hidden cursor-pointer">
                     <img
                       src={post.images[topIdx]}
                       alt="Media top"
-                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300"
                     />
                   </div>
-                  <div className="w-full h-1/2 overflow-hidden">
+                  <div onClick={() => openDetailModal(bottomIdx)} className="w-full h-1/2 overflow-hidden cursor-pointer">
                     <img
                       src={post.images[bottomIdx]}
                       alt="Media bottom"
-                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300"
                     />
                   </div>
                 </div>
@@ -298,11 +309,11 @@ export function PostCard({
                 style={{ height: `${targetHeight}px` }}
               >
                 {post.images.map((url: string, i: number) => (
-                  <div key={i} className="w-full h-full overflow-hidden">
+                  <div key={i} onClick={() => openDetailModal(i)} className="w-full h-full overflow-hidden cursor-pointer">
                     <img
                       src={url}
                       alt={`Media ${i + 1}`}
-                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300"
                     />
                   </div>
                 ))}
@@ -316,17 +327,20 @@ export function PostCard({
               <img
                 src={post.images[0]}
                 alt="Media 1"
+                onClick={() => openDetailModal(0)}
                 className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
               />
               <div className="flex flex-col gap-0.5 h-full">
                 <img
                   src={post.images[1]}
                   alt="Media 2"
+                  onClick={() => openDetailModal(1)}
                   className="w-full h-1/2 object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                 />
                 <img
                   src={post.images[2]}
                   alt="Media 3"
+                  onClick={() => openDetailModal(2)}
                   className="w-full h-1/2 object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                 />
               </div>
@@ -341,6 +355,7 @@ export function PostCard({
                   key={i}
                   src={url}
                   alt={`Media ${i + 1}`}
+                  onClick={() => openDetailModal(i)}
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                 />
               ))}
@@ -356,6 +371,7 @@ export function PostCard({
                     key={i}
                     src={url}
                     alt={`Media ${i + 1}`}
+                    onClick={() => openDetailModal(i)}
                     className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                   />
                 ))}
@@ -366,14 +382,15 @@ export function PostCard({
                     key={i + 2}
                     src={url}
                     alt={`Media ${i + 3}`}
+                    onClick={() => openDetailModal(i + 2)}
                     className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                   />
                 ))}
-                <div className="relative w-full h-full">
+                <div onClick={() => openDetailModal(4)} className="relative w-full h-full cursor-pointer">
                   <img
                     src={post.images[4]}
                     alt="Media 5"
-                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
                   />
                   {post.images.length > 5 && (
                     <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-extrabold text-lg">
@@ -451,6 +468,15 @@ export function PostCard({
           onHighlightHandled={onHighlightHandled}
         />
       )}
+
+      {/* Fullscreen Facebook-Style Post Lightbox Modal */}
+      <PostDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        post={post}
+        initialImageIndex={selectedImageIdx}
+        darkMode={darkMode}
+      />
     </article>
   );
 }
