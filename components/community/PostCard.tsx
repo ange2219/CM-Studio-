@@ -239,16 +239,30 @@ export function PostCard({
         </div>
       )}
 
-      {post.images && post.images.length > 1 && (
-        <div className="grid grid-cols-2 gap-2.5 rounded-xl overflow-hidden">
-          <div className="h-[250px] lg:h-[280px] w-full overflow-hidden rounded-xl">
+      {post.images && post.images.length === 2 && (
+        <div className="grid grid-cols-2 gap-2.5 h-[250px] lg:h-[280px] rounded-xl overflow-hidden">
+          {post.images.map((imgUrl: string, idx: number) => (
+            <div key={idx} className="w-full h-full overflow-hidden rounded-xl">
+              <img
+                src={imgUrl}
+                alt={`Gallery item ${idx + 1}`}
+                className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {post.images && post.images.length === 3 && (
+        <div className="grid grid-cols-2 gap-2.5 h-[250px] lg:h-[280px] rounded-xl overflow-hidden">
+          <div className="w-full h-full overflow-hidden rounded-xl">
             <img
               src={post.images[0]}
               alt="Gallery item 1"
               className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
             />
           </div>
-          <div className="flex flex-col gap-2.5 h-[250px] lg:h-[280px]">
+          <div className="flex flex-col gap-2.5 h-full">
             {post.images.slice(1, 3).map((imgUrl: string, idx: number) => (
               <div key={idx} className="h-[121px] lg:h-[136px] w-full overflow-hidden rounded-xl">
                 <img
@@ -258,6 +272,32 @@ export function PostCard({
                 />
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {post.images && post.images.length >= 4 && (
+        <div className="grid grid-cols-2 gap-2.5 h-[250px] lg:h-[280px] rounded-xl overflow-hidden">
+          {post.images.slice(0, 3).map((imgUrl: string, idx: number) => (
+            <div key={idx} className="w-full h-full overflow-hidden rounded-xl">
+              <img
+                src={imgUrl}
+                alt={`Gallery item ${idx + 1}`}
+                className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+              />
+            </div>
+          ))}
+          <div className="w-full h-full overflow-hidden rounded-xl relative">
+            <img
+              src={post.images[3]}
+              alt="Gallery item 4"
+              className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+            />
+            {post.images.length > 4 && (
+              <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-extrabold text-lg rounded-xl">
+                +{post.images.length - 4}
+              </div>
+            )}
           </div>
         </div>
       )}
