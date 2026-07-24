@@ -22,59 +22,65 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
   const [highlightedCommentIds, setHighlightedCommentIds] = useState<Record<string, string | null>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load real posts & user follows from Supabase
   useEffect(() => {
     async function loadData() {
-      const { data: postsData } = await supabase
-        .from('vw_community_posts')
-        .select('*, community_post_images(image_url, position)')
-        .is('group_id', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      try {
+        const { data: postsData } = await supabase
+          .from('vw_community_posts')
+          .select('*, community_post_images(image_url, position)')
+          .is('group_id', null)
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      if (user) {
-        const { data: followsData } = await supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', user.id);
+        if (user) {
+          const { data: followsData } = await supabase
+            .from('user_follows')
+            .select('following_id')
+            .eq('follower_id', user.id);
 
-        if (followsData) {
-          setFollowingIds(new Set(followsData.map(f => f.following_id)));
+          if (followsData) {
+            setFollowingIds(new Set(followsData.map(f => f.following_id)));
+          }
         }
-      }
 
-      if (postsData) {
-        // Transform Supabase posts to match PostCard props while preserving real IDs & multi-images
-        const formatted = postsData.map(p => {
-          const multiImages = p.community_post_images
-            ? p.community_post_images
-                .sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
-                .map((img: any) => img.image_url)
-            : [];
+        if (postsData) {
+          const formatted = postsData.map(p => {
+            const multiImages = p.community_post_images
+              ? p.community_post_images
+                  .sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
+                  .map((img: any) => img.image_url)
+              : [];
 
-          const images = multiImages.length > 0
-            ? multiImages
-            : (p.image_url ? [p.image_url] : []);
+            const images = multiImages.length > 0
+              ? multiImages
+              : (p.image_url ? [p.image_url] : []);
 
-          return {
-            id: p.id,
-            db_id: p.id,
-            user_id: p.user_id,
-            author: {
-              name: p.full_name || 'Membre CM Studio',
-              avatar: p.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-              verified: p.plan && p.plan.toLowerCase() !== 'free',
-            },
-            time: getShortTimeAgo(p.created_at),
-            content: p.content,
-            images,
-            likesCount: p.likes_count || 0,
-            commentsCount: p.comments_count || 0,
-            sharesCount: p.shares_count || 0,
-          };
-        });
-        setPostsList(formatted);
+            return {
+              id: p.id,
+              db_id: p.id,
+              user_id: p.user_id,
+              author: {
+                name: p.full_name || 'Membre CM Studio',
+                avatar: p.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                verified: p.plan && p.plan.toLowerCase() !== 'free',
+              },
+              time: getShortTimeAgo(p.created_at),
+              content: p.content,
+              images,
+              likesCount: p.likes_count || 0,
+              commentsCount: p.comments_count || 0,
+              sharesCount: p.shares_count || 0,
+            };
+          });
+          setPostsList(formatted);
+        }
+      } catch (err) {
+        console.error('Error loading posts:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadData();
@@ -218,7 +224,27 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
 
       {/* Posts Stream */}
       <div className="flex flex-col gap-4 pb-6">
-        {filteredPosts.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col gap-4">
+            {[1, 2].map((i) => (
+              <div
+                key={i}
+                className={`rounded-2xl p-5 border animate-pulse space-y-4 ${
+                  darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-slate-700/40" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-3.5 w-32 bg-slate-700/40 rounded" />
+                    <div className="h-2.5 w-20 bg-slate-700/30 rounded" />
+                  </div>
+                </div>
+                <div className="h-48 w-full rounded-xl bg-slate-700/30" />
+              </div>
+            ))}
+          </div>
+        ) : filteredPosts.length === 0 ? (
           <div className={`p-8 text-center text-sm font-medium rounded-2xl border ${darkMode ? 'bg-[#1E293B] border-slate-800 text-slate-400' : 'bg-white border-slate-100 text-slate-500'}`}>
             {activeTab === 'suivi'
               ? "Aucune publication des comptes que vous suivez pour le moment."
