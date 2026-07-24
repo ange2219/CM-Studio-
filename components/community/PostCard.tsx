@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   MessageCircle, 
@@ -17,6 +17,40 @@ import { useUser } from '@/components/context/UserContext';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { useFollow } from '@/hooks/useFollow';
 import { CommentsThread } from './CommentsThread';
+
+const globalAspectCache = new Map<string, number>();
+
+function useTwoImageAspects(images: string[] = []) {
+  const [aspects, setAspects] = useState<{ r0: number; r1: number }>(() => ({
+    r0: (images && images[0] && globalAspectCache.get(images[0])) || 1.0,
+    r1: (images && images[1] && globalAspectCache.get(images[1])) || 1.0
+  }));
+
+  useEffect(() => {
+    if (!images || images.length !== 2) return;
+    let isMounted = true;
+    images.forEach((url, i) => {
+      if (globalAspectCache.has(url)) return;
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          const r = img.naturalWidth / img.naturalHeight;
+          globalAspectCache.set(url, r);
+          if (isMounted) {
+            setAspects(prev => ({
+              ...prev,
+              [i === 0 ? 'r0' : 'r1']: r
+            }));
+          }
+        }
+      };
+    });
+    return () => { isMounted = false; };
+  }, [images]);
+
+  return aspects;
+}
 
 export function PostCard({ 
   post, 
@@ -38,6 +72,8 @@ export function PostCard({
   const { user } = useUser();
   const { isFollowing, toggleFollow } = useFollow();
   const supabase = createClient();
+
+  const twoAspects = useTwoImageAspects(post.images);
 
   if (highlightCommentId) {
     console.log('[STEP 5 POSTCARD] Received highlightCommentId:', highlightCommentId, 'for post:', post.id || post.db_id, 'showComments:', propShowComments);
@@ -196,20 +232,51 @@ export function PostCard({
             </div>
           )}
 
-          {/* 2 Images: 50%/50% width, height preserved & capped at 500px max */}
-          {post.images.length === 2 && (
-            <div className="grid grid-cols-2 gap-0.5 w-full max-h-[500px]">
-              {post.images.map((url: string, i: number) => (
-                <div key={i} className="w-full flex items-center justify-center max-h-[500px] overflow-hidden">
-                  <img
-                    src={url}
-                    alt={`Media ${i + 1}`}
-                    className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
-                  />
+          {/* 2 Images: Smart Orientation (2 Squares Side-by-Side vs 2 Superposed Horizontal Rows) */}
+          {post.images.length === 2 && (() => {
+            const { r0, r1 } = twoAspects;
+            // Superposition condition: if both are landscape (r > 1.2) OR if one is landscape and one is square/landscape (r > 1.35)
+            const isSuperposed = (r0 > 1.2 && r1 > 1.2) || (r0 > 1.35 || r1 > 1.35);
+
+            if (isSuperposed) {
+              // If Portrait + Landscape, place Portrait (r < r1) on top
+              const topIdx = r0 < r1 ? 0 : 1;
+              const bottomIdx = topIdx === 0 ? 1 : 0;
+              return (
+                <div className="flex flex-col gap-0.5 h-[340px] md:h-[380px] max-h-[500px] w-full">
+                  <div className="w-full h-1/2 overflow-hidden">
+                    <img
+                      src={post.images[topIdx]}
+                      alt="Media top"
+                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                    />
+                  </div>
+                  <div className="w-full h-1/2 overflow-hidden">
+                    <img
+                      src={post.images[bottomIdx]}
+                      alt="Media bottom"
+                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            }
+
+            // In all other cases (2 Portraits, 2 Squares, Square + Portrait): 2 EQUAL SQUARES SIDE-BY-SIDE
+            return (
+              <div className="grid grid-cols-2 gap-0.5 w-full aspect-[2/1] max-h-[500px]">
+                {post.images.map((url: string, i: number) => (
+                  <div key={i} className="w-full h-full overflow-hidden">
+                    <img
+                      src={url}
+                      alt={`Media ${i + 1}`}
+                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                    />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* 3 Images: 1 main left + 2 stacked right */}
           {post.images.length === 3 && (
