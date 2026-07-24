@@ -245,11 +245,11 @@ export function PostCard({
         <div ref={mediaRef} className="w-full rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50">
           {/* 1 Image */}
           {post.images.length === 1 && (
-            <div className="w-full flex items-center justify-center max-h-[550px]">
+            <div className="w-full flex items-center justify-center max-h-[500px]">
               <img
                 src={post.images[0]}
                 alt="Post media"
-                className="w-full h-auto max-h-[550px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
               />
             </div>
           )}
@@ -265,30 +265,30 @@ export function PostCard({
               const topIdx = r0 < r1 ? 0 : 1;
               const bottomIdx = topIdx === 0 ? 1 : 0;
               return (
-                <div className="flex flex-col gap-0.5 h-[360px] md:h-[400px] max-h-[550px] w-full">
+                <div className="flex flex-col gap-0.5 h-[340px] md:h-[380px] max-h-[500px] w-full">
                   <div className="w-full h-1/2 overflow-hidden">
                     <img
                       src={post.images[topIdx]}
                       alt="Media top"
-                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
                     />
                   </div>
                   <div className="w-full h-1/2 overflow-hidden">
                     <img
                       src={post.images[bottomIdx]}
                       alt="Media bottom"
-                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
                     />
                   </div>
                 </div>
               );
             }
 
-            // Side-by-side 50%/50% width: preserve smaller image height, capped at 550px max
+            // Side-by-side 50%/50% width: preserve smaller image height, capped at 500px max
             const colWidth = (containerWidth || 500) / 2;
             const h0 = colWidth / (r0 || 1.0);
             const h1 = colWidth / (r1 || 1.0);
-            const targetHeight = Math.min(550, Math.max(200, Math.round(Math.min(h0, h1))));
+            const targetHeight = Math.min(500, Math.max(200, Math.round(Math.min(h0, h1))));
 
             return (
               <div
@@ -300,7 +300,7 @@ export function PostCard({
                     <img
                       src={url}
                       alt={`Media ${i + 1}`}
-                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
                     />
                   </div>
                 ))}
