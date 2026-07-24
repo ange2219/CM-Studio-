@@ -385,7 +385,7 @@ export function PostCard({
       </p>
 
       {/* 4. Action Buttons Bar (Bottom Footer with thin separator line & compact icons) */}
-      <div className={`flex items-center justify-between pt-3 mt-3.5 text-[12px] border-t ${darkMode ? 'border-slate-800/80 text-slate-400' : 'border-slate-200/60 text-slate-500'}`}>
+      <div className={`flex items-center justify-between pt-3 mt-3.5 text-[12px] border-t ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200/80 text-slate-500'}`}>
         <div className="flex items-center gap-4 md:gap-5">
           {/* Like */}
           <button
