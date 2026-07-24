@@ -240,13 +240,21 @@ export function PostCard({
       {/* 2. Media Content (Images Block directly below Header) */}
       {post.images && post.images.length > 0 && (
         <div ref={mediaRef} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50 mb-3">
-          {/* 1 Image */}
+          {/* 1 Image with Ambient Dynamic Blurred Color Background */}
           {post.images.length === 1 && (
-            <div className="w-full flex items-center justify-center max-h-[500px]">
+            <div className="w-full flex items-center justify-center max-h-[500px] relative overflow-hidden bg-slate-950/20">
+              {/* Dynamic Ambient Blurred Background */}
+              <img
+                src={post.images[0]}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-45 scale-125 pointer-events-none select-none"
+              />
+              {/* Main Image */}
               <img
                 src={post.images[0]}
                 alt="Post media"
-                className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                className="w-full h-auto max-h-[500px] object-contain relative z-10 hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
               />
             </div>
           )}
