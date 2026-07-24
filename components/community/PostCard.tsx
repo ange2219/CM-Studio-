@@ -1,15 +1,13 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   Heart, 
   MessageCircle, 
   Share2, 
   Bookmark, 
-  Send, 
-  MoreHorizontal, 
-  Smile, 
   Check, 
+  MoreHorizontal, 
   Sparkles 
 } from 'lucide-react';
 import Link from 'next/link';
@@ -20,62 +18,6 @@ import { UserAvatar } from '@/components/ui/UserAvatar';
 import { useFollow } from '@/hooks/useFollow';
 
 import { CommentsThread } from './CommentsThread';
-
-// Cache global en mémoire pour les ratios d'images (évite tout sursaut au re-render)
-const globalAspectCache = new Map<string, number>();
-
-function useImageAspectRatios(images: string[] = []) {
-  const [ratios, setRatios] = useState<Record<string, number>>(() => {
-    const initial: Record<string, number> = {};
-    images.forEach(url => {
-      if (globalAspectCache.has(url)) {
-        initial[url] = globalAspectCache.get(url)!;
-      }
-    });
-    return initial;
-  });
-
-  useEffect(() => {
-    if (!images || images.length <= 1) return;
-    let isMounted = true;
-    images.forEach(url => {
-      if (globalAspectCache.has(url)) return;
-      const img = new Image();
-      img.src = url;
-      img.onload = () => {
-        if (img.naturalWidth && img.naturalHeight) {
-          const r = img.naturalWidth / img.naturalHeight;
-          globalAspectCache.set(url, r);
-          if (isMounted) setRatios(prev => ({ ...prev, [url]: r }));
-        }
-      };
-    });
-    return () => { isMounted = false; };
-  }, [images]);
-
-  return ratios;
-}
-
-// Hook de mesure dynamique de la largeur réelle du conteneur
-function useContainerWidth(ref: React.RefObject<HTMLDivElement | null>) {
-  const [width, setWidth] = useState(500);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const updateWidth = () => {
-      if (ref.current) {
-        const w = ref.current.getBoundingClientRect().width;
-        if (w > 0) setWidth(w);
-      }
-    };
-    updateWidth();
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [ref]);
-
-  return width;
-}
 
 export function PostCard({ 
   post, 
@@ -98,10 +40,6 @@ export function PostCard({
   const { isFollowing, toggleFollow } = useFollow();
   const supabase = createClient();
 
-  const aspectRatios = useImageAspectRatios(post.images);
-  const mediaRef = useRef<HTMLDivElement | null>(null);
-  const containerWidth = useContainerWidth(mediaRef);
-
   if (highlightCommentId) {
     console.log('[STEP 5 POSTCARD] Received highlightCommentId:', highlightCommentId, 'for post:', post.id || post.db_id, 'showComments:', propShowComments);
   }
@@ -115,7 +53,7 @@ export function PostCard({
   const [showComments, setShowComments] = useState(propShowComments || false);
   const [copiedShare, setCopiedShare] = useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (propShowComments !== undefined) {
       setShowComments(propShowComments);
     }
@@ -129,39 +67,17 @@ export function PostCard({
     }
   };
 
-  // Check if current user liked, saved, or shared this post
-  useEffect(() => {
+  React.useEffect(() => {
     async function checkUserInteractions() {
       if (!user || !post.db_id) return;
 
-      // Check liked
-      const { data: lData } = await supabase
-        .from('community_likes')
-        .select('id')
-        .eq('post_id', post.db_id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
+      const { data: lData } = await supabase.from('community_likes').select('id').eq('post_id', post.db_id).eq('user_id', user.id).maybeSingle();
       if (lData) setLiked(true);
 
-      // Check saved
-      const { data: bData } = await supabase
-        .from('community_bookmarks')
-        .select('id')
-        .eq('post_id', post.db_id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
+      const { data: bData } = await supabase.from('community_bookmarks').select('id').eq('post_id', post.db_id).eq('user_id', user.id).maybeSingle();
       if (bData) setSaved(true);
 
-      // Check shared
-      const { data: sData } = await supabase
-        .from('community_shares')
-        .select('id')
-        .eq('post_id', post.db_id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
+      const { data: sData } = await supabase.from('community_shares').select('id').eq('post_id', post.db_id).eq('user_id', user.id).maybeSingle();
       if (sData) setShared(true);
     }
     checkUserInteractions();
@@ -169,37 +85,25 @@ export function PostCard({
 
   const toggleLike = async () => {
     if (!user || !post.db_id) return;
-
     if (liked) {
       setLiked(false);
       setLikesCount((prev: number) => Math.max(0, prev - 1));
-      await supabase
-        .from('community_likes')
-        .delete()
-        .match({ post_id: post.db_id, user_id: user.id });
+      await supabase.from('community_likes').delete().match({ post_id: post.db_id, user_id: user.id });
     } else {
       setLiked(true);
       setLikesCount((prev: number) => prev + 1);
-      await supabase
-        .from('community_likes')
-        .insert({ post_id: post.db_id, user_id: user.id });
+      await supabase.from('community_likes').insert({ post_id: post.db_id, user_id: user.id });
     }
   };
 
   const toggleSave = async () => {
     if (!user || !post.db_id) return;
-
     if (saved) {
       setSaved(false);
-      await supabase
-        .from('community_bookmarks')
-        .delete()
-        .match({ post_id: post.db_id, user_id: user.id });
+      await supabase.from('community_bookmarks').delete().match({ post_id: post.db_id, user_id: user.id });
     } else {
       setSaved(true);
-      await supabase
-        .from('community_bookmarks')
-        .insert({ post_id: post.db_id, user_id: user.id });
+      await supabase.from('community_bookmarks').insert({ post_id: post.db_id, user_id: user.id });
     }
   };
 
@@ -209,13 +113,10 @@ export function PostCard({
     }
     setCopiedShare(true);
     setTimeout(() => setCopiedShare(false), 2200);
-
     if (user && post.db_id && !shared) {
       setShared(true);
       setSharesCount((prev: number) => prev + 1);
-      await supabase
-        .from('community_shares')
-        .insert({ post_id: post.db_id, user_id: user.id });
+      await supabase.from('community_shares').insert({ post_id: post.db_id, user_id: user.id });
     }
   };
 
@@ -224,8 +125,6 @@ export function PostCard({
       id={`post-container-${post.id || post.db_id}`}
       className={`rounded-2xl p-4 md:p-5 shadow-card-subtle border shrink-0 transition-colors duration-300 relative select-none ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'}`}
     >
-      
-      {/* Toast Notification for Sharing */}
       {copiedShare && (
         <div className="absolute top-3 right-12 z-20 bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 animate-in fade-in zoom-in duration-200">
           <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -233,7 +132,6 @@ export function PostCard({
         </div>
       )}
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <Link
@@ -249,9 +147,7 @@ export function PostCard({
             <div className="flex flex-col min-w-0">
               <span className={`text-[14px] font-bold leading-tight flex items-center gap-1.5 truncate group-hover:underline ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
                 {post.author?.name || 'Membre'}
-                {post.author?.verified && (
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline-block shrink-0" />
-                )}
+                {post.author?.verified && <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline-block shrink-0" />}
               </span>
               <span className={`text-[12px] font-medium leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`}>
                 {post.time}
@@ -259,7 +155,6 @@ export function PostCard({
             </div>
           </Link>
 
-          {/* Follow Button: NEVER display on own post (user.id === post.user_id) */}
           {user?.id && user.id !== post.user_id && (
             <button
               type="button"
@@ -283,114 +178,51 @@ export function PostCard({
         </button>
       </div>
 
-      {/* Content Text */}
       <p className={`text-[13.5px] leading-relaxed my-3.5 font-normal ${darkMode ? 'text-slate-200' : 'text-[#334155]'}`}>
         {post.content}
       </p>
 
       {/* Media Content */}
-      <div ref={mediaRef} className="w-full flex flex-col gap-2.5">
+      <div className="w-full flex flex-col gap-2.5">
         {post.images && post.images.length === 1 && (
           <div className="w-full overflow-hidden rounded-xl max-h-[500px] bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center border border-slate-200/60 dark:border-slate-800">
-            <img
-              src={post.images[0]}
-              alt="Post media"
-              className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
-            />
+            <img src={post.images[0]} alt="Post media" className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer" />
           </div>
         )}
 
-        {post.images && post.images.length === 2 && (() => {
-          const r0 = aspectRatios[post.images[0]] || 1.0;
-          const r1 = aspectRatios[post.images[1]] || 1.0;
-          const sumRatios = r0 + r1;
-          const calculatedHeight = Math.min(340, Math.max(180, Math.round(containerWidth / sumRatios)));
-          return (
-            <div className="flex gap-2.5 rounded-xl overflow-hidden w-full" style={{ height: `${calculatedHeight}px` }}>
-              <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r0, flexBasis: `${(r0 / sumRatios) * 100}%` }}>
-                <img src={post.images[0]} alt="Gallery item 1" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-              </div>
-              <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r1, flexBasis: `${(r1 / sumRatios) * 100}%` }}>
-                <img src={post.images[1]} alt="Gallery item 2" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-              </div>
-            </div>
-          );
-        })()}
+        {post.images && post.images.length === 2 && (
+          <div className="grid grid-cols-2 gap-2.5 h-[320px] rounded-xl overflow-hidden">
+            {post.images.map((url: string, i: number) => (
+              <img key={i} src={url} alt="Media" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
+            ))}
+          </div>
+        )}
 
-        {post.images && post.images.length === 3 && (() => {
-          const r0 = aspectRatios[post.images[0]] || 1.0;
-          const r1 = aspectRatios[post.images[1]] || 1.0;
-          const r2 = aspectRatios[post.images[2]] || 1.0;
-          if (r0 > 1.3) {
-            const sum2 = r1 + r2;
-            const h2 = Math.min(260, Math.max(160, Math.round(containerWidth / sum2)));
-            return (
-              <div className="flex flex-col gap-2.5 rounded-xl overflow-hidden w-full">
-                <div className="w-full h-[220px] overflow-hidden rounded-xl">
-                  <img src={post.images[0]} alt="Gallery item 1" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                </div>
-                <div className="flex gap-2.5 w-full overflow-hidden rounded-xl" style={{ height: `${h2}px` }}>
-                  <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r1, flexBasis: `${(r1 / sum2) * 100}%` }}>
-                    <img src={post.images[1]} alt="Gallery item 2" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                  </div>
-                  <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r2, flexBasis: `${(r2 / sum2) * 100}%` }}>
-                    <img src={post.images[2]} alt="Gallery item 3" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                  </div>
-                </div>
-              </div>
-            );
-          }
-          const sum3 = r0 + r1 + r2;
-          const h3 = Math.min(280, Math.max(160, Math.round(containerWidth / sum3)));
-          return (
-            <div className="flex gap-2.5 rounded-xl overflow-hidden w-full" style={{ height: `${h3}px` }}>
-              {[r0, r1, r2].map((r, i) => (
-                <div key={i} className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r, flexBasis: `${(r / sum3) * 100}%` }}>
-                  <img src={post.images[i]} alt={`Gallery item ${i + 1}`} className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                </div>
-              ))}
+        {post.images && post.images.length === 3 && (
+          <div className="grid grid-cols-2 gap-2.5 h-[320px] rounded-xl overflow-hidden">
+            <img src={post.images[0]} alt="Media" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
+            <div className="flex flex-col gap-2.5 h-full">
+              <img src={post.images[1]} alt="Media" className="w-full h-[155px] object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
+              <img src={post.images[2]} alt="Media" className="w-full h-[155px] object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
             </div>
-          );
-        })()}
+          </div>
+        )}
 
-        {post.images && post.images.length >= 4 && (() => {
-          const r0 = aspectRatios[post.images[0]] || 1.0;
-          const r1 = aspectRatios[post.images[1]] || 1.0;
-          const r2 = aspectRatios[post.images[2]] || 1.0;
-          const r3 = aspectRatios[post.images[3]] || 1.0;
-          const sumRow1 = r0 + r1;
-          const sumRow2 = r2 + r3;
-          const hRow1 = Math.min(240, Math.max(160, Math.round(containerWidth / sumRow1)));
-          const hRow2 = Math.min(240, Math.max(160, Math.round(containerWidth / sumRow2)));
-          return (
-            <div className="flex flex-col gap-2.5 rounded-xl overflow-hidden w-full">
-              <div className="flex gap-2.5 w-full" style={{ height: `${hRow1}px` }}>
-                <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r0, flexBasis: `${(r0 / sumRow1) * 100}%` }}>
-                  <img src={post.images[0]} alt="Gallery item 1" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                </div>
-                <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r1, flexBasis: `${(r1 / sumRow1) * 100}%` }}>
-                  <img src={post.images[1]} alt="Gallery item 2" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                </div>
-              </div>
-              <div className="flex gap-2.5 w-full" style={{ height: `${hRow2}px` }}>
-                <div className="overflow-hidden rounded-xl h-full" style={{ flexGrow: r2, flexBasis: `${(r2 / sumRow2) * 100}%` }}>
-                  <img src={post.images[2]} alt="Gallery item 3" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                </div>
-                <div className="overflow-hidden rounded-xl h-full relative" style={{ flexGrow: r3, flexBasis: `${(r3 / sumRow2) * 100}%` }}>
-                  <img src={post.images[3]} alt="Gallery item 4" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
-                  {post.images.length > 4 && (
-                    <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-extrabold text-lg rounded-xl">
-                      +{post.images.length - 4}
-                    </div>
-                  )}
-                </div>
-              </div>
+        {post.images && post.images.length >= 4 && (
+          <div className="grid grid-cols-2 gap-2.5 h-[320px] rounded-xl overflow-hidden">
+            {post.images.slice(0, 3).map((url: string, i: number) => (
+              <img key={i} src={url} alt="Media" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
+            ))}
+            <div className="relative w-full h-full">
+              <img src={post.images[3]} alt="Media" className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer" />
+              {post.images.length > 4 && (
+                <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-extrabold text-lg rounded-xl">+{post.images.length - 4}</div>
+              )}
             </div>
-          );
-        })()}
+          </div>
+        )}
       </div>
 
-      {/* 1. Summary Bar */}
       <div className={`flex items-center justify-between pt-3.5 pb-2 text-[12.5px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
         <div className="flex items-center gap-1.5">
           <Heart className={`w-4 h-4 ${liked ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
