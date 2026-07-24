@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Heart, 
   MessageCircle, 
-  Share2, 
+  Send,
   Bookmark, 
   Check, 
   MoreHorizontal, 
@@ -190,8 +190,9 @@ export function PostCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
+      {/* 1. Header (Avatar + Author Name + Date + Follow + Options) */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <Link
             href={`/profile/${post.user_id}`}
             className="shrink-0 rounded-full cursor-pointer hover:opacity-90 transition-opacity"
@@ -236,13 +237,9 @@ export function PostCard({
         </button>
       </div>
 
-      <p className={`text-[13.5px] leading-relaxed my-3.5 font-normal ${darkMode ? 'text-slate-200' : 'text-[#334155]'}`}>
-        {post.content}
-      </p>
-
-      {/* Media Content - Single Unified Gallery Block per Post */}
+      {/* 2. Media Content (Images Block directly below Header) */}
       {post.images && post.images.length > 0 && (
-        <div ref={mediaRef} className="w-full rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50">
+        <div ref={mediaRef} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50 mb-3">
           {/* 1 Image */}
           {post.images.length === 1 && (
             <div className="w-full flex items-center justify-center max-h-[500px]">
@@ -254,14 +251,12 @@ export function PostCard({
             </div>
           )}
 
-          {/* 2 Images: Smart Orientation (2 Columns Side-by-Side vs 2 Superposed Horizontal Rows) */}
+          {/* 2 Images */}
           {post.images.length === 2 && (() => {
             const { r0, r1 } = twoAspects;
-            // Superposition condition: if both are landscape (r > 1.2) OR if one is landscape and one is square/landscape (r > 1.35)
             const isSuperposed = (r0 > 1.2 && r1 > 1.2) || (r0 > 1.35 || r1 > 1.35);
 
             if (isSuperposed) {
-              // If Portrait + Landscape, place Portrait (r < r1) on top
               const topIdx = r0 < r1 ? 0 : 1;
               const bottomIdx = topIdx === 0 ? 1 : 0;
               return (
@@ -284,7 +279,6 @@ export function PostCard({
               );
             }
 
-            // Side-by-side 50%/50% width: preserve smaller image height, capped at 500px max
             const colWidth = (containerWidth || 500) / 2;
             const h0 = colWidth / (r0 || 1.0);
             const h1 = colWidth / (r1 || 1.0);
@@ -308,7 +302,7 @@ export function PostCard({
             );
           })()}
 
-          {/* 3 Images: 1 main left + 2 stacked right */}
+          {/* 3 Images */}
           {post.images.length === 3 && (
             <div className="grid grid-cols-2 gap-0.5 h-[320px] md:h-[360px]">
               <img
@@ -331,7 +325,7 @@ export function PostCard({
             </div>
           )}
 
-          {/* 4 Images: 2x2 grid */}
+          {/* 4 Images */}
           {post.images.length === 4 && (
             <div className="grid grid-cols-2 gap-0.5 h-[320px] md:h-[360px]">
               {post.images.slice(0, 4).map((url: string, i: number) => (
@@ -345,7 +339,7 @@ export function PostCard({
             </div>
           )}
 
-          {/* 5+ Images: 2 top + 3 bottom */}
+          {/* 5+ Images */}
           {post.images.length >= 5 && (
             <div className="flex flex-col gap-0.5 h-[360px] md:h-[400px]">
               <div className="grid grid-cols-2 gap-0.5 h-1/2">
@@ -385,97 +379,61 @@ export function PostCard({
         </div>
       )}
 
-      <div className={`flex items-center justify-between pt-3.5 pb-2 text-[12.5px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-        <div className="flex items-center gap-1.5">
-          <Heart className={`w-4 h-4 ${liked ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
-          <span className="font-semibold text-slate-700 dark:text-slate-300">
-            {likesCount} {likesCount > 1 ? "J'aime" : "J'aime"}
-          </span>
-        </div>
+      {/* 3. Text Content (Below Media Block) */}
+      <p className={`text-[13.5px] leading-relaxed mb-3.5 font-normal ${darkMode ? 'text-slate-200' : 'text-[#334155]'}`}>
+        {post.content}
+      </p>
 
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={toggleCommentsVisibility}
-            className="hover:underline transition-all cursor-pointer bg-transparent border-none p-0 text-inherit font-medium"
+      {/* 4. Action Buttons Bar (Bottom Footer matching reference UI) */}
+      <div className={`flex items-center justify-between pt-2.5 text-[13px] border-t ${darkMode ? 'border-slate-800/80 text-slate-400' : 'border-slate-100 text-slate-500'}`}>
+        <div className="flex items-center gap-5">
+          {/* Like */}
+          <button
+            onClick={toggleLike}
+            className={`flex items-center gap-1.5 bg-transparent border-none p-0 cursor-pointer transition-colors ${
+              liked ? 'text-rose-500 font-bold' : darkMode ? 'hover:text-rose-400 text-slate-400' : 'hover:text-rose-500 text-slate-600'
+            }`}
           >
-            {commentsCount} {commentsCount > 1 ? "commentaires" : "commentaire"}
+            <Heart className={`w-4.5 h-4.5 transition-transform ${liked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+            <span>{likesCount}</span>
           </button>
-          <span>•</span>
-          <button onClick={handleShare} className="hover:underline transition-all cursor-pointer bg-transparent border-none p-0 text-inherit font-medium">
-            {sharesCount} {sharesCount > 1 ? "partages" : "partage"}
+
+          {/* Comment */}
+          <button
+            onClick={toggleCommentsVisibility}
+            className={`flex items-center gap-1.5 bg-transparent border-none p-0 cursor-pointer transition-colors ${
+              showComments ? 'text-[#1677FF] font-bold' : darkMode ? 'hover:text-blue-400 text-slate-400' : 'hover:text-slate-900 text-slate-600'
+            }`}
+          >
+            <MessageCircle className="w-4.5 h-4.5" />
+            <span>{commentsCount}</span>
+          </button>
+
+          {/* Share */}
+          <button
+            onClick={handleShare}
+            className={`flex items-center gap-1.5 bg-transparent border-none p-0 cursor-pointer transition-colors ${
+              shared ? 'text-blue-500 font-bold' : darkMode ? 'hover:text-blue-400 text-slate-400' : 'hover:text-slate-900 text-slate-600'
+            }`}
+          >
+            <Send className="w-4.5 h-4.5" />
+            <span>{sharesCount}</span>
           </button>
         </div>
-      </div>
 
-      {/* Divider */}
-      <div className={`h-[1px] w-full ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`} />
-
-      {/* 2. Main Action Buttons Bar */}
-      <div className="flex items-center justify-between py-1">
-        
-        {/* Heart Like Button */}
-        <button
-          onClick={toggleLike}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
-            liked
-              ? 'text-rose-500 bg-rose-50/70 dark:bg-rose-500/10 dark:text-rose-400'
-              : darkMode 
-                ? 'text-slate-400 hover:text-rose-400 hover:bg-slate-800/60 bg-transparent' 
-                : 'text-slate-600 hover:text-rose-500 hover:bg-slate-100/70 bg-transparent'
-          }`}
-        >
-          <Heart className={`w-4.5 h-4.5 stroke-[2] transition-transform ${liked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-          <span>{liked ? 'Aimé' : 'J\'aime'}</span>
-        </button>
-
-        {/* Comment Button */}
-        <button
-          onClick={toggleCommentsVisibility}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
-            showComments
-              ? darkMode ? 'text-[#1677FF] bg-blue-500/10' : 'text-[#1677FF] bg-blue-50'
-              : darkMode 
-                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 bg-transparent' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 bg-transparent'
-          }`}
-        >
-          <MessageCircle className="w-4.5 h-4.5 stroke-[2]" />
-          <span>Commenter</span>
-        </button>
-
-        {/* Share Button */}
-        <button
-          onClick={handleShare}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
-            shared
-              ? 'text-blue-500 bg-blue-50 dark:bg-blue-500/10'
-              : darkMode 
-                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 bg-transparent' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 bg-transparent'
-          }`}
-        >
-          <Share2 className="w-4.5 h-4.5 stroke-[2]" />
-          <span>Partager</span>
-        </button>
-
-        {/* Bookmark Button */}
+        {/* Bookmark */}
         <button
           onClick={toggleSave}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer select-none border-none ${
-            saved
-              ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10'
-              : darkMode 
-                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 bg-transparent' 
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 bg-transparent'
+          className={`bg-transparent border-none p-0 cursor-pointer transition-colors ${
+            saved ? 'text-amber-500' : darkMode ? 'hover:text-amber-400 text-slate-400' : 'hover:text-amber-500 text-slate-600'
           }`}
           title={saved ? "Enregistré" : "Enregistrer"}
         >
-          <Bookmark className={`w-4.5 h-4.5 stroke-[2] ${saved ? 'fill-amber-500' : ''}`} />
-          <span className="hidden sm:inline">{saved ? 'Enregistré' : 'Sauvegarder'}</span>
+          <Bookmark className={`w-4.5 h-4.5 ${saved ? 'fill-amber-500 text-amber-500' : ''}`} />
         </button>
       </div>
 
-      {/* 3. Embedded Standalone CommentsThread Component */}
+      {/* Embedded Comments Thread */}
       {showComments && (
         <CommentsThread
           postId={post.db_id || post.id}
@@ -485,7 +443,6 @@ export function PostCard({
           onHighlightHandled={onHighlightHandled}
         />
       )}
-
     </article>
   );
 }
