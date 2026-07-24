@@ -39,6 +39,10 @@ export function PostCard({
   const { darkMode: ctxDarkMode } = useTheme();
   const darkMode = propDarkMode ?? ctxDarkMode;
   const { user } = useUser();
+
+  if (highlightCommentId) {
+    console.log('[STEP 5 POSTCARD] Received highlightCommentId:', highlightCommentId, 'for post:', post.id || post.db_id, 'showComments:', propShowComments);
+  }
   const { isFollowing, toggleFollow } = useFollow();
   const supabase = createClient();
 

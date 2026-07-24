@@ -1,9 +1,11 @@
 'use client'
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, LayoutGrid, MessageSquare, Bell, Users, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/components/context/UserContext';
 
 export function SidebarLeft({
   darkMode,
@@ -15,12 +17,71 @@ export function SidebarLeft({
   onSelectView?: (view: string) => void;
 }) {
   const pathname = usePathname();
+  const { user } = useUser();
+  const supabase = createClient();
+
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState<number>(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const currentUserId = user.id;
+
+    async function fetchCounts() {
+      try {
+        // 1. Unread notifications count
+        const { count: notifCount } = await supabase
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', currentUserId)
+          .eq('is_read', false);
+
+        setUnreadNotifsCount(notifCount || 0);
+
+        // 2. Unread messages count
+        const { data: msgs } = await supabase
+          .from('messages')
+          .select('id, message_reads!left(user_id)')
+          .neq('sender_id', currentUserId);
+
+        if (msgs) {
+          const count = msgs.filter((m: any) => {
+            const reads = m.message_reads || [];
+            return !reads.some((r: any) => r.user_id === currentUserId);
+          }).length;
+          setUnreadMessagesCount(count);
+        }
+      } catch (err) {
+        console.error("Erreur lors de la récupération des compteurs non lus:", err);
+      }
+    }
+
+    fetchCounts();
+
+    // Subscribe to realtime updates for notifications and messages
+    const channel = supabase
+      .channel('sidebar_unread_counts')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+        fetchCounts();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+        fetchCounts();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reads' }, () => {
+        fetchCounts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, supabase]);
 
   const navItems = [
     { id: 'home', label: 'Accueil', icon: Home, href: '/home' },
     { id: 'workspace', label: 'Workspace', icon: LayoutGrid, href: '/workspace' },
-    { id: 'messages', label: 'Messagerie', icon: MessageSquare, badge: '3', href: '/messages' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: '5', href: '/notifications' },
+    { id: 'messages', label: 'Messagerie', icon: MessageSquare, badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : null, href: '/messages' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotifsCount > 0 ? String(unreadNotifsCount) : null, href: '/notifications' },
     { id: 'members', label: 'Réseau', icon: Users, href: '/members' },
   ];
 

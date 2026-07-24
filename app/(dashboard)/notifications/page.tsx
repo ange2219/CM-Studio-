@@ -62,6 +62,7 @@ export default function NotificationsPage({ darkMode: propDarkMode }: { darkMode
       if (url.startsWith('/community')) {
         url = url.replace('/community', '/home');
       }
+      console.log('[STEP 1 NOTIFICATIONS PAGE] handleNotifClick raw action_url:', notif.action_url, 'navigating to:', url);
       router.push(url);
     }
   };

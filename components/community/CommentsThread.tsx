@@ -168,6 +168,12 @@ export function CommentsThread({
     const timer = setInterval(() => {
       attempts++;
       const targetEl = document.getElementById(`comment-container-${highlightCommentId}`);
+      console.log('[STEP 6 COMMENTSTHREAD] Poll attempt:', attempts, {
+        highlightCommentId,
+        targetElFound: !!targetEl,
+        commentsCountFetched: comments.length,
+        commentsIDsFetched: comments.map(c => c.id)
+      });
 
       if (targetEl) {
         clearInterval(timer);
@@ -185,13 +191,14 @@ export function CommentsThread({
 
         onHighlightHandled?.();
       } else if (attempts >= maxAttempts) {
+        console.log('[STEP 6 COMMENTSTHREAD] Max attempts reached without finding targetEl:', highlightCommentId);
         clearInterval(timer);
         onHighlightHandled?.();
       }
     }, 100);
 
     return () => clearInterval(timer);
-  }, [loading, highlightCommentId, onHighlightHandled]);
+  }, [loading, highlightCommentId, comments, onHighlightHandled]);
 
   // Handle submit comment / reply
   const handleCommentSubmit = async (e: React.FormEvent) => {

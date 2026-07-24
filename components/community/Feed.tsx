@@ -72,9 +72,9 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
 
   // Handle URL hash anchor scrolling & opening comments with polling
   useEffect(() => {
-    if (postsList.length === 0) return;
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
-    if (!hash) return;
+    console.log('[STEP 2 FEED] Read window.location.hash:', hash, 'postsList.length:', postsList.length);
+    if (postsList.length === 0 || !hash) return;
 
     const pollAndScrollElement = (elementId: string, onFound?: () => void) => {
       let attempts = 0;
@@ -103,6 +103,9 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
       const isComments = raw.endsWith('-comments');
       const postId = isComments ? raw.replace('-comments', '') : raw;
 
+      const postExistsInFeed = postsList.some(p => p.id === postId || p.db_id === postId);
+      console.log('[STEP 3 FEED] #post- hash check:', { postId, postExistsInFeed, totalPostsInList: postsList.length });
+
       if (isComments) {
         setExpandedPostIds(prev => new Set(prev).add(postId));
       }
@@ -115,6 +118,9 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
       if (parts.length >= 2) {
         const commentId = parts[0];
         const postId = parts[1];
+
+        const postExistsInFeed = postsList.some(p => p.id === postId || p.db_id === postId);
+        console.log('[STEP 3 FEED] #comment_ hash check:', { commentId, postId, postExistsInFeed, totalPostsInList: postsList.length });
 
         setExpandedPostIds(prev => new Set(prev).add(postId));
         setHighlightedCommentIds(prev => ({ ...prev, [postId]: commentId }));
@@ -268,7 +274,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
               : darkMode ? 'font-medium text-slate-400 hover:text-slate-200' : 'font-medium text-[#64748B] hover:text-[#1E293B]'
           }`}
         >
-          <span>Suivi ({followingIds.size})</span>
+          <span>Suivi</span>
           {activeTab === 'suivi' && (
             <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1677FF] rounded-full transition-all duration-200" />
           )}
@@ -277,26 +283,42 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
 
       {/* Posts Stream */}
       <div className="flex flex-col gap-4 pb-6">
-        {filteredPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            darkMode={darkMode}
-            showComments={expandedPostIds.has(post.id)}
-            onToggleComments={(show) => {
-              setExpandedPostIds(prev => {
-                const next = new Set(prev);
-                if (show) next.add(post.id);
-                else next.delete(post.id);
-                return next;
-              });
-            }}
-            highlightCommentId={highlightedCommentIds[post.id] || null}
-            onHighlightHandled={() => {
-              setHighlightedCommentIds(prev => ({ ...prev, [post.id]: null }));
-            }}
-          />
-        ))}
+        {filteredPosts.length === 0 ? (
+          <div className={`p-8 text-center text-sm font-medium rounded-2xl border ${darkMode ? 'bg-[#1E293B] border-slate-800 text-slate-400' : 'bg-white border-slate-100 text-slate-500'}`}>
+            {activeTab === 'suivi'
+              ? "Aucune publication des comptes que vous suivez pour le moment."
+              : "Aucune publication pour le moment."}
+          </div>
+        ) : (
+          filteredPosts.map((post) => {
+          if (highlightedCommentIds[post.id]) {
+            console.log('[STEP 4 FEED] Passing props to PostCard:', {
+              postId: post.id,
+              highlightCommentId: highlightedCommentIds[post.id],
+              showComments: expandedPostIds.has(post.id)
+            });
+          }
+          return (
+            <PostCard
+              key={post.id}
+              post={post}
+              darkMode={darkMode}
+              showComments={expandedPostIds.has(post.id)}
+              onToggleComments={(show) => {
+                setExpandedPostIds(prev => {
+                  const next = new Set(prev);
+                  if (show) next.add(post.id);
+                  else next.delete(post.id);
+                  return next;
+                });
+              }}
+              highlightCommentId={highlightedCommentIds[post.id] || null}
+              onHighlightHandled={() => {
+                setHighlightedCommentIds(prev => ({ ...prev, [post.id]: null }));
+              }}
+            />
+          );
+        }))}
       </div>
     </main>
   );
