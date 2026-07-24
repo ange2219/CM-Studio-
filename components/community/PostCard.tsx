@@ -384,9 +384,9 @@ export function PostCard({
         {post.content}
       </p>
 
-      {/* 4. Action Buttons Bar (Bottom Footer matching reference UI) */}
-      <div className={`flex items-center justify-between pt-2.5 text-[13px] border-t ${darkMode ? 'border-slate-800/80 text-slate-400' : 'border-slate-100 text-slate-500'}`}>
-        <div className="flex items-center gap-5">
+      {/* 4. Action Buttons Bar (Bottom Footer with thin separator line & compact icons) */}
+      <div className={`flex items-center justify-between pt-3 mt-3.5 text-[12px] border-t ${darkMode ? 'border-slate-800/80 text-slate-400' : 'border-slate-200/60 text-slate-500'}`}>
+        <div className="flex items-center gap-4 md:gap-5">
           {/* Like */}
           <button
             onClick={toggleLike}
@@ -394,8 +394,8 @@ export function PostCard({
               liked ? 'text-rose-500 font-bold' : darkMode ? 'hover:text-rose-400 text-slate-400' : 'hover:text-rose-500 text-slate-600'
             }`}
           >
-            <Heart className={`w-4.5 h-4.5 transition-transform ${liked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-            <span>{likesCount}</span>
+            <Heart className={`w-3.5 h-3.5 transition-transform ${liked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+            <span className="font-semibold">{likesCount}</span>
           </button>
 
           {/* Comment */}
@@ -405,8 +405,8 @@ export function PostCard({
               showComments ? 'text-[#1677FF] font-bold' : darkMode ? 'hover:text-blue-400 text-slate-400' : 'hover:text-slate-900 text-slate-600'
             }`}
           >
-            <MessageCircle className="w-4.5 h-4.5" />
-            <span>{commentsCount}</span>
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span className="font-semibold">{commentsCount}</span>
           </button>
 
           {/* Share */}
@@ -416,8 +416,8 @@ export function PostCard({
               shared ? 'text-blue-500 font-bold' : darkMode ? 'hover:text-blue-400 text-slate-400' : 'hover:text-slate-900 text-slate-600'
             }`}
           >
-            <Send className="w-4.5 h-4.5" />
-            <span>{sharesCount}</span>
+            <Send className="w-3.5 h-3.5" />
+            <span className="font-semibold">{sharesCount}</span>
           </button>
         </div>
 
@@ -429,7 +429,7 @@ export function PostCard({
           }`}
           title={saved ? "Enregistré" : "Enregistrer"}
         >
-          <Bookmark className={`w-4.5 h-4.5 ${saved ? 'fill-amber-500 text-amber-500' : ''}`} />
+          <Bookmark className={`w-3.5 h-3.5 ${saved ? 'fill-amber-500 text-amber-500' : ''}`} />
         </button>
       </div>
 
