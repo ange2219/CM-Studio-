@@ -245,11 +245,11 @@ export function PostCard({
         <div ref={mediaRef} className="w-full rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50">
           {/* 1 Image */}
           {post.images.length === 1 && (
-            <div className="w-full flex items-center justify-center max-h-[500px]">
+            <div className="w-full flex items-center justify-center max-h-[600px]">
               <img
                 src={post.images[0]}
                 alt="Post media"
-                className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
+                className="w-full h-auto max-h-[600px] object-contain hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
               />
             </div>
           )}
@@ -265,7 +265,7 @@ export function PostCard({
               const topIdx = r0 < r1 ? 0 : 1;
               const bottomIdx = topIdx === 0 ? 1 : 0;
               return (
-                <div className="flex flex-col gap-0.5 h-[340px] md:h-[380px] max-h-[500px] w-full">
+                <div className="flex flex-col gap-0.5 h-[360px] md:h-[420px] max-h-[600px] w-full">
                   <div className="w-full h-1/2 overflow-hidden">
                     <img
                       src={post.images[topIdx]}
@@ -284,11 +284,11 @@ export function PostCard({
               );
             }
 
-            // Side-by-side 50%/50% width: preserve smaller image height, capped at 500px max
+            // Side-by-side 50%/50% width: preserve smaller image height, capped at 600px max
             const colWidth = (containerWidth || 500) / 2;
             const h0 = colWidth / (r0 || 1.0);
             const h1 = colWidth / (r1 || 1.0);
-            const targetHeight = Math.min(500, Math.max(200, Math.round(Math.min(h0, h1))));
+            const targetHeight = Math.min(600, Math.max(200, Math.round(Math.min(h0, h1))));
 
             return (
               <div
