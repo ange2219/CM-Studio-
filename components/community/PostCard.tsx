@@ -21,6 +21,34 @@ import { PostDetailModal } from './PostDetailModal';
 
 const globalAspectCache = new Map<string, number>();
 
+function useFirstImageAspect(images: string[] = []) {
+  const [aspect, setAspect] = useState<number>(() => {
+    return (images && images[0] && globalAspectCache.get(images[0])) || 1.0;
+  });
+
+  useEffect(() => {
+    if (!images || images.length === 0) return;
+    const url = images[0];
+    if (globalAspectCache.has(url)) {
+      setAspect(globalAspectCache.get(url)!);
+      return;
+    }
+    let isMounted = true;
+    const img = new Image();
+    img.src = url;
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        const r = img.naturalWidth / img.naturalHeight;
+        globalAspectCache.set(url, r);
+        if (isMounted) setAspect(r);
+      }
+    };
+    return () => { isMounted = false; };
+  }, [images]);
+
+  return aspect;
+}
+
 function useTwoImageAspects(images: string[] = []) {
   const [aspects, setAspects] = useState<{ r0: number; r1: number }>(() => ({
     r0: (images && images[0] && globalAspectCache.get(images[0])) || 1.0,
@@ -94,6 +122,7 @@ export function PostCard({
   const { isFollowing, toggleFollow } = useFollow();
   const supabase = createClient();
 
+  const firstAspect = useFirstImageAspect(post.images);
   const twoAspects = useTwoImageAspects(post.images);
   const mediaRef = useRef<HTMLDivElement | null>(null);
   const containerWidth = useContainerWidth(mediaRef);
@@ -321,34 +350,70 @@ export function PostCard({
             );
           })()}
 
-          {/* 3 Images: 1 Tall Left Hero (66% width) + 2 Stacked Right Images (33% width) */}
-          {post.images.length === 3 && (
-            <div className="grid grid-cols-3 gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
-              <div className="col-span-2 w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
-                <img
-                  src={post.images[0]}
-                  alt="Media 1"
-                  className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
-                />
-              </div>
-              <div className="col-span-1 flex flex-col gap-1.5 h-full">
-                <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(1)}>
+          {/* 3 Images: Smart Orientation (Landscape: 1 Top + 2 Bottom vs Portrait: 66% Left Hero + 34% Right Stacked) */}
+          {post.images.length === 3 && (() => {
+            const isLandscape = firstAspect > 1.25;
+
+            if (isLandscape) {
+              // 3 Landscape: Top 100% width (50% height) + Bottom 2 columns 50%/50% width (50% height)
+              return (
+                <div className="flex flex-col gap-1.5 h-[380px] md:h-[440px] max-h-[500px] w-full">
+                  <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
+                    <img
+                      src={post.images[0]}
+                      alt="Media 1"
+                      className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 w-full h-1/2">
+                    <div className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(1)}>
+                      <img
+                        src={post.images[1]}
+                        alt="Media 2"
+                        className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(2)}>
+                      <img
+                        src={post.images[2]}
+                        alt="Media 3"
+                        className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // 3 Portrait: Left Hero 66% width + Right 2 stacked images 34% width (50%/50% height)
+            return (
+              <div className="grid grid-cols-3 gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
+                <div className="col-span-2 w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
                   <img
-                    src={post.images[1]}
-                    alt="Media 2"
+                    src={post.images[0]}
+                    alt="Media 1"
                     className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
                   />
                 </div>
-                <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(2)}>
-                  <img
-                    src={post.images[2]}
-                    alt="Media 3"
-                    className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
-                  />
+                <div className="col-span-1 flex flex-col gap-1.5 h-full">
+                  <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(1)}>
+                    <img
+                      src={post.images[1]}
+                      alt="Media 2"
+                      className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(2)}>
+                    <img
+                      src={post.images[2]}
+                      alt="Media 3"
+                      className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* 4 Images */}
           {post.images.length === 4 && (
