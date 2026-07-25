@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage, Lightbulb, Video } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage, Lightbulb, Video, Award, Check } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
+import { useOrg } from '@/components/context/OrgContext'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
   switch (platform) {
@@ -137,6 +138,22 @@ function InsightsBadge({ a }: { a: PostAnalytics | null }) {
 export default function PostsDashboard({ allPosts = false }: { allPosts?: boolean }) {
   const router = useRouter()
   const { toast } = useToast()
+  
+  const { activeOrganization, organizations, switchOrganization } = useOrg()
+  const [brandSelectorOpen, setBrandSelectorOpen] = useState(false)
+  const brandSelectorRef = useRef<HTMLDivElement>(null)
+
+  // Handle click outside to close brand selector
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (brandSelectorRef.current && !brandSelectorRef.current.contains(event.target as Node)) {
+        setBrandSelectorOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const [posts, setPosts] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -1122,14 +1139,105 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       {!allPosts && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem', marginBottom: '1.5rem' }}>
         
-        {/* Titre et Sous-titre */}
-        <div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", margin: '0 0 .2rem 0', lineHeight: 1.2 }}>
-            Workspace
-          </h1>
-          <p style={{ fontSize: '.85rem', color: 'var(--t3)', margin: 0 }}>
-            Votre centre de création, de planification et d'analyse.
-          </p>
+        {/* Titre, Sous-titre et Sélecteur de Marque */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", margin: '0 0 .2rem 0', lineHeight: 1.2 }}>
+              Workspace
+            </h1>
+            <p style={{ fontSize: '.85rem', color: 'var(--t3)', margin: 0 }}>
+              Votre centre de création, de planification et d'analyse.
+            </p>
+          </div>
+
+          {/* Brand Selector Dropdown */}
+          <div ref={brandSelectorRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setBrandSelectorOpen(prev => !prev)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 0.95rem',
+                borderRadius: '12px',
+                border: '1px solid var(--b1)',
+                background: 'var(--card)',
+                color: 'var(--t1)',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: 'var(--shadow)'
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+              onMouseLeave={e => {
+                if (!brandSelectorOpen) {
+                  e.currentTarget.style.borderColor = 'var(--b1)'
+                }
+              }}
+            >
+              <Award className="w-4 h-4 text-[#1677FF]" />
+              <span className="truncate max-w-[130px]">{activeOrganization?.name || 'Ma Marque'}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${brandSelectorOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {brandSelectorOpen && organizations && organizations.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                right: 0,
+                zIndex: 200,
+                background: 'var(--card)',
+                border: '1px solid var(--b1)',
+                borderRadius: '12px',
+                padding: '0.4rem',
+                minWidth: '180px',
+                boxShadow: '0 8px 24px rgba(0,0,0,.45)'
+              }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--t3)', marginBottom: '4px', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Mes Marques
+                </div>
+                {organizations.map((org: any) => (
+                  <button
+                    key={org.id}
+                    onClick={() => {
+                      switchOrganization(org.id)
+                      setBrandSelectorOpen(false)
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: activeOrganization?.id === org.id ? 'rgba(22, 119, 255, 0.08)' : 'transparent',
+                      color: activeOrganization?.id === org.id ? 'var(--accent)' : 'var(--t1)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      textAlign: 'left',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseEnter={e => {
+                      if (activeOrganization?.id !== org.id) {
+                        e.currentTarget.style.background = 'var(--s2)'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (activeOrganization?.id !== org.id) {
+                        e.currentTarget.style.background = 'transparent'
+                      }
+                    }}
+                  >
+                    <span className="truncate">{org.name}</span>
+                    {activeOrganization?.id === org.id && <Check className="w-3.5 h-3.5 text-[#1677FF]" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── ACTION CARDS (Carousel mobile / Grid desktop) ── */}

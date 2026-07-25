@@ -6,7 +6,7 @@ import { SidebarLeft } from '@/components/layout/SidebarLeft'
 import { ThemeProvider, useTheme } from '@/components/context/ThemeContext'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Home, LayoutGrid, Plus, MessageSquare } from 'lucide-react'
+import { Home, LayoutGrid, Plus, MessageSquare, Users } from 'lucide-react'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 
 function DashboardShellContent({
@@ -59,6 +59,7 @@ function DashboardShellContent({
       <nav className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-[400px] h-[64px] rounded-full shadow-2xl flex items-center justify-around px-4 border md:hidden transition-all duration-300 ${
         darkMode ? 'bg-slate-950/40 border-white/15 backdrop-blur-xl shadow-black/40' : 'bg-white/40 border-black/5 backdrop-blur-xl shadow-slate-200/60'
       }`}>
+        {/* 1. Accueil */}
         <Link 
           href="/home" 
           className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
@@ -70,29 +71,35 @@ function DashboardShellContent({
           <Home className="w-5.5 h-5.5" />
         </Link>
 
+        {/* 2. Réseau */}
         <Link 
-          href="/workspace" 
+          href="/members" 
           className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
-            getActiveView() === 'workspace' 
+            pathname && pathname.startsWith('/members')
               ? darkMode ? 'text-[#38BDF8] bg-slate-800/40' : 'text-[#1677FF] bg-slate-100'
               : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <LayoutGrid className="w-5.5 h-5.5" />
+          <Users className="w-5.5 h-5.5" />
         </Link>
 
-        {/* Plus Button: Opens Create Modal via ?create=true */}
+        {/* 3. Workspace (Bouton central) */}
         <Link 
-          href="/home?create=true" 
+          href="/workspace" 
           className={`flex items-center justify-center w-11 h-11 rounded-full shadow-lg transition-transform active:scale-95 ${
-            darkMode 
-              ? 'bg-[#38BDF8] text-slate-950 hover:bg-[#0EA5E9]' 
-              : 'bg-[#1677FF] text-white hover:bg-[#1266DF]'
+            pathname && pathname.startsWith('/workspace')
+              ? darkMode 
+                ? 'bg-[#38BDF8] text-slate-950 hover:bg-[#0EA5E9]' 
+                : 'bg-[#1677FF] text-white hover:bg-[#1266DF]'
+              : darkMode
+                ? 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-750'
+                : 'bg-slate-100/90 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
           }`}
         >
-          <Plus className="w-6 h-6 stroke-[3]" />
+          <LayoutGrid className="w-5 h-5 stroke-[2.5]" />
         </Link>
 
+        {/* 4. Messages */}
         <Link 
           href="/messages" 
           className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
@@ -104,6 +111,7 @@ function DashboardShellContent({
           <MessageSquare className="w-5.5 h-5.5" />
         </Link>
 
+        {/* 5. Profil */}
         <Link 
           href={user?.username ? `/profile/${user.username}` : `/profile/${user?.id || ''}`}
           className={`flex items-center justify-center p-0.5 rounded-full border-2 transition-all ${

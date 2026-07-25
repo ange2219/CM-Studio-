@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Moon, Sun, ChevronDown, User, Settings, LogOut, Award, Check } from 'lucide-react';
+import { Search, Moon, Sun, ChevronDown, User, Settings, LogOut, Award, Check, Bell } from 'lucide-react';
 import { FeatherLogo } from '@/components/FeatherLogo';
 import { useUser } from '@/components/context/UserContext';
 import { useOrg } from '@/components/context/OrgContext';
@@ -23,6 +23,7 @@ export function Header({
   const { activeOrganization, organizations, switchOrganization } = useOrg()
   const supabase = createClient()
   const router = useRouter()
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState<number>(0);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBrandList, setShowBrandList] = useState(false);
@@ -39,6 +40,39 @@ export function Header({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Fetch and subscribe to unread notifications count
+  useEffect(() => {
+    if (!user) return;
+    const currentUserId = user.id;
+
+    async function fetchCounts() {
+      try {
+        const { count: notifCount } = await supabase
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', currentUserId)
+          .eq('is_read', false);
+
+        setUnreadNotifsCount(notifCount || 0);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des compteurs non lus:", err);
+      }
+    }
+
+    fetchCounts();
+
+    const channel = supabase
+      .channel('header_unread_notifs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+        fetchCounts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, supabase]);
 
   const handleLogout = async () => {
     setIsMenuOpen(false);
@@ -89,12 +123,40 @@ export function Header({
           )}
         </button>
 
-        {/* User Profile Button */}
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-[24px] bg-transparent border border-transparent transition-all duration-200 ease-in-out cursor-pointer ${darkMode
+        {/* Notifications Icon - Visible ONLY on Mobile */}
+        <Link
+          href="/notifications"
+          className={`relative p-2 rounded-full md:hidden flex items-center justify-center transition-colors ${
+            darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Bell className="w-5.5 h-5.5" />
+          {unreadNotifsCount > 0 && (
+            <span className="absolute top-1 right-1 w-4.5 h-4.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+              {unreadNotifsCount}
+            </span>
+          )}
+        </Link>
+
+        {/* Dark / Light Mode Toggle Button */}
+        <button
+          type="button"
+          onClick={onToggleDarkMode}
+          title={darkMode ? 'Passer au Mode Clair' : 'Passer au Mode Sombre'}
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-blue-glow border-none ${darkMode ? 'bg-[#38BDF8] text-slate-900 hover:bg-[#7dd3fc]' : 'bg-[#1677FF] text-white hover:bg-[#1266DF]'}`}
+        >
+          {darkMode ? (
+            <Sun className="w-5 h-5 fill-current stroke-[2]" />
+          ) : (
+            <Moon className="w-5 h-5 fill-current stroke-[2]" />
+          )}
+        </button>
+
+        {/* User Profile Button - Desktop ONLY (hidden on mobile) */}
+        <div className="relative hidden md:block" ref={menuRef}>
+          <Link
+            href={user?.username ? `/profile/${user.username}` : `/profile/${user?.id || 'me'}`}
+            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-[24px] bg-transparent border border-transparent transition-all duration-200 ease-in-out cursor-pointer text-decoration-none ${darkMode
                 ? 'hover:bg-slate-700/80 hover:border-slate-600/50 text-white'
                 : 'hover:bg-slate-100 hover:border-slate-200/70 text-[#1E293B]'
               }`}
@@ -115,107 +177,7 @@ export function Header({
                 {displayOrg}
               </span>
             </div>
-
-            {/* Chevron Arrow */}
-            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : ''} ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
-          </button>
-
-          {/* Profile Dropdown Menu */}
-          {isMenuOpen && (
-            <div className={`absolute right-0 mt-2 w-72 rounded-2xl p-3.5 shadow-2xl border transition-all z-50 animate-in fade-in slide-in-from-top-2 ${darkMode ? 'bg-[#1E293B] border-slate-700 text-slate-100' : 'bg-white border-slate-100 text-slate-800'
-              }`}>
-              {/* Profile Card Header in Menu */}
-              <div className="flex items-center gap-3.5 p-2 pb-3.5 border-b border-slate-100 dark:border-slate-800">
-                <UserAvatar
-                  avatarUrl={user?.avatar_url}
-                  size={48}
-                  className="ring-2 ring-[#1677FF] shrink-0"
-                />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[14.5px] font-bold truncate leading-snug">{displayName}</span>
-                  <span className="text-[11.5px] text-slate-400 truncate leading-snug">{displayEmail}</span>
-                </div>
-              </div>
-
-              {/* Navigation Shortcuts Links */}
-              <div className="py-2 flex flex-col gap-0.5">
-                <Link
-                  href={`/profile/${user?.id || 'me'}`}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors text-decoration-none ${darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-50 text-slate-700'
-                    }`}
-                >
-                  <User className="w-4.5 h-4.5 text-[#1677FF]" />
-                  <span>Mon Profil</span>
-                </Link>
-
-                {/* Mes Marques with sub-list context menu */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setShowBrandList(!showBrandList)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors cursor-pointer border-none ${
-                      darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-50 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Award className="w-4.5 h-4.5 text-[#1677FF]" />
-                      <span>Mes marques ({organizations?.length || 1})</span>
-                    </div>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showBrandList ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {showBrandList && organizations && organizations.length > 0 && (
-                    <div className={`mt-1 ml-4 pl-2 border-l flex flex-col gap-1 ${
-                      darkMode ? 'border-slate-700' : 'border-slate-200'
-                    }`}>
-                      {organizations.map((org: any) => (
-                        <button
-                          key={org.id}
-                          type="button"
-                          onClick={() => {
-                            switchOrganization(org.id);
-                            setIsMenuOpen(false);
-                            setShowBrandList(false);
-                          }}
-                          className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer border-none text-left ${
-                            activeOrganization?.id === org.id
-                              ? darkMode ? 'bg-slate-800 text-[#38BDF8]' : 'bg-blue-50 text-[#1677FF]'
-                              : darkMode ? 'hover:bg-slate-800/60 text-slate-300' : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                        >
-                          <span className="truncate">{org.name}</span>
-                          {activeOrganization?.id === org.id && <Check className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Link
-                  href="/settings"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors text-decoration-none ${darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-50 text-slate-700'
-                    }`}
-                >
-                  <Settings className="w-4.5 h-4.5 text-[#1677FF]" />
-                  <span>Paramètres</span>
-                </Link>
-              </div>
-
-              {/* Divider & Logout Option */}
-              <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer bg-transparent border-none"
-                >
-                  <LogOut className="w-4.5 h-4.5 text-red-500" />
-                  <span>Se déconnecter</span>
-                </button>
-              </div>
-            </div>
-          )}
+          </Link>
         </div>
       </div>
     </header>
