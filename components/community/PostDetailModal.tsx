@@ -124,7 +124,7 @@ export function PostDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden bg-black/95 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-black/95 animate-in fade-in duration-200">
       
       {/* Toast Notification */}
       {copiedShare && (
@@ -135,7 +135,7 @@ export function PostDetailModal({
       )}
 
       {/* LEFT SECTION: Fullscreen Media Viewer */}
-      <div className="flex-1 h-full relative flex items-center justify-center bg-black/90 p-4 select-none overflow-hidden">
+      <div className="w-full h-[40vh] md:h-full md:flex-1 relative flex items-center justify-center bg-black/90 p-4 select-none overflow-hidden">
         
         {/* Close Button Top-Left (Only on Mobile/Tablet) */}
         <button
@@ -171,7 +171,7 @@ export function PostDetailModal({
           <img
             src={currentImage}
             alt="Media detail"
-            className="relative z-10 max-h-[92vh] max-w-[92vw] object-contain rounded-lg shadow-2xl transition-all duration-300"
+            className="relative z-10 max-h-[36vh] md:max-h-[92vh] max-w-[92vw] object-contain rounded-lg shadow-2xl transition-all duration-300"
           />
         ) : (
           <div className="text-slate-400 text-sm">Aucun média associé</div>
@@ -196,7 +196,7 @@ export function PostDetailModal({
       </div>
 
       {/* RIGHT SECTION: Post Details & Interactive Comments Sidebar */}
-      <div className="w-[380px] sm:w-[420px] lg:w-[460px] h-full flex flex-col border-l border-slate-800 bg-[#111827] dark:bg-[#1E293B] text-slate-100 shrink-0 overflow-hidden">
+      <div className="w-full h-[60vh] md:h-full md:w-[380px] md:sm:w-[420px] md:lg:w-[460px] flex flex-col border-t md:border-t-0 md:border-l border-slate-800 bg-[#111827] dark:bg-[#1E293B] text-slate-100 shrink-0 overflow-hidden">
         
         {/* Author Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between shrink-0">
