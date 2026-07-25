@@ -247,12 +247,12 @@ export function PostCard({
 
       {/* 2. Media Content (Images Block directly below Header) */}
       {post.images && post.images.length > 0 && (
-        <div ref={mediaRef} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50 mb-3">
+        <div ref={mediaRef} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-800/50 p-1 mb-3">
           {/* 1 Image with Ambient Dynamic Blurred Color Background */}
           {post.images.length === 1 && (
             <div
               onClick={() => openDetailModal(0)}
-              className="w-full flex items-center justify-center max-h-[500px] relative overflow-hidden bg-slate-950/20 cursor-pointer"
+              className="w-full flex items-center justify-center max-h-[500px] relative overflow-hidden rounded-xl bg-slate-950/20 cursor-pointer"
             >
               {/* Dynamic Ambient Blurred Background */}
               <img
@@ -265,7 +265,7 @@ export function PostCard({
               <img
                 src={post.images[0]}
                 alt="Post media"
-                className="w-full h-auto max-h-[500px] object-contain relative z-10 hover:scale-[1.01] transition-transform duration-300"
+                className="w-full h-auto max-h-[500px] object-contain relative z-10 rounded-xl hover:scale-[1.01] transition-transform duration-300"
               />
             </div>
           )}
@@ -279,15 +279,15 @@ export function PostCard({
               const topIdx = r0 < r1 ? 0 : 1;
               const bottomIdx = topIdx === 0 ? 1 : 0;
               return (
-                <div className="flex flex-col gap-0.5 h-[340px] md:h-[380px] max-h-[500px] w-full">
-                  <div onClick={() => openDetailModal(topIdx)} className="w-full h-1/2 overflow-hidden cursor-pointer">
+                <div className="flex flex-col gap-1.5 h-[340px] md:h-[380px] max-h-[500px] w-full">
+                  <div onClick={() => openDetailModal(topIdx)} className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer">
                     <img
                       src={post.images[topIdx]}
                       alt="Media top"
                       className="w-full h-full object-cover object-top hover:scale-[1.01] transition-transform duration-300"
                     />
                   </div>
-                  <div onClick={() => openDetailModal(bottomIdx)} className="w-full h-1/2 overflow-hidden cursor-pointer">
+                  <div onClick={() => openDetailModal(bottomIdx)} className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer">
                     <img
                       src={post.images[bottomIdx]}
                       alt="Media bottom"
@@ -305,11 +305,11 @@ export function PostCard({
 
             return (
               <div
-                className="grid grid-cols-2 gap-0.5 w-full overflow-hidden"
+                className="grid grid-cols-2 gap-1.5 w-full overflow-hidden"
                 style={{ height: `${targetHeight}px` }}
               >
                 {post.images.map((url: string, i: number) => (
-                  <div key={i} onClick={() => openDetailModal(i)} className="w-full h-full overflow-hidden cursor-pointer">
+                  <div key={i} onClick={() => openDetailModal(i)} className="w-full h-full rounded-xl overflow-hidden cursor-pointer">
                     <img
                       src={url}
                       alt={`Media ${i + 1}`}
@@ -323,70 +323,73 @@ export function PostCard({
 
           {/* 3 Images */}
           {post.images.length === 3 && (
-            <div className="grid grid-cols-2 gap-0.5 h-[320px] md:h-[360px]">
-              <img
-                src={post.images[0]}
-                alt="Media 1"
-                onClick={() => openDetailModal(0)}
-                className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-              />
-              <div className="flex flex-col gap-0.5 h-full">
+            <div className="grid grid-cols-2 gap-1.5 h-[320px] md:h-[360px]">
+              <div className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
                 <img
-                  src={post.images[1]}
-                  alt="Media 2"
-                  onClick={() => openDetailModal(1)}
-                  className="w-full h-1/2 object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+                  src={post.images[0]}
+                  alt="Media 1"
+                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
                 />
-                <img
-                  src={post.images[2]}
-                  alt="Media 3"
-                  onClick={() => openDetailModal(2)}
-                  className="w-full h-1/2 object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                />
+              </div>
+              <div className="flex flex-col gap-1.5 h-full">
+                <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(1)}>
+                  <img
+                    src={post.images[1]}
+                    alt="Media 2"
+                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+                  />
+                </div>
+                <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(2)}>
+                  <img
+                    src={post.images[2]}
+                    alt="Media 3"
+                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+                  />
+                </div>
               </div>
             </div>
           )}
 
           {/* 4 Images */}
           {post.images.length === 4 && (
-            <div className="grid grid-cols-2 gap-0.5 h-[320px] md:h-[360px]">
+            <div className="grid grid-cols-2 gap-1.5 h-[320px] md:h-[360px]">
               {post.images.slice(0, 4).map((url: string, i: number) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Media ${i + 1}`}
-                  onClick={() => openDetailModal(i)}
-                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                />
+                <div key={i} className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(i)}>
+                  <img
+                    src={url}
+                    alt={`Media ${i + 1}`}
+                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+                  />
+                </div>
               ))}
             </div>
           )}
 
           {/* 5+ Images */}
           {post.images.length >= 5 && (
-            <div className="flex flex-col gap-0.5 h-[360px] md:h-[400px]">
-              <div className="grid grid-cols-2 gap-0.5 h-1/2">
+            <div className="flex flex-col gap-1.5 h-[360px] md:h-[400px]">
+              <div className="grid grid-cols-2 gap-1.5 h-1/2">
                 {post.images.slice(0, 2).map((url: string, i: number) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`Media ${i + 1}`}
-                    onClick={() => openDetailModal(i)}
-                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                  />
+                  <div key={i} className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(i)}>
+                    <img
+                      src={url}
+                      alt={`Media ${i + 1}`}
+                      className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+                    />
+                  </div>
                 ))}
               </div>
-              <div className="grid grid-cols-3 gap-0.5 h-1/2">
+              <div className="grid grid-cols-3 gap-1.5 h-1/2">
                 {post.images.slice(2, 4).map((url: string, i: number) => (
-                  <img
-                    key={i + 2}
-                    src={url}
-                    alt={`Media ${i + 3}`}
-                    onClick={() => openDetailModal(i + 2)}
-                    className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-                  />
+                  <div key={i + 2} className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(i + 2)}>
+                    <img
+                      src={url}
+                      alt={`Media ${i + 3}`}
+                      className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+                    />
+                  </div>
                 ))}
-                <div onClick={() => openDetailModal(4)} className="relative w-full h-full cursor-pointer">
+                <div onClick={() => openDetailModal(4)} className="relative w-full h-full rounded-xl overflow-hidden cursor-pointer">
                   <img
                     src={post.images[4]}
                     alt="Media 5"
