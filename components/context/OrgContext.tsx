@@ -60,8 +60,8 @@ export function OrgProvider({
         setActiveOrg(targetOrg)
       }
 
-      // Rediriger vers l'accueil pour forcer le rechargement des Server Components avec le nouveau scope
-      window.location.href = '/home'
+      // Recharger la page actuelle pour forcer le rechargement des Server Components avec le nouveau scope
+      window.location.reload()
     } catch (err) {
       console.error('Erreur lors du changement d\'organisation:', err)
       setIsLoading(false)
