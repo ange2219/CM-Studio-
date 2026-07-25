@@ -40,7 +40,7 @@ function DashboardShellContent({
       />
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 w-full flex justify-between gap-6 p-4 md:p-6 max-w-[1536px] mx-auto overflow-hidden">
+      <div className="flex-1 w-full flex justify-between gap-0 md:gap-6 p-0 md:p-6 max-w-[1536px] mx-auto overflow-hidden">
         {/* Left Sidebar Column */}
         <SidebarLeft 
           darkMode={darkMode} 

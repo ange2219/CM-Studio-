@@ -218,7 +218,7 @@ export function PostCard({
   return (
     <article
       id={`post-container-${post.id || post.db_id}`}
-      className={`rounded-2xl p-4 md:p-5 shadow-card-subtle border shrink-0 transition-colors duration-300 relative select-none ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'}`}
+      className={`rounded-none md:rounded-2xl p-4 md:p-5 shadow-card-subtle border-x-0 border-y md:border shrink-0 transition-colors duration-300 relative select-none ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'}`}
     >
       {copiedShare && (
         <div className="absolute top-3 right-12 z-20 bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 animate-in fade-in zoom-in duration-200">

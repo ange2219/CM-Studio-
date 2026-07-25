@@ -51,7 +51,7 @@ export function Header({
   const displayOrg = activeOrganization?.name || 'Ma Marque';
 
   return (
-    <header className={`h-[64px] w-full px-8 flex items-center justify-between border-b transition-colors duration-300 ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90'} shrink-0 z-20 shadow-xs relative`}>
+    <header className={`h-[64px] w-full px-4 md:px-8 flex items-center justify-between border-b transition-colors duration-300 ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90'} shrink-0 z-20 shadow-xs relative`}>
       {/* Left: Logo CM Studio avec Plume */}
       <div 
         onClick={() => onSelectView && onSelectView('home')}
@@ -64,7 +64,7 @@ export function Header({
       </div>
 
       {/* Middle: Search Input */}
-      <div className={`flex items-center gap-2.5 h-10 px-4 rounded-full w-[260px] md:w-[340px] lg:w-[400px] transition-colors ${darkMode ? 'bg-[#334155]' : 'bg-[#F3F5F9]'}`}>
+      <div className={`hidden sm:flex items-center gap-2.5 h-10 px-4 rounded-full w-[260px] md:w-[340px] lg:w-[400px] transition-colors ${darkMode ? 'bg-[#334155]' : 'bg-[#F3F5F9]'}`}>
         <Search className={`w-4.5 h-4.5 shrink-0 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`} />
         <input
           type="text"

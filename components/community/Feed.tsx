@@ -152,11 +152,11 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
     : postsList.filter(p => followingIds.has(p.user_id));
 
   return (
-    <main className="flex-1 min-w-[360px] h-full flex flex-col gap-4 overflow-y-auto no-scrollbar pr-1 relative select-none">
+    <main className="flex-1 min-w-0 h-full flex flex-col gap-2 md:gap-4 overflow-y-auto no-scrollbar pr-0 md:pr-1 relative select-none">
       {/* What's new Post Box - Click opens CreatePostModal */}
       <div 
         onClick={() => setIsCreateModalOpen(true)}
-        className={`rounded-2xl p-3.5 px-4 flex items-center justify-between gap-3.5 shadow-card-subtle border shrink-0 transition-colors duration-300 cursor-pointer ${darkMode ? 'bg-[#1E293B] border-slate-800 hover:bg-slate-800/80' : 'bg-white border-slate-100/80 hover:bg-slate-50'}`}
+        className={`rounded-none md:rounded-2xl p-3.5 px-4 flex items-center justify-between gap-3.5 shadow-card-subtle border-y md:border shrink-0 transition-colors duration-300 cursor-pointer ${darkMode ? 'bg-[#1E293B] border-slate-800 hover:bg-slate-800/80' : 'bg-white border-slate-100/80 hover:bg-slate-50'}`}
       >
         <div className="flex items-center gap-3.5 flex-1 min-w-0">
           <UserAvatar
