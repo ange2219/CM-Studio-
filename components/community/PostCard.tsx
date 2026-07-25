@@ -385,17 +385,17 @@ export function PostCard({
               );
             }
 
-            // 3 Portrait: Left Hero 66% width + Right 2 stacked images 34% width (50%/50% height)
+            // 3 Portrait: Left Hero 60% width + Right 2 stacked images 40% width (50%/50% height)
             return (
-              <div className="grid grid-cols-3 gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
-                <div className="col-span-2 w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
+              <div className="flex gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
+                <div className="w-[60%] h-full rounded-xl overflow-hidden cursor-pointer shrink-0" onClick={() => openDetailModal(0)}>
                   <img
                     src={post.images[0]}
                     alt="Media 1"
                     className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
                   />
                 </div>
-                <div className="col-span-1 flex flex-col gap-1.5 h-full">
+                <div className="w-[40%] flex flex-col gap-1.5 h-full shrink-0">
                   <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(1)}>
                     <img
                       src={post.images[1]}
