@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Home, LayoutGrid, MessageSquare, Bell, Users, Sparkles } from 'lucide-react';
+import { Home, LayoutGrid, MessageSquare, Bell, Users, Sparkles, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -83,6 +83,7 @@ export function SidebarLeft({
     { id: 'messages', label: 'Messagerie', icon: MessageSquare, badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : null, href: '/messages' },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotifsCount > 0 ? String(unreadNotifsCount) : null, href: '/notifications' },
     { id: 'members', label: 'Réseau', icon: Users, href: '/members' },
+    { id: 'settings', label: 'Paramètres', icon: Settings, href: '/settings' },
   ];
 
   return (

@@ -161,8 +161,8 @@ export function Header({
               <span className="text-[14.5px] font-bold truncate max-w-[160px]">
                 {displayName}
               </span>
-              <span className="text-[12px] font-semibold text-[#1677FF] dark:text-[#38BDF8] truncate max-w-[160px]">
-                {displayOrg}
+              <span className={`text-[11.5px] font-normal truncate max-w-[160px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                {displayEmail}
               </span>
             </div>
           </Link>
