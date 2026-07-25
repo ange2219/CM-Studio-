@@ -321,17 +321,17 @@ export function PostCard({
             );
           })()}
 
-          {/* 3 Images: 1 Tall Left Hero + 2 Stacked Right Images (Matching Facebook layout) */}
+          {/* 3 Images: 1 Tall Left Hero (66% width) + 2 Stacked Right Images (33% width) */}
           {post.images.length === 3 && (
-            <div className="grid grid-cols-2 gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
-              <div className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
+            <div className="grid grid-cols-3 gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
+              <div className="col-span-2 w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
                 <img
                   src={post.images[0]}
                   alt="Media 1"
                   className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-300"
                 />
               </div>
-              <div className="flex flex-col gap-1.5 h-full">
+              <div className="col-span-1 flex flex-col gap-1.5 h-full">
                 <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(1)}>
                   <img
                     src={post.images[1]}
