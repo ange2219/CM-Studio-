@@ -239,34 +239,42 @@ export function PostCard({
               size={40}
             />
           </Link>
-          <Link href={`/profile/${post.user_id}`} className="no-underline cursor-pointer group min-w-0">
-            <div className="flex flex-col min-w-0">
-              <span className={`text-[14px] font-bold leading-tight flex items-center gap-1.5 truncate group-hover:underline ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
-                {post.author?.name || 'Membre'}
-                {post.author?.verified && <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline-block shrink-0" />}
-              </span>
-              <span className={`text-[12px] font-medium leading-tight mt-0.5 ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`}>
-                {post.time}
-              </span>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 text-[14px] font-bold leading-tight truncate">
+              <Link href={`/profile/${post.user_id}`} className="no-underline hover:underline flex items-center gap-1.5 min-w-0 truncate" style={{ color: darkMode ? '#fff' : '#1E293B' }}>
+                <span className="truncate">{post.author?.name || 'Membre'}</span>
+                {post.author?.verified && (
+                  <svg viewBox="0 0 12 12" width="14" height="14" fill="none" className="text-[#1877F2] inline-block shrink-0" style={{ margin: '0 1px' }}>
+                    <path d="M6 0L7.25 1.25L9 1.15L9.15 2.9L10.5 3.75L9.85 5.3L10.7 6.85L9.35 7.5L9 9.25L7.25 9.15L6 10.4L4.75 9.15L3 9.25L2.85 7.5L1.5 6.65L2.15 5.1L1.3 3.55L2.65 2.9L3 1.15L4.75 1.25L6 0Z" fill="currentColor"/>
+                    <path d="M3.75 5L5 6.25L8.25 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </Link>
+              
+              {user?.id && user.id !== post.user_id && !isFollowing(post.user_id) && (
+                <span className="flex items-center shrink-0">
+                  <span className={`font-normal text-[14px] select-none ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>·</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFollow(post.user_id, post.author?.name);
+                    }}
+                    className="ml-1.5 text-[#1877F2] dark:text-[#4599FF] hover:underline text-[14px] font-bold bg-transparent border-none p-0 cursor-pointer transition-colors"
+                  >
+                    Suivre
+                  </button>
+                </span>
+              )}
             </div>
-          </Link>
-
-          {user?.id && user.id !== post.user_id && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFollow(post.user_id, post.author?.name);
-              }}
-              className={`ml-2 px-3 py-1 rounded-full text-[12px] font-bold transition-all cursor-pointer border-none shrink-0 ${
-                isFollowing(post.user_id)
-                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
-                  : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
-              }`}
-            >
-              {isFollowing(post.user_id) ? 'Abonné' : '+ Suivre'}
-            </button>
-          )}
+            <span className={`text-[12px] font-medium leading-tight mt-0.5 flex items-center gap-1.5 select-none ${darkMode ? 'text-slate-400' : 'text-[#94A3B8]'}`}>
+              {post.time}
+              <span>·</span>
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" className="inline-block shrink-0 text-slate-400">
+                <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1c1.61 0 3.09.57 4.25 1.51L9.67 5.1c-.24.1-.47.24-.67.4L7 4.2a1 1 0 00-1.4 0L3.33 6.47A6.97 6.97 0 018 1zm3.89 2.5a5.97 5.97 0 011.08 1.83l-1.39.46a3.02 3.02 0 00-.73-1.07l1.04-1.22zM2.08 7.5A6.02 6.02 0 012 8c0-1 .24-1.93.67-2.76l2 2a1 1 0 001.33 0l1.5-1.5c.2-.2.32-.47.33-.76l2.12 1.6A3 3 0 0011 9.5a3 3 0 001.66-.51l1.24 1.24A6.97 6.97 0 018 15c-3.1 0-5.75-2.02-6.72-4.83l1.83-.92c.22.42.54.77.93 1.02l-1.96-2.77z"/>
+              </svg>
+            </span>
+          </div>
         </div>
 
         <button className={`transition-colors p-1.5 rounded-full cursor-pointer border-none bg-transparent ${darkMode ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800' : 'text-[#CBD5E1] hover:text-slate-600 hover:bg-slate-100'}`}>
