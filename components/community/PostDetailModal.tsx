@@ -137,10 +137,10 @@ export function PostDetailModal({
       {/* LEFT SECTION: Fullscreen Media Viewer */}
       <div className="flex-1 h-full relative flex items-center justify-center bg-black/90 p-4 select-none overflow-hidden">
         
-        {/* Close Button Top-Left */}
+        {/* Close Button Top-Left (Only on Mobile/Tablet) */}
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 z-30 p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white transition-colors cursor-pointer border border-slate-800"
+          className="absolute top-4 left-4 z-30 p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white transition-colors cursor-pointer border border-slate-800 md:hidden"
           title="Fermer (Échap)"
         >
           <X className="w-5 h-5" />
@@ -205,35 +205,52 @@ export function PostDetailModal({
               <UserAvatar avatarUrl={post.author?.avatar} size={42} />
             </Link>
             <div className="flex flex-col min-w-0">
-              <Link href={`/profile/${post.user_id}`} onClick={onClose} className="no-underline group">
-                <span className="text-[14px] font-bold leading-tight flex items-center gap-1.5 truncate text-white group-hover:underline">
-                  {post.author?.name || 'Membre'}
-                  {post.author?.verified && <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />}
-                </span>
-              </Link>
-              <span className="text-[12px] font-medium text-slate-400 mt-0.5">
+              <div className="flex items-center gap-1.5 text-[14px] font-bold leading-tight truncate">
+                <Link href={`/profile/${post.user_id}`} onClick={onClose} className="no-underline text-white hover:underline flex items-center gap-1.5 min-w-0 truncate">
+                  <span className="truncate">{post.author?.name || 'Membre'}</span>
+                  {post.author?.verified && (
+                    <svg viewBox="0 0 12 12" width="14" height="14" fill="none" className="text-[#1877F2] inline-block shrink-0" style={{ margin: '0 1px' }}>
+                      <path d="M6 0L7.25 1.25L9 1.15L9.15 2.9L10.5 3.75L9.85 5.3L10.7 6.85L9.35 7.5L9 9.25L7.25 9.15L6 10.4L4.75 9.15L3 9.25L2.85 7.5L1.5 6.65L2.15 5.1L1.3 3.55L2.65 2.9L3 1.15L4.75 1.25L6 0Z" fill="currentColor"/>
+                      <path d="M3.75 5L5 6.25L8.25 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </Link>
+                
+                {user?.id && user.id !== post.user_id && (
+                  <span className="flex items-center shrink-0">
+                    <span className="text-slate-400 font-normal text-[14px] select-none">·</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleFollow(post.user_id, post.author?.name)}
+                      className="ml-1.5 text-[#1877F2] dark:text-[#4599FF] hover:underline text-[14px] font-bold bg-transparent border-none p-0 cursor-pointer transition-colors"
+                    >
+                      {isFollowing(post.user_id) ? 'Abonné' : 'Suivre'}
+                    </button>
+                  </span>
+                )}
+              </div>
+              <span className="text-[12px] font-medium text-slate-400 mt-0.5 flex items-center gap-1.5 select-none">
                 {post.time}
+                <span>·</span>
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" className="text-slate-400 inline-block shrink-0">
+                  <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1c1.61 0 3.09.57 4.25 1.51L9.67 5.1c-.24.1-.47.24-.67.4L7 4.2a1 1 0 00-1.4 0L3.33 6.47A6.97 6.97 0 018 1zm3.89 2.5a5.97 5.97 0 011.08 1.83l-1.39.46a3.02 3.02 0 00-.73-1.07l1.04-1.22zM2.08 7.5A6.02 6.02 0 012 8c0-1 .24-1.93.67-2.76l2 2a1 1 0 001.33 0l1.5-1.5c.2-.2.32-.47.33-.76l2.12 1.6A3 3 0 0011 9.5a3 3 0 001.66-.51l1.24 1.24A6.97 6.97 0 018 15c-3.1 0-5.75-2.02-6.72-4.83l1.83-.92c.22.42.54.77.93 1.02l-1.96-2.77z"/>
+                </svg>
               </span>
             </div>
-
-            {user?.id && user.id !== post.user_id && (
-              <button
-                type="button"
-                onClick={() => toggleFollow(post.user_id, post.author?.name)}
-                className={`ml-2 px-3 py-1 rounded-full text-[12px] font-bold transition-all cursor-pointer border-none shrink-0 ${
-                  isFollowing(post.user_id)
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                    : 'bg-[#1677FF] hover:bg-[#1266DF] text-white'
-                }`}
-              >
-                {isFollowing(post.user_id) ? 'Abonné' : '+ Suivre'}
-              </button>
-            )}
           </div>
 
-          <button className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-none bg-transparent cursor-pointer">
-            <MoreHorizontal className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <button className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-none bg-transparent cursor-pointer">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={onClose} 
+              className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-none bg-transparent cursor-pointer"
+              title="Fermer (Échap)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Middle Content: Text + Stats Bar */}
