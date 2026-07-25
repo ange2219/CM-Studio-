@@ -485,8 +485,8 @@ export function PostCard({
       </p>
 
       {/* 4. Action Buttons Bar (Bottom Footer with thin separator line & compact icons) */}
-      <div className={`flex items-center justify-between pt-3 mt-3.5 text-[12px] border-t ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200/80 text-slate-500'}`}>
-        <div className="flex items-center gap-4 md:gap-5">
+      <div className={`flex items-center justify-between text-[13px] md:text-[12px] mt-3 md:mt-3.5 pt-0 md:pt-3 border-t-0 md:border-t ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200/80 text-slate-500'}`}>
+        <div className="flex items-center gap-5 md:gap-5">
           {/* Like */}
           <button
             onClick={toggleLike}
@@ -494,8 +494,13 @@ export function PostCard({
               liked ? 'text-rose-500 font-bold' : darkMode ? 'hover:text-rose-400 text-slate-400' : 'hover:text-rose-500 text-slate-600'
             }`}
           >
-            <Heart className={`w-3.5 h-3.5 transition-transform ${liked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-            <span className="font-semibold">{likesCount}</span>
+            <Heart className={`w-4 h-4 md:w-3.5 md:h-3.5 transition-transform ${liked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+            <span className="font-semibold flex items-center">
+              {likesCount}
+              <span className="md:hidden font-normal text-slate-400 dark:text-slate-500 ml-1">
+                {likesCount > 1 ? 'Likes' : 'Like'}
+              </span>
+            </span>
           </button>
 
           {/* Comment */}
@@ -505,8 +510,13 @@ export function PostCard({
               showComments ? 'text-[#1677FF] font-bold' : darkMode ? 'hover:text-blue-400 text-slate-400' : 'hover:text-slate-900 text-slate-600'
             }`}
           >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span className="font-semibold">{commentsCount}</span>
+            <MessageCircle className="w-4 h-4 md:w-3.5 md:h-3.5" />
+            <span className="font-semibold flex items-center">
+              {commentsCount}
+              <span className="md:hidden font-normal text-slate-400 dark:text-slate-500 ml-1">
+                {commentsCount > 1 ? 'Comments' : 'Comment'}
+              </span>
+            </span>
           </button>
 
           {/* Share */}
@@ -516,8 +526,13 @@ export function PostCard({
               shared ? 'text-blue-500 font-bold' : darkMode ? 'hover:text-blue-400 text-slate-400' : 'hover:text-slate-900 text-slate-600'
             }`}
           >
-            <Send className="w-3.5 h-3.5" />
-            <span className="font-semibold">{sharesCount}</span>
+            <Send className="w-4 h-4 md:w-3.5 md:h-3.5" />
+            <span className="font-semibold flex items-center">
+              {sharesCount}
+              <span className="md:hidden font-normal text-slate-400 dark:text-slate-500 ml-1">
+                {sharesCount > 1 ? 'Shares' : 'Share'}
+              </span>
+            </span>
           </button>
         </div>
 
@@ -529,7 +544,7 @@ export function PostCard({
           }`}
           title={saved ? "Enregistré" : "Enregistrer"}
         >
-          <Bookmark className={`w-3.5 h-3.5 ${saved ? 'fill-amber-500 text-amber-500' : ''}`} />
+          <Bookmark className={`w-4 h-4 md:w-3.5 md:h-3.5 ${saved ? 'fill-amber-500 text-amber-500' : ''}`} />
         </button>
       </div>
 

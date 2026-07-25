@@ -87,6 +87,19 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
     loadData();
   }, [supabase, user]);
 
+  // Open create modal if URL parameter ?create=true is present
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('create') === 'true') {
+        setIsCreateModalOpen(true);
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('create');
+        window.history.replaceState(null, '', newUrl.pathname + newUrl.search);
+      }
+    }
+  }, []);
+
   // Handle URL hash anchor scrolling & opening comments with polling
   useEffect(() => {
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
