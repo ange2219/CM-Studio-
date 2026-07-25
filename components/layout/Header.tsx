@@ -138,19 +138,7 @@ export function Header({
           )}
         </Link>
 
-        {/* Dark / Light Mode Toggle Button */}
-        <button
-          type="button"
-          onClick={onToggleDarkMode}
-          title={darkMode ? 'Passer au Mode Clair' : 'Passer au Mode Sombre'}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-blue-glow border-none ${darkMode ? 'bg-[#38BDF8] text-slate-900 hover:bg-[#7dd3fc]' : 'bg-[#1677FF] text-white hover:bg-[#1266DF]'}`}
-        >
-          {darkMode ? (
-            <Sun className="w-5 h-5 fill-current stroke-[2]" />
-          ) : (
-            <Moon className="w-5 h-5 fill-current stroke-[2]" />
-          )}
-        </button>
+
 
         {/* User Profile Button - Desktop ONLY (hidden on mobile) */}
         <div className="relative hidden md:block" ref={menuRef}>
