@@ -62,7 +62,7 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
         darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
       }`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-[#1677FF] dark:text-[#38BDF8]">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50/80 dark:bg-blue-500/10 flex items-center justify-center text-[#1677FF] dark:text-[#38BDF8]">
             <SettingsIcon className="w-5 h-5" />
           </div>
           <div>
@@ -70,7 +70,7 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
               Paramètres de l'Organisation & Profil
             </h2>
             <p className={`text-[12px] mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Gérez votre marque, votre abonnement et vos paramètres de sécurité.
+              Gerez votre marque, votre abonnement et vos parametres de securite.
             </p>
           </div>
         </div>
@@ -89,9 +89,9 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
           }`}
         >
           <Building className="w-4 h-4" />
-          <span>Identité de la Marque</span>
+          <span>Identite de la Marque</span>
           {activeTab === 'identity' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1677FF] rounded-full" />
+            <div className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${darkMode ? 'bg-[#38BDF8]' : 'bg-[#1677FF]'}`} />
           )}
         </button>
 
@@ -106,7 +106,7 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
           <CreditCard className="w-4 h-4" />
           <span>Abonnement & Facturation</span>
           {activeTab === 'billing' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1677FF] rounded-full" />
+            <div className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${darkMode ? 'bg-[#38BDF8]' : 'bg-[#1677FF]'}`} />
           )}
         </button>
 
@@ -119,9 +119,9 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
           }`}
         >
           <Shield className="w-4 h-4" />
-          <span>Sécurité & Compte</span>
+          <span>Securite & Compte</span>
           {activeTab === 'security' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1677FF] rounded-full" />
+            <div className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-full ${darkMode ? 'bg-[#38BDF8]' : 'bg-[#1677FF]'}`} />
           )}
         </button>
       </div>
@@ -144,7 +144,7 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
                 onChange={(e) => setBrandName(e.target.value)}
                 className={`w-full text-[13.5px] p-3 rounded-xl border outline-none ${
                   darkMode 
-                    ? 'bg-[#0F172A] border-slate-700 text-white focus:border-[#1677FF]' 
+                    ? 'bg-[#0F172A] border-slate-700 text-white focus:border-[#38BDF8]' 
                     : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#1677FF] focus:bg-white'
                 }`}
               />
@@ -164,7 +164,11 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
 
             <button
               type="submit"
-              className="bg-[#1677FF] hover:bg-[#1266DF] text-white text-[13px] font-bold py-2.5 px-5 rounded-xl shadow-blue-glow cursor-pointer border-none transition-all w-fit flex items-center gap-2"
+              className={`text-[13px] font-bold py-2.5 px-5 rounded-xl cursor-pointer border-none transition-all w-fit flex items-center gap-2 ${
+                darkMode
+                  ? 'bg-[#38BDF8] hover:bg-[#0EA5E9] text-slate-950 shadow-lg shadow-sky-500/10'
+                  : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+              }`}
             >
               {savedSuccess ? <Check className="w-4 h-4" /> : null}
               <span>{savedSuccess ? 'Modifications enregistrées !' : 'Enregistrer la marque'}</span>
@@ -175,9 +179,11 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
         {/* Billing Tab */}
         {activeTab === 'billing' && (
           <div className="flex flex-col gap-4 max-w-lg">
-            <div className="p-4 rounded-xl border bg-blue-50/50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 flex items-center justify-between">
+            <div className={`p-4 rounded-xl border flex items-center justify-between ${
+              darkMode ? 'bg-slate-850/30 border-slate-800/80' : 'bg-blue-50/50 border-blue-100'
+            }`}>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#1677FF] dark:text-[#38BDF8]">
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${darkMode ? 'text-[#38BDF8]' : 'text-[#1677FF]'}`}>
                   Formule Actuelle
                 </span>
                 <h4 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
@@ -185,7 +191,9 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
                 </h4>
                 <p className="text-[12px] text-slate-500">Renouvellement le 1er Août 2026</p>
               </div>
-              <span className="bg-[#1677FF] text-white text-[12px] font-bold px-3 py-1 rounded-full">
+              <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${
+                darkMode ? 'bg-[#38BDF8] text-slate-950' : 'bg-[#1677FF] text-white'
+              }`}>
                 Actif
               </span>
             </div>
@@ -206,7 +214,7 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
                 placeholder="6 caractères minimum"
                 className={`w-full text-[13.5px] p-3 rounded-xl border outline-none ${
                   darkMode 
-                    ? 'bg-[#0F172A] border-slate-700 text-white focus:border-[#1677FF]' 
+                    ? 'bg-[#0F172A] border-slate-700 text-white focus:border-[#38BDF8]' 
                     : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-[#1677FF] focus:bg-white'
                 }`}
               />
@@ -215,7 +223,11 @@ export default function SettingsPage({ darkMode: propDarkMode }: { darkMode?: bo
             <button
               type="submit"
               disabled={updatingPassword || !newPassword}
-              className="bg-[#1677FF] hover:bg-[#1266DF] text-white text-[13px] font-bold py-2.5 px-5 rounded-xl shadow-blue-glow cursor-pointer border-none transition-all w-fit flex items-center gap-2"
+              className={`text-[13px] font-bold py-2.5 px-5 rounded-xl cursor-pointer border-none transition-all w-fit flex items-center gap-2 ${
+                darkMode
+                  ? 'bg-[#38BDF8] hover:bg-[#0EA5E9] text-slate-950 shadow-lg shadow-sky-500/10'
+                  : 'bg-[#1677FF] hover:bg-[#1266DF] text-white shadow-blue-glow'
+              }`}
             >
               <Lock className="w-4 h-4" />
               <span>{updatingPassword ? 'Mise à jour...' : 'Changer mon mot de passe'}</span>
