@@ -86,5 +86,14 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Synchroniser également le nom de l'organisation dans la table 'organizations'
+  if (body.brand_name) {
+    await supabase
+      .from('organizations')
+      .update({ name: body.brand_name })
+      .eq('id', orgId)
+  }
+
   return NextResponse.json(data || {})
 }

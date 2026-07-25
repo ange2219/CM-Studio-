@@ -468,6 +468,10 @@ function SettingsContent() {
       })
       setIsEditingBrand(false)
       toast('Profil de marque sauvegardé', 'success')
+      // Recharger pour mettre à jour instantanément les noms d'organisation dans tout le layout
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } else {
       toast('Erreur', 'error')
     }
