@@ -237,7 +237,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
       </div>
 
       {/* Posts Stream */}
-      <div className="flex flex-col gap-4 pb-6">
+      <div className="flex flex-col gap-0 md:gap-4 pb-6">
         {isLoading ? (
           <div className="flex flex-col gap-4">
             {[1, 2].map((i) => (

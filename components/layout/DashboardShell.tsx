@@ -56,9 +56,8 @@ function DashboardShellContent({
         </main>
       </div>
 
-      {/* Bottom Floating Navigation for Mobile (as a dock pill) */}
       <nav className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-[400px] h-[64px] rounded-full shadow-2xl flex items-center justify-around px-4 border md:hidden transition-all duration-300 ${
-        darkMode ? 'bg-black/90 border-slate-800/80 backdrop-blur-md' : 'bg-white/95 border-slate-200/80 backdrop-blur-md'
+        darkMode ? 'bg-slate-950/40 border-white/15 backdrop-blur-xl shadow-black/40' : 'bg-white/40 border-black/5 backdrop-blur-xl shadow-slate-200/60'
       }`}>
         <Link 
           href="/home" 
