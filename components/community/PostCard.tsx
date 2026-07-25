@@ -348,16 +348,14 @@ export function PostCard({
                 ))}
               </div>
             );
-          })()}
-
-          {/* 3 Images: Smart Orientation (Landscape: 1 Top + 2 Bottom vs Portrait: 66% Left Hero + 34% Right Stacked) */}
+          })()}          {/* 3 Images: Smart Orientation (Landscape: 1 Top + 2 Bottom vs Portrait: 60% Left Hero + 40% Right Stacked) */}
           {post.images.length === 3 && (() => {
             const isLandscape = firstAspect > 1.25;
 
             if (isLandscape) {
               // 3 Landscape: Top 100% width (50% height) + Bottom 2 columns 50%/50% width (50% height)
               return (
-                <div className="flex flex-col gap-1.5 h-[380px] md:h-[440px] max-h-[500px] w-full">
+                <div className="flex flex-col gap-1.5 h-[420px] md:h-[500px] max-h-[600px] w-full">
                   <div className="w-full h-1/2 rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(0)}>
                     <img
                       src={post.images[0]}
@@ -387,7 +385,7 @@ export function PostCard({
 
             // 3 Portrait: Left Hero 60% width + Right 2 stacked images 40% width (50%/50% height)
             return (
-              <div className="flex gap-1.5 h-[420px] md:h-[480px] max-h-[500px] w-full">
+              <div className="flex gap-1.5 h-[480px] md:h-[540px] max-h-[600px] w-full">
                 <div className="w-[60%] h-full rounded-xl overflow-hidden cursor-pointer shrink-0" onClick={() => openDetailModal(0)}>
                   <img
                     src={post.images[0]}
@@ -417,10 +415,11 @@ export function PostCard({
 
           {/* 4 Images */}
           {post.images.length === 4 && (
-            <div className="grid grid-cols-2 gap-1.5 h-[320px] md:h-[360px]">
+            <div className="grid grid-cols-2 gap-1.5 h-[380px] md:h-[440px] max-h-[600px]">
               {post.images.slice(0, 4).map((url: string, i: number) => (
                 <div key={i} className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(i)}>
                   <img
+                    key={i}
                     src={url}
                     alt={`Media ${i + 1}`}
                     className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
@@ -432,7 +431,7 @@ export function PostCard({
 
           {/* 5+ Images */}
           {post.images.length >= 5 && (
-            <div className="flex flex-col gap-1.5 h-[360px] md:h-[400px]">
+            <div className="flex flex-col gap-1.5 h-[420px] md:h-[480px] max-h-[600px]">
               <div className="grid grid-cols-2 gap-1.5 h-1/2">
                 {post.images.slice(0, 2).map((url: string, i: number) => (
                   <div key={i} className="w-full h-full rounded-xl overflow-hidden cursor-pointer" onClick={() => openDetailModal(i)}>
