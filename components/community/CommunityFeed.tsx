@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Heart, MessageCircle, Send, Sparkles, Share2, Bookmark, SlidersHorizontal, Image as ImageIcon, Globe, Users, MoreHorizontal, X } from 'lucide-react'
 import { UserAvatar } from '@/components/ui/UserAvatar'
+import { formatFacebookDate } from '@/lib/utils'
 
 type Post = {
   id: string
@@ -453,7 +454,7 @@ export function CommunityFeed({
                     )}
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
-                    <span>{getShortTimeAgo(post.created_at)}</span>
+                    <span>{formatFacebookDate(post.created_at)}</span>
                     <span>·</span>
                     {post.group_name && post.group_name !== 'Général' && post.group_name !== 'Communauté'
                       ? <Users size={11} style={{ opacity: 0.7 }} />

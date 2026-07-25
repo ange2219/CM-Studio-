@@ -71,3 +71,60 @@ export function decryptToken(encryptedB64: string): string {
     return Buffer.from(encryptedB64, 'base64').toString('utf-8')
   }
 }
+
+export function formatFacebookDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  
+  const now = new Date();
+  
+  // Calculer la différence en secondes
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  // Déterminer si c'est aujourd'hui, hier, ou plus vieux
+  const isToday = date.getDate() === now.getDate() && 
+                  date.getMonth() === now.getMonth() && 
+                  date.getFullYear() === now.getFullYear();
+                  
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = date.getDate() === yesterday.getDate() && 
+                      date.getMonth() === yesterday.getMonth() && 
+                      date.getFullYear() === yesterday.getFullYear();
+  
+  // Formatage des heures/minutes
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const timeStr = `${hours}:${minutes}`;
+
+  if (isToday) {
+    if (diffInSeconds < 60) return "À l'instant";
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} min`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    return `${diffInHours} h`;
+  }
+  
+  if (isYesterday) {
+    return `Hier à ${timeStr}`;
+  }
+  
+  // Plus ancien
+  const months = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+  
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  const currentYear = now.getFullYear();
+  
+  if (year === currentYear) {
+    return `Le ${day} ${month} à ${timeStr}`;
+  } else {
+    return `Le ${day} ${month} ${year} à ${timeStr}`;
+  }
+}
+

@@ -8,6 +8,7 @@ import { useTheme } from '@/components/context/ThemeContext';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/context/UserContext';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { formatFacebookDate } from '@/lib/utils';
 
 export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
   const { darkMode: ctxDarkMode } = useTheme();
@@ -67,7 +68,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
                 avatar: p.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
                 verified: p.plan && p.plan.toLowerCase() !== 'free',
               },
-              time: getShortTimeAgo(p.created_at),
+              time: formatFacebookDate(p.created_at),
               content: p.content,
               images,
               likesCount: p.likes_count || 0,
