@@ -216,7 +216,7 @@ export function PostDetailModal({
                   )}
                 </Link>
                 
-                {user?.id && user.id !== post.user_id && (
+                {user?.id && user.id !== post.user_id && !isFollowing(post.user_id) && (
                   <span className="flex items-center shrink-0">
                     <span className="text-slate-400 font-normal text-[14px] select-none">·</span>
                     <button
@@ -224,7 +224,7 @@ export function PostDetailModal({
                       onClick={() => toggleFollow(post.user_id, post.author?.name)}
                       className="ml-1.5 text-[#1877F2] dark:text-[#4599FF] hover:underline text-[14px] font-bold bg-transparent border-none p-0 cursor-pointer transition-colors"
                     >
-                      {isFollowing(post.user_id) ? 'Abonné' : 'Suivre'}
+                      Suivre
                     </button>
                   </span>
                 )}
