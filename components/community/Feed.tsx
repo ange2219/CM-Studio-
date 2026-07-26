@@ -265,35 +265,38 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
               : "Aucune publication pour le moment."}
           </div>
         ) : (
-          filteredPosts.map((post) => {
-          if (highlightedCommentIds[post.id]) {
-            console.log('[STEP 4 FEED] Passing props to PostCard:', {
-              postId: post.id,
-              highlightCommentId: highlightedCommentIds[post.id],
-              showComments: expandedPostIds.has(post.id)
-            });
-          }
-          return (
-            <PostCard
-              key={post.id}
-              post={post}
-              darkMode={darkMode}
-              showComments={expandedPostIds.has(post.id)}
-              onToggleComments={(show) => {
-                setExpandedPostIds(prev => {
-                  const next = new Set(prev);
-                  if (show) next.add(post.id);
-                  else next.delete(post.id);
-                  return next;
+          <div className="flex flex-col gap-1.5 md:gap-2 mx-3.5 md:mx-0">
+            {filteredPosts.map((post) => {
+              if (highlightedCommentIds[post.id]) {
+                console.log('[STEP 4 FEED] Passing props to PostCard:', {
+                  postId: post.id,
+                  highlightCommentId: highlightedCommentIds[post.id],
+                  showComments: expandedPostIds.has(post.id)
                 });
-              }}
-              highlightCommentId={highlightedCommentIds[post.id] || null}
-              onHighlightHandled={() => {
-                setHighlightedCommentIds(prev => ({ ...prev, [post.id]: null }));
-              }}
-            />
-          );
-        }))}
+              }
+              return (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  darkMode={darkMode}
+                  showComments={expandedPostIds.has(post.id)}
+                  onToggleComments={(show) => {
+                    setExpandedPostIds(prev => {
+                      const next = new Set(prev);
+                      if (show) next.add(post.id);
+                      else next.delete(post.id);
+                      return next;
+                    });
+                  }}
+                  highlightCommentId={highlightedCommentIds[post.id] || null}
+                  onHighlightHandled={() => {
+                    setHighlightedCommentIds(prev => ({ ...prev, [post.id]: null }));
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );
