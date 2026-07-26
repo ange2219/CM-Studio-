@@ -107,36 +107,47 @@ export function Header({
         />
       </div>
 
-      {/* Right Side: Mode Toggle Icon + User Profile Dropdown Button */}
+      {/* Right Side: Navigation Icons & User Profile Dropdown Button */}
       <div className="flex items-center gap-3.5">
-        {/* Dark / Light Mode Toggle Button */}
-        <button
-          type="button"
-          onClick={onToggleDarkMode}
-          title={darkMode ? 'Passer au Mode Clair' : 'Passer au Mode Sombre'}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-blue-glow border-none ${darkMode ? 'bg-[#38BDF8] text-slate-900 hover:bg-[#7dd3fc]' : 'bg-[#1677FF] text-white hover:bg-[#1266DF]'}`}
-        >
-          {darkMode ? (
-            <Sun className="w-5 h-5 fill-current stroke-[2]" />
-          ) : (
-            <Moon className="w-5 h-5 fill-current stroke-[2]" />
-          )}
-        </button>
-
-        {/* Notifications Icon - Visible ONLY on Mobile */}
+        
+        {/* Notifications Icon (Bell) - Encircled & Neutral for all views */}
         <Link
           href="/notifications"
-          className={`relative p-2 rounded-full md:hidden flex items-center justify-center transition-colors ${
-            darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          title="Notifications"
+          className={`relative w-10 h-10 rounded-full flex items-center justify-center border border-[var(--b1)] bg-[var(--card)] shadow-xs transition-all duration-200 cursor-pointer ${
+            darkMode 
+              ? 'text-slate-300 hover:text-white hover:bg-slate-700/80 hover:border-slate-600' 
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-300'
           }`}
         >
-          <Bell className="w-5.5 h-5.5" />
+          <Bell className="w-5 h-5" />
           {unreadNotifsCount > 0 && (
-            <span className="absolute top-1 right-1 w-4.5 h-4.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+            <span 
+              className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse shadow-sm"
+              style={{ border: '2px solid var(--card)' }}
+            >
               {unreadNotifsCount}
             </span>
           )}
         </Link>
+
+        {/* Dark / Light Mode Toggle Button - Encircled & Neutral */}
+        <button
+          type="button"
+          onClick={onToggleDarkMode}
+          title={darkMode ? 'Passer au Mode Clair' : 'Passer au Mode Sombre'}
+          className={`w-10 h-10 rounded-full flex items-center justify-center border border-[var(--b1)] bg-[var(--card)] shadow-xs transition-all duration-200 cursor-pointer ${
+            darkMode 
+              ? 'text-slate-300 hover:text-white hover:bg-slate-700/80 hover:border-slate-600' 
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-300'
+          }`}
+        >
+          {darkMode ? (
+            <Sun className="w-5 h-5 stroke-[2]" />
+          ) : (
+            <Moon className="w-5 h-5 stroke-[2]" />
+          )}
+        </button>
 
 
 

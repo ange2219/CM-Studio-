@@ -421,10 +421,19 @@ export default function PublicProfileClient({
             <div className="flex items-center gap-4">
               <div>
                 <div className="font-black text-[22px] text-[var(--t1)] leading-none">
+                  {posts.length.toLocaleString('fr-FR')}
+                </div>
+                <div className="text-[12px] text-zinc-400 font-medium mt-1.5 lowercase">
+                  publications
+                </div>
+              </div>
+              <div className="w-px h-8 bg-zinc-800 opacity-60 mx-1" />
+              <div>
+                <div className="font-black text-[22px] text-[var(--t1)] leading-none">
                   {followersCount.toLocaleString('fr-FR')}
                 </div>
                 <div className="text-[12px] text-zinc-400 font-medium mt-1.5 lowercase">
-                  followers
+                  abonnés
                 </div>
               </div>
               <div className="w-px h-8 bg-zinc-800 opacity-60 mx-1" />
@@ -433,7 +442,7 @@ export default function PublicProfileClient({
                   {followingCount.toLocaleString('fr-FR')}
                 </div>
                 <div className="text-[12px] text-zinc-400 font-medium mt-1.5 lowercase">
-                  following
+                  abonnements
                 </div>
               </div>
             </div>
