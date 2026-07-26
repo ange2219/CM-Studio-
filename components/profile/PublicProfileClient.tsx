@@ -250,7 +250,7 @@ export default function PublicProfileClient({
 
             {/* Nom + Pseudo + Bio */}
             <div>
-              <h1 className="text-base font-extrabold text-[var(--t1)] m-0 tracking-tight leading-tight flex items-center gap-1">
+              <h1 className="text-[21px] font-black text-[var(--t1)] m-0 tracking-tight leading-tight flex items-center gap-1">
                 {fullName || profile.username}
               </h1>
               <div className="text-[12px] text-[var(--t3)] mt-0.5 font-medium">
@@ -291,19 +291,19 @@ export default function PublicProfileClient({
             {/* Statistiques horizontales compactes */}
             <div className="flex items-center gap-4">
               <div>
-                <div className="font-extrabold text-[15px] text-[var(--t1)] leading-none">
+                <div className="font-black text-[22px] text-[var(--t1)] leading-none">
                   {followersCount.toLocaleString('fr-FR')}
                 </div>
-                <div className="text-[11px] text-[var(--t3)] font-semibold mt-1">
+                <div className="text-[12px] text-zinc-400 font-medium mt-1.5 lowercase">
                   followers
                 </div>
               </div>
-              <div className="w-px h-6 bg-[var(--b1)] opacity-60" />
+              <div className="w-px h-8 bg-zinc-800 opacity-60 mx-1" />
               <div>
-                <div className="font-extrabold text-[15px] text-[var(--t1)] leading-none">
+                <div className="font-black text-[22px] text-[var(--t1)] leading-none">
                   {followingCount.toLocaleString('fr-FR')}
                 </div>
-                <div className="text-[11px] text-[var(--t3)] font-semibold mt-1">
+                <div className="text-[12px] text-zinc-400 font-medium mt-1.5 lowercase">
                   following
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function PublicProfileClient({
               <button
                 onClick={handleFollow}
                 disabled={followLoading}
-                className={`text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm ${
+                className={`text-[12px] font-black py-2.5 px-7 rounded-full border-none cursor-pointer transition-all shadow-md ${
                   isFollowing 
                     ? 'bg-zinc-800 text-white hover:bg-zinc-700' 
                     : 'bg-[var(--accent)] text-white hover:opacity-90'
