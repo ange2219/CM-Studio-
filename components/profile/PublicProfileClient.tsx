@@ -58,6 +58,106 @@ function planBadge(plan: string | null) {
   return { label: 'Free', color: 'var(--t3)' }
 }
 
+// Map color based on current rank label
+function getRankColor(rankLabel: string) {
+  const label = rankLabel.toLowerCase()
+  if (label.includes('novice') || label.includes('débutant')) return '#64748B' // Slate Gray
+  if (label.includes('bronze')) return '#B5733D' // Bronze
+  if (label.includes('argent') || label.includes('silver')) return '#94A3B8' // Silver
+  if (label.includes('or') || label.includes('gold')) return '#EAB308' // Gold Yellow
+  if (label.includes('platine') || label.includes('platinum')) return '#06B6D4' // Cyan
+  if (label.includes('diamant') || label.includes('diamond')) return '#A855F7' // Purple
+  if (label.includes('master') || label.includes('expert')) return '#F43F5E' // Rose
+  return 'var(--accent)' // Default to theme accent
+}
+
+// Gamified Instagram/WhatsApp Story Progress Ring around the centered Avatar
+function RankedAvatar({
+  avatarUrl,
+  size,
+  progressPercent,
+  rankColor,
+  plan,
+}: {
+  avatarUrl: string | null
+  size: number
+  progressPercent: number
+  rankColor: string
+  plan: string | null
+}) {
+  const strokeWidth = 3.5
+  const pad = 7 // Gap between progress circle and avatar
+  const avatarSize = size - pad * 2
+
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (progressPercent / 100) * circumference
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      {/* SVG Progress Ring */}
+      <svg
+        className="absolute transform -rotate-90"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+      >
+        {/* Background track (subtle border) */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="transparent"
+          stroke="var(--b1)"
+          strokeWidth={strokeWidth - 0.5}
+          className="opacity-30"
+        />
+        {/* Foreground dynamic progress arc */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="transparent"
+          stroke={rankColor}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          style={{
+            transition: 'stroke-dashoffset 0.4s ease-out, stroke 0.3s ease',
+          }}
+        />
+      </svg>
+
+      {/* Centered User Avatar */}
+      <div className="relative z-10">
+        <UserAvatar
+          avatarUrl={avatarUrl}
+          size={avatarSize}
+          iconSize={avatarSize / 2}
+          style={{
+            border: '2.5px solid var(--bg)',
+          }}
+        />
+        {/* Verification Check Badge embedded matching the Rank Color */}
+        {plan && plan !== 'free' && (
+          <div
+            className="absolute bottom-0 right-0 rounded-full border border-black flex items-center justify-center shadow-md"
+            style={{
+              width: avatarSize * 0.28,
+              height: avatarSize * 0.28,
+              backgroundColor: rankColor,
+              borderColor: 'var(--bg)',
+            }}
+          >
+            <span className="text-white font-extrabold" style={{ fontSize: avatarSize * 0.14 }}>✓</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PublicProfileClient({
@@ -234,6 +334,25 @@ export default function PublicProfileClient({
     }
   }
 
+  // ── Calculate Gamification Ranks and progression percents ──────────────────
+  const sortedThresholds = [...(thresholds || [])].sort((a, b) => a.threshold - b.threshold)
+  const currentThresholdObj = [...sortedThresholds].reverse().find(t => followersCount >= t.threshold)
+  const nextThresholdObj = sortedThresholds.find(t => followersCount < t.threshold)
+
+  const currentRankLabel = currentThresholdObj ? currentThresholdObj.label : 'Novice'
+  const currentThresholdValue = currentThresholdObj ? currentThresholdObj.threshold : 0
+  const nextThresholdValue = nextThresholdObj ? nextThresholdObj.threshold : null
+  const nextThresholdLabel = nextThresholdObj ? nextThresholdObj.label : null
+
+  let progressPercent = 100
+  if (nextThresholdValue !== null) {
+    const range = nextThresholdValue - currentThresholdValue
+    const earned = followersCount - currentThresholdValue
+    progressPercent = Math.min(100, Math.max(0, (earned / range) * 100))
+  }
+
+  const rankColor = getRankColor(currentRankLabel)
+
   return (
     <div className="w-full max-w-[680px] mx-auto md:pb-16 min-h-screen bg-transparent select-none">
       
@@ -243,22 +362,14 @@ export default function PublicProfileClient({
         <div className="p-5 flex justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="relative flex-shrink-0">
-              {/* Avatar */}
-              <UserAvatar
+              {/* Gamified Story-style Progress Ring Avatar */}
+              <RankedAvatar
                 avatarUrl={avatarUrl}
-                size={72}
-                accentBg
-                iconSize={36}
-                style={{
-                  border: '2px solid var(--bg)',
-                }}
+                size={84}
+                progressPercent={progressPercent}
+                rankColor={rankColor}
+                plan={profile.plan}
               />
-              {/* Badge de vérification si Premium/Business */}
-              {profile.plan && profile.plan !== 'free' && (
-                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[var(--accent)] border border-[var(--bg)] flex items-center justify-center shadow-lg">
-                  <span className="text-white text-[8px] font-black">✓</span>
-                </div>
-              )}
             </div>
 
             {/* Nom + Pseudo + Bio */}
@@ -266,8 +377,10 @@ export default function PublicProfileClient({
               <h1 className="text-[21px] font-black text-[var(--t1)] m-0 tracking-tight leading-tight flex items-center gap-1">
                 {fullName || profile.username}
               </h1>
-              <div className="text-[12px] text-[var(--t3)] mt-0.5 font-medium">
-                @{profile.username}
+              <div className="text-[12px] text-[var(--t3)] mt-0.5 font-semibold flex items-center gap-1">
+                <span>@{profile.username}</span>
+                <span className="opacity-40">·</span>
+                <span style={{ color: rankColor }}>{currentRankLabel}</span>
               </div>
               {profile.bio && (
                 <p className="text-[12px] text-[var(--t2)] mt-1.5 mb-0 leading-snug font-normal max-w-[200px] line-clamp-2">
@@ -450,18 +563,19 @@ export default function PublicProfileClient({
             }} />
           </div>
 
-          {/* Avatar overlapping */}
-          <UserAvatar
-            avatarUrl={avatarUrl}
-            size={96}
-            accentBg
-            iconSize={48}
-            style={{
-              position: 'absolute', bottom: -48, left: 24,
-              border: '4px solid var(--bg)',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
-            }}
-          />
+          {/* Gamified Story-style Progress Ring Avatar */}
+          <div style={{
+            position: 'absolute', bottom: -54, left: 24,
+            zIndex: 10,
+          }}>
+            <RankedAvatar
+              avatarUrl={avatarUrl}
+              size={108}
+              progressPercent={progressPercent}
+              rankColor={rankColor}
+              plan={profile.plan}
+            />
+          </div>
 
           {/* Action button(s) */}
           <div style={{
@@ -525,6 +639,18 @@ export default function PublicProfileClient({
                 {badge.label}
               </span>
             )}
+            
+            {/* Rank Badge */}
+            <span style={{
+              fontSize: '0.68rem', fontWeight: 800,
+              padding: '2px 10px', borderRadius: 999,
+              background: `${rankColor}15`,
+              color: rankColor,
+              border: `1px solid ${rankColor}30`,
+              letterSpacing: '0.03em',
+            }}>
+              Rang : {currentRankLabel}
+            </span>
           </div>
 
           <div style={{ fontSize: '0.88rem', color: 'var(--t3)', marginBottom: 12 }}>
@@ -563,95 +689,34 @@ export default function PublicProfileClient({
             ))}
           </div>
 
-          {/* Gamification Progress Bar */}
-          {(() => {
-            if (!isOwnProfile) return null
-            const sortedThresholds = [...(thresholds || [])].sort((a, b) => a.threshold - b.threshold)
-            if (sortedThresholds.length === 0) return null
-
-            const currentThresholdObj = [...sortedThresholds].reverse().find(t => followersCount >= t.threshold)
-            const nextThresholdObj = sortedThresholds.find(t => followersCount < t.threshold)
-
-            const currentRankLabel = currentThresholdObj ? currentThresholdObj.label : 'Novice'
-            const currentThresholdValue = currentThresholdObj ? currentThresholdObj.threshold : 0
-            const nextThresholdValue = nextThresholdObj ? nextThresholdObj.threshold : null
-            const nextThresholdLabel = nextThresholdObj ? nextThresholdObj.label : null
-
-            let progressPercent = 100
-            if (nextThresholdValue !== null) {
-              const range = nextThresholdValue - currentThresholdValue
-              const earned = followersCount - currentThresholdValue
-              progressPercent = Math.min(100, Math.max(0, (earned / range) * 100))
-            }
-
-            return (
-              <div style={{
-                marginTop: 20,
-                padding: '16px 20px',
-                borderRadius: 14,
-                background: 'rgba(var(--accent-rgb), 0.04)',
-                border: '1px solid rgba(var(--accent-rgb), 0.15)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-              }}>
-                {/* Rank Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Rang Actuel
-                  </span>
-                  <span style={{
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    color: 'var(--accent)',
-                    background: 'rgba(var(--accent-rgb), 0.12)',
-                    padding: '3px 10px',
-                    borderRadius: 999,
-                    border: '1px solid rgba(var(--accent-rgb), 0.25)',
-                  }}>
-                    {currentRankLabel}
-                  </span>
-                </div>
-
-                {/* Progress Track */}
-                <div style={{
-                  width: '100%',
-                  height: 10,
-                  background: 'rgba(255, 255, 255, 0.07)',
-                  borderRadius: 999,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  border: '1px solid var(--b1)',
-                }}>
-                  <div style={{
-                    width: `${progressPercent}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg, var(--accent) 0%, var(--accent-secondary) 100%)',
-                    borderRadius: 999,
-                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 0 8px rgba(var(--accent-rgb), 0.3)',
-                  }} />
-                </div>
-
-                {/* Progress Info Footer */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: 'var(--t2)' }}>
-                  <span>
-                    {followersCount} {followersCount > 1 ? 'abonnés' : 'abonné'}
-                  </span>
-                  {nextThresholdValue !== null ? (
-                    <span style={{ fontWeight: 500 }}>
-                      Plus que <strong>{nextThresholdValue - followersCount}</strong> pour débloquer {nextThresholdLabel?.split(' / ')[1] || nextThresholdLabel}
-                    </span>
-                  ) : (
-                    <span style={{ fontWeight: 700, color: 'var(--accent)' }}>
-                      🏆 Niveau Maximum débloqué !
-                    </span>
-                  )}
-                </div>
-              </div>
-            )
-          })()}
+          {/* Next Rank Info details (Simple text instead of massive progress bar since circle is around avatar) */}
+          {isOwnProfile && sortedThresholds.length > 0 && (
+            <div style={{
+              marginTop: 18,
+              padding: '10px 14px',
+              borderRadius: 12,
+              background: 'var(--card)',
+              border: '1px solid var(--b1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '0.8rem',
+              color: 'var(--t2)',
+            }}>
+              <span>
+                Niveau : <strong>{currentRankLabel}</strong> ({progressPercent.toFixed(0)}% complété)
+              </span>
+              {nextThresholdValue !== null ? (
+                <span>
+                  Plus que <strong>{nextThresholdValue - followersCount}</strong> abonnés pour débloquer le rang {nextThresholdLabel?.split(' / ')[1] || nextThresholdLabel}
+                </span>
+              ) : (
+                <span style={{ fontWeight: 700, color: rankColor }}>
+                  🏆 Rang suprême atteint !
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Posts Section */}
