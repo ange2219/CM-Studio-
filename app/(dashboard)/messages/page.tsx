@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Send, Paperclip, MoreVertical, Check, CheckCheck, Image as ImageIcon, Smile, X } from 'lucide-react';
+import { Search, Send, Paperclip, MoreVertical, Check, CheckCheck, Image as ImageIcon, Smile, X, ArrowLeft } from 'lucide-react';
 import { useTheme } from '@/components/context/ThemeContext';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/context/UserContext';
@@ -35,6 +35,33 @@ interface ConversationItem {
   updated_at: string;
   unreadCount: number;
   isMutualOnly?: boolean;
+  isLastMsgMe?: boolean;
+  isLastMsgRead?: boolean;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatLastMessageTime(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  
+  const dDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const dNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  const diffTime = dNow.getTime() - dDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+  if (diffDays === 1) {
+    return 'Hier';
+  }
+  if (diffDays < 7) {
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    return days[date.getDay()];
+  }
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
 }
 
 export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
@@ -47,6 +74,9 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const activeConvIdRef = useRef<string | null>(null);
   useEffect(() => { activeConvIdRef.current = activeConvId; }, [activeConvId]);
+
+  // Mobile navigation state ('list' for conversation selector, 'chat' for message stream)
+  const [mobileActiveView, setMobileActiveView] = useState<'list' | 'chat'>('list');
 
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [inputText, setInputText] = useState('');
@@ -86,6 +116,15 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
           avatar_url: c.other_avatar_url || null,
         };
 
+        // Fetch last message details with reads
+        const { data: lastMsg } = await supabase
+          .from('messages')
+          .select('id, sender_id, content, created_at, message_reads(user_id)')
+          .eq('conversation_id', c.conversation_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
         // Calculate unread count
         const { data: unreadData } = await supabase
           .from('messages')
@@ -98,13 +137,25 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
           return !reads.some((r: any) => r.user_id === user.id);
         }).length || 0;
 
+        let isLastMsgMe = false;
+        let isLastMsgRead = false;
+        let lastMsgTime = c.last_message_created_at;
+
+        if (lastMsg) {
+          isLastMsgMe = lastMsg.sender_id === user.id;
+          isLastMsgRead = (lastMsg.message_reads || []).some((r: any) => r.user_id === otherUser.id);
+          lastMsgTime = lastMsg.created_at;
+        }
+
         activeConvsList.push({
           id: c.conversation_id,
           otherUser,
-          lastMessage: c.last_message_content || 'Pièce jointe',
-          updated_at: c.last_message_created_at || c.updated_at || new Date().toISOString(),
+          lastMessage: lastMsg?.content || c.last_message_content || 'Pièce jointe',
+          updated_at: lastMsgTime || c.last_message_created_at || c.updated_at || new Date().toISOString(),
           unreadCount,
           isMutualOnly: false,
+          isLastMsgMe,
+          isLastMsgRead,
         });
       }
 
@@ -156,6 +207,8 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
               updated_at: new Date(0).toISOString(),
               unreadCount: 0,
               isMutualOnly: true,
+              isLastMsgMe: false,
+              isLastMsgRead: false,
             });
           });
         }
@@ -164,8 +217,8 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
       const combined = [...activeConvsList, ...mutualContactsList];
       setConversations(combined);
 
-      // Default active conversation selection
-      if (!activeConvIdRef.current && combined.length > 0) {
+      // Default active conversation selection (only on desktop views)
+      if (!activeConvIdRef.current && combined.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 768) {
         setActiveConvId(combined[0].id);
       }
     } catch (err) {
@@ -281,6 +334,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
 
   // ── 5. Select a conversation / contact ──────────────────────────────────────
   const handleSelectConversation = async (convItem: ConversationItem) => {
+    setMobileActiveView('chat');
     if (convItem.isMutualOnly || convItem.id.startsWith('mutual-')) {
       // Find or create RPC DM conversation
       const { data: convId, error } = await supabase.rpc('find_or_create_dm', { other_user_id: convItem.otherUser.id });
@@ -328,6 +382,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
   const handleStartSearchUserDM = async (targetUser: UserProfile) => {
     setSearchTerm('');
     setSearchResults([]);
+    setMobileActiveView('chat');
 
     const { data: convId, error } = await supabase.rpc('find_or_create_dm', { other_user_id: targetUser.id });
     if (error || !convId) {
@@ -342,6 +397,8 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
       updated_at: new Date().toISOString(),
       unreadCount: 0,
       isMutualOnly: false,
+      isLastMsgMe: false,
+      isLastMsgRead: false,
     };
 
     setConversations(prev => {
@@ -419,6 +476,8 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
       
       {/* ── Left Column: Conversations & Mutual Follow Contacts ── */}
       <div className={`w-full md:w-[320px] lg:w-[350px] shrink-0 border-r flex flex-col ${
+        mobileActiveView === 'chat' ? 'hidden md:flex' : 'flex'
+      } ${
         darkMode ? 'border-slate-800 bg-[#0F172A]/50' : 'border-slate-100 bg-slate-50/50'
       }`}>
         {/* Header & Search Bar */}
@@ -520,15 +579,37 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
                       <span className={`text-[13.5px] font-bold truncate ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
                         {conv.otherUser.full_name || conv.otherUser.username}
                       </span>
+                      <span className="text-[10px] text-slate-400 font-medium shrink-0 ml-2">
+                        {conv.updated_at && conv.updated_at !== new Date(0).toISOString() 
+                          ? formatLastMessageTime(conv.updated_at) 
+                          : ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                      <div className="flex items-center gap-1 min-w-0 flex-1">
+                        {/* Statut de lecture WhatsApp si envoyé par moi */}
+                        {conv.isLastMsgMe && (
+                          conv.isLastMsgRead ? (
+                            <CheckCheck className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
+                          ) : (
+                            <CheckCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          )
+                        )}
+                        <p className={`text-[12px] truncate m-0 ${
+                          conv.unreadCount > 0 
+                            ? darkMode ? 'text-white font-semibold' : 'text-slate-900 font-semibold'
+                            : darkMode ? 'text-slate-400' : 'text-slate-500'
+                        }`}>
+                          {conv.lastMessage}
+                        </p>
+                      </div>
+                      
                       {conv.unreadCount > 0 && (
-                        <span className="bg-[#1677FF] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                        <span className="bg-[#1677FF] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                           {conv.unreadCount}
                         </span>
                       )}
                     </div>
-                    <p className={`text-[12px] truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {conv.lastMessage}
-                    </p>
                   </div>
                 </div>
               );
@@ -539,32 +620,45 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
 
       {/* ── Right Column: Chat Stream ── */}
       {activeConv ? (
-        <div className="flex-1 flex flex-col h-full bg-transparent">
+        <div className={`flex-1 flex flex-col h-full bg-transparent ${
+          mobileActiveView === 'list' ? 'hidden md:flex' : 'flex'
+        }`}>
           
           {/* Active Chat Header */}
           <div className={`p-4 border-b flex items-center justify-between shrink-0 ${
             darkMode ? 'border-slate-800 bg-[#1E293B]' : 'border-slate-100 bg-white'
           }`}>
-            <Link
-              href={`/profile/${activeConv.otherUser.username || activeConv.otherUser.id}`}
-              className="flex items-center gap-3 no-underline group"
-            >
-              <UserAvatar
-                avatarUrl={activeConv.otherUser.avatar_url}
-                size={36}
-                className="group-hover:opacity-90 transition-opacity"
-              />
-              <div>
-                <h3 className={`text-[14px] font-bold leading-tight group-hover:underline ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
-                  {activeConv.otherUser.full_name || activeConv.otherUser.username}
-                </h3>
-                {activeConv.otherUser.username && (
-                  <span className="text-[11px] text-slate-400">
-                    @{activeConv.otherUser.username}
-                  </span>
-                )}
-              </div>
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* Back Button on Mobile */}
+              <button
+                onClick={() => setMobileActiveView('list')}
+                className="md:hidden p-1.5 -ml-1 text-slate-400 hover:text-[var(--t1)] bg-transparent border-none cursor-pointer flex items-center justify-center"
+                title="Retour aux discussions"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+
+              <Link
+                href={`/profile/${activeConv.otherUser.username || activeConv.otherUser.id}`}
+                className="flex items-center gap-3 no-underline group"
+              >
+                <UserAvatar
+                  avatarUrl={activeConv.otherUser.avatar_url}
+                  size={36}
+                  className="group-hover:opacity-90 transition-opacity"
+                />
+                <div>
+                  <h3 className={`text-[14px] font-bold leading-tight group-hover:underline ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+                    {activeConv.otherUser.full_name || activeConv.otherUser.username}
+                  </h3>
+                  {activeConv.otherUser.username && (
+                    <span className="text-[11px] text-slate-400">
+                      @{activeConv.otherUser.username}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </div>
 
             <button className={`p-1.5 rounded-full cursor-pointer transition-colors border-none bg-transparent ${
               darkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
@@ -601,7 +695,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
                       <span>{new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                       {isMe && (
                         isReadByOther ? (
-                          <CheckCheck className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />
+                          <CheckCheck className="w-3.5 h-3.5 text-[#38BDF8] dark:text-[#38BDF8]" />
                         ) : (
                           <Check className="w-3.5 h-3.5 text-slate-400" />
                         )
@@ -645,7 +739,9 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
 
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-[13px] text-slate-400">
+        <div className={`flex-1 flex items-center justify-center text-[13px] text-slate-400 ${
+          mobileActiveView === 'list' ? 'hidden md:flex' : 'flex'
+        }`}>
           Sélectionnez un membre pour démarrer une discussion.
         </div>
       )}
