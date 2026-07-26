@@ -470,8 +470,8 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
   const activeConv = conversations.find(c => c.id === activeConvId);
 
   return (
-    <div className={`flex-1 h-[calc(100vh-96px)] flex rounded-2xl overflow-hidden border shadow-card-subtle transition-colors duration-300 select-none ${
-      darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/80'
+    <div className={`flex-1 h-[calc(100vh-96px)] flex rounded-none md:rounded-2xl overflow-hidden border-0 md:border shadow-none md:shadow-card-subtle mt-3.5 md:mt-0 transition-colors duration-300 select-none ${
+      darkMode ? 'bg-[#1E293B] md:border-slate-800' : 'bg-white md:border-slate-100/80'
     }`}>
       
       {/* ── Left Column: Conversations & Mutual Follow Contacts ── */}
