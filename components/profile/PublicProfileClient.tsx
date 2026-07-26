@@ -372,10 +372,10 @@ export default function PublicProfileClient({
         </div>
 
         {/* Tab contents wrapper for Mobile */}
-        <div className="p-4 bg-black">
+        <div className="p-4 bg-transparent">
           {activeTab === 'posts' && (
             posts.length === 0 ? (
-              <div className="border border-dashed border-zinc-800 rounded-xl p-8 text-center bg-zinc-950/40">
+              <div className="border border-dashed border-[var(--b1)] rounded-xl p-8 text-center bg-[var(--card)]/40">
                 <div className="text-2xl mb-2">📝</div>
                 <div className="text-zinc-400 text-xs">Aucune publication pour l'instant.</div>
               </div>
@@ -409,10 +409,10 @@ export default function PublicProfileClient({
             loadingSaved ? (
               <div className="text-zinc-500 text-xs text-center p-8">Chargement...</div>
             ) : savedPosts.length === 0 ? (
-              <div className="border border-dashed border-zinc-800 rounded-xl p-8 text-center bg-zinc-950/40">
+              <div className="border border-dashed border-[var(--b1)] rounded-xl p-8 text-center bg-[var(--card)]/40">
                 <div className="text-2xl mb-2">🔖</div>
-                <div className="text-zinc-300 text-xs font-bold">Aucun post sauvegardé</div>
-                <div className="text-zinc-500 text-[11px] mt-1">Vos favoris apparaîtront ici.</div>
+                <div className="text-[var(--t2)] text-xs font-bold">Aucun post sauvegardé</div>
+                <div className="text-[var(--t3)] text-[11px] mt-1">Vos favoris apparaîtront ici.</div>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
