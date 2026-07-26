@@ -227,89 +227,115 @@ export default function PublicProfileClient({
       {/* ── MOBILE LAYOUT (TikTok/X style) ── */}
       <div className="block md:hidden bg-black text-white min-h-screen w-full">
         {/* Header container */}
-        <div className="p-5 flex justify-between items-start">
-          <div className="relative">
-            {/* Avatar */}
-            <UserAvatar
-              avatarUrl={avatarUrl}
-              size={80}
-              accentBg
-              iconSize={40}
-              style={{
-                border: '3px solid #000',
-              }}
-            />
-            {/* Badge de vérification bleu si Premium/Business */}
-            {profile.plan && profile.plan !== 'free' && (
-              <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[var(--accent)] border-2 border-black flex items-center justify-center shadow-lg">
-                <span className="text-white text-[9px] font-black">✓</span>
+        <div className="p-5 flex justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-shrink-0">
+              {/* Avatar */}
+              <UserAvatar
+                avatarUrl={avatarUrl}
+                size={72}
+                accentBg
+                iconSize={36}
+                style={{
+                  border: '2px solid #000',
+                }}
+              />
+              {/* Badge de vérification si Premium/Business */}
+              {profile.plan && profile.plan !== 'free' && (
+                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[var(--accent)] border border-black flex items-center justify-center shadow-lg">
+                  <span className="text-white text-[8px] font-black">✓</span>
+                </div>
+              )}
+            </div>
+
+            {/* Nom + Pseudo + Bio */}
+            <div>
+              <h1 className="text-base font-extrabold text-white m-0 tracking-tight leading-tight flex items-center gap-1">
+                {fullName || profile.username}
+              </h1>
+              <div className="text-[12px] text-zinc-400 mt-0.5 font-medium">
+                @{profile.username}
               </div>
-            )}
+              {profile.bio && (
+                <p className="text-[12px] text-zinc-300 mt-1.5 mb-0 leading-snug font-normal max-w-[200px] line-clamp-2">
+                  {profile.bio}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Edit button / Follow button */}
-          {isOwnProfile ? (
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="bg-[var(--accent)] hover:opacity-90 text-white text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm"
-            >
-              Edit
-            </button>
-          ) : (
-            <button
-              onClick={handleFollow}
-              disabled={followLoading}
-              className={`text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm ${
-                isFollowing 
-                  ? 'bg-zinc-800 text-white hover:bg-zinc-700' 
-                  : 'bg-[var(--accent)] text-white hover:opacity-90'
-              }`}
-            >
-              {isFollowing ? 'Abonné' : 'Suivre'}
-            </button>
+          {/* Icônes Edit et Paramètres (si profil propre) */}
+          {isOwnProfile && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl border border-zinc-800 cursor-pointer transition-all flex items-center justify-center"
+                title="Modifier le profil"
+              >
+                <Edit2 size={15} />
+              </button>
+              <Link
+                href="/settings"
+                className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl border border-zinc-800 cursor-pointer transition-all flex items-center justify-center"
+                title="Paramètres"
+              >
+                <Settings size={15} />
+              </Link>
+            </div>
           )}
         </div>
 
-        {/* User Info */}
+        {/* Stats & Actions container */}
         <div className="px-5 pb-4">
-          <h1 className="text-lg font-black text-white m-0 tracking-tight leading-tight flex items-center gap-1.5">
-            {fullName || profile.username}
-          </h1>
-          <div className="text-[13px] text-zinc-400 mt-0.5 font-medium">
-            @{profile.username}
-          </div>
-          {profile.bio && (
-            <p className="text-[13.5px] text-zinc-200 mt-3 mb-0 leading-relaxed font-normal">
-              {profile.bio}
-            </p>
-          )}
+          <div className="flex items-center justify-between mt-1 pt-3 border-t border-zinc-900">
+            {/* Statistiques horizontales compactes */}
+            <div className="flex items-center gap-4">
+              <div>
+                <div className="font-extrabold text-[15px] text-white leading-none">
+                  {followersCount.toLocaleString('fr-FR')}
+                </div>
+                <div className="text-[11px] text-zinc-400 font-semibold mt-1">
+                  followers
+                </div>
+              </div>
+              <div className="w-px h-6 bg-zinc-800 opacity-60" />
+              <div>
+                <div className="font-extrabold text-[15px] text-white leading-none">
+                  {followingCount.toLocaleString('fr-FR')}
+                </div>
+                <div className="text-[11px] text-zinc-400 font-semibold mt-1">
+                  following
+                </div>
+              </div>
+              {isOwnProfile && (
+                <>
+                  <div className="w-px h-6 bg-zinc-800 opacity-60" />
+                  <div>
+                    <div className="font-extrabold text-[15px] text-white leading-none">
+                      {posts.reduce((sum, p) => sum + (p.likes_count || 0), 0).toLocaleString('fr-FR')}
+                    </div>
+                    <div className="text-[11px] text-zinc-400 font-semibold mt-1">
+                      liked
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
-          {/* Stats Line */}
-          <div className="flex gap-8 mt-5 pb-2">
-            <div>
-              <div className="font-extrabold text-[15px] text-white leading-none">
-                {followingCount.toLocaleString('fr-FR')}
-              </div>
-              <div className="text-[11px] text-zinc-400 font-semibold mt-1">
-                Following
-              </div>
-            </div>
-            <div>
-              <div className="font-extrabold text-[15px] text-white leading-none">
-                {followersCount.toLocaleString('fr-FR')}
-              </div>
-              <div className="text-[11px] text-zinc-400 font-semibold mt-1">
-                Followers
-              </div>
-            </div>
-            <div>
-              <div className="font-extrabold text-[15px] text-white leading-none">
-                {posts.reduce((sum, p) => sum + (p.likes_count || 0), 0).toLocaleString('fr-FR')}
-              </div>
-              <div className="text-[11px] text-zinc-400 font-semibold mt-1">
-                Liked
-              </div>
-            </div>
+            {/* Bouton Follow (si profil tiers) */}
+            {!isOwnProfile && (
+              <button
+                onClick={handleFollow}
+                disabled={followLoading}
+                className={`text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm ${
+                  isFollowing 
+                    ? 'bg-zinc-800 text-white hover:bg-zinc-700' 
+                    : 'bg-[var(--accent)] text-white hover:opacity-90'
+                }`}
+              >
+                {isFollowing ? 'Abonné' : 'Follow'}
+              </button>
+            )}
           </div>
         </div>
 
