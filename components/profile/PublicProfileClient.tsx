@@ -366,22 +366,6 @@ export default function PublicProfileClient({
               Sauvegardés
             </button>
           )}
-
-          {/* Dummy tabs for TikTok layout authenticity */}
-          <button
-            type="button"
-            disabled
-            className="pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold text-zinc-700 cursor-not-allowed"
-          >
-            Live futures
-          </button>
-          <button
-            type="button"
-            disabled
-            className="pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold text-zinc-700 cursor-not-allowed"
-          >
-            Replies
-          </button>
         </div>
 
         {/* Tab contents wrapper for Mobile */}

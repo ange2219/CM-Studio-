@@ -165,7 +165,7 @@ export function Feed({ darkMode: propDarkMode }: { darkMode?: boolean }) {
     : postsList.filter(p => followingIds.has(p.user_id));
 
   return (
-    <main className="flex-1 min-w-0 h-full flex flex-col gap-1.5 md:gap-4 overflow-y-auto no-scrollbar pr-0 md:pr-1 relative select-none">
+    <main className="flex-1 min-w-0 h-full flex flex-col gap-1.5 md:gap-2 overflow-y-auto no-scrollbar pr-0 md:pr-1 relative select-none">
       {/* What's new Post Box - Click opens CreatePostModal */}
       <div 
         onClick={() => setIsCreateModalOpen(true)}
