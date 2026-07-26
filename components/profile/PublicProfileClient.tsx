@@ -307,19 +307,6 @@ export default function PublicProfileClient({
                   following
                 </div>
               </div>
-              {isOwnProfile && (
-                <>
-                  <div className="w-px h-6 bg-[var(--b1)] opacity-60" />
-                  <div>
-                    <div className="font-extrabold text-[15px] text-[var(--t1)] leading-none">
-                      {posts.reduce((sum, p) => sum + (p.likes_count || 0), 0).toLocaleString('fr-FR')}
-                    </div>
-                    <div className="text-[11px] text-[var(--t3)] font-semibold mt-1">
-                      liked
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
 
             {/* Bouton Follow (si profil tiers) */}
