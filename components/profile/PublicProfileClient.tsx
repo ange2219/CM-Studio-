@@ -393,7 +393,7 @@ export default function PublicProfileClient({
                 <div className="text-zinc-400 text-xs">Aucune publication pour l'instant.</div>
               </div>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
                 {posts.map(p => {
                   const multiImages = p.community_post_images
                     ? [...p.community_post_images]
@@ -438,7 +438,7 @@ export default function PublicProfileClient({
                 <div className="text-[var(--t3)] text-[11px] mt-1">Vos favoris apparaîtront ici.</div>
               </div>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
                 {savedPosts.map(post => (
                   <PostCard key={post.id} post={post} />
                 ))}
@@ -725,7 +725,7 @@ export default function PublicProfileClient({
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {posts.map(p => {
                   const multiImages = p.community_post_images
                     ? [...p.community_post_images]
@@ -781,7 +781,7 @@ export default function PublicProfileClient({
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {savedPosts.map(post => (
                   <PostCard key={post.id} post={post} />
                 ))}
