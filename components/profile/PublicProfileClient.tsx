@@ -225,7 +225,7 @@ export default function PublicProfileClient({
     <div className="w-full max-w-[680px] mx-auto md:pb-16 min-h-screen bg-transparent select-none">
       
       {/* ── MOBILE LAYOUT (TikTok/X style) ── */}
-      <div className="block md:hidden bg-black text-white min-h-screen w-full">
+      <div className="block md:hidden bg-[var(--bg)] text-[var(--t1)] min-h-screen w-full">
         {/* Header container */}
         <div className="p-5 flex justify-between items-center gap-4">
           <div className="flex items-center gap-4">
@@ -237,12 +237,12 @@ export default function PublicProfileClient({
                 accentBg
                 iconSize={36}
                 style={{
-                  border: '2px solid #000',
+                  border: '2px solid var(--bg)',
                 }}
               />
               {/* Badge de vérification si Premium/Business */}
               {profile.plan && profile.plan !== 'free' && (
-                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[var(--accent)] border border-black flex items-center justify-center shadow-lg">
+                <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[var(--accent)] border border-[var(--bg)] flex items-center justify-center shadow-lg">
                   <span className="text-white text-[8px] font-black">✓</span>
                 </div>
               )}
@@ -250,14 +250,14 @@ export default function PublicProfileClient({
 
             {/* Nom + Pseudo + Bio */}
             <div>
-              <h1 className="text-base font-extrabold text-white m-0 tracking-tight leading-tight flex items-center gap-1">
+              <h1 className="text-base font-extrabold text-[var(--t1)] m-0 tracking-tight leading-tight flex items-center gap-1">
                 {fullName || profile.username}
               </h1>
-              <div className="text-[12px] text-zinc-400 mt-0.5 font-medium">
+              <div className="text-[12px] text-[var(--t3)] mt-0.5 font-medium">
                 @{profile.username}
               </div>
               {profile.bio && (
-                <p className="text-[12px] text-zinc-300 mt-1.5 mb-0 leading-snug font-normal max-w-[200px] line-clamp-2">
+                <p className="text-[12px] text-[var(--t2)] mt-1.5 mb-0 leading-snug font-normal max-w-[200px] line-clamp-2">
                   {profile.bio}
                 </p>
               )}
@@ -269,14 +269,14 @@ export default function PublicProfileClient({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowEditModal(true)}
-                className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl border border-zinc-800 cursor-pointer transition-all flex items-center justify-center"
+                className="bg-[var(--card)] hover:bg-[var(--s2)] text-[var(--t2)] p-2.5 rounded-xl border border-[var(--b1)] cursor-pointer transition-all flex items-center justify-center"
                 title="Modifier le profil"
               >
                 <Edit2 size={15} />
               </button>
               <Link
                 href="/settings"
-                className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 p-2.5 rounded-xl border border-zinc-800 cursor-pointer transition-all flex items-center justify-center"
+                className="bg-[var(--card)] hover:bg-[var(--s2)] text-[var(--t2)] p-2.5 rounded-xl border border-[var(--b1)] cursor-pointer transition-all flex items-center justify-center"
                 title="Paramètres"
               >
                 <Settings size={15} />
@@ -287,34 +287,34 @@ export default function PublicProfileClient({
 
         {/* Stats & Actions container */}
         <div className="px-5 pb-4">
-          <div className="flex items-center justify-between mt-1 pt-3 border-t border-zinc-900">
+          <div className="flex items-center justify-between mt-1 pt-3 border-t border-[var(--b1)]">
             {/* Statistiques horizontales compactes */}
             <div className="flex items-center gap-4">
               <div>
-                <div className="font-extrabold text-[15px] text-white leading-none">
+                <div className="font-extrabold text-[15px] text-[var(--t1)] leading-none">
                   {followersCount.toLocaleString('fr-FR')}
                 </div>
-                <div className="text-[11px] text-zinc-400 font-semibold mt-1">
+                <div className="text-[11px] text-[var(--t3)] font-semibold mt-1">
                   followers
                 </div>
               </div>
-              <div className="w-px h-6 bg-zinc-800 opacity-60" />
+              <div className="w-px h-6 bg-[var(--b1)] opacity-60" />
               <div>
-                <div className="font-extrabold text-[15px] text-white leading-none">
+                <div className="font-extrabold text-[15px] text-[var(--t1)] leading-none">
                   {followingCount.toLocaleString('fr-FR')}
                 </div>
-                <div className="text-[11px] text-zinc-400 font-semibold mt-1">
+                <div className="text-[11px] text-[var(--t3)] font-semibold mt-1">
                   following
                 </div>
               </div>
               {isOwnProfile && (
                 <>
-                  <div className="w-px h-6 bg-zinc-800 opacity-60" />
+                  <div className="w-px h-6 bg-[var(--b1)] opacity-60" />
                   <div>
-                    <div className="font-extrabold text-[15px] text-white leading-none">
+                    <div className="font-extrabold text-[15px] text-[var(--t1)] leading-none">
                       {posts.reduce((sum, p) => sum + (p.likes_count || 0), 0).toLocaleString('fr-FR')}
                     </div>
-                    <div className="text-[11px] text-zinc-400 font-semibold mt-1">
+                    <div className="text-[11px] text-[var(--t3)] font-semibold mt-1">
                       liked
                     </div>
                   </div>
@@ -340,14 +340,14 @@ export default function PublicProfileClient({
         </div>
 
         {/* Tabs horizontal list */}
-        <div className="flex border-b border-zinc-900 bg-black sticky top-0 z-40 px-5 gap-6 mt-2 overflow-x-auto no-scrollbar">
+        <div className="flex border-b border-[var(--b1)] bg-[var(--bg)] sticky top-0 z-40 px-5 gap-6 mt-2 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('posts')}
             className={`pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold cursor-pointer transition-all ${
               activeTab === 'posts' 
                 ? 'text-[var(--accent)] border-b-[2px] border-[var(--accent)]' 
-                : 'text-zinc-400 border-b-[2px] border-transparent'
+                : 'text-[var(--t3)] border-b-[2px] border-transparent'
             }`}
           >
             Content
@@ -360,7 +360,7 @@ export default function PublicProfileClient({
               className={`pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold cursor-pointer transition-all ${
                 activeTab === 'saved' 
                   ? 'text-[var(--accent)] border-b-[2px] border-[var(--accent)]' 
-                  : 'text-zinc-400 border-b-[2px] border-transparent'
+                  : 'text-[var(--t3)] border-b-[2px] border-transparent'
               }`}
             >
               Portfolio
