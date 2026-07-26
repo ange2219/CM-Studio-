@@ -26,6 +26,7 @@ type Post = {
   user_id: string
   content: string
   image_url?: string | null
+  community_post_images?: { image_url: string; position: number }[] | null
   created_at: string
   full_name: string | null
   avatar_url: string | null
@@ -151,7 +152,7 @@ export default function PublicProfileClient({
           const postIds = bookmarkRows.map(b => b.post_id)
           const { data: postsData } = await supabase
             .from('vw_community_posts')
-            .select('*')
+            .select('*, community_post_images(image_url, position)')
             .in('id', postIds)
 
           if (postsData) {
@@ -159,22 +160,34 @@ export default function PublicProfileClient({
             const formatted = bookmarkRows
               .map(b => postsMap.get(b.post_id))
               .filter(Boolean)
-              .map(p => ({
-                id: p.id,
-                db_id: p.id,
-                user_id: p.user_id,
-                author: {
-                  name: p.full_name || 'Membre CM Studio',
-                  avatar: p.avatar_url,
-                  verified: p.plan ? p.plan.toLowerCase() !== 'free' : false,
-                },
-                time: getTimeAgo(p.created_at),
-                content: p.content,
-                images: p.image_url ? [p.image_url] : [],
-                likesCount: p.likes_count || 0,
-                commentsCount: p.comments_count || 0,
-                sharesCount: (p as any).shares_count || 0,
-              }))
+              .map(p => {
+                const multiImages = p.community_post_images
+                  ? [...p.community_post_images]
+                      .sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
+                      .map((img: any) => img.image_url)
+                  : [];
+
+                const images = multiImages.length > 0
+                  ? multiImages
+                  : (p.image_url ? [p.image_url] : []);
+
+                return {
+                  id: p.id,
+                  db_id: p.id,
+                  user_id: p.user_id,
+                  author: {
+                    name: p.full_name || 'Membre CM Studio',
+                    avatar: p.avatar_url,
+                    verified: p.plan ? p.plan.toLowerCase() !== 'free' : false,
+                  },
+                  time: getTimeAgo(p.created_at),
+                  content: p.content,
+                  images,
+                  likesCount: p.likes_count || 0,
+                  commentsCount: p.comments_count || 0,
+                  sharesCount: (p as any).shares_count || 0,
+                }
+              })
             setSavedPosts(formatted)
           }
         } else {
@@ -337,7 +350,7 @@ export default function PublicProfileClient({
                 : 'text-[var(--t3)] border-b-[2px] border-transparent'
             }`}
           >
-            Content
+            Publications
           </button>
           
           {isOwnProfile && (
@@ -350,7 +363,7 @@ export default function PublicProfileClient({
                   : 'text-[var(--t3)] border-b-[2px] border-transparent'
               }`}
             >
-              Portfolio
+              Sauvegardés
             </button>
           )}
 
@@ -382,6 +395,16 @@ export default function PublicProfileClient({
             ) : (
               <div className="flex flex-col gap-4">
                 {posts.map(p => {
+                  const multiImages = p.community_post_images
+                    ? [...p.community_post_images]
+                        .sort((a, b) => (a.position || 0) - (b.position || 0))
+                        .map(img => img.image_url)
+                    : [];
+
+                  const images = multiImages.length > 0
+                    ? multiImages
+                    : (p.image_url ? [p.image_url] : []);
+
                   const formattedPost = {
                     id: p.id,
                     db_id: p.id,
@@ -393,7 +416,7 @@ export default function PublicProfileClient({
                     },
                     time: getTimeAgo(p.created_at),
                     content: p.content,
-                    images: p.image_url ? [p.image_url] : [],
+                    images,
                     likesCount: p.likes_count || 0,
                     commentsCount: p.comments_count || 0,
                     sharesCount: (p as any).shares_count || 0,
@@ -704,6 +727,16 @@ export default function PublicProfileClient({
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {posts.map(p => {
+                  const multiImages = p.community_post_images
+                    ? [...p.community_post_images]
+                        .sort((a, b) => (a.position || 0) - (b.position || 0))
+                        .map(img => img.image_url)
+                    : [];
+
+                  const images = multiImages.length > 0
+                    ? multiImages
+                    : (p.image_url ? [p.image_url] : []);
+
                   const formattedPost = {
                     id: p.id,
                     db_id: p.id,
@@ -715,7 +748,7 @@ export default function PublicProfileClient({
                     },
                     time: getTimeAgo(p.created_at),
                     content: p.content,
-                    images: p.image_url ? [p.image_url] : [],
+                    images,
                     likesCount: p.likes_count || 0,
                     commentsCount: p.comments_count || 0,
                     sharesCount: (p as any).shares_count || 0,

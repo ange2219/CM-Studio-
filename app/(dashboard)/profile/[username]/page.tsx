@@ -61,7 +61,7 @@ export default async function PublicProfilePage({
   // ── Fetch user's posts ─────────────────────────────────────────────────────
   const { data: postsData } = await admin
     .from('vw_community_posts')
-    .select('*')
+    .select('*, community_post_images(image_url, position)')
     .eq('user_id', profile.id)
     .is('group_id', null)
     .order('created_at', { ascending: false })
