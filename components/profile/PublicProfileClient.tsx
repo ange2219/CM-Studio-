@@ -61,13 +61,14 @@ function planBadge(plan: string | null) {
 // Map color based on current rank label
 function getRankColor(rankLabel: string) {
   const label = rankLabel.toLowerCase()
-  if (label.includes('novice') || label.includes('débutant')) return '#64748B' // Slate Gray
-  if (label.includes('bronze')) return '#B5733D' // Bronze
-  if (label.includes('argent') || label.includes('silver')) return '#94A3B8' // Silver
-  if (label.includes('or') || label.includes('gold')) return '#EAB308' // Gold Yellow
-  if (label.includes('platine') || label.includes('platinum')) return '#06B6D4' // Cyan
-  if (label.includes('diamant') || label.includes('diamond')) return '#A855F7' // Purple
-  if (label.includes('master') || label.includes('expert')) return '#F43F5E' // Rose
+  if (label.includes('novice') || label.includes('débutant')) return '#38BDF8' // Bright Cyan instead of dull gray
+  if (label.includes('initié')) return '#34D399' // Emerald Green
+  if (label.includes('bronze')) return '#F59E0B' // Warm Amber/Bronze
+  if (label.includes('argent') || label.includes('silver')) return '#E2E8F0' // Shiny Silver
+  if (label.includes('or') || label.includes('gold')) return '#FBBF24' // Vibrant Golden
+  if (label.includes('platine') || label.includes('platinum')) return '#22D3EE' // Turquoise/Platinum
+  if (label.includes('diamant') || label.includes('diamond')) return '#C084FC' // Luminous Purple
+  if (label.includes('master') || label.includes('expert')) return '#F43F5E' // Bright Rose
   return 'var(--accent)' // Default to theme accent
 }
 
@@ -85,8 +86,8 @@ function RankedAvatar({
   rankColor: string
   plan: string | null
 }) {
-  const strokeWidth = 3.5
-  const pad = 7 // Gap between progress circle and avatar
+  const strokeWidth = 4
+  const pad = 6.5 // Gap between progress circle and avatar
   const avatarSize = size - pad * 2
 
   const radius = (size - strokeWidth) / 2
@@ -97,20 +98,21 @@ function RankedAvatar({
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       {/* SVG Progress Ring */}
       <svg
-        className="absolute transform -rotate-90"
+        className="absolute top-0 left-0 transform -rotate-90"
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
+        style={{ pointerEvents: 'none' }}
       >
-        {/* Background track (subtle border) */}
+        {/* Background track (subtle visible border) */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="transparent"
-          stroke="var(--b1)"
-          strokeWidth={strokeWidth - 0.5}
-          className="opacity-30"
+          stroke="currentColor"
+          strokeWidth={strokeWidth - 1}
+          className="text-zinc-700/40 dark:text-zinc-600/40"
         />
         {/* Foreground dynamic progress arc */}
         <circle
@@ -125,6 +127,7 @@ function RankedAvatar({
           strokeLinecap="round"
           style={{
             transition: 'stroke-dashoffset 0.4s ease-out, stroke 0.3s ease',
+            filter: `drop-shadow(0 0 3px ${rankColor}40)`,
           }}
         />
       </svg>
