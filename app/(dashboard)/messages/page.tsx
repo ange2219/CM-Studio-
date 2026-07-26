@@ -470,7 +470,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
   const activeConv = conversations.find(c => c.id === activeConvId);
 
   return (
-    <div className={`flex-1 h-[calc(100vh-96px)] flex rounded-none md:rounded-2xl overflow-hidden border-0 md:border shadow-none md:shadow-card-subtle mt-3.5 md:mt-0 transition-colors duration-300 select-none ${
+    <div className={`flex-1 h-[calc(100vh-96px)] flex rounded-none md:rounded-2xl overflow-hidden border-0 md:border shadow-sm md:shadow-card-subtle mt-3.5 md:mt-0 transition-colors duration-300 select-none ${
       darkMode ? 'bg-[#1E293B] md:border-slate-800' : 'bg-white md:border-slate-100/80'
     }`}>
       
@@ -717,7 +717,7 @@ export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: bo
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Écrire un message..."
-              className={`flex-1 text-[13.5px] px-4 py-2.5 rounded-xl outline-none border transition-all ${
+              className={`flex-1 text-[13.5px] px-4 py-2.5 rounded-xl outline-none border transition-all shadow-sm ${
                 darkMode 
                   ? 'bg-[#0F172A] border-slate-700 text-white placeholder-slate-500 focus:border-[#1677FF]' 
                   : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-[#1677FF] focus:bg-white'
