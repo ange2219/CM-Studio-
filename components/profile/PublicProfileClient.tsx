@@ -241,7 +241,7 @@ export default function PublicProfileClient({
             />
             {/* Badge de vérification bleu si Premium/Business */}
             {profile.plan && profile.plan !== 'free' && (
-              <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#1877F2] border-2 border-black flex items-center justify-center shadow-lg">
+              <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[var(--accent)] border-2 border-black flex items-center justify-center shadow-lg">
                 <span className="text-white text-[9px] font-black">✓</span>
               </div>
             )}
@@ -251,7 +251,7 @@ export default function PublicProfileClient({
           {isOwnProfile ? (
             <button
               onClick={() => setShowEditModal(true)}
-              className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm"
+              className="bg-[var(--accent)] hover:opacity-90 text-white text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm"
             >
               Edit
             </button>
@@ -262,7 +262,7 @@ export default function PublicProfileClient({
               className={`text-xs font-bold py-2 px-6 rounded-full border-none cursor-pointer transition-all shadow-sm ${
                 isFollowing 
                   ? 'bg-zinc-800 text-white hover:bg-zinc-700' 
-                  : 'bg-[#1877F2] text-white hover:bg-[#166FE5]'
+                  : 'bg-[var(--accent)] text-white hover:opacity-90'
               }`}
             >
               {isFollowing ? 'Abonné' : 'Suivre'}
@@ -320,7 +320,7 @@ export default function PublicProfileClient({
             onClick={() => setActiveTab('posts')}
             className={`pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold cursor-pointer transition-all ${
               activeTab === 'posts' 
-                ? 'text-white border-b-[2px] border-white' 
+                ? 'text-[var(--accent)] border-b-[2px] border-[var(--accent)]' 
                 : 'text-zinc-400 border-b-[2px] border-transparent'
             }`}
           >
@@ -333,7 +333,7 @@ export default function PublicProfileClient({
               onClick={() => setActiveTab('saved')}
               className={`pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold cursor-pointer transition-all ${
                 activeTab === 'saved' 
-                  ? 'text-white border-b-[2px] border-white' 
+                  ? 'text-[var(--accent)] border-b-[2px] border-[var(--accent)]' 
                   : 'text-zinc-400 border-b-[2px] border-transparent'
               }`}
             >
