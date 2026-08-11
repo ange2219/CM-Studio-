@@ -262,28 +262,18 @@ Aucun texte avant ou après le JSON.`
 // ─── Génération via GitHub Models (GPT-4o-mini) — plan gratuit ─────────────────
 
 async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
-  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
-  const messages: { role: 'system' | 'user'; content: string }[] = []
-  if (systemPrompt) messages.push({ role: 'system', content: systemPrompt })
-  messages.push({ role: 'user', content: buildPrompt(req, targetPlatform) })
-
-  const response = await githubAI.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages,
-    max_tokens: 1500,
-    temperature: 0.8,
-    response_format: { type: 'json_object' },
+  if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+  const prompt = buildPrompt(req, targetPlatform)
+  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: 'application/json' }
   })
-
-  const text = response.choices[0]?.message?.content || '{}'
-  const parsed = JSON.parse(text)
+  const text = result.response.text()
+  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
+  const parsed = JSON.parse(cleaned)
   if (targetPlatform && parsed.post) {
-    return {
-      variants: {
-        [targetPlatform]: parsed.post
-      },
-      ...parsed
-    } as any
+    return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
   }
   return parsed as GenerateResponse
 }
@@ -413,13 +403,9 @@ Contraintes ${platform} : ${PLATFORM_CONSTRAINTS[platform]}
 Réponds UNIQUEMENT avec le texte du post réécrit, sans explication.`
 
   if (plan === 'free') {
-    const res = await githubAI.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
-      temperature: 0.7,
-    })
-    return res.choices[0]?.message?.content?.trim() || content
+    if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+    const result = await generateWithGeminiSimple(prompt, false)
+    return result.trim() || content
   }
 
   const msg = await anthropic.messages.create({
@@ -440,14 +426,10 @@ Post : ${content}
 Réponds UNIQUEMENT en JSON : {"hashtags": ["#tag1", "#tag2", ...]}`
 
   if (plan === 'free') {
-    const res = await githubAI.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 200,
-      response_format: { type: 'json_object' },
-    })
-    const parsed = JSON.parse(res.choices[0]?.message?.content || '{}')
-    return parsed.hashtags || []
+    if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+    const rawText = await generateWithGeminiSimple(prompt, true)
+    const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+    return JSON.parse(cleaned).hashtags || []
   }
 
   const msg = await anthropic.messages.create({
@@ -569,23 +551,19 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
 export async function generateWeekPosts(req: GenerateRequest, postsCount: number, plan: Plan): Promise<{ week: { day: number; topic: string; variants: Partial<Record<Platform, string>> }[] }> {
   const prompt = buildWeekPrompt(req, postsCount)
 
-  if (plan === 'free' && process.env.GITHUB_TOKEN) {
+  if (plan === 'free') {
     try {
-      const res = await githubAI.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 3000,
-        temperature: 0.8,
-        response_format: { type: 'json_object' },
-      })
-      const parsed = JSON.parse(res.choices[0]?.message?.content || '{"week":[]}')
+      if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+      const rawText = await generateWithGeminiSimple(prompt, true)
+      const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+      const parsed = JSON.parse(cleaned || '{"week":[]}')
       if (!Array.isArray(parsed.week) || parsed.week.length === 0) {
-        console.warn('[ai/generateWeekPosts] GitHub Models returned empty week, falling back to Claude')
-        throw new Error('Empty week response from GitHub Models')
+        console.warn('[ai/generateWeekPosts] Gemini returned empty week, falling back to Claude')
+        throw new Error('Empty week response from Gemini')
       }
       return parsed
     } catch (err) {
-      console.error('[ai/generateWeekPosts] GitHub Models failed, falling back to Claude:', err instanceof Error ? err.message : err)
+      console.error('[ai/generateWeekPosts] Gemini failed, falling back to Claude:', err instanceof Error ? err.message : err)
     }
   }
 
@@ -702,14 +680,8 @@ export async function generateIdeas(req: GenerateIdeasRequest, plan: Plan): Prom
   const prompt = buildIdeasPrompt(req)
 
   async function callModel(promptText: string): Promise<string> {
-    const response = await githubAI.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: promptText }],
-      max_tokens: 1500,
-      temperature: 0.8,
-      response_format: { type: 'json_object' },
-    })
-    return response.choices[0]?.message?.content || '{}'
+    if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+    return await generateWithGeminiSimple(promptText, true)
   }
 
   const rawText = await callModel(prompt)
@@ -721,14 +693,8 @@ export async function generateBrief(req: GenerateBriefRequest, plan: Plan): Prom
   const prompt = buildBriefPrompt(req)
 
   async function callModel(promptText: string): Promise<string> {
-    const response = await githubAI.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: promptText }],
-      max_tokens: 1000,
-      temperature: 0.7,
-      response_format: { type: 'json_object' },
-    })
-    return response.choices[0]?.message?.content || '{}'
+    if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+    return await generateWithGeminiSimple(promptText, true)
   }
 
   const rawText = await callModel(prompt)
