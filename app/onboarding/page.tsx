@@ -98,11 +98,10 @@ const PLATFORM_DESC: Record<string, string> = {
   linkedin: 'Profil ou page LinkedIn',
 }
 
-const STEPS = ['Votre profil', 'Votre marque', 'Identité de la marque', 'Stratégie de contenu', 'Plateformes utilisées']
+const STEPS = ['Identité et marque', 'Identité de la marque', 'Stratégie de contenu', 'Plateformes utilisées']
 
 const STEP_META = [
-  { motivation: 'Cette étape permet de configurer votre identité personnelle', title: 'Votre profil', subtitle: 'Présentez-vous pour personnaliser votre espace de travail' },
-  { motivation: 'Cette étape permet à l\'IA de comprendre votre marque', title: 'Votre marque', subtitle: 'Quelques infos de base sur la marque que vous gérez' },
+  { motivation: 'Cette étape permet de configurer votre profil et votre marque', title: 'Identité et marque', subtitle: 'Présentez-vous et saisissez les informations de base sur votre marque' },
   { motivation: 'Cette étape permet à l\'IA d\'écrire comme votre marque', title: 'Identité de la marque', subtitle: 'Définissez la voix, la cible et le style visuel de la marque' },
   { motivation: 'Cette étape permet à l\'IA de construire votre stratégie', title: 'Stratégie de contenu', subtitle: 'Choisissez vos objectifs et vos formats de publication' },
   { motivation: 'Cette étape définit où vous publierez vos contenus', title: 'Plateformes utilisées', subtitle: 'Sélectionnez les réseaux sur lesquels vous êtes actif' },
@@ -291,11 +290,10 @@ export default function OnboardingPage() {
   }
 
   function canNext(): boolean {
-    if (step === 0) return !!data.full_name?.trim() && !!data.account_type && !!data.username && /^[a-zA-Z0-9_-]{3,30}$/.test(data.username)
-    if (step === 1) return !!data.brand_name?.trim() && !!data.industry && !!data.description?.trim()
-    if (step === 2) return !!data.target_audience && !!data.value_proposition?.trim() && !!data.tone
-    if (step === 3) return data.objectives.length >= 1 && data.content_pillars.length >= 1
-    if (step === 4) return data.platforms.length >= 1
+    if (step === 0) return !!data.full_name?.trim() && !!data.account_type && !!data.username && /^[a-zA-Z0-9_-]{3,30}$/.test(data.username) && !!data.brand_name?.trim() && !!data.industry && !!data.description?.trim()
+    if (step === 1) return !!data.target_audience && !!data.value_proposition?.trim() && !!data.tone
+    if (step === 2) return data.objectives.length >= 1 && data.content_pillars.length >= 1
+    if (step === 3) return data.platforms.length >= 1
     return true
   }
 
@@ -396,57 +394,72 @@ export default function OnboardingPage() {
         <div style={{ width: '100%', maxWidth: '500px', background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '14px', padding: '1.5rem', position: 'relative', zIndex: 1 }}>
           <div key={step} style={{ animation: 'fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both' }}>
 
-          {/* ── Étape 1: Votre profil ── */}
+          {/* ── Étape 1: Identité et marque ── */}
           {step === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-              <div>
-                <label style={labelStyle}>Nom et prénom *</label>
-                <input style={fieldStyle} placeholder="Ex: Jean Dupont" value={data.full_name} onChange={e => update('full_name', e.target.value)} />
+              {/* Informations personnelles */}
+              <div style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                1. Vos informations
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
+                <div>
+                  <label style={labelStyle}>Nom et prénom *</label>
+                  <input style={fieldStyle} placeholder="Ex: Jean Dupont" value={data.full_name} onChange={e => update('full_name', e.target.value)} />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Pseudo unique *</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--t3)', fontSize: '.88rem', fontWeight: 600 }}>@</span>
+                    <input style={fieldStyle} placeholder="votre.pseudo" value={data.username} onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, ''))} />
+                  </div>
+                </div>
               </div>
 
               <div>
                 <p style={labelStyle}>Type de profil *</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
                   {ACCOUNT_TYPES.map(type => {
                     const selected = data.account_type === type.value
                     return (
-                      <button key={type.value} type="button" onClick={() => update('account_type', type.value)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '.75rem 1rem', borderRadius: '12px', textAlign: 'left', border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s', width: '100%' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: selected ? 'var(--accent-light)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <type.icon size={17} style={{ color: selected ? 'var(--accent)' : 'var(--t3)' }} />
+                      <button key={type.value} type="button" onClick={() => update('account_type', type.value)} style={{ display: 'flex', alignItems: 'center', gap: '.85rem', padding: '.6rem .85rem', borderRadius: '12px', textAlign: 'left', border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)', background: selected ? 'var(--accent-light)' : 'var(--s2)', cursor: 'pointer', transition: 'all 0.2s', width: '100%' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: selected ? 'var(--accent-light)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <type.icon size={15} style={{ color: selected ? 'var(--accent)' : 'var(--t3)' }} />
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '.875rem', fontWeight: 600, color: selected ? 'var(--accent)' : 'var(--t1)', marginBottom: '.15rem' }}>{type.label}</div>
-                          <div style={{ fontSize: '.75rem', color: 'var(--t3)' }}>{type.desc}</div>
+                          <div style={{ fontSize: '.85rem', fontWeight: 600, color: selected ? 'var(--accent)' : 'var(--t1)' }}>{type.label}</div>
+                          <div style={{ fontSize: '.72rem', color: 'var(--t3)' }}>{type.desc}</div>
                         </div>
-                        {selected && <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={11} color="#fff" /></div>}
+                        {selected && <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={10} color="#fff" /></div>}
                       </button>
                     )
                   })}
                 </div>
               </div>
 
-              <div>
-                <label style={labelStyle}>Pseudo unique (ex: jean.dupont) *</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ color: 'var(--t3)', fontSize: '.88rem', fontWeight: 600 }}>@</span>
-                  <input style={fieldStyle} placeholder="votre.pseudo" value={data.username} onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, ''))} />
-                </div>
-                <p style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.3rem' }}>Sera affiché à la place de l&apos;email. 3 caractères minimum. Lettres, chiffres, tirets, underscores.</p>
-              </div>
-            </div>
-          )}
+              <div style={{ height: '1px', background: 'var(--b1)', margin: '.2rem 0' }} />
 
-          {/* ── Étape 2: Votre marque ── */}
-          {step === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-              <div>
-                <label style={labelStyle}>Nom de la marque *</label>
-                <input style={fieldStyle} placeholder="Ex: Pixel Agency" value={data.brand_name} onChange={e => update('brand_name', e.target.value)} />
+              {/* Informations sur la Marque */}
+              <div style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                2. Votre marque
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
+                <div>
+                  <label style={labelStyle}>Nom de la marque *</label>
+                  <input style={fieldStyle} placeholder="Ex: Pixel Agency" value={data.brand_name} onChange={e => update('brand_name', e.target.value)} />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Site web <span style={{ fontWeight: 400, color: 'var(--t3)' }}>(optionnel)</span></label>
+                  <input style={fieldStyle} placeholder="https://votre-site.com" value={data.website} onChange={e => update('website', e.target.value)} />
+                </div>
               </div>
 
               <div>
                 <label style={labelStyle}>Secteur d&apos;activité *</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {INDUSTRIES.map(ind => {
                     const selected = data.industry === ind
                     return (
@@ -455,33 +468,20 @@ export default function OnboardingPage() {
                         type="button"
                         onClick={() => update('industry', ind)}
                         style={{
-                          padding: '10px 12px',
+                          padding: '8px 10px',
                           borderRadius: '10px',
                           border: selected ? '1.5px solid var(--accent)' : '1px solid var(--b1)',
                           background: selected ? 'var(--accent-light)' : 'var(--s2)',
                           color: selected ? 'var(--accent)' : 'var(--t2)',
-                          fontSize: '0.82rem',
+                          fontSize: '0.8rem',
                           fontWeight: selected ? 600 : 500,
                           cursor: 'pointer',
-                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          transition: 'all 0.2s',
                           textAlign: 'left',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '8px',
                           width: '100%',
-                          transform: 'scale(1)'
-                        }}
-                        onMouseEnter={e => {
-                          if (!selected) {
-                            e.currentTarget.style.background = 'var(--b1)'
-                            e.currentTarget.style.transform = 'translateY(-1px)'
-                          }
-                        }}
-                        onMouseLeave={e => {
-                          if (!selected) {
-                            e.currentTarget.style.background = 'var(--s2)'
-                            e.currentTarget.style.transform = 'none'
-                          }
                         }}
                       >
                         <div style={{
@@ -493,7 +493,6 @@ export default function OnboardingPage() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           background: selected ? 'var(--accent)' : 'transparent',
-                          transition: 'all 0.15s',
                           flexShrink: 0
                         }}>
                           {selected && <Check size={8} color="#fff" />}
@@ -507,19 +506,14 @@ export default function OnboardingPage() {
 
               <div>
                 <label style={labelStyle}>Description de la marque *</label>
-                <textarea style={{ ...fieldStyle, resize: 'none' }} rows={3} placeholder="Ce que fait la marque, sa mission, son offre de produits..." value={data.description} onChange={e => update('description', e.target.value)} />
+                <textarea style={{ ...fieldStyle, resize: 'none' }} rows={2.5} placeholder="Ce que fait la marque, sa mission, son offre de produits..." value={data.description} onChange={e => update('description', e.target.value)} />
                 <p style={{ fontSize: '.72rem', color: 'var(--t3)', marginTop: '.3rem' }}>L&apos;IA utilisera cette description pour contextualiser chaque publication</p>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Site web <span style={{ fontWeight: 400, color: 'var(--t3)' }}>(optionnel)</span></label>
-                <input style={fieldStyle} placeholder="https://votre-site.com" value={data.website} onChange={e => update('website', e.target.value)} />
               </div>
             </div>
           )}
 
-          {/* ── Étape 3: Identité de la marque ── */}
-          {step === 2 && (
+          {/* ── Étape 2: Identité de la marque ── */}
+          {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
                 <label style={labelStyle}>Public cible *</label>
@@ -643,8 +637,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ── Étape 4: Stratégie de contenu ── */}
-          {step === 3 && (
+          {/* ── Étape 3: Stratégie de contenu ── */}
+          {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div>
                 <label style={labelStyle}>Objectifs de marque <span style={{ fontWeight: 400, color: 'var(--t3)' }}>(sélectionnez au moins un)</span></label>
@@ -693,8 +687,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ── Étape 5: Plateformes utilisées ── */}
-          {step === 4 && (
+          {/* ── Étape 4: Plateformes utilisées ── */}
+          {step === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <p style={{ fontSize: '.8rem', color: 'var(--t3)', lineHeight: 1.4 }}>
                 Sélectionnez les réseaux sur lesquels vous publiez activement. <strong style={{ color: 'var(--t2)' }}>Aucune connexion de compte n&apos;est requise maintenant.</strong>
