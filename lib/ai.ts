@@ -264,7 +264,7 @@ Aucun texte avant ou après le JSON.`
 async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   if (!gemini) throw new Error('GEMINI_API_KEY manquante')
   const prompt = buildPrompt(req, targetPlatform)
-  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' })
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: { responseMimeType: 'application/json' }
@@ -311,7 +311,7 @@ async function generateWithGeminiSearch(req: GenerateRequest, targetPlatform: Pl
   const prompt = buildPrompt(req, targetPlatform)
   
   const model = gemini.getGenerativeModel({
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.0-flash',
     // @ts-expect-error - tools est supporté pour le grounding Google Search dans le SDK Node.js
     tools: [{ googleSearch: {} }],
   })
@@ -347,7 +347,7 @@ async function generateWithGeminiNoSearch(req: GenerateRequest, targetPlatform: 
   const prompt = buildPrompt(req, targetPlatform)
   
   const model = gemini.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.0-flash',
   })
   
   const result = await model.generateContent({
@@ -379,7 +379,7 @@ async function generateWithGeminiSimple(promptText: string, isJson: boolean = fa
     throw new Error('GEMINI_API_KEY non configurée pour le repli.')
   }
   const model = gemini.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.0-flash',
   })
   
   const result = await model.generateContent({
