@@ -16,7 +16,7 @@ import { buildPinterestPrompt } from './pinterest-prompt'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const githubAI = new OpenAI({
-  baseURL: 'https://models.inference.ai.azure.com',
+  baseURL: 'https://models.github.ai/inference',
   apiKey: process.env.GITHUB_TOKEN || 'dummy',
 })
 
