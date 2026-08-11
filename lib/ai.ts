@@ -259,10 +259,10 @@ Génère ${postsCount} posts variés avec des sujets différents. Réponds UNIQU
 Aucun texte avant ou après le JSON.`
 }
 
-// ─── Génération via GitHub Models (GPT-4o-mini) — plan gratuit ─────────────────
+// ─── Génération via Gemini 2.0 Flash — plan gratuit ───────────────────────────
 
-async function generateWithGitHub(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
-  if (!gemini) throw new Error('GEMINI_API_KEY manquante')
+async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+  if (!gemini) throw new Error('GEMINI_API_KEY manquante. Veuillez ajouter votre clé API Gemini dans .env.local')
   const prompt = buildPrompt(req, targetPlatform)
   const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' })
   const result = await model.generateContent({
@@ -475,8 +475,6 @@ export async function generateImage(prompt: string): Promise<string | null> {
 }
 
 export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<GenerateResponse> {
-  const isFree = plan === 'free' && !!process.env.GITHUB_TOKEN
-
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
     if (targetPlatform === 'linkedin' && gemini) {
       try {
@@ -502,9 +500,9 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
     }
 
     try {
-      return await generateWithGitHub(req, targetPlatform)
+      return await generateWithGeminiFree(req, targetPlatform)
     } catch (err) {
-      console.error('[ai/generatePosts] GitHub Models failed:', err)
+      console.error('[ai/generatePosts] Gemini Free generation failed:', err)
       throw err
     }
   }
