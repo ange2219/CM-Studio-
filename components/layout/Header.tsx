@@ -87,15 +87,15 @@ export function Header({
   return (
     <header className={`h-[64px] w-full px-4 md:px-8 flex items-center justify-between border-b transition-colors duration-300 ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90'} shrink-0 z-20 shadow-xs relative`}>
       {/* Left: Logo CM Studio avec Plume */}
-      <div 
-        onClick={() => onSelectView && onSelectView('workspace')}
+      <Link 
+        href="/workspace"
         className="flex items-center gap-2.5 cursor-pointer group select-none"
       >
         <FeatherLogo darkMode={darkMode} />
         <span className={`font-bold text-[18px] tracking-tight font-['Inter'] ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
           CM Studio
         </span>
-      </div>
+      </Link>
 
       {/* Middle: Search Input */}
       <div className={`hidden sm:flex items-center gap-2.5 h-10 px-4 rounded-full w-[260px] md:w-[340px] lg:w-[400px] transition-colors ${darkMode ? 'bg-[#334155]' : 'bg-[#F3F5F9]'}`}>
