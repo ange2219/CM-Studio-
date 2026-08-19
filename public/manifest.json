@@ -1,11 +1,11 @@
 {
-  "name": "Social IA — Assistant Community Manager",
-  "short_name": "Social IA",
+  "name": "CM Studio — Assistant Community Manager",
+  "short_name": "CM Studio",
   "description": "Gérez tous vos réseaux sociaux avec l'intelligence artificielle.",
-  "start_url": "/dashboard",
+  "start_url": "/login",
   "display": "standalone",
-  "background_color": "#09090B",
-  "theme_color": "#4646FF",
+  "background_color": "#0D1527",
+  "theme_color": "#1677FF",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
-  <rect width="180" height="180" rx="32" fill="#4646FF"/>
-  <text x="50%" y="54%" font-family="system-ui, -apple-system, sans-serif" font-size="94" font-weight="700" fill="white" text-anchor="middle" dominant-baseline="middle">S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="cmGradApple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1677FF" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="38" fill="url(#cmGradApple)"/>
+  <text x="50%" y="56%" font-family="'Outfit', 'Inter', -apple-system, sans-serif" font-size="84" font-weight="900" letter-spacing="-3" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">CM</text>
 </svg>

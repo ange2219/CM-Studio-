@@ -2,9 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import Link from 'next/link'
+import { 
+  Sparkles, 
+  Calendar, 
+  CheckCircle2, 
+  ArrowRight, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  Share2, 
+  BarChart3,
+  ShieldCheck
+} from 'lucide-react'
+import { FeatherLogo } from '@/components/FeatherLogo'
 import { createClient } from '@/lib/supabase/client'
-import { CheckCircle } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -30,7 +42,7 @@ export default function ResetPasswordPage() {
       return
     }
     if (password.length < 8) {
-      setError('Minimum 8 caractères')
+      setError('Minimum 8 caractères requis')
       return
     }
 
@@ -48,624 +60,595 @@ export default function ResetPasswordPage() {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
+      <style dangerouslySetInnerHTML={{ __html: `
         html, body {
           overflow: hidden !important;
           height: 100vh !important;
           margin: 0;
           padding: 0;
+          background: #070A12;
+          font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         }
 
-        .login-page-wrap {
-          --bg: #F4F6F5; 
-          --card: #FFFFFF; 
-          --border: #E5E7EB;
-          --accent: #0D5131; 
-          --accent-hover: #0A3E25;
-          --accent-light: rgba(13, 81, 49, 0.06);
-          --text: #111827; 
-          --text2: #4B5563; 
-          --text3: #9CA3AF;
-          --input-bg: #FFFFFF; 
-          --input-border: #D1D5DB;
-          --shadow: rgba(0, 0, 0, 0.05);
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          background: var(--card);
-          color: var(--text);
+        .auth-container {
+          display: flex;
           height: 100vh;
           max-height: 100vh;
-          display: flex;
-          align-items: stretch;
+          width: 100vw;
           overflow: hidden;
-        }
-        [data-theme="dark"] .login-page-wrap {
-          --bg: #0B100D; 
-          --card: #131815; 
-          --border: rgba(255,255,255,0.08);
-          --accent: #1EB063; 
-          --accent-hover: #24C873;
-          --accent-light: rgba(30,176,99,0.15);
-          --text: #FFFFFF;
-          --text2: #9CA3AF;
-          --text3: #4B5563;
-          --input-bg: #0F1411;
-          --input-border: rgba(255,255,255,0.1);
+          background: #070A12;
         }
 
-        /* ── Layout ── */
-        .login-left {
-          flex: 1.3;
+        /* ── Left Showcase Panel ── */
+        .auth-left {
+          flex: 1.25;
+          position: relative;
+          background: radial-gradient(circle at 20% 20%, #0F172A 0%, #070A12 100%);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 35px 50px;
-          position: relative;
-          z-index: 1;
-          background-color: #F9FFE3;
+          padding: 36px 44px;
           overflow: hidden;
+          border-right: 1px solid rgba(255, 255, 255, 0.08);
+          z-index: 1;
         }
-        .login-left::before {
-          display: none;
-        }
-        .decor-top-circle-1 {
+
+        .glow-orb-1 {
           position: absolute;
-          top: -140px;
-          left: 180px;
-          width: 380px;
-          height: 380px;
-          border-radius: 50%;
-          background: #EFF1F4;
-          z-index: 0;
+          top: -10%;
+          left: 15%;
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, rgba(22, 119, 255, 0.25) 0%, rgba(56, 189, 248, 0.08) 50%, transparent 70%);
+          filter: blur(80px);
           pointer-events: none;
+          z-index: 0;
         }
-        .decor-top-circle-2 {
+        .glow-orb-2 {
           position: absolute;
-          top: -90px;
-          left: -90px;
-          width: 220px;
-          height: 220px;
-          border-radius: 50%;
-          background: rgba(13, 81, 49, 0.04);
-          z-index: 0;
+          bottom: 5%;
+          right: -10%;
+          width: 450px;
+          height: 450px;
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.20) 0%, rgba(22, 119, 255, 0.05) 50%, transparent 70%);
+          filter: blur(80px);
           pointer-events: none;
+          z-index: 0;
         }
-        
-        .login-right {
-          width: 520px;
-          flex-shrink: 0;
-          background: var(--card);
+
+        .left-header {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .brand-badge {
+          font-size: 11px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 6px;
+          background: rgba(22, 119, 255, 0.18);
+          color: #38BDF8;
+          border: 1px solid rgba(56, 189, 248, 0.3);
+          letter-spacing: 0.04em;
+        }
+
+        .left-body {
+          position: relative;
+          z-index: 2;
+          margin: auto 0;
           display: flex;
           flex-direction: column;
-          padding: 40px 50px;
+          gap: 20px;
+          max-width: 540px;
+        }
+
+        .hero-title {
+          font-size: 30px;
+          font-weight: 800;
+          line-height: 1.25;
+          letter-spacing: -0.025em;
+          color: #FFFFFF;
+          margin: 0;
+        }
+        .hero-gradient-text {
+          background: linear-gradient(135deg, #38BDF8 0%, #1677FF 50%, #8B5CF6 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+          font-size: 13.5px;
+          color: #94A3B8;
+          line-height: 1.45;
+          margin: 0;
+        }
+
+        .glass-showcase {
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 14px;
+          padding: 18px;
+          box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .security-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #38BDF8;
+          background: rgba(56, 189, 248, 0.1);
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(56, 189, 248, 0.25);
+          width: fit-content;
+        }
+
+        .security-checklist {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          font-size: 12px;
+          color: #CBD5E1;
+        }
+        .check-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .features-grid {
           position: relative;
-          z-index: 1;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+        }
+        .feat-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          padding: 8px 10px;
+          border-radius: 8px;
+        }
+        .feat-icon-wrap {
+          width: 26px;
+          height: 26px;
+          border-radius: 6px;
+          background: rgba(22, 119, 255, 0.15);
+          color: #38BDF8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .feat-title {
+          font-size: 11px;
+          font-weight: 600;
+          color: #E2E8F0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        /* ── Right Form Panel ── */
+        .auth-right {
+          width: 480px;
+          flex-shrink: 0;
+          background: #FFFFFF;
+          display: flex;
+          flex-direction: column;
           justify-content: space-between;
-          border-left: 1px solid var(--border);
+          padding: 36px 44px;
           height: 100vh;
           overflow-y: auto;
-        }
-
-        /* ── Left Content ── */
-        
-        .login-content-left {
-          width: 100%;
-          margin: auto 0;
-        }
-
-        .login-tagline {
-          text-align: left;
-          margin-bottom: 10px;
-          position: relative;
-          z-index: 2;
-          margin-top: 75px;
-        }
-        .login-tagline h1 {
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--accent);
-          line-height: 1.25;
-          margin-bottom: 8px;
-          letter-spacing: -0.02em;
-        }
-        .login-tagline p {
-          font-size: 13px;
-          color: var(--text2);
-          line-height: 1.4;
-          max-width: 520px;
-        }
-
-        /* ── Illustration ── */
-        .illustration-container {
-          width: calc(100% + 160px);
-          margin-left: -80px;
-          margin-right: -80px;
-          margin-top: 15px;
-          margin-bottom: 25px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          overflow: hidden;
-        }
-        .illustration-img {
-          width: 100%;
-          height: auto;
-          max-height: 440px;
-          object-fit: contain;
-          display: block;
-        }
-
-        /* ── Features ── */
-        .login-features {
-          display: flex;
-          gap: 12px;
-          justify-content: space-between;
-          margin-top: 10px;
-          position: relative;
+          box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
           z-index: 2;
         }
-        .feature-item {
-          flex: 1;
-          text-align: center;
-          padding: 0 2px;
-        }
-        .feature-icon {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          background: var(--accent-light);
-          color: var(--accent);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 8px;
-        }
-        .feature-item h4 {
-          font-size: 11px;
-          font-weight: 700;
-          margin-bottom: 2px;
-          color: var(--text);
-        }
-        .feature-item p {
-          font-size: 9.5px;
-          color: var(--text2);
-          line-height: 1.3;
-        }
-        .hashtag {
-          color: #E84C3D;
-          font-weight: 800;
-          font-size: 14px;
-          margin-top: 30px;
-        }
 
-        .login-logo {
-          position: absolute;
-          top: 35px;
-          left: 50px;
-          z-index: 2;
-          width: 60px;
-          height: 60px;
-        }
-
-        .form-logo {
+        .mobile-brand {
           display: none;
-          margin-bottom: 24px;
-          justify-content: center;
         }
 
-        /* ── Form ── */
-        .login-form-container {
-          flex: 1;
+        .auth-form-wrap {
+          margin: auto 0;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          margin: 30px 0;
+          gap: 20px;
         }
-        .login-form h2 {
-          font-size: 28px;
-          font-weight: 700;
-          margin-bottom: 6px;
-          color: var(--accent);
+
+        .form-header h2 {
+          font-size: 24px;
+          font-weight: 800;
+          color: #0F172A;
+          margin: 0 0 6px 0;
+          letter-spacing: -0.02em;
         }
-        .login-form p.subtitle {
-          font-size: 14px;
-          color: var(--text2);
-          margin-bottom: 30px;
+        .form-header p {
+          font-size: 13.5px;
+          color: #64748B;
+          margin: 0;
         }
+
         .form-group {
-          margin-bottom: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
         }
         .form-label {
-          font-size: 11px;
+          font-size: 11.5px;
           font-weight: 700;
-          color: var(--text2);
-          display: block;
-          margin-bottom: 6px;
-          letter-spacing: .05em;
+          color: #475569;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
         }
-        .input-icon-wrap {
+        .input-wrapper {
           position: relative;
-        }
-        .input-icon-wrap .form-input {
-          padding-left: 44px;
-        }
-        .input-left-icon {
-          position: absolute;
-          left: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text3);
           display: flex;
           align-items: center;
+        }
+        .input-icon {
+          position: absolute;
+          left: 12px;
+          color: #94A3B8;
           pointer-events: none;
+          display: flex;
+          align-items: center;
         }
         .form-input {
           width: 100%;
-          background: var(--input-bg);
-          border: 1px solid var(--input-border);
-          border-radius: 8px;
-          padding: 12px 16px;
-          color: var(--text);
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 14px;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 12px;
+          padding: 11px 14px 11px 38px;
+          font-size: 13.5px;
+          color: #0F172A;
           outline: none;
-          transition: border-color .2s, box-shadow .2s;
-          box-sizing: border-box;
+          transition: all 0.15s ease;
+          font-family: inherit;
         }
         .form-input:focus {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 3px var(--accent-light);
+          background: #FFFFFF;
+          border-color: #1677FF;
+          box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12);
         }
         .form-input::placeholder {
-          color: var(--text3);
+          color: #94A3B8;
         }
-        .btn-primary {
-          width: 100%;
-          background: var(--accent);
-          color: #fff;
+
+        .input-with-eye .form-input {
+          padding-right: 40px;
+        }
+        .eye-toggle-btn {
+          position: absolute;
+          right: 12px;
+          background: none;
           border: none;
-          border-radius: 8px;
-          padding: 14px;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 600;
+          color: #94A3B8;
           cursor: pointer;
-          transition: background .2s;
-          margin-top: 6px;
-        }
-        .btn-primary:hover {
-          background: var(--accent-hover);
-        }
-        .btn-primary:disabled {
-          opacity: .6;
-          cursor: not-allowed;
-        }
-        
-        .divider {
+          padding: 0;
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin: 20px 0;
-          color: var(--text3);
-          font-size: 12px;
+          transition: color 0.15s ease;
         }
-        .divider::before, .divider::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: var(--border);
+        .eye-toggle-btn:hover {
+          color: #1677FF;
         }
-        
-        .btn-social {
+
+        .btn-submit {
           width: 100%;
-          background: var(--card);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          padding: 12px;
-          color: var(--text);
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          background: #1677FF;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 12px;
+          padding: 12px 16px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          transition: all .2s;
-          margin-bottom: 12px;
+          gap: 8px;
+          transition: all 0.15s ease;
+          box-shadow: 0 4px 12px rgba(22, 119, 255, 0.25);
+          font-family: inherit;
         }
-        .btn-social:hover {
-          border-color: var(--accent);
-          background: var(--bg);
+        .btn-submit:hover {
+          background: #1266DF;
+          box-shadow: 0 6px 16px rgba(22, 119, 255, 0.35);
         }
-        
-        .login-switch {
+        .btn-submit:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+
+        .error-alert {
+          background: #FEF2F2;
+          border: 1px solid #FECACA;
+          color: #DC2626;
+          font-size: 12.5px;
+          border-radius: 10px;
+          padding: 10px 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .success-box {
           text-align: center;
-          margin-top: 24px;
-          font-size: 13px;
-          color: var(--text2);
-        }
-        .login-switch a {
-          color: var(--text);
-          text-decoration: none;
-          font-weight: 700;
-          cursor: pointer;
-        }
-        .login-switch a:hover {
-          text-decoration: underline;
-        }
-        
-        .error-box {
-          background: rgba(239,68,68,.08);
-          border: 1px solid rgba(239,68,68,.2);
-          color: #EF4444;
-          font-size: 12px;
-          border-radius: 8px;
-          padding: 10px 14px;
-          margin-bottom: 14px;
-        }
-        
-
-        
-        .password-wrap { position: relative; }
-        .password-wrap .form-input { padding-right: 44px; }
-        .eye-btn {
-          position: absolute;
-          right: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 0;
-          color: var(--text3);
+          padding: 30px 10px;
           display: flex;
+          flex-direction: column;
           align-items: center;
-        }
-        .eye-btn:hover { color: var(--accent); }
-        .password-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 6px;
-        }
-        .forgot-link {
-          font-size: 11px;
-          color: var(--text);
-          text-decoration: none;
-          cursor: pointer;
-          font-weight: 600;
-        }
-        .forgot-link:hover { color: var(--accent); text-decoration: underline; }
-        .forgot-msg { font-size: 12px; color: #22c55e; margin-top: 6px; }
-
-        .auth-footer {
-          display: flex;
-          justify-content: space-between;
-          font-size: 10px;
-          color: var(--text3);
-          border-top: 1px solid var(--border);
-          padding-top: 20px;
-        }
-        .auth-footer-links {
-          display: flex;
           gap: 12px;
         }
-        .auth-footer-links a {
-          color: var(--text3);
-          text-decoration: none;
-          cursor: pointer;
+        .success-icon-wrap {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: rgba(16, 185, 129, 0.1);
+          color: #10B981;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        .auth-footer-links a:hover {
-          color: var(--text2);
+
+        .auth-switch {
+          text-align: center;
+          font-size: 13px;
+          color: #64748B;
+          margin-top: 4px;
+        }
+        .auth-switch a {
+          color: #1677FF;
+          font-weight: 700;
+          cursor: pointer;
+          margin-left: 4px;
+        }
+        .auth-switch a:hover {
+          text-decoration: underline;
+        }
+
+        .auth-footer-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 11px;
+          color: #94A3B8;
+          border-top: 1px solid #F1F5F9;
+          padding-top: 16px;
+        }
+        .auth-footer-bar a {
+          color: #94A3B8;
+          text-decoration: none;
+          margin-left: 12px;
+        }
+        .auth-footer-bar a:hover {
+          color: #64748B;
         }
 
         /* ── Responsive ── */
         @media (max-width: 1024px) {
-          .login-left { padding: 40px; }
-          .login-right { width: 440px; padding: 40px; }
-          .login-tagline h1 { font-size: 32px; }
-          .login-features { flex-wrap: wrap; }
-          .feature-item { min-width: 45%; margin-bottom: 16px; }
-          .login-logo { top: 40px; left: 40px; }
+          .auth-left { padding: 30px; }
+          .auth-right { width: 420px; padding: 30px; }
+          .hero-title { font-size: 26px; }
+          .features-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
-          .login-page-wrap { flex-direction: column; }
-          .login-left { display: none; }
-          .login-right { width: 100%; min-height: 100vh; padding: 40px 24px; }
-          .theme-toggle { top: 20px; right: 20px; }
-          .form-logo { display: flex; }
+          .auth-container { flex-direction: column; }
+          .auth-left { display: none; }
+          .auth-right { 
+            width: 100%; 
+            min-height: 100vh; 
+            padding: 30px 20px;
+          }
+          .mobile-brand { display: flex; }
         }
-        @media (max-height: 720px) {
-          .login-left {
-            padding: 20px 40px;
-          }
-          .login-logo {
-            top: 20px;
-            left: 40px;
-            width: 48px;
-            height: 48px;
-          }
-          .login-tagline {
-            margin-top: 55px;
-          }
-          .login-tagline h1 {
-            font-size: 24px;
-            line-height: 1.2;
-          }
-          .login-tagline p {
-            font-size: 11.5px;
-            margin-top: 4px;
-          }
-          .login-features {
-            margin-top: 5px;
-          }
-          .feature-icon {
-            width: 34px;
-            height: 34px;
-          }
-          .feature-item h4 {
-            font-size: 10.5px;
-          }
-          .feature-item p {
-            font-size: 9px;
-          }
-        }
-      `}</style>
+      ` }} />
 
-      <div className="login-page-wrap">
-        {/* Left — Brand & Illustration */}
-        <div className="login-left">
-          <Image
-            src="/images/cmstudio-illustration.png"
-            alt="CM Studio"
-            fill
-            className="object-cover"
-            priority
-            style={{ zIndex: 1, transform: 'scale(0.90)' }}
-          />
+      <div className="auth-container">
+        {/* ── Left Showcase Panel ── */}
+        <div className="auth-left">
+          <div className="glow-orb-1" />
+          <div className="glow-orb-2" />
 
-          {/* Decorative Top Circles */}
-          <div className="decor-top-circle-1"></div>
-          <div className="decor-top-circle-2"></div>
-
-          {/* Logo */}
-          <div className="login-logo">
-            <Image
-              src="/logo.png"
-              alt="CM Studio Logo"
-              fill
-              className="object-contain"
-              style={{ borderRadius: '8px' }}
-            />
+          {/* Left Top Brand */}
+          <div className="left-header">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <FeatherLogo darkMode={true} />
+              <span className="font-extrabold text-[20px] tracking-tight text-white flex items-center gap-2 font-['Inter']">
+                CM Studio <span className="brand-badge">AI</span>
+              </span>
+            </Link>
           </div>
 
-          <div className="login-tagline">
-            <h1>
-              Générez, planifiez et<br />
-              publiez vos contenus
-            </h1>
-            <p>La plateforme tout-en-un pour créer du contenu, le distribuer sur plusieurs réseaux et suivre vos performances.</p>
+          {/* Left Body */}
+          <div className="left-body">
+            <div>
+              <h1 className="hero-title">
+                Sécurisez votre <br />
+                <span className="hero-gradient-text">espace de travail</span>
+              </h1>
+              <p className="hero-subtitle" style={{ marginTop: '8px' }}>
+                Réinitialisez votre mot de passe pour retrouver l'accès à tous vos outils d'automatisation et de publication.
+              </p>
+            </div>
+
+            {/* Glassmorphic Security Card */}
+            <div className="glass-showcase">
+              <div className="security-badge">
+                <ShieldCheck className="w-4 h-4 text-[#38BDF8]" />
+                Sécurité et chiffrement AES-256
+              </div>
+
+              <div className="security-checklist">
+                <div className="check-item">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Au moins 8 caractères recommandés</span>
+                </div>
+                <div className="check-item">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Mélange de lettres et de chiffres</span>
+                </div>
+                <div className="check-item">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Protection contre les accès non autorisés</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="login-features">
-            <div className="feature-item">
-               <div className="feature-icon">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-               </div>
-               <h4>Générez du contenu</h4>
-               <p>Créez des posts accrocheurs en quelques secondes avec l'IA.</p>
+          {/* Left Bottom Features */}
+          <div className="features-grid">
+            <div className="feat-item">
+              <div className="feat-icon-wrap">
+                <Sparkles className="w-3.5 h-3.5" />
+              </div>
+              <span className="feat-title">Génération IA</span>
             </div>
-            <div className="feature-item">
-               <div className="feature-icon">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-               </div>
-               <h4>Planifiez</h4>
-               <p>Programmez vos publications au meilleur moment.</p>
+            <div className="feat-item">
+              <div className="feat-icon-wrap">
+                <Calendar className="w-3.5 h-3.5" />
+              </div>
+              <span className="feat-title">Planification</span>
             </div>
-            <div className="feature-item">
-               <div className="feature-icon">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-               </div>
-               <h4>Publiez partout</h4>
-               <p>Diffusez sur Facebook, Instagram, LinkedIn, TikTok et plus.</p>
+            <div className="feat-item">
+              <div className="feat-icon-wrap">
+                <Share2 className="w-3.5 h-3.5" />
+              </div>
+              <span className="feat-title">Multi-Canal</span>
             </div>
-            <div className="feature-item">
-               <div className="feature-icon">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-               </div>
-               <h4>Analysez & optimisez</h4>
-               <p>Suivez les performances et améliorez vos résultats.</p>
+            <div className="feat-item">
+              <div className="feat-icon-wrap">
+                <BarChart3 className="w-3.5 h-3.5" />
+              </div>
+              <span className="feat-title">Analytics</span>
             </div>
           </div>
         </div>
 
-        {/* Right — Form */}
-        <div className="login-right">
-
-
-          <div className="login-form-container">
-            <div className="login-form">
-              {/* Logo visible only on mobile */}
-              <div className="form-logo">
-                <Image src="/logo.png" alt="CM Studio Logo" width={40} height={40} style={{ borderRadius: '8px' }} />
-              </div>
-
-              {done ? (
-                <div style={{ textAlign: 'center', marginTop: '40px' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <CheckCircle size={28} color="#22c55e" />
-                  </div>
-                  <h2>Mot de passe mis à jour</h2>
-                  <p className="subtitle">Redirection vers la connexion…</p>
-                </div>
-              ) : (
-                <>
-                  <h2>Nouveau mot de passe</h2>
-                  <p className="subtitle">Choisissez un mot de passe sécurisé</p>
-
-                  <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                      <label className="form-label">NOUVEAU MOT DE PASSE</label>
-                      <div className="password-wrap">
-                        <div className="input-icon-wrap">
-                          <span className="input-left-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                          </span>
-                          <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Min. 8 caractères"
-                            value={password} onChange={e => setPassword(e.target.value)} required />
-                        </div>
-                        <button type="button" className="eye-btn" onClick={() => setShowPassword(v => !v)} tabIndex={-1}>
-                          {showPassword ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">CONFIRMER LE MOT DE PASSE</label>
-                      <div className="password-wrap">
-                        <div className="input-icon-wrap">
-                          <span className="input-left-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                          </span>
-                          <input className="form-input" type={showConfirm ? 'text' : 'password'} placeholder="Répétez le mot de passe"
-                            value={confirm} onChange={e => setConfirm(e.target.value)} required />
-                        </div>
-                        <button type="button" className="eye-btn" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}>
-                          {showConfirm ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    {error && <div className="error-box">{error}</div>}
-
-                    <button className="btn-primary" type="submit" disabled={loading}>
-                      {loading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
-                    </button>
-                  </form>
-                </>
-              )}
-            </div>
+        {/* ── Right Form Panel ── */}
+        <div className="auth-right">
+          {/* Mobile Brand */}
+          <div className="mobile-brand mb-4">
+            <Link href="/" className="flex items-center gap-2.5">
+              <FeatherLogo />
+              <span className="font-bold text-lg text-[#0F172A]">CM Studio</span>
+            </Link>
           </div>
-          
-          <div className="auth-footer">
-            <div>© 2025 CM Studio. Tous droits réservés.</div>
-            <div className="auth-footer-links">
-              <a href="#">Mentions légales</a>
+
+          {/* Form Container */}
+          <div className="auth-form-wrap">
+            {done ? (
+              <div className="success-box">
+                <div className="success-icon-wrap">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-bold text-[#0F172A]">Mot de passe mis à jour !</h2>
+                <p className="text-sm text-[#64748B]">
+                  Votre mot de passe a été modifié avec succès. Redirection vers la page de connexion…
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="form-header">
+                  <h2>Nouveau mot de passe</h2>
+                  <p>Définissez un mot de passe sécurisé pour votre compte.</p>
+                </div>
+
+                {error && (
+                  <div className="error-alert">
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+                  <div className="form-group">
+                    <label className="form-label">Nouveau mot de passe</label>
+                    <div className="input-wrapper input-with-eye">
+                      <span className="input-icon">
+                        <Lock className="w-4 h-4" />
+                      </span>
+                      <input
+                        className="form-input"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="8 caractères minimum"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="eye-toggle-btn"
+                        onClick={() => setShowPassword(v => !v)}
+                        tabIndex={-1}
+                        aria-label={showPassword ? 'Masquer' : 'Afficher'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Confirmer le mot de passe</label>
+                    <div className="input-wrapper input-with-eye">
+                      <span className="input-icon">
+                        <Lock className="w-4 h-4" />
+                      </span>
+                      <input
+                        className="form-input"
+                        type={showConfirm ? 'text' : 'password'}
+                        placeholder="Répétez le mot de passe"
+                        value={confirm}
+                        onChange={e => setConfirm(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="eye-toggle-btn"
+                        onClick={() => setShowConfirm(v => !v)}
+                        tabIndex={-1}
+                        aria-label={showConfirm ? 'Masquer' : 'Afficher'}
+                      >
+                        {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button className="btn-submit" type="submit" disabled={loading}>
+                    {loading ? 'Mise à jour en cours...' : 'Enregistrer le nouveau mot de passe'}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+
+                <div className="auth-switch">
+                  <Link href="/login">
+                    ← Retour à la connexion
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Footer Bar */}
+          <div className="auth-footer-bar">
+            <span>© {new Date().getFullYear()} CM Studio</span>
+            <div>
+              <Link href="/">Accueil</Link>
               <a href="#">Confidentialité</a>
             </div>
           </div>
         </div>
-
       </div>
     </>
   )

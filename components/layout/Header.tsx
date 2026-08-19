@@ -91,8 +91,8 @@ export function Header({
         onClick={() => onSelectView && onSelectView('home')}
         className="flex items-center gap-2.5 cursor-pointer group select-none"
       >
-        <FeatherLogo className="w-10 h-10" darkMode={darkMode} />
-        <span className={`font-extrabold text-[19px] tracking-tight font-['Inter'] ${darkMode ? 'text-white' : 'text-[#1E293B]'}`}>
+        <FeatherLogo darkMode={darkMode} />
+        <span className={`font-bold text-[18px] tracking-tight font-['Inter'] ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
           CM Studio
         </span>
       </div>

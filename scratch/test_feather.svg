@@ -1,0 +1,12 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+  <!-- Pen Nib Base -->
+  <path d="M23 83L29 67L36 74L23 83Z" fill="#1677FF" />
+  <circle cx="27" cy="72" r="1.5" fill="white" />
+  <path d="M23 83L26 75" stroke="#1677FF" stroke-width="1.5" stroke-linecap="round" />
+
+  <!-- Feather Body - Left Flange & Main Quill -->
+  <path d="M29 67C30 55 35 44 43 35C45 32.5 48 30 51 28C50 32 48.5 35 47 38C52 33 58 27 65 22C64 25.5 62 28.5 60 31.5C67 25 76 18 85 12C81 18 76 25 71 30C75 27 79 24.5 83 22C74 32 64 43 54 53C47 60 40 66 36 74C32.5 70 30.5 68.5 29 67Z" fill="#1677FF" />
+
+  <!-- Feather Body - Right Lower Barbs -->
+  <path d="M36 74C40 66 47 60 54 53C51 55.5 47 57.5 44 58C46 54 48 50 51 46C45 50.5 40 56 36 63L36 74Z" fill="#1677FF" />
+</svg>

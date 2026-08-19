@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cahier des Charges - CM Studio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    @page {
+      size: A4;
+      margin: 14mm 14mm 14mm 14mm;
+      @bottom-right {
+        content: counter(page);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 9pt;
+        color: #64748b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 10pt;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ─── PAGE DE GARDE ─── */
+    .cover-page {
+      page-break-after: always;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 20px 20px 20px;
+    }
+
+    .cover-header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cover-logo-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cover-logo-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+    }
+
+    .cover-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .cover-logo {
+      font-size: 24pt;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0f172a;
+    }
+
+    .cover-logo span {
+      color: #0284c7;
+    }
+
+    .cover-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .cover-body {
+      margin-top: 60px;
+    }
+
+    .doc-type {
+      font-size: 13pt;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #0284c7;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .cover-title {
+      font-size: 32pt;
+      font-weight: 800;
+      line-height: 1.15;
+      color: #0f172a;
+      margin: 0 0 16px 0;
+      letter-spacing: -1px;
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      color: #475569;
+      font-weight: 400;
+      max-width: 600px;
+      line-height: 1.5;
+      margin-bottom: 40px;
+    }
+
+    .cover-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .cover-card-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cover-card-label {
+      font-size: 8pt;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .cover-card-value {
+      font-size: 10pt;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .cover-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      color: #94a3b8;
+      font-size: 8.5pt;
+    }
+
+    /* ─── STRUCTURE DU CONTENU ─── */
+    .content-section {
+      margin-bottom: 24px;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+
+    h1, h2, h3, h4 {
+      color: #0f172a;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    h1 {
+      font-size: 16pt;
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 6px;
+      margin-top: 28px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2 {
+      font-size: 12.5pt;
+      color: #0369a1;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      font-size: 11pt;
+      color: #1e293b;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    h4 {
+      font-size: 10pt;
+      color: #334155;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 12px;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    /* ─── TABLEAUX ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 9pt;
+      page-break-inside: avoid;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+
+    th {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* ─── CALLOUTS & CARDS ─── */
+    .callout {
+      border-left: 4px solid #0284c7;
+      background: #f0f9ff;
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      margin: 12px 0;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 4px;
+    }
+
+    .user-story-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #10b981;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      margin: 10px 0;
+      font-size: 9pt;
+      page-break-inside: avoid;
+    }
+
+    .user-story-title {
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 4px;
+    }
+
+    .criteria-box {
+      background: #ffffff;
+      border: 1px solid #d1fae5;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 6px;
+      color: #064e3b;
+      font-size: 8.5pt;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-primary { background: #e0f2fe; color: #0369a1; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+
+    /* ─── DIAGRAMMES SCHÉMATIQUES ─── */
+    .diagram-box {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 10px;
+      padding: 14px;
+      margin: 14px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      line-height: 1.4;
+      page-break-inside: avoid;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+    }
+
+    .flow-steps {
+      display: flex;
+      gap: 10px;
+      margin: 12px 0;
+      page-break-inside: avoid;
+    }
+
+    .flow-step {
+      flex: 1;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-top: 3px solid #0284c7;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .flow-step-num {
+      font-size: 8pt;
+      font-weight: 800;
+      color: #0284c7;
+      text-transform: uppercase;
+    }
+
+    .flow-step-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 2px 0;
+    }
+
+    .flow-step-desc {
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    .toc {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+
+    .toc-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 16px;
+      font-size: 9pt;
+    }
+
+    .toc-list li a {
+      color: #334155;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .toc-list li a:hover {
+      color: #0284c7;
+    }
+
+    .toc-num {
+      color: #0284c7;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE DE GARDE -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="cover-page">
+    <div class="cover-header">
+      <div class="cover-logo-wrapper">
+        <div class="cover-logo-box">
+          <img src="public/logo-blue.png" alt="CM Studio Logo">
+        </div>
+        <div class="cover-logo">CM <span>Studio</span></div>
+      </div>
+      <div class="cover-badge">Spécifications Officielles</div>
+    </div>
+
+    <div class="cover-body">
+      <div class="doc-type">Document d'Ingénierie & Produit</div>
+      <h1 class="cover-title" style="border:none; padding:0; margin-bottom:12px;">Cahier des Charges Fonctionnel & Technique</h1>
+      <div class="cover-subtitle">
+        Plateforme SaaS tout-en-un de création assistée par IA, planification multi-réseaux et réseau social collaboratif pour Community Managers.
+      </div>
+
+      <div class="cover-card">
+        <div class="cover-card-item">
+          <div class="cover-card-label">Version du document</div>
+          <div class="cover-card-value">1.0 (Validé pour Production)</div>
+        </div>
+        <div class="cover-card-item">
+          <div class="cover-card-label">Architecture Cible</div>
+          <div class="cover-card-value">Next.js 14 + Supabase + IA LLMs</div>
+        </div>
+        <div class="cover-card-item">
+          <div class="cover-card-label">Marché de Lancement Initial</div>
+          <div class="cover-card-value">Afrique (Go-to-Market) & Global</div>
+        </div>
+        <div class="cover-card-item">
+          <div class="cover-card-label">Différenciateur Clé</div>
+          <div class="cover-card-value">Prompt Engineering Natif par Réseau</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div>CM Studio SaaS &copy; 2026 — Confidentiel & Propriétaire</div>
+      <div>Direction Produit & Technique</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SOMMAIRE -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="toc">
+    <div class="toc-title">Table des Matières</div>
+    <ul class="toc-list">
+      <li><span class="toc-num">1.</span> Introduction & Contexte</li>
+      <li><span class="toc-num">2.</span> Objectifs du Produit</li>
+      <li><span class="toc-num">3.</span> Public Cible & Personas</li>
+      <li><span class="toc-num">4.</span> Périmètre Fonctionnel Détaillé</li>
+      <li><span class="toc-num">4.1</span> Génération de Contenu IA</li>
+      <li><span class="toc-num">4.2</span> Publication Multi-Plateforme</li>
+      <li><span class="toc-num">4.3</span> Fil Social Communautaire</li>
+      <li><span class="toc-num">4.4</span> Gestion Multi-Organisation</li>
+      <li><span class="toc-num">4.5</span> Sécurité Applicative & RLS</li>
+      <li><span class="toc-num">4.6</span> Onboarding & Profils</li>
+      <li><span class="toc-num">4.7</span> Tarification & Modèle Éco</li>
+      <li><span class="toc-num">5.</span> Exigences Non-Fonctionnelles</li>
+      <li><span class="toc-num">6.</span> Architecture Technique</li>
+      <li><span class="toc-num">7.</span> Contraintes Métier & Légales</li>
+      <li><span class="toc-num">8.</span> Hors Périmètre</li>
+      <li><span class="toc-num">9.</span> Roadmap & Priorisation</li>
+      <li><span class="toc-num">10.</span> Annexes & Modèle Données</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1 : INTRODUCTION & CONTEXTE -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section">
+    <h1>1. Introduction & Contexte</h1>
+    
+    <h2>1.1 Contexte du Projet</h2>
+    <p>
+      Dans un environnement digital ultra-concurrentiel, les <strong>Community Managers (CM)</strong>, agences et créateurs de contenu font face à une exigence de productivité sans précédent. La gestion de marques multiples, la nécessité d'adapter continuellement les formats aux algorithmes spécifiques et la fatigue créative constituent des freins majeurs à leur rentabilité.
+    </p>
+    <p>
+      <strong>CM Studio</strong> est une plateforme logicielle SaaS moderne alliant un moteur d'intelligence artificielle fondé sur du <em>véritable prompt engineering par réseau</em>, un planificateur social universel et un écosystème communautaire gamifié facilitant l'entraide entre pairs.
+    </p>
+
+    <h2>1.2 Problématique Résolue</h2>
+    <div class="callout">
+      <div class="callout-title">Le piège du "Repurposing" générique sur le marché</div>
+      Les solutions actuelles (telles que Predis.ai ou les wrappers ChatGPT génériques) se contentent de traduire ou reformuler un même texte brut sans adapter la structure narrative, les codes typographiques ou les contraintes d'affichage (ex. césure du hook mobile). CM Studio traite chaque réseau comme un canal de conversion distinct avec sa propre mécanique.
+    </div>
+
+    <h2>1.3 Positionnement Stratégique & Marché Cible</h2>
+    <ul>
+      <li><strong>Produit Global :</strong> Conception internationale (multi-devises, normes RGPD, multilingue).</li>
+      <li><strong>Marché Initial d'Expansion : L'Afrique.</strong> Lancement prioritaire sur le continent africain, profitant de la forte dynamique entrepreneuriale mobile, des besoins accrus en création locale et d'un marché mal servi par les solutions tarifaires occidentales.</li>
+      <li><strong>Architecture Multi-Tenant Native :</strong> Cloisonnement strict par organisation (`organizations` / `memberships`) permettant à une agence de gérer 10+ clients sans déconnexion.</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2 : OBJECTIFS DU PRODUIT -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section avoid-break">
+    <h1>2. Objectifs du Produit</h1>
+    
+    <h2>2.1 Objectifs Business</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Indicateur Clé (KPI)</th>
+          <th>Cible à 6 mois (Post-MVP)</th>
+          <th>Cible à 12 mois</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Utilisateurs Inscrits</strong></td>
+          <td>5 000 utilisateurs</td>
+          <td>25 000 utilisateurs</td>
+        </tr>
+        <tr>
+          <td><strong>Taux de Conversion (Free to Paid)</strong></td>
+          <td>4,5 %</td>
+          <td>7,0 %</td>
+        </tr>
+        <tr>
+          <td><strong>Revenu Récurrent Mensuel (MRR)</strong></td>
+          <td>10 000 $</td>
+          <td>65 000 $</td>
+        </tr>
+        <tr>
+          <td><strong>Volume de Posts Programmés</strong></td>
+          <td>50 000 posts / mois</td>
+          <td>350 000 posts / mois</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2.2 Objectifs Utilisateurs</h2>
+    <ul>
+      <li><strong>Gain de temps :</strong> Réduction de 70 % du temps d'idéation et de rédaction hebdomadaire.</li>
+      <li><strong>Qualité Copywriting :</strong> Optimisation de l'accroche (hook) pour maximiser le taux de lecture au-delà de la ligne de coupure mobile.</li>
+      <li><strong>Collaboration Fluide :</strong> Relecture et validation en direct entre CMs et clients au sein d'une même organisation.</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3 : PERSONAS -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section avoid-break">
+    <h1>3. Public Cible & Personas</h1>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Persona</th>
+          <th>Profil & Contexte</th>
+          <th>Besoins Majeurs</th>
+          <th>Pain Points Résolus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Sarah (26 ans)<br>CM Freelance</strong></td>
+          <td>Gère 5 clients distincts en solo. Travaille sur mobile et desktop.</td>
+          <td>Passer d'une identité de marque à l'autre en un clic, calendrier visuel simple.</td>
+          <td>Fin des abonnements multiples (Midjourney, ChatGPT, Buffer, Canva). Évite la page blanche.</td>
+        </tr>
+        <tr>
+          <td><strong>Marc (34 ans)<br>Lead Social Media Agence</strong></td>
+          <td>Supervise 4 CMs juniors dans une agence de 15 collaborateurs.</td>
+          <td>Gestion fine des rôles, sécurité des accès clients, relecture avant publication.</td>
+          <td>Cloisonnement étanche des marques, pas de risque de fuite de tokens ou d'erreurs de diffusion.</td>
+        </tr>
+        <tr>
+          <td><strong>Aïcha (31 ans)<br>Responsable Marketing PME</strong></td>
+          <td>Gère seule la communication d'une entreprise B2B/B2C en croissance.</td>
+          <td>Créer des posts percutants sans compétences avancées en copywriting.</td>
+          <td>Gain de crédibilité grâce aux frameworks de vente (AIDA, PAS) et aux visuels IA intégrés.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 4 : PÉRIMÈTRE FONCTIONNEL DÉTAILLÉ -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section">
+    <h1>4. Périmètre Fonctionnel Détaillé</h1>
+
+    <!-- 4.1 IA -->
+    <h2>4.1 Moteur de Génération de Contenu IA</h2>
+    <p>
+      Le moteur de CM Studio applique une approche séquentielle en 3 étapes garantissant un contrôle éditorial total :
+    </p>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">Étape 1</div>
+        <div class="flow-step-title">Génération d'Idées</div>
+        <div class="flow-step-desc">3 à 5 concepts avec angles et types de post adaptés aux piliers de marque</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">Étape 2</div>
+        <div class="flow-step-title">Brief Éditorial</div>
+        <div class="flow-step-desc">Structure argumentaire, problème ciblé, points clés et CTA à valider</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">Étape 3</div>
+        <div class="flow-step-title">Rédaction Finale</div>
+        <div class="flow-step-desc">Post calibré selon le ton et le réseau + Prompt d'image photographique</div>
+      </div>
+    </div>
+
+    <h3>A. Bibliothèque des 5 Tons de Rédaction</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Ton</th>
+          <th>Philosophie & Style</th>
+          <th>Règles d'Écriture Spécifiques</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Direct</strong></td>
+          <td>Cash, percutant, pointe l'erreur sans détour.</td>
+          <td>Accroche en 1-2 phrases, pas de fioriture, s'adresse au lecteur ("tu"/"vous").</td>
+        </tr>
+        <tr>
+          <td><strong>Inspirant</strong></td>
+          <td>Motivation, vision forte, dépassement de soi.</td>
+          <td>Vocabulaire orienté action, récit d'apprentissage, ouverture positive.</td>
+        </tr>
+        <tr>
+          <td><strong>Émotionnel</strong></td>
+          <td>Vulnérabilité sincère, humanité, empathie.</td>
+          <td>Partage de doutes et de vérités vécues, invite au partage d'expérience.</td>
+        </tr>
+        <tr>
+          <td><strong>Humoristique</strong></td>
+          <td>Autodérision, métaphores du quotidien, légèreté.</td>
+          <td>Situations décalées, pas de sarcasme agressif, question finale souriante.</td>
+        </tr>
+        <tr>
+          <td><strong>Professionnel</strong></td>
+          <td>Expertise, autorité, clarté pédagogique.</td>
+          <td>Données vérifiées, étapes méthodiques (1., 2., 3.), appel à l'action sobre.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>B. Formats & Copywriting par Plateforme</h3>
+    <ul>
+      <li><strong>LinkedIn :</strong> Typologies dédiées (<em>Storytelling, Analyse, Conseil/How-To, Liste, Profil</em>). Hook strict < 200 car. Pas de markdown lourd non supporté.</li>
+      <li><strong>Facebook :</strong> Intégration systématique des frameworks <strong>AIDA</strong>, <strong>PAS</strong> ou <strong>BAB</strong>. Contrainte majeure : première phrase sous les 125 caractères (césure mobile "Voir plus").</li>
+      <li><strong>Génération d'Images IA :</strong> Production d'un prompt photographique optimisé en anglais et rendu d'image haute définition stocké sur Supabase Storage.</li>
+      <li><strong>Grounding Web Temps Réel :</strong> Recherche d'actualités et données chiffrées intégrées uniquement si le type de post l'exige (analyses de marché, tendances).</li>
+    </ul>
+
+    <div class="user-story-card">
+      <div class="user-story-title">User Story 1.1 — Génération Séquentielle</div>
+      <p><em>En tant que CM, je veux générer des idées d'angles avant de rédiger le post final afin de choisir la direction la plus pertinente pour mon audience.</em></p>
+      <div class="criteria-box">
+        <strong>Critères d'acceptation :</strong><br>
+        • L'étape 1 retourne au moins 3 angles distincts avec leur type de post.<br>
+        • La sélection d'un angle génère un brief modifiable.<br>
+        • La validation du brief déclenche la rédaction finale en moins de 6 secondes.
+      </div>
+    </div>
+
+    <!-- 4.2 PUBLICATION -->
+    <h2>4.2 Planification & Publication Multi-Plateforme</h2>
+    <ul>
+      <li><strong>Connexions Réseaux :</strong> OAuth 2.0 direct Meta (Facebook Pages, Instagram Business), LinkedIn API v2 et relais Zernio / Ayrshare.</li>
+      <li><strong>Calendrier Interactif :</strong> Vues mois/semaine/jour, drag-and-drop des posts, recalcul instantané des dates.</li>
+      <li><strong>Statuts de Post :</strong> `draft`, `scheduled`, `published`, `partial`, `failed`, `deleted`.</li>
+      <li><strong>Tableau de Bord Analytics :</strong> Suivi des likes, commentaires, partages, portée (reach) et taux d'engagement.</li>
+    </ul>
+
+    <!-- 4.3 COMMUNAUTÉ -->
+    <h2>4.3 Fil Social Communautaire & Réseau Interne</h2>
+    <ul>
+      <li><strong>Feed Communautaire :</strong> Publications de membres, likes, commentaires imbriqués (threads), partages et mise en favoris (bookmarks visibles sur profil privé).</li>
+      <li><strong>Relations Sociales :</strong> Follow, détection de <em>Mutual Follow</em>, profils publics avec liens externes cliquables.</li>
+      <li><strong>Messagerie Temps Réel :</strong> Conversations 1-to-1 via Supabase Realtime avec gestion du statut lu/non-lu.</li>
+      <li><strong>Notifications Agrégées :</strong> Regroupement intelligent (ex. <em>"Sarah, Marc et 3 autres personnes ont aimé votre post"</em>).</li>
+      <li><strong>Gamification & Groupes par Seuils d'Abonnés :</strong>
+        <ul>
+          <li><strong>Bronze / Initiés :</strong> Débloqué dès 10 followers.</li>
+          <li><strong>Argent / Experts :</strong> Débloqué dès 50 followers.</li>
+          <li><strong>Or / Leaders :</strong> Débloqué dès 100 followers.</li>
+          <li><strong>Diamant / Légendes :</strong> Débloqué dès 500 followers.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <!-- 4.4 MULTI-ORG -->
+    <h2>4.4 Gestion Multi-Organisation & Collaboration</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rôle</th>
+          <th>Gestion Contenu (Posts)</th>
+          <th>Comptes Sociaux</th>
+          <th>Administration & Facturation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-danger">Owner</span></td>
+          <td>Création, Édition, Suppression, Publication</td>
+          <td>Connexion & Révocation totale</td>
+          <td>Gestion membres, Rôles, Stripe</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-primary">CM (Éditeur)</span></td>
+          <td>Création, Édition, Programmation</td>
+          <td>Utilisation des comptes liés</td>
+          <td>Aucun accès administratif</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-warning">Viewer (Client)</span></td>
+          <td>Lecture seule & Commentaires de révision</td>
+          <td>Consultation uniquement</td>
+          <td>Aucun accès administratif</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 4.5 SÉCURITÉ -->
+    <h2>4.5 Sécurité Applicative & Robustesse des Flux</h2>
+    <div class="callout">
+      <div class="callout-title">Règles d'Ingénierie & Politiques RLS</div>
+      1. <strong>Row Level Security (RLS) :</strong> Politiques actives sur 100% des tables avec vérification d'appartenance à l'organisation via <code>is_org_member(org_id)</code>.<br>
+      2. <strong>Validation Stricte :</strong> Schémas Zod appliqués sur chaque route API Next.js.<br>
+      3. <strong>Résilience IA :</strong> Timeout à 25s et retry exponentiel (3 tentatives) sur les pannes de fournisseurs LLM.<br>
+      4. <strong>Signatures Webhooks :</strong> Validation HMAC-SHA256 sur les webhooks Meta, Stripe et Zernio.<br>
+      5. <strong>Sécurisation PostgreSQL :</strong> Définition explicite de <code>SET search_path = public</code> sur toutes les fonctions <code>SECURITY DEFINER</code>.
+    </div>
+
+    <!-- 4.6 ONBOARDING -->
+    <h2>4.6 Onboarding & Compte Utilisateur</h2>
+    <p>Parcours d'accueil guidé en 3 étapes : configuration de l'organisation et secteur, définition des piliers de marque et tonalité par défaut, test immédiat du générateur ou connexion d'un compte.</p>
+
+    <!-- 4.7 TARIFICATION -->
+    <h2>4.7 Tarification & Modèle Économique</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Caractéristiques</th>
+          <th>Plan Gratuit (Free)</th>
+          <th>Plan Premium (Pro)</th>
+          <th>Plan Business (Agence)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tarif Mensuel</strong></td>
+          <td>0 $ / mois</td>
+          <td>29 $ / mois</td>
+          <td>79 $ / mois</td>
+        </tr>
+        <tr>
+          <td><strong>Organisations / Marques</strong></td>
+          <td>1 organisation</td>
+          <td>Jusqu'à 3 organisations</td>
+          <td>10 organisations</td>
+        </tr>
+        <tr>
+          <td><strong>Générations Texte IA</strong></td>
+          <td>10 / semaine</td>
+          <td>100 / semaine</td>
+          <td>Illimitées</td>
+        </tr>
+        <tr>
+          <td><strong>Générations d'Images</strong></td>
+          <td>3 / semaine</td>
+          <td>30 / semaine</td>
+          <td>150 / semaine</td>
+        </tr>
+        <tr>
+          <td><strong>Comptes Sociaux Liés</strong></td>
+          <td>2 comptes</td>
+          <td>Jusqu'à 10 comptes</td>
+          <td>Illimités</td>
+        </tr>
+        <tr>
+          <td><strong>Membres par Organisation</strong></td>
+          <td>1 utilisateur</td>
+          <td>2 membres / org</td>
+          <td>Illimités</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 5 & 6 : NON-FONCTIONNEL & ARCHITECTURE -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section avoid-break">
+    <h1>5. Exigences Non-Fonctionnelles & Architecture</h1>
+    
+    <h2>5.1 Exigences Non-Fonctionnelles</h2>
+    <ul>
+      <li><strong>Performance :</strong> Score LCP < 1,8 s, FID < 100 ms. Streaming UI des tokens IA pour un ressenti instantané (< 800 ms).</li>
+      <li><strong>Sécurité :</strong> Chiffrement TLS 1.3 en transit, AES-256 au repos, conformité aux principes du RGPD.</li>
+      <li><strong>Design Compact & Dense :</strong> Interface type SaaS B2B moderne respectant des arrondis compris entre 10px et 14px (<code>rounded-xl</code>) et des espacements denses (<code>gap-3</code> / <code>gap-4</code>, paddings <code>p-4</code> / <code>p-5</code>).</li>
+    </ul>
+
+    <h2>6.1 Vue d'Ensemble de l'Architecture</h2>
+    <div class="diagram-box">
+┌────────────────────────────────────────────────────────────────────────┐
+│               FRONTEND & BACKEND : Next.js 14 (App Router)             │
+│        React Server Components + Client Components Tailwind CSS        │
+└───────────────────┬────────────────────────────────┬───────────────────┘
+                    │                                │
+    [Requêtes SQL / RPC / Realtime]            [Appels HTTPS REST / APIs]
+                    ▼                                ▼
+┌────────────────────────────────────────┐  ┌────────────────────────────┐
+│            SUPABASE CLOUD              │  │    SERVICES & APIS TIERS   │
+├────────────────────────────────────────┤  ├────────────────────────────┤
+│ • PostgreSQL 15+ (Sécurité RLS active) │  │ • LLMs (Claude / GPT-4o)   │
+│ • Supabase Auth (Sessions JWT)         │  │ • DALL-E / Flux (Images)   │
+│ • Supabase Realtime (Messagerie/Feed)  │  │ • Meta Graph API & LinkedIn│
+│ • Supabase Storage (Médias & Images)   │  │ • Zernio / Ayrshare Relay  │
+│ • Fonctions & Triggers de base         │  │ • Stripe (Abonnements)     │
+└────────────────────────────────────────┘  └────────────────────────────┘
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 7, 8, 9 : CONTRAINTES, HORS PÉRIMÈTRE & ROADMAP -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section avoid-break">
+    <h1>7. Contraintes, Hors Périmètre & Roadmap</h1>
+
+    <h2>7.1 Contraintes & 8.1 Hors Périmètre</h2>
+    <ul>
+      <li><strong>Contraintes :</strong> Respect strict des quotas d'API Meta/LinkedIn et rafraîchissement transparent des jetons OAuth expirés.</li>
+      <li><strong>Hors Périmètre v1.0 :</strong> Pas de studio de montage vidéo multi-pistes lourd (reels/vidéos existantes supportées en téléversement direct) ; pas de CRM omnicanal pour répondre aux DMs externes ; pas d'achat de publicités Ads.</li>
+    </ul>
+
+    <h2>9.1 Roadmap Produit (Méthode MoSCoW)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Jalons Fonctionnels Majeurs</th>
+          <th>Priorité MoSCoW</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Phase 1 : MVP</strong><br>(Mois 1-2)</td>
+          <td>Moteur IA 5 tons, Tunnel 3 étapes, Multi-Org + RLS, Connexion Meta/LinkedIn, Calendrier interactif, Inscription.</td>
+          <td><span class="badge badge-danger">Must Have</span></td>
+        </tr>
+        <tr>
+          <td><strong>Phase 2 : V1.5</strong><br>(Mois 3-4)</td>
+          <td>Feed communautaire, Messagerie Realtime, Notifications agrégées, Gamification (seuils abonnés), Intégration Stripe.</td>
+          <td><span class="badge badge-primary">Should Have</span></td>
+        </tr>
+        <tr>
+          <td><strong>Phase 3 : V2.0</strong><br>(Mois 5+)</td>
+          <td>Recommandations d'heures par IA, export de rapports PDF d'agence, intégrations TikTok & YouTube Shorts directes.</td>
+          <td><span class="badge badge-warning">Could Have</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 10 : ANNEXES & RECOMMANDATIONS -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="content-section avoid-break">
+    <h1>10. Annexes & Recommandations</h1>
+
+    <h2>10.1 Schéma Relationnel des Données (Tables Clés)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th>Colonnes Clés</th>
+          <th>Rôle & Relations</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>organizations</code></td>
+          <td>id, name, plan, stripe_customer_id</td>
+          <td>Entité racine des marques et abonnements.</td>
+        </tr>
+        <tr>
+          <td><code>memberships</code></td>
+          <td>id, organization_id, user_id, role</td>
+          <td>Liaison utilisateur-organisation (owner, cm, viewer).</td>
+        </tr>
+        <tr>
+          <td><code>posts</code></td>
+          <td>id, organization_id, content, media_urls, status, scheduled_at</td>
+          <td>Publications créées et programmées.</td>
+        </tr>
+        <tr>
+          <td><code>groups</code></td>
+          <td>id, name, min_followers_required</td>
+          <td>Groupes communautaires conditionnés par gamification.</td>
+        </tr>
+        <tr>
+          <td><code>notifications</code></td>
+          <td>id, user_id, type, contributors, read</td>
+          <td>Notifications internes avec agrégation JSONB.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>10.2 Recommandations Stratégiques</h2>
+    <div class="callout">
+      <strong>1. Passerelles de Paiement Locales en Afrique :</strong> Compléter Stripe par des passerelles fintech comme Paystack ou Wave/Mobile Money pour maximiser l'acquisition lors du lancement.<br>
+      <strong>2. Économie d'Inférence IA :</strong> Implémenter la mise en cache de prompts des personas de marques pour diminuer de 50 % les coûts d'appels LLM.<br>
+      <strong>3. Mode PWA Déconnecté :</strong> Permettre la consultation du calendrier hors-ligne sur mobile pour pallier les instabilités de connexion.
+    </div>
+  </div>
+
+</body>
+</html>
