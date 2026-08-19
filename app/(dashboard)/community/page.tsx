@@ -13,8 +13,8 @@ export default function CommunityRedirectPage() {
       router.replace('/groups' + window.location.hash)
       return
     }
-    // Sinon on va vers /home en préservant le hash (ex: #comment_...)
-    router.replace('/home' + window.location.hash)
+    // Sinon on va vers /workspace en préservant le hash (ex: #comment_...)
+    router.replace('/workspace' + window.location.hash)
   }, [router, searchParams])
 
   return null

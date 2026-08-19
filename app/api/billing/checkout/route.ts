@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     mode: 'subscription',
     customer: customerId,
     line_items: [{ price: PLANS[plan as keyof typeof PLANS].priceId, quantity: 1 }],
-    success_url: `${appUrl}/home?upgrade=success`,
+    success_url: `${appUrl}/workspace?upgrade=success`,
     cancel_url: `${appUrl}/settings?upgrade=canceled`,
     metadata: { orgId },
     subscription_data: { metadata: { orgId } },

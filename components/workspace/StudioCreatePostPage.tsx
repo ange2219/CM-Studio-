@@ -108,7 +108,7 @@ export function StudioCreatePostPage({ darkMode: propDarkMode }: { darkMode?: bo
 
     setSavingPostId(null);
     alert('Publication enregistrée et publiée avec succès !');
-    router.push('/home');
+    router.push('/workspace');
   };
 
   return (

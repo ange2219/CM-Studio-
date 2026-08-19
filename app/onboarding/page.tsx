@@ -309,7 +309,7 @@ export default function OnboardingPage() {
         const errData = await res.json()
         throw new Error(errData.error || 'Erreur lors de la sauvegarde')
       }
-      router.push('/home')
+      router.push('/workspace')
     } catch (err: any) {
       toast(err.message || 'Erreur lors de la sauvegarde', 'error')
       setSaving(false)

@@ -29,7 +29,7 @@ export default function RegisterPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/home')
+      router.push('/workspace')
     }
   }
 

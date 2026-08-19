@@ -9,7 +9,7 @@ import { useUser } from '@/components/context/UserContext';
 
 export function SidebarLeft({
   darkMode,
-  activeView = 'home',
+  activeView = 'workspace',
   onSelectView
 }: {
   darkMode: boolean;
@@ -78,11 +78,9 @@ export function SidebarLeft({
   }, [user, supabase]);
 
   const navItems = [
-    { id: 'home', label: 'Accueil', icon: Home, href: '/home' },
     { id: 'workspace', label: 'Workspace', icon: LayoutGrid, href: '/workspace' },
     { id: 'messages', label: 'Messagerie', icon: MessageSquare, badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : null, href: '/messages' },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotifsCount > 0 ? String(unreadNotifsCount) : null, href: '/notifications' },
-    { id: 'members', label: 'Réseau', icon: Users, href: '/members' },
     { id: 'settings', label: 'Paramètres', icon: Settings, href: '/settings' },
   ];
 

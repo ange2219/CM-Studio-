@@ -20,14 +20,14 @@ function DashboardShellContent({
   const pathname = usePathname()
 
   const getActiveView = () => {
-    if (!pathname) return 'home'
-    if (pathname.startsWith('/home') || pathname === '/') return 'home'
-    if (pathname.startsWith('/workspace')) return 'workspace'
+    if (!pathname) return 'workspace'
+    if (pathname.startsWith('/home')) return 'home'
+    if (pathname.startsWith('/workspace') || pathname === '/') return 'workspace'
     if (pathname.startsWith('/messages')) return 'messages'
     if (pathname.startsWith('/notifications')) return 'notifications'
     if (pathname.startsWith('/members') || pathname.startsWith('/network')) return 'members'
     if (pathname.startsWith('/settings')) return 'settings'
-    return 'home'
+    return 'workspace'
   }
 
   return (
@@ -59,35 +59,11 @@ function DashboardShellContent({
       <nav className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-[400px] h-[64px] rounded-full shadow-2xl flex items-center justify-around px-4 border md:hidden transition-all duration-300 ${
         darkMode ? 'bg-slate-950/40 border-white/15 backdrop-blur-xl shadow-black/40' : 'bg-white/40 border-black/5 backdrop-blur-xl shadow-slate-200/60'
       }`}>
-        {/* 1. Accueil */}
-        <Link 
-          href="/home" 
-          className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
-            getActiveView() === 'home' 
-              ? darkMode ? 'text-[#38BDF8] bg-slate-800/40' : 'text-[#1677FF] bg-slate-100'
-              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <Home className="w-5.5 h-5.5" />
-        </Link>
-
-        {/* 2. Réseau */}
-        <Link 
-          href="/members" 
-          className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
-            pathname && pathname.startsWith('/members')
-              ? darkMode ? 'text-[#38BDF8] bg-slate-800/40' : 'text-[#1677FF] bg-slate-100'
-              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <Users className="w-5.5 h-5.5" />
-        </Link>
-
-        {/* 3. Workspace (Bouton central) */}
+        {/* 1. Workspace (Bouton central) */}
         <Link 
           href="/workspace" 
           className={`flex items-center justify-center w-11 h-11 rounded-full shadow-lg transition-transform active:scale-95 ${
-            pathname && pathname.startsWith('/workspace')
+            pathname && (pathname.startsWith('/workspace') || pathname === '/')
               ? darkMode 
                 ? 'bg-[#38BDF8] text-slate-950 hover:bg-[#0EA5E9]' 
                 : 'bg-[#1677FF] text-white hover:bg-[#1266DF]'
@@ -99,7 +75,7 @@ function DashboardShellContent({
           <LayoutGrid className="w-5 h-5 stroke-[2.5]" />
         </Link>
 
-        {/* 4. Messages */}
+        {/* 2. Messages */}
         <Link 
           href="/messages" 
           className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
@@ -111,7 +87,7 @@ function DashboardShellContent({
           <MessageSquare className="w-5.5 h-5.5" />
         </Link>
 
-        {/* 5. Profil */}
+        {/* 3. Profil */}
         <Link 
           href={user?.username ? `/profile/${user.username}` : `/profile/${user?.id || ''}`}
           className={`flex items-center justify-center p-0.5 rounded-full border-2 transition-all ${

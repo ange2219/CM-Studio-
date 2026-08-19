@@ -26,7 +26,7 @@ export default function PopupDone() {
         window.opener.postMessage({ type: 'GOOGLE_AUTH_SUCCESS', isNew }, window.location.origin)
         window.close()
       } else {
-        window.location.href = isNew ? '/onboarding' : '/home'
+        window.location.href = isNew ? '/onboarding' : '/workspace'
       }
     }
     handle()

@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && (path === '/login' || path === '/register')) {
-    return redirect('/home')
+    return redirect('/workspace')
   }
 
   // Vérification onboarding & active_org_id — utilise des cookies pour éviter des DB queries répétées

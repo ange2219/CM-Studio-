@@ -88,7 +88,7 @@ export function Header({
     <header className={`h-[64px] w-full px-4 md:px-8 flex items-center justify-between border-b transition-colors duration-300 ${darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90'} shrink-0 z-20 shadow-xs relative`}>
       {/* Left: Logo CM Studio avec Plume */}
       <div 
-        onClick={() => onSelectView && onSelectView('home')}
+        onClick={() => onSelectView && onSelectView('workspace')}
         className="flex items-center gap-2.5 cursor-pointer group select-none"
       >
         <FeatherLogo darkMode={darkMode} />

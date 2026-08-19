@@ -12,7 +12,7 @@ export default async function Home() {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
-      redirect('/home')
+      redirect('/workspace')
     }
   } catch {
     // If Supabase is unreachable or not configured, show landing page
