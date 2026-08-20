@@ -77,7 +77,7 @@ export function FaqCtaCompact() {
       try {
         SplitText.create(ctaTitleRef.current, {
           type: 'chars',
-          onSplit(self: { chars: HTMLElement[] }) {
+          onSplit(self: any) {
             gsap.set(self.chars, { opacity: 0.15 })
             gsap.to(self.chars, {
               opacity: 1,

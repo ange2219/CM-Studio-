@@ -1298,17 +1298,20 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             </button>
           </div>
 
-          {/* Idées */}
+          {/* Média */}
           <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Sparkles size={18} />
+                <ImageIcon size={18} />
+              </div>
+              <div onClick={() => router.push('/workspace/media')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid var(--b1)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+                <Plus size={12} />
               </div>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Inspiration</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Idées de contenu tendance pour vous.</p>
-            <button onClick={() => toast('Inspiration disponible bientôt !', 'info')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-              Explorer <ArrowRight size={12} />
+            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Média</h3>
+            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Gérez vos images, vidéos et ressources.</p>
+            <button onClick={() => router.push('/workspace/media')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
+              Gérer <ArrowRight size={12} />
             </button>
           </div>
         </div>
