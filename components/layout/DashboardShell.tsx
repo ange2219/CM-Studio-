@@ -21,6 +21,7 @@ function DashboardShellContent({
 
   const getActiveView = () => {
     if (!pathname) return 'workspace'
+    if (pathname.startsWith('/community')) return 'community'
     if (pathname.startsWith('/home')) return 'home'
     if (pathname.startsWith('/workspace') || pathname === '/') return 'workspace'
     if (pathname.startsWith('/messages')) return 'messages'
@@ -75,7 +76,20 @@ function DashboardShellContent({
           <LayoutGrid className="w-5 h-5 stroke-[2.5]" />
         </Link>
 
-        {/* 2. Messages */}
+        {/* 2. Communauté */}
+        <Link 
+          href="/community/general" 
+          className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
+            getActiveView() === 'community' 
+              ? darkMode ? 'text-[#38BDF8] bg-slate-800/40' : 'text-[#1677FF] bg-slate-100'
+              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+          }`}
+          title="Communauté"
+        >
+          <Users className="w-5.5 h-5.5" />
+        </Link>
+
+        {/* 3. Messages */}
         <Link 
           href="/messages" 
           className={`flex items-center justify-center p-2.5 rounded-full transition-colors ${
@@ -83,11 +97,12 @@ function DashboardShellContent({
               ? darkMode ? 'text-[#38BDF8] bg-slate-800/40' : 'text-[#1677FF] bg-slate-100'
               : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
           }`}
+          title="Messagerie"
         >
           <MessageSquare className="w-5.5 h-5.5" />
         </Link>
 
-        {/* 3. Profil */}
+        {/* 4. Profil */}
         <Link 
           href={user?.username ? `/profile/${user.username}` : `/profile/${user?.id || ''}`}
           className={`flex items-center justify-center p-0.5 rounded-full border-2 transition-all ${
@@ -95,6 +110,7 @@ function DashboardShellContent({
               ? darkMode ? 'border-[#38BDF8] scale-105' : 'border-[#1677FF] scale-105'
               : 'border-transparent hover:scale-105'
           }`}
+          title="Mon profil"
         >
           <UserAvatar avatarUrl={user?.avatar_url} size={28} />
         </Link>

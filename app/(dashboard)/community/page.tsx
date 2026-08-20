@@ -8,13 +8,11 @@ export default function CommunityRedirectPage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Si c'est pour les groupes, on va vers /groups
     if (searchParams.get('tab') === 'groups') {
-      router.replace('/groups' + window.location.hash)
+      router.replace('/community/membres' + window.location.hash)
       return
     }
-    // Sinon on va vers /workspace en préservant le hash (ex: #comment_...)
-    router.replace('/workspace' + window.location.hash)
+    router.replace('/community/general' + window.location.hash)
   }, [router, searchParams])
 
   return null

@@ -79,6 +79,7 @@ export function SidebarLeft({
 
   const navItems = [
     { id: 'workspace', label: 'Workspace', icon: LayoutGrid, href: '/workspace' },
+    { id: 'community', label: 'Communauté', icon: Users, href: '/community/general' },
     { id: 'messages', label: 'Messagerie', icon: MessageSquare, badge: unreadMessagesCount > 0 ? String(unreadMessagesCount) : null, href: '/messages' },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotifsCount > 0 ? String(unreadNotifsCount) : null, href: '/notifications' },
     { id: 'settings', label: 'Paramètres', icon: Settings, href: '/settings' },

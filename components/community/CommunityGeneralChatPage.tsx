@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Send, 
@@ -65,7 +65,7 @@ export default function CommunityGeneralChatPage() {
   const router = useRouter()
   const { user } = useUser()
   const { toast } = useToast()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputText, setInputText] = useState('')
@@ -78,6 +78,12 @@ export default function CommunityGeneralChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const isFirstLoadRef = useRef(true)
+  const userRef = useRef(user)
+
+  // Toujours garder la dernière version de user accessible sans re-déclencher le useEffect du Realtime
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
 
   // Auto-scroll to bottom helper
   const scrollToBottom = useCallback((smooth = true) => {
@@ -186,20 +192,15 @@ export default function CommunityGeneralChatPage() {
       }, async (payload) => {
         const newMsgRaw = payload.new as any
 
-        // Check if message already exists locally (e.g. from optimistic insert)
-        setMessages(prev => {
-          if (prev.some(m => m.id === newMsgRaw.id)) return prev
-          return prev
-        })
-
         // Fetch sender profile info
         let senderData: any = null
-        if (user && newMsgRaw.user_id === user.id) {
+        const currentUser = userRef.current
+        if (currentUser && newMsgRaw.user_id === currentUser.id) {
           senderData = {
-            id: user.id,
-            full_name: (user as any).full_name || (user as any).user_metadata?.full_name || 'Moi',
-            username: (user as any).username || (user as any).user_metadata?.username || null,
-            avatar_url: (user as any).avatar_url || (user as any).user_metadata?.avatar_url || null,
+            id: currentUser.id,
+            full_name: (currentUser as any).full_name || (currentUser as any).user_metadata?.full_name || 'Moi',
+            username: (currentUser as any).username || (currentUser as any).user_metadata?.username || null,
+            avatar_url: (currentUser as any).avatar_url || (currentUser as any).user_metadata?.avatar_url || null,
           }
         } else {
           const { data: profile } = await supabase
@@ -238,7 +239,7 @@ export default function CommunityGeneralChatPage() {
     return () => {
       supabase.removeChannel(chatChannel)
     }
-  }, [fetchMessages, supabase, user, scrollToBottom])
+  }, [supabase, fetchMessages, scrollToBottom])
 
   // 4. Send Message
   const handleSendMessage = async (e?: React.FormEvent) => {
@@ -316,8 +317,7 @@ export default function CommunityGeneralChatPage() {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: 'calc(100vh - 120px)',
-      maxHeight: '900px',
+      height: '100%',
       background: 'var(--card)',
       border: '1px solid var(--b1)',
       borderRadius: '12px',

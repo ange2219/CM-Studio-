@@ -7,9 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/context/UserContext';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
-export default function MembersPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
-  const { darkMode: ctxDarkMode } = useTheme();
-  const darkMode = propDarkMode ?? ctxDarkMode;
+export default function MembersPage() {
+  const { darkMode } = useTheme();
   const { user } = useUser();
   const supabase = createClient();
 

@@ -64,9 +64,8 @@ function formatLastMessageTime(dateStr: string) {
   return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
 }
 
-export default function MessagesPage({ darkMode: propDarkMode }: { darkMode?: boolean }) {
-  const { darkMode: ctxDarkMode } = useTheme();
-  const darkMode = propDarkMode ?? ctxDarkMode;
+export default function MessagesPage() {
+  const { darkMode } = useTheme();
   const { user } = useUser();
   const supabase = createClient();
 
