@@ -151,32 +151,112 @@ export function Header({
 
 
 
-        {/* User Profile Button - Desktop ONLY (hidden on mobile) */}
-        <div className="relative hidden md:block" ref={menuRef}>
-          <Link
-            href={user?.username ? `/profile/${user.username}` : `/profile/${user?.id || 'me'}`}
-            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-[24px] bg-transparent border border-transparent transition-all duration-200 ease-in-out cursor-pointer text-decoration-none ${darkMode
-                ? 'hover:bg-slate-700/80 hover:border-slate-600/50 text-white'
-                : 'hover:bg-slate-100 hover:border-slate-200/70 text-[#1E293B]'
-              }`}
+        {/* User Profile Dropdown Button */}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(prev => !prev)}
+            aria-expanded={isMenuOpen}
+            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-[12px] transition-all duration-150 cursor-pointer border select-none ${
+              isMenuOpen
+                ? darkMode
+                  ? 'bg-slate-800 border-slate-700 text-white'
+                  : 'bg-slate-100 border-slate-200 text-[#0F172A]'
+                : darkMode
+                  ? 'bg-transparent border-transparent hover:bg-slate-800/60 text-slate-200'
+                  : 'bg-transparent border-transparent hover:bg-slate-100/80 text-slate-700'
+            }`}
           >
             {/* User Avatar */}
             <UserAvatar
               avatarUrl={user?.avatar_url}
-              size={36}
+              size={34}
               className="ring-2 ring-[#1677FF] ring-offset-1 shrink-0"
             />
 
-            {/* User Name in Bold with Active Organization underneath */}
-            <div className="flex flex-col text-left leading-tight hidden sm:flex">
-              <span className="text-[14.5px] font-bold truncate max-w-[160px]">
+            {/* User Name in Bold with Email underneath */}
+            <div className="flex flex-col text-left leading-tight hidden md:flex">
+              <span className="text-[13.5px] font-bold truncate max-w-[140px]">
                 {displayName}
               </span>
-              <span className={`text-[11.5px] font-normal truncate max-w-[160px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              <span className={`text-[11px] font-normal truncate max-w-[140px] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 {displayEmail}
               </span>
             </div>
-          </Link>
+
+            <ChevronDown className={`w-4 h-4 transition-transform duration-200 hidden sm:block ${isMenuOpen ? 'rotate-180 text-[#1677FF]' : 'text-slate-400'}`} />
+          </button>
+
+          {/* Context Dropdown Menu */}
+          {isMenuOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                width: '240px',
+                borderRadius: '12px',
+                zIndex: 50,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+              }}
+              className={`p-1.5 border animate-in fade-in zoom-in-95 duration-150 ${
+                darkMode
+                  ? 'bg-[#1E293B] border-slate-700/80 text-slate-100'
+                  : 'bg-white border-slate-200 text-slate-800'
+              }`}
+            >
+              {/* User Header in Menu */}
+              <div className={`px-3 py-2.5 rounded-lg mb-1 ${darkMode ? 'bg-slate-800/60' : 'bg-slate-50'}`}>
+                <p className="text-[13px] font-bold truncate m-0 text-[var(--t1)]">
+                  {displayName}
+                </p>
+                <p className={`text-[11px] truncate m-0 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {displayEmail}
+                </p>
+              </div>
+
+              {/* Menu Links */}
+              <div className="flex flex-col gap-0.5">
+                <Link
+                  href={user?.username ? `/profile/${user.username}` : `/profile/${user?.id || 'me'}`}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors text-decoration-none ${
+                    darkMode
+                      ? 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <User className="w-4 h-4 text-slate-400" />
+                  <span>Mon Profil</span>
+                </Link>
+
+                <Link
+                  href="/settings"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors text-decoration-none ${
+                    darkMode
+                      ? 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 text-slate-400" />
+                  <span>Paramètres</span>
+                </Link>
+
+                <div className={`my-1 border-t ${darkMode ? 'border-slate-700/80' : 'border-slate-200'}`} />
+
+                {/* Logout Button */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 dark:text-red-400 rounded-lg transition-colors text-left cursor-pointer border-none bg-transparent"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Se déconnecter</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
