@@ -274,7 +274,7 @@ Aucun texte avant ou après le JSON.`
 async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   if (!gemini) throw new Error('GEMINI_API_KEY manquante. Veuillez ajouter votre clé API Gemini dans .env.local')
   const prompt = buildPrompt(req, targetPlatform)
-  const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' })
+  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: { responseMimeType: 'application/json' }
@@ -347,7 +347,7 @@ async function generateWithGeminiSearch(req: GenerateRequest, targetPlatform: Pl
   const prompt = buildPrompt(req, targetPlatform)
   
   const model = gemini.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-1.5-flash',
     // @ts-expect-error - tools est supporté pour le grounding Google Search dans le SDK Node.js
     tools: [{ googleSearch: {} }],
   })
@@ -383,7 +383,7 @@ async function generateWithGeminiNoSearch(req: GenerateRequest, targetPlatform: 
   const prompt = buildPrompt(req, targetPlatform)
   
   const model = gemini.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-1.5-flash',
   })
   
   const result = await model.generateContent({
@@ -457,7 +457,7 @@ async function callSimpleAI(promptText: string, isJson: boolean = false): Promis
 
   // 4. Essayer Gemini
   if (gemini) {
-    const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: promptText }] }],
       generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
