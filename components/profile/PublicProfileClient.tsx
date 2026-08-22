@@ -235,7 +235,7 @@ export default function PublicProfileClient({
   const isOwnProfile = currentUserId === profile.id
   const badge = planBadge(profile.plan)
 
-  const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('saved')
   const [savedPosts, setSavedPosts] = useState<any[]>([])
   const [loadingSaved, setLoadingSaved] = useState(false)
 
@@ -465,20 +465,22 @@ export default function PublicProfileClient({
         </div>
 
         {/* Tabs horizontal list */}
-        <div className="flex border-b border-[var(--b1)] bg-[var(--bg)] sticky top-0 z-40 px-5 gap-6 mt-2 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab('posts')}
-            className={`pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold cursor-pointer transition-all ${
-              activeTab === 'posts' 
-                ? 'text-[var(--accent)] border-b-[2px] border-[var(--accent)]' 
-                : 'text-[var(--t3)] border-b-[2px] border-transparent'
-            }`}
-          >
-            Publications
-          </button>
-          
-          {isOwnProfile && (
+        {isOwnProfile && (
+          <div className="flex border-b border-[var(--b1)] bg-[var(--bg)] sticky top-0 z-40 px-5 gap-6 mt-2 overflow-x-auto no-scrollbar">
+            {/* Onglet Publications masqué
+            <button
+              type="button"
+              onClick={() => setActiveTab('posts')}
+              className={`pb-2.5 pt-2 bg-transparent border-none text-[13.5px] font-bold cursor-pointer transition-all ${
+                activeTab === 'posts' 
+                  ? 'text-[var(--accent)] border-b-[2px] border-[var(--accent)]' 
+                  : 'text-[var(--t3)] border-b-[2px] border-transparent'
+              }`}
+            >
+              Publications
+            </button>
+            */}
+            
             <button
               type="button"
               onClick={() => setActiveTab('saved')}
@@ -490,11 +492,12 @@ export default function PublicProfileClient({
             >
               Sauvegardés
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Tab contents wrapper for Mobile */}
         <div className="py-4 bg-transparent">
+          {/* Contenu Publications masqué
           {activeTab === 'posts' && (
             posts.length === 0 ? (
               <div className="border border-dashed border-[var(--b1)] rounded-xl p-8 mx-4 text-center bg-[var(--card)]/40">
@@ -536,6 +539,7 @@ export default function PublicProfileClient({
               </div>
             )
           )}
+          */}
 
           {activeTab === 'saved' && isOwnProfile && (
             loadingSaved ? (
@@ -731,29 +735,31 @@ export default function PublicProfileClient({
           )}
         </div>
 
-        {/* Posts Section */}
-        <div style={{ padding: '0 24px' }}>
-          {/* Navigation Tabs */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 24,
-            borderBottom: '1px solid var(--b1)',
-            marginBottom: 16,
-          }}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('posts')}
-              style={{
-                padding: '8px 0', background: 'none', border: 'none',
-                fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
-                color: activeTab === 'posts' ? 'var(--t1)' : 'var(--t3)',
-                borderBottom: activeTab === 'posts' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
-                transition: 'all .15s',
-              }}
-            >
-              Publications ({posts.length})
-            </button>
+        {/* Posts & Saved Section */}
+        {isOwnProfile && (
+          <div style={{ padding: '0 24px' }}>
+            {/* Navigation Tabs */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 24,
+              borderBottom: '1px solid var(--b1)',
+              marginBottom: 16,
+            }}>
+              {/* Onglet Publications masqué
+              <button
+                type="button"
+                onClick={() => setActiveTab('posts')}
+                style={{
+                  padding: '8px 0', background: 'none', border: 'none',
+                  fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
+                  color: activeTab === 'posts' ? 'var(--t1)' : 'var(--t3)',
+                  borderBottom: activeTab === 'posts' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+                  transition: 'all .15s',
+                }}
+              >
+                Publications ({posts.length})
+              </button>
+              */}
 
-            {isOwnProfile && (
               <button
                 type="button"
                 onClick={() => setActiveTab('saved')}
@@ -769,57 +775,57 @@ export default function PublicProfileClient({
                 <Bookmark size={15} />
                 Sauvegardés
               </button>
-            )}
-          </div>
+            </div>
 
-          {/* Tab Content: Publications */}
-          {activeTab === 'posts' && (
-            posts.length === 0 ? (
-              <div style={{
-                background: 'var(--card)', border: '1px dashed var(--b1)',
-                borderRadius: 14, padding: '3rem',
-                textAlign: 'center',
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: 10 }}>📝</div>
-                <div style={{ color: 'var(--t2)', fontSize: '0.9rem' }}>
-                  Aucune publication pour l'instant.
+            {/* Tab Content: Publications masqué
+            {activeTab === 'posts' && (
+              posts.length === 0 ? (
+                <div style={{
+                  background: 'var(--card)', border: '1px dashed var(--b1)',
+                  borderRadius: 14, padding: '3rem',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: '2rem', marginBottom: 10 }}>📝</div>
+                  <div style={{ color: 'var(--t2)', fontSize: '0.9rem' }}>
+                    Aucune publication pour l'instant.
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {posts.map(p => {
-                  const multiImages = p.community_post_images
-                    ? [...p.community_post_images]
-                        .sort((a, b) => (a.position || 0) - (b.position || 0))
-                        .map(img => img.image_url)
-                    : [];
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {posts.map(p => {
+                    const multiImages = p.community_post_images
+                      ? [...p.community_post_images]
+                          .sort((a, b) => (a.position || 0) - (b.position || 0))
+                          .map(img => img.image_url)
+                      : [];
 
-                  const images = multiImages.length > 0
-                    ? multiImages
-                    : (p.image_url ? [p.image_url] : []);
+                    const images = multiImages.length > 0
+                      ? multiImages
+                      : (p.image_url ? [p.image_url] : []);
 
-                  const formattedPost = {
-                    id: p.id,
-                    db_id: p.id,
-                    user_id: p.user_id,
-                    author: {
-                      name: profile.full_name || profile.username,
-                      avatar: profile.avatar_url,
-                      verified: profile.plan ? profile.plan.toLowerCase() !== 'free' : false,
-                    },
-                    time: getTimeAgo(p.created_at),
-                    content: p.content,
-                    images,
-                    likesCount: p.likes_count || 0,
-                    commentsCount: p.comments_count || 0,
-                    sharesCount: (p as any).shares_count || 0,
-                    initialLiked: likedIds.has(p.id),
-                  }
-                  return <PostCard key={p.id} post={formattedPost} />
-                })}
-              </div>
-            )
-          )}
+                    const formattedPost = {
+                      id: p.id,
+                      db_id: p.id,
+                      user_id: p.user_id,
+                      author: {
+                        name: profile.full_name || profile.username,
+                        avatar: profile.avatar_url,
+                        verified: profile.plan ? profile.plan.toLowerCase() !== 'free' : false,
+                      },
+                      time: getTimeAgo(p.created_at),
+                      content: p.content,
+                      images,
+                      likesCount: p.likes_count || 0,
+                      commentsCount: p.comments_count || 0,
+                      sharesCount: (p as any).shares_count || 0,
+                      initialLiked: likedIds.has(p.id),
+                    }
+                    return <PostCard key={p.id} post={formattedPost} />
+                  })}
+                </div>
+              )
+            )}
+            */}
 
           {/* Tab Content: Posts Sauvegardés */}
           {activeTab === 'saved' && isOwnProfile && (
@@ -849,7 +855,8 @@ export default function PublicProfileClient({
               </div>
             )
           )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Edit Profile Modal */}
