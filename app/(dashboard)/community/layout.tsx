@@ -28,10 +28,10 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
   ]
 
   return (
-    <div className="flex-1 w-full h-full flex flex-col gap-3 overflow-hidden select-none">
+    <div className="flex-1 w-full h-full flex flex-col gap-2 sm:gap-3 overflow-hidden select-none p-2 sm:p-0">
       
       {/* ── SOUS-NAVIGATION COMMUNAUTÉ ── */}
-      <div className={`shrink-0 flex items-center justify-between px-3.5 py-2 rounded-xl border transition-colors ${
+      <div className={`shrink-0 flex items-center justify-between px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border transition-colors ${
         darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90 shadow-card-subtle'
       }`}>
         <div className="flex items-center gap-2">

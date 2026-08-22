@@ -136,6 +136,7 @@ export default function CommunityGeneralChatPage() {
   const [onlineMembers, setOnlineMembers] = useState<OnlineMember[]>([])
   const [loadingMembers, setLoadingMembers] = useState(true)
   const [showMembersSidebar, setShowMembersSidebar] = useState(true)
+  const [showMobileMembersDrawer, setShowMobileMembersDrawer] = useState(false)
 
   // Modals & Popovers
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -663,34 +664,34 @@ export default function CommunityGeneralChatPage() {
       }`}>
         
         {/* ── EN-TÊTE DU SALON GÉNERAL ── */}
-        <div className={`px-4 py-3 border-b flex items-center justify-between shrink-0 transition-colors z-10 ${
+        <div className={`px-3 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between shrink-0 transition-colors z-10 ${
           darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100'
         }`}>
           {/* Titre & Statut */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-2">
-                <span className={`text-[17px] font-extrabold ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>#</span>
-                <h1 className={`text-[15.5px] font-extrabold tracking-tight truncate ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className={`text-[16px] sm:text-[17px] font-extrabold ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>#</span>
+                <h1 className={`text-[14.5px] sm:text-[15.5px] font-extrabold tracking-tight truncate ${darkMode ? 'text-white' : 'text-[#0F172A]'}`}>
                   Général
                 </h1>
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] sm:text-[11px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  En direct
+                  <span className="hidden xs:inline">En direct</span>
                 </span>
               </div>
-              <p className={`text-[11.5px] truncate mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className={`text-[11.5px] truncate mt-0.5 hidden sm:block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Le salon public des créateurs et community managers de CM Studio.
               </p>
             </div>
           </div>
 
           {/* Actions d'en-tête */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Épingles */}
             <button
               onClick={() => setShowPinnedModal(!showPinnedModal)}
-              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-lg border transition-colors cursor-pointer ${
                 showPinnedModal
                   ? darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'
                   : darkMode ? 'bg-[#0F172A] border-slate-700/80 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -700,23 +701,33 @@ export default function CommunityGeneralChatPage() {
               <Pin size={15} />
             </button>
 
-            {/* Toggle Membres connectés */}
+            {/* Toggle Membres connectés (Mobile: ouvre le Bottom Sheet, Desktop: toggle sidebar) */}
             <button
-              onClick={() => setShowMembersSidebar(!showMembersSidebar)}
-              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
-                showMembersSidebar
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                  setShowMobileMembersDrawer(true)
+                } else {
+                  setShowMembersSidebar(!showMembersSidebar)
+                }
+              }}
+              className={`p-1.5 sm:p-2 rounded-lg border transition-colors cursor-pointer relative ${
+                (showMembersSidebar || showMobileMembersDrawer)
                   ? darkMode ? 'bg-[#0F172A] border-slate-700/80 text-[#38BDF8]' : 'bg-blue-50 border-blue-200 text-[#1677FF]'
                   : darkMode ? 'bg-[#0F172A] border-slate-700/80 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title="Afficher/Masquer les membres en ligne"
+              title="Membres en ligne"
             >
               <Users size={15} />
+              {/* Badge compteur discret sur mobile */}
+              <span className="md:hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white text-[9.5px] font-black flex items-center justify-center">
+                {onlineMembers.length}
+              </span>
             </button>
 
             {/* Options */}
             <button
               onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-lg border transition-colors cursor-pointer ${
                 darkMode ? 'bg-[#0F172A] border-slate-700/80 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
               title="Options du salon"
@@ -731,14 +742,54 @@ export default function CommunityGeneralChatPage() {
                 loadOnlineMembers()
               }}
               disabled={loading}
-              className="px-3 py-1.5 rounded-lg bg-[#1677FF] hover:bg-[#1266DF] text-white font-bold text-[12.5px] flex items-center gap-1.5 transition-all shadow-sm cursor-pointer border-none ml-1 active:scale-95"
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-[#1677FF] hover:bg-[#1266DF] text-white font-bold text-[12.5px] flex items-center gap-1.5 transition-all shadow-sm cursor-pointer border-none ml-0.5 sm:ml-1 active:scale-95"
               title="Rafraîchir les messages"
             >
               <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-              <span>Actualiser</span>
+              <span className="hidden sm:inline">Actualiser</span>
             </button>
           </div>
         </div>
+
+        {/* ── POP-IN OPTIONS DU SALON ── */}
+        {showOptionsMenu && (
+          <div className={`p-3 border-b flex flex-col gap-2 text-[12px] animate-fadeIn transition-colors ${
+            darkMode ? 'bg-[#0F172A] border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-[12.5px]">Options du salon Général</span>
+              <button
+                onClick={() => setShowOptionsMenu(false)}
+                className="text-slate-400 hover:text-slate-200 p-0.5 border-none bg-transparent cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap pt-1">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                  toast('Lien du salon copié dans le presse-papiers', 'success')
+                  setShowOptionsMenu(false)
+                }}
+                className={`px-3 py-1.5 rounded-lg border text-[11.5px] font-semibold cursor-pointer ${
+                  darkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                📋 Copier le lien du salon
+              </button>
+              <Link
+                href="/community/membres"
+                onClick={() => setShowOptionsMenu(false)}
+                className={`px-3 py-1.5 rounded-lg border text-[11.5px] font-semibold no-underline ${
+                  darkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                👥 Annuaire des membres
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* ── MODAL MESSAGES ÉPINGLÉS (Pop-in) ── */}
         {showPinnedModal && (
@@ -1100,10 +1151,10 @@ export default function CommunityGeneralChatPage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════
-          COLONNE DROITE : VRAIS MEMBRES CONNECTÉS (SANS DONNÉES FACTICES)
+          COLONNE DROITE : VRAIS MEMBRES CONNECTÉS (DESKTOP SEULEMENT)
       ══════════════════════════════════════════════════════════════ */}
       {showMembersSidebar && (
-        <aside className={`w-[240px] xl:w-[260px] shrink-0 h-full rounded-xl border flex flex-col overflow-hidden transition-all select-none ${
+        <aside className={`hidden md:flex w-[240px] xl:w-[260px] shrink-0 h-full rounded-xl border flex-col overflow-hidden transition-all select-none ${
           darkMode ? 'bg-[#1E293B] border-slate-800' : 'bg-white border-slate-100/90 shadow-card-subtle'
         }`}>
           {/* En-tête En Ligne */}
@@ -1202,6 +1253,86 @@ export default function CommunityGeneralChatPage() {
             <span>🟢 Salon interactif en temps réel</span>
           </div>
         </aside>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          MODAL / BOTTOM SHEET MEMBRES CONNECTÉS SUR MOBILE
+      ══════════════════════════════════════════════════════════════ */}
+      {showMobileMembersDrawer && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-fadeIn">
+          {/* Clic en dehors pour fermer */}
+          <div className="flex-1 w-full" onClick={() => setShowMobileMembersDrawer(false)} />
+
+          {/* Tiroir coulissant (Bottom Sheet) */}
+          <div className={`w-full max-h-[75vh] rounded-t-2xl border-t p-4 flex flex-col shadow-2xl transition-colors ${
+            darkMode ? 'bg-[#1E293B] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            {/* Header Drawer */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-700/30">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h2 className="text-[13px] font-extrabold uppercase tracking-wider">
+                  En Ligne — {onlineMembers.length}
+                </h2>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/community/membres"
+                  onClick={() => setShowMobileMembersDrawer(false)}
+                  className="text-[12px] font-bold text-[#1677FF] dark:text-[#38BDF8] hover:underline no-underline"
+                >
+                  Voir tous
+                </Link>
+                <button
+                  onClick={() => setShowMobileMembersDrawer(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white border-none bg-transparent cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Liste scrollable des membres sur mobile */}
+            <div className="flex-1 overflow-y-auto py-2.5 flex flex-col gap-1.5 no-scrollbar">
+              {onlineMembers.map((member) => (
+                <Link
+                  key={member.id}
+                  href={`/profile/${member.username || member.id}`}
+                  onClick={() => setShowMobileMembersDrawer(false)}
+                  className={`flex items-center gap-3 p-2 rounded-xl transition-colors no-underline ${
+                    darkMode ? 'hover:bg-slate-800/60' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <UserAvatar avatarUrl={member.avatar_url} size={36} />
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[#1E293B]" />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className={`text-[13px] font-bold truncate ${
+                      darkMode ? 'text-white' : 'text-[#0F172A]'
+                    }`}>
+                      {member.full_name}
+                    </span>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {member.isCurrentUser ? (
+                        <span className="text-[11px] font-bold text-[#38BDF8]">Vous</span>
+                      ) : (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: member.roleColor }} />
+                          <span className={`text-[11px] font-medium truncate ${
+                            darkMode ? 'text-slate-400' : 'text-slate-500'
+                          }`}>
+                            {member.role}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
