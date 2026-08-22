@@ -18,7 +18,6 @@ const PLATFORM_SHORT: Record<string, string> = {
 const DAY_LABELS       = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 const MONTH_NAMES      = ['Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
 const MONTH_NAMES_FULL = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
-const HOURS            = Array.from({ length: 15 }, (_, i) => i + 7)
 const HOUR_H           = 64
 
 function getWeekStart(date: Date): Date {
@@ -190,6 +189,15 @@ export default function CalendarTab() {
     const d = new Date(p.scheduled_at!)
     return d >= weekStart && d < weekEnd
   })
+  // Plage horaire de la grille : 07h–21h par défaut, élargie pour englober
+  // tout post planifié en dehors de cette plage (sinon il resterait invisible).
+  let minHour = 7, maxHour = 21
+  for (const p of weekPosts) {
+    const h = new Date(p.scheduled_at!).getHours()
+    if (h < minHour) minHour = h
+    if (h > maxHour) maxHour = h
+  }
+  const displayHours = Array.from({ length: maxHour - minHour + 1 }, (_, i) => i + minHour)
   const todayMidnight = new Date()
   todayMidnight.setHours(0, 0, 0, 0)
 
@@ -283,7 +291,7 @@ export default function CalendarTab() {
                 </div>
               )
             })}
-            {HOURS.map(hour => (
+            {displayHours.map(hour => (
               <Fragment key={hour}>
                 <div style={{ height: HOUR_H, borderBottom: '1px solid var(--b1)', padding: '.35rem .5rem 0 0', textAlign: 'right', fontSize: '.63rem', fontWeight: 500, color: 'var(--t3)', userSelect: 'none' }}>
                   {`${String(hour).padStart(2, '0')}:00`}
