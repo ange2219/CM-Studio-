@@ -13,20 +13,28 @@ import { buildPinterestPrompt } from './pinterest-prompt'
 
 // ─── Clients & Configuration IA ───────────────────────────────────────────────
 
-const apiKey = process.env.AGENTROUTER_API_KEY || process.env.ANTHROPIC_API_KEY || ''
-const anthropicBaseURL = process.env.ANTHROPIC_BASE_URL || (process.env.AGENTROUTER_API_KEY ? 'https://co.agentrouter.org' : undefined)
+const agentRouterKey = process.env.AGENTROUTER_API_KEY || ''
+const anthropicKey = process.env.ANTHROPIC_API_KEY || ''
+const openaiKey = process.env.OPENAI_API_KEY || ''
 
+// Client AgentRouter universel (OpenAI compatible)
+const agentRouter = new OpenAI({
+  baseURL: process.env.AGENTROUTER_BASE_URL || 'https://agentrouter.org/v1',
+  apiKey: agentRouterKey || 'dummy',
+})
+
+// Client Anthropic officiel (si clé sk-ant- directe)
 const anthropic = new Anthropic({
-  apiKey: apiKey,
-  baseURL: anthropicBaseURL || undefined,
+  apiKey: anthropicKey || 'dummy',
 })
 
+// Client OpenAI officiel (si clé sk-proj- directe ou GitHub Models)
 const openaiClient = new OpenAI({
-  baseURL: process.env.OPENAI_BASE_URL || (process.env.AGENTROUTER_API_KEY ? 'https://agentrouter.org/v1' : 'https://models.github.ai/inference'),
-  apiKey: process.env.AGENTROUTER_API_KEY || process.env.OPENAI_API_KEY || process.env.GITHUB_TOKEN || 'dummy',
+  baseURL: process.env.OPENAI_BASE_URL || (process.env.GITHUB_TOKEN ? 'https://models.github.ai/inference' : undefined),
+  apiKey: openaiKey || process.env.GITHUB_TOKEN || 'dummy',
 })
 
-// Modèles configurables (défaut : Claude Opus / Sonnet ou GPT)
+// Modèles configurables (défaut : Claude Opus 4.8 / GPT-5.6 Sol)
 export const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-4-8'
 export const GPT_MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-sol'
 
@@ -288,15 +296,48 @@ async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Pla
   return parsed as GenerateResponse
 }
 
+// ─── Appel Unifié AgentRouter (Claude Opus 4.8 / GPT-5.6 Sol / etc.) ─────────
+
+async function callAgentRouter(promptText: string, isJson: boolean = false, systemPrompt?: string, modelOverride?: string): Promise<string> {
+  const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
+  const model = modelOverride || ((provider === 'openai' || provider === 'gpt') ? GPT_MODEL : CLAUDE_MODEL)
+
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = []
+  if (systemPrompt) {
+    messages.push({ role: 'system', content: systemPrompt })
+  }
+  messages.push({ role: 'user', content: promptText })
+
+  const response = await agentRouter.chat.completions.create({
+    model,
+    messages,
+    ...(isJson ? { response_format: { type: 'json_object' } } : {}),
+  })
+
+  return response.choices[0]?.message?.content || ''
+}
+
 // ─── Génération via Claude (Anthropic) — plans payants ────────────────────────
 
 async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
+  const prompt = buildPrompt(req, targetPlatform)
+
+  if (agentRouterKey) {
+    const raw = await callAgentRouter(prompt, true, systemPrompt, CLAUDE_MODEL)
+    const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
+    const parsed = JSON.parse(cleaned)
+    if (targetPlatform && parsed.post) {
+      return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
+    }
+    return parsed as GenerateResponse
+  }
+
   const message = await anthropic.messages.create({
     model: CLAUDE_MODEL,
     max_tokens: 2048,
     system: systemPrompt || undefined,
-    messages: [{ role: 'user', content: buildPrompt(req, targetPlatform) }],
+    messages: [{ role: 'user', content: prompt }],
   })
 
   const text = message.content[0].type === 'text' ? message.content[0].text : ''
@@ -316,11 +357,23 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
 
 async function generateWithGPT(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
+  const prompt = buildPrompt(req, targetPlatform)
+
+  if (agentRouterKey) {
+    const raw = await callAgentRouter(prompt, true, systemPrompt, GPT_MODEL)
+    const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
+    const parsed = JSON.parse(cleaned)
+    if (targetPlatform && parsed.post) {
+      return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
+    }
+    return parsed as GenerateResponse
+  }
+
   const response = await openaiClient.chat.completions.create({
     model: GPT_MODEL,
     messages: [
       ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
-      { role: 'user' as const, content: buildPrompt(req, targetPlatform) },
+      { role: 'user' as const, content: prompt },
     ],
     response_format: { type: 'json_object' },
   })
@@ -338,126 +391,56 @@ async function generateWithGPT(req: GenerateRequest, targetPlatform?: Platform):
   return parsed as GenerateResponse
 }
 
-// ─── Génération via Gemini avec Recherche Web ────────────────────────────────
+// ─── Génération via Gemini 1.5 Flash (Repli) ──────────────────────────────────
 
-async function generateWithGeminiSearch(req: GenerateRequest, targetPlatform: Platform): Promise<GenerateResponse> {
-  if (!gemini) {
-    throw new Error('GEMINI_API_KEY non configurée pour la recherche web.')
-  }
+async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+  if (!gemini) throw new Error('GEMINI_API_KEY manquante.')
   const prompt = buildPrompt(req, targetPlatform)
-  
-  const model = gemini.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    // @ts-expect-error - tools est supporté pour le grounding Google Search dans le SDK Node.js
-    tools: [{ googleSearch: {} }],
-  })
-  
+  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-    }
+    generationConfig: { responseMimeType: 'application/json' }
   })
-  
   const text = result.response.text()
   const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
   const parsed = JSON.parse(cleaned)
-  
-  if (parsed.post) {
-    return {
-      variants: {
-        [targetPlatform]: parsed.post
-      },
-      ...parsed
-    } as any
+  if (targetPlatform && parsed.post) {
+    return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
   }
   return parsed as GenerateResponse
 }
 
-// ─── Génération via Gemini sans Recherche Web (Grounding désactivé) ──────────
-
-async function generateWithGeminiNoSearch(req: GenerateRequest, targetPlatform: Platform): Promise<GenerateResponse> {
-  if (!gemini) {
-    throw new Error('GEMINI_API_KEY non configurée.')
-  }
-  const prompt = buildPrompt(req, targetPlatform)
-  
-  const model = gemini.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-  })
-  
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-    }
-  })
-  
-  const text = result.response.text()
-  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
-  const parsed = JSON.parse(cleaned)
-  
-  if (parsed.post) {
-    return {
-      variants: {
-        [targetPlatform]: parsed.post
-      },
-      ...parsed
-    } as any
-  }
-  return parsed as GenerateResponse
-}
-
-// ─── Génération Simple (Fallback Claude -> GPT -> Gemini) ─────────────────────
+// ─── Génération Simple (AgentRouter -> Claude -> GPT -> Gemini) ───────────────
 
 async function callSimpleAI(promptText: string, isJson: boolean = false): Promise<string> {
-  const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
-
-  // 1. Essayer OpenAI si explicitement demandé
-  if ((provider === 'openai' || provider === 'gpt') && (process.env.AGENTROUTER_API_KEY || process.env.OPENAI_API_KEY)) {
-    try {
-      const res = await openaiClient.chat.completions.create({
-        model: GPT_MODEL,
-        messages: [{ role: 'user', content: promptText }],
-        response_format: isJson ? { type: 'json_object' } : undefined,
-      })
-      return res.choices[0]?.message?.content || ''
-    } catch (err) {
-      console.error('[ai/callSimpleAI] OpenAI error:', err)
-    }
+  // 1. Priorité absolue : AgentRouter
+  if (agentRouterKey) {
+    return await callAgentRouter(promptText, isJson)
   }
 
-  // 2. Essayer Claude / AgentRouter (défaut)
-  if (apiKey) {
-    try {
-      const msg = await anthropic.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: promptText }],
-      })
-      return msg.content[0].type === 'text' ? msg.content[0].text : ''
-    } catch (err) {
-      console.error('[ai/callSimpleAI] Claude error, trying fallback:', err)
-    }
+  // 2. Clé Anthropic officielle
+  if (anthropicKey) {
+    const msg = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: promptText }],
+    })
+    return msg.content[0].type === 'text' ? msg.content[0].text : ''
   }
 
-  // 3. Essayer OpenAI si non tenté
-  if (process.env.AGENTROUTER_API_KEY || process.env.OPENAI_API_KEY) {
-    try {
-      const res = await openaiClient.chat.completions.create({
-        model: GPT_MODEL,
-        messages: [{ role: 'user', content: promptText }],
-        response_format: isJson ? { type: 'json_object' } : undefined,
-      })
-      return res.choices[0]?.message?.content || ''
-    } catch (err) {
-      console.error('[ai/callSimpleAI] OpenAI error:', err)
-    }
+  // 3. Clé OpenAI officielle
+  if (openaiKey || process.env.GITHUB_TOKEN) {
+    const res = await openaiClient.chat.completions.create({
+      model: GPT_MODEL,
+      messages: [{ role: 'user', content: promptText }],
+      ...(isJson ? { response_format: { type: 'json_object' } } : {}),
+    })
+    return res.choices[0]?.message?.content || ''
   }
 
-  // 4. Essayer Gemini
+  // 4. Gemini (si configuré)
   if (gemini) {
-    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: promptText }] }],
       generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
@@ -465,7 +448,7 @@ async function callSimpleAI(promptText: string, isJson: boolean = false): Promis
     return result.response.text()
   }
 
-  throw new Error('Aucun fournisseur IA configuré (veuillez renseigner AGENTROUTER_API_KEY ou ANTHROPIC_API_KEY).')
+  throw new Error('Aucun fournisseur IA configuré. Veuillez renseigner AGENTROUTER_API_KEY dans votre fichier .env.local')
 }
 
 // ─── Réécriture ────────────────────────────────────────────────────────────────
@@ -539,63 +522,30 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
     const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
 
-    // 1. Si provider est OpenAI/GPT
-    if ((provider === 'openai' || provider === 'gpt') && (process.env.AGENTROUTER_API_KEY || process.env.OPENAI_API_KEY)) {
-      try {
+    // 1. AgentRouter (Prioritaire pour Claude et GPT)
+    if (agentRouterKey) {
+      if (provider === 'openai' || provider === 'gpt') {
         return await generateWithGPT(req, targetPlatform)
-      } catch (err) {
-        console.error('[ai/generatePosts] GPT generation failed, falling back:', err)
       }
+      return await generateWithClaude(req, targetPlatform)
     }
 
-    // 2. Si provider Anthropic / Claude ou AgentRouter (par défaut)
-    if (apiKey) {
-      try {
-        return await generateWithClaude(req, targetPlatform)
-      } catch (err) {
-        console.error('[ai/generatePosts] Claude/AgentRouter generation failed, falling back:', err)
-      }
+    // 2. Si provider est OpenAI/GPT officiel
+    if ((provider === 'openai' || provider === 'gpt') && (openaiKey || process.env.GITHUB_TOKEN)) {
+      return await generateWithGPT(req, targetPlatform)
     }
 
-    // 3. Spécificités Gemini (LinkedIn / Facebook search si Gemini configuré)
-    if (targetPlatform === 'linkedin' && gemini) {
-      try {
-        return await generateWithGeminiSearch(req, 'linkedin')
-      } catch (err) {
-        console.error('[ai/generatePosts] Gemini search for LinkedIn failed, falling back:', err)
-      }
-    }
-
-    if (targetPlatform === 'facebook' && gemini) {
-      const isFactual = req.post_type?.toLowerCase().includes('actualit') ||
-                        req.post_type?.toLowerCase().includes('factuel') ||
-                        req.post_type?.toLowerCase().includes('news')
-      try {
-        if (isFactual) {
-          return await generateWithGeminiSearch(req, 'facebook')
-        } else {
-          return await generateWithGeminiNoSearch(req, 'facebook')
-        }
-      } catch (err) {
-        console.error('[ai/generatePosts] Gemini for Facebook failed, falling back:', err)
-      }
+    // 3. Si provider Anthropic officiel
+    if (anthropicKey) {
+      return await generateWithClaude(req, targetPlatform)
     }
 
     // 4. Fallback Gemini Free
     if (gemini) {
-      try {
-        return await generateWithGeminiFree(req, targetPlatform)
-      } catch (err) {
-        console.error('[ai/generatePosts] Gemini Free generation failed:', err)
-      }
+      return await generateWithGeminiFree(req, targetPlatform)
     }
 
-    // 5. Fallback GPT si non tenté
-    if (process.env.AGENTROUTER_API_KEY || process.env.OPENAI_API_KEY) {
-      return await generateWithGPT(req, targetPlatform)
-    }
-
-    throw new Error('Aucun fournisseur IA configuré. Veuillez renseigner AGENTROUTER_API_KEY ou ANTHROPIC_API_KEY dans votre fichier .env.local')
+    throw new Error('Aucun fournisseur IA configuré. Veuillez renseigner AGENTROUTER_API_KEY dans votre fichier .env.local')
   }
 
   // Mode UNIFIÉ : 1 seul appel avec la plateforme principale, distribué sur toutes
@@ -639,32 +589,11 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
 
 export async function generateWeekPosts(req: GenerateRequest, postsCount: number, plan: Plan): Promise<{ week: { day: number; topic: string; variants: Partial<Record<Platform, string>> }[] }> {
   const prompt = buildWeekPrompt(req, postsCount)
-
-  if (plan === 'free') {
-    try {
-      if (!gemini) throw new Error('GEMINI_API_KEY manquante')
-      const rawText = await generateWithGeminiSimple(prompt, true)
-      const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
-      const parsed = JSON.parse(cleaned || '{"week":[]}')
-      if (!Array.isArray(parsed.week) || parsed.week.length === 0) {
-        console.warn('[ai/generateWeekPosts] Gemini returned empty week, falling back to Claude')
-        throw new Error('Empty week response from Gemini')
-      }
-      return parsed
-    } catch (err) {
-      console.error('[ai/generateWeekPosts] Gemini failed, falling back to Claude:', err instanceof Error ? err.message : err)
-    }
-  }
-
-  const msg = await anthropic.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-  })
-  const text = msg.content[0].type === 'text' ? msg.content[0].text : '{"week":[]}'
-  const parsed = JSON.parse(text.trim())
+  const rawText = await callSimpleAI(prompt, true)
+  const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
+  const parsed = JSON.parse(cleaned || '{"week":[]}')
   if (!Array.isArray(parsed.week)) {
-    console.error('[ai/generateWeekPosts] Claude returned invalid week structure')
+    console.error('[ai/generateWeekPosts] Structure invalide')
     throw new Error('Réponse invalide du modèle — veuillez réessayer')
   }
   return parsed
