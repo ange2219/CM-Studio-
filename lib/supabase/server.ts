@@ -25,9 +25,10 @@ export function createClient() {
 
 export function createAdminClient() {
   const cookieStore = cookies()
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    key,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -65,7 +66,7 @@ export async function getActiveOrgOrThrow() {
       .maybeSingle()
 
     if (membershipError || !firstMembership) {
-      throw new Error('Aucune organisation trouvée pour cet utilisateur. Veuillez d\'abord créer une marque.')
+      throw new Error('Aucune organisation trouvée pour cet utilisateur.')
     }
 
     activeOrgId = firstMembership.organization_id
@@ -80,8 +81,24 @@ export async function getActiveOrgOrThrow() {
     .maybeSingle()
 
   if (verifyError || !membership) {
-    // Si l'utilisateur n'est plus membre ou que l'organisation a été supprimée, 
-    // on lève une exception d'accès refusé.
+    // Si le cookie active_org_id pointe vers une organisation invalide, chercher la première organisation membre
+    const { data: fallbackMemb } = await supabase
+      .from('memberships')
+      .select('role, organization:organizations(*), organization_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle()
+
+    if (fallbackMemb && fallbackMemb.organization) {
+      return {
+        organizationId: fallbackMemb.organization_id as string,
+        role: fallbackMemb.role as 'owner' | 'cm' | 'viewer',
+        organization: fallbackMemb.organization as any,
+        userId: user.id,
+        userEmail: user.email
+      }
+    }
+
     throw new Error('Accès non autorisé à cette organisation')
   }
 
