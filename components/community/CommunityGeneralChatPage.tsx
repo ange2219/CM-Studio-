@@ -37,7 +37,6 @@ interface ChatMessage {
     username: string | null
     avatar_url: string | null
   }
-  reactions?: Record<string, string[]> // emoji -> array of user_ids
 }
 
 interface OnlineMember {
@@ -49,6 +48,8 @@ interface OnlineMember {
   roleColor: string
   isCurrentUser?: boolean
 }
+
+const STORAGE_KEY_REACTIONS = 'cm_chat_reactions_cache_v2'
 
 // Couleurs par défaut selon les rôles réels
 const ROLE_COLORS_MAP: Record<string, string> = {
@@ -108,8 +109,7 @@ function normalizeMessage(item: any): ChatMessage {
     content: item.content,
     attachment_url: item.attachment_url,
     created_at: item.created_at,
-    sender: senderObj || { id: item.user_id, full_name: 'Membre', username: null, avatar_url: null },
-    reactions: item.reactions || {}
+    sender: senderObj || { id: item.user_id, full_name: 'Membre', username: null, avatar_url: null }
   }
 }
 
@@ -129,8 +129,8 @@ export default function CommunityGeneralChatPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  // Gestion des réactions réelles en mémoire / session
-  const [localReactions, setLocalReactions] = useState<Record<string, Record<string, string[]>>>({})
+  // Gestion persistante des réactions (message_id -> emoji -> user_id[])
+  const [reactionsMap, setReactionsMap] = useState<Record<string, Record<string, string[]>>>({})
 
   // Barre latérale des vrais membres de Supabase
   const [onlineMembers, setOnlineMembers] = useState<OnlineMember[]>([])
@@ -147,6 +147,7 @@ export default function CommunityGeneralChatPage() {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const chatChannelRef = useRef<any>(null)
   const isFirstLoadRef = useRef(true)
   const userRef = useRef(user)
 
@@ -154,7 +155,22 @@ export default function CommunityGeneralChatPage() {
     userRef.current = user
   }, [user])
 
-  // Scroll en bas helper
+  // Initialisation immédiate des réactions depuis le cache localStorage
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY_REACTIONS)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (parsed && typeof parsed === 'object') {
+          setReactionsMap(parsed)
+        }
+      }
+    } catch (e) {
+      console.warn('Erreur lecture cache réactions:', e)
+    }
+  }, [])
+
+  // Auto-scroll to bottom helper
   const scrollToBottom = useCallback((smooth = true) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' })
@@ -217,7 +233,42 @@ export default function CommunityGeneralChatPage() {
     }
   }, [supabase])
 
-  // 2. Récupérer les messages réels
+  // 2. Charger les réactions persistées depuis Supabase
+  const fetchReactions = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('community_chat_reactions')
+        .select('message_id, user_id, emoji')
+
+      if (error) {
+        // Si la table n'est pas encore migrée, on conserve le cache localStorage
+        return
+      }
+
+      if (data) {
+        const grouped: Record<string, Record<string, string[]>> = {}
+        data.forEach((row: any) => {
+          if (!grouped[row.message_id]) grouped[row.message_id] = {}
+          if (!grouped[row.message_id][row.emoji]) grouped[row.message_id][row.emoji] = []
+          if (!grouped[row.message_id][row.emoji].includes(row.user_id)) {
+            grouped[row.message_id][row.emoji].push(row.user_id)
+          }
+        })
+
+        setReactionsMap(prev => {
+          const merged = { ...prev, ...grouped }
+          try {
+            localStorage.setItem(STORAGE_KEY_REACTIONS, JSON.stringify(merged))
+          } catch {}
+          return merged
+        })
+      }
+    } catch (err) {
+      console.warn('Erreur chargement réactions:', err)
+    }
+  }, [supabase])
+
+  // 3. Récupérer les messages réels
   const fetchMessages = useCallback(async () => {
     setLoading(true)
     try {
@@ -252,10 +303,11 @@ export default function CommunityGeneralChatPage() {
       console.error('Erreur inattendue:', err)
     } finally {
       setLoading(false)
+      fetchReactions()
     }
-  }, [supabase, toast, scrollToBottom])
+  }, [supabase, toast, scrollToBottom, fetchReactions])
 
-  // 3. Charger plus de messages anciens
+  // 4. Charger plus de messages anciens
   const fetchOlderMessages = async () => {
     if (loadingOlder || !hasMore || messages.length === 0) return
     setLoadingOlder(true)
@@ -304,7 +356,7 @@ export default function CommunityGeneralChatPage() {
     }
   }
 
-  // 4. Souscription Realtime
+  // 5. Souscription Realtime (Messages + Réactions)
   useEffect(() => {
     fetchMessages()
     loadOnlineMembers()
@@ -337,8 +389,7 @@ export default function CommunityGeneralChatPage() {
 
         const newChatMessage: ChatMessage = {
           ...newMsgRaw,
-          sender: senderData || { id: newMsgRaw.user_id, full_name: 'Membre CM Studio', username: null, avatar_url: null },
-          reactions: {}
+          sender: senderData || { id: newMsgRaw.user_id, full_name: 'Membre CM Studio', username: null, avatar_url: null }
         }
 
         setMessages(prev => {
@@ -358,14 +409,53 @@ export default function CommunityGeneralChatPage() {
           setMessages(prev => prev.filter(m => m.id !== deletedId))
         }
       })
+      // Écoute des réactions en broadcast direct
+      .on('broadcast', { event: 'reaction_toggle' }, (eventPayload) => {
+        const { messageId, userId, emoji, added } = eventPayload.payload || {}
+        if (!messageId || !userId || !emoji) return
+
+        setReactionsMap(prev => {
+          const msgMap = { ...(prev[messageId] || {}) }
+          const userList = [...(msgMap[emoji] || [])]
+          const idx = userList.indexOf(userId)
+
+          if (added && idx === -1) {
+            userList.push(userId)
+            msgMap[emoji] = userList
+          } else if (!added && idx > -1) {
+            userList.splice(idx, 1)
+            if (userList.length === 0) {
+              delete msgMap[emoji]
+            } else {
+              msgMap[emoji] = userList
+            }
+          }
+
+          const next = { ...prev, [messageId]: msgMap }
+          try {
+            localStorage.setItem(STORAGE_KEY_REACTIONS, JSON.stringify(next))
+          } catch {}
+          return next
+        })
+      })
+      // Écoute des changements Postgres sur les réactions si la table est migrée
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'community_chat_reactions'
+      }, () => {
+        fetchReactions()
+      })
       .subscribe()
+
+    chatChannelRef.current = chatChannel
 
     return () => {
       supabase.removeChannel(chatChannel)
     }
-  }, [supabase, fetchMessages, loadOnlineMembers, scrollToBottom])
+  }, [supabase, fetchMessages, loadOnlineMembers, fetchReactions, scrollToBottom])
 
-  // 5. Envoyer un message réel
+  // 6. Envoyer un message réel
   const handleSendMessage = async (e?: React.FormEvent, customAttachmentUrl?: string) => {
     if (e) e.preventDefault()
     const content = inputText.trim()
@@ -413,7 +503,7 @@ export default function CommunityGeneralChatPage() {
     }
   }
 
-  // 6. Supprimer un message (auteur uniquement)
+  // 7. Supprimer un message (auteur uniquement)
   const handleDeleteMessage = async (msgId: string) => {
     if (!user || deletingId) return
     setDeletingId(msgId)
@@ -439,7 +529,7 @@ export default function CommunityGeneralChatPage() {
     }
   }
 
-  // 7. Copier le contenu d'un message
+  // 8. Copier le contenu d'un message
   const handleCopyMessage = (msgId: string, text: string) => {
     navigator.clipboard.writeText(text)
     setCopiedId(msgId)
@@ -447,37 +537,79 @@ export default function CommunityGeneralChatPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  // 8. Toggle réaction emoji
-  const handleToggleReaction = (msgId: string, emoji: string) => {
+  // 9. Toggle réaction emoji (Persistance Supabase + LocalStorage + Broadcast)
+  const handleToggleReaction = async (msgId: string, emoji: string) => {
     if (!user) {
       toast('Connectez-vous pour réagir', 'info')
       return
     }
 
-    setLocalReactions(prev => {
-      const msgReactions = prev[msgId] ? { ...prev[msgId] } : {}
-      const userList = msgReactions[emoji] ? [...msgReactions[emoji]] : []
-      const userIndex = userList.indexOf(user.id)
+    const currentMsgReactions = reactionsMap[msgId] || {}
+    const currentUsers = currentMsgReactions[emoji] || []
+    const isAlreadyReacted = currentUsers.includes(user.id)
+    const nextAdded = !isAlreadyReacted
 
-      if (userIndex > -1) {
-        userList.splice(userIndex, 1)
+    // 1. Mise à jour optimiste immédiate dans React State & LocalStorage
+    setReactionsMap(prev => {
+      const msgMap = { ...(prev[msgId] || {}) }
+      const userList = [...(msgMap[emoji] || [])]
+      const idx = userList.indexOf(user.id)
+
+      if (idx > -1) {
+        userList.splice(idx, 1)
         if (userList.length === 0) {
-          delete msgReactions[emoji]
+          delete msgMap[emoji]
         } else {
-          msgReactions[emoji] = userList
+          msgMap[emoji] = userList
         }
       } else {
         userList.push(user.id)
-        msgReactions[emoji] = userList
+        msgMap[emoji] = userList
       }
 
-      return { ...prev, [msgId]: msgReactions }
+      const nextState = { ...prev, [msgId]: msgMap }
+      try {
+        localStorage.setItem(STORAGE_KEY_REACTIONS, JSON.stringify(nextState))
+      } catch {}
+      return nextState
     })
 
     setActiveMessageForReaction(null)
+
+    // 2. Diffusion Realtime Broadcast aux autres membres connectés
+    try {
+      chatChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'reaction_toggle',
+        payload: {
+          messageId: msgId,
+          userId: user.id,
+          emoji,
+          added: nextAdded
+        }
+      })
+    } catch (e) {
+      console.warn('Erreur broadcast réaction:', e)
+    }
+
+    // 3. Persistance dans la base Supabase
+    try {
+      if (isAlreadyReacted) {
+        await supabase
+          .from('community_chat_reactions')
+          .delete()
+          .match({ message_id: msgId, user_id: user.id, emoji })
+      } else {
+        await supabase
+          .from('community_chat_reactions')
+          .insert({ message_id: msgId, user_id: user.id, emoji })
+      }
+    } catch (err) {
+      console.warn('Info: synchronisation DB réaction (table locale active):', err)
+    }
   }
 
-  // 9. Insertion d'émoji dans la barre de saisie
+  // 10. Insertion d'émoji dans la barre de saisie
   const handleInsertEmoji = (emoji: string) => {
     setInputText(prev => prev + emoji)
     if (inputRef.current) {
@@ -485,7 +617,7 @@ export default function CommunityGeneralChatPage() {
     }
   }
 
-  // 10. Envoi d'une image/fichier réel
+  // 11. Envoi d'une image/fichier réel
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
@@ -501,7 +633,6 @@ export default function CommunityGeneralChatPage() {
 
       if (uploadError) {
         console.warn('Upload bucket fallback URL:', uploadError)
-        // Création d'URL locale object pour l'envoi immédiat
         const localUrl = URL.createObjectURL(file)
         await handleSendMessage(undefined, localUrl)
       } else {
@@ -689,7 +820,7 @@ export default function CommunityGeneralChatPage() {
               const isMe = user?.id === msg.user_id
               const senderName = msg.sender?.full_name || (msg.sender?.username ? `@${msg.sender.username}` : 'Membre CM Studio')
               const avatarUrl = msg.sender?.avatar_url || null
-              const msgReactions = localReactions[msg.id] || msg.reactions || {}
+              const msgReactions = reactionsMap[msg.id] || {}
 
               return (
                 <div
@@ -745,7 +876,7 @@ export default function CommunityGeneralChatPage() {
                       </div>
                     )}
 
-                    {/* Rangée de Réactions emojis */}
+                    {/* Rangée de Réactions emojis persistées */}
                     <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
                       {/* Réactions existantes */}
                       {Object.entries(msgReactions).map(([emoji, usersList]) => {
