@@ -1140,29 +1140,57 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
       {/* ── HEADER WORKSPACE ULTRA-PREMIUM ── */}
       {!allPosts && (
-        <div className="relative flex flex-col gap-5 mb-7 -mt-2">
+        <div className="relative flex flex-col gap-6 mb-7 -mt-2">
           
-          {/* Onde fluide d'ambiance néon en arrière-plan flottant */}
-          <div className="absolute -top-6 right-0 w-[600px] h-[160px] pointer-events-none overflow-hidden opacity-85 z-0">
-            <svg className="w-full h-full" viewBox="0 0 600 160" preserveAspectRatio="none" fill="none">
-              <path d="M 0,90 C 200,20 400,150 600,40" stroke="url(#workspaceHeaderWave1)" strokeWidth="3" opacity="0.4" filter="blur(6px)" />
-              <path d="M 50,80 C 220,15 420,130 600,50" stroke="url(#workspaceHeaderWave2)" strokeWidth="2" opacity="0.7" />
+          {/* Onde fluide d'ambiance néon photoréaliste en arrière-plan */}
+          <div className="absolute -top-8 right-0 left-0 h-[220px] pointer-events-none overflow-hidden opacity-90 z-0">
+            <svg className="w-full h-full" viewBox="0 0 1200 220" preserveAspectRatio="none" fill="none">
               <defs>
-                <linearGradient id="workspaceHeaderWave1" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#38BDF8" />
-                  <stop offset="50%" stopColor="#A855F7" />
-                  <stop offset="100%" stopColor="#EC4899" />
+                <radialGradient id="auroraNebulaGlow" cx="75%" cy="25%" r="60%">
+                  <stop offset="0%" stopColor="#9333EA" stopOpacity="0.45" />
+                  <stop offset="35%" stopColor="#C026D3" stopOpacity="0.25" />
+                  <stop offset="70%" stopColor="#3B82F6" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+                </radialGradient>
+                <linearGradient id="auroraWaveGrad1" x1="15%" y1="100%" x2="95%" y2="0%">
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0" />
+                  <stop offset="25%" stopColor="#6366F1" stopOpacity="0.5" />
+                  <stop offset="55%" stopColor="#A855F7" stopOpacity="0.85" />
+                  <stop offset="80%" stopColor="#EC4899" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#F43F5E" stopOpacity="0" />
                 </linearGradient>
-                <linearGradient id="workspaceHeaderWave2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#60A5FA" />
-                  <stop offset="50%" stopColor="#C084FC" />
-                  <stop offset="100%" stopColor="#F472B6" />
+                <linearGradient id="auroraWaveGrad2" x1="20%" y1="90%" x2="90%" y2="10%">
+                  <stop offset="0%" stopColor="#06B6D4" stopOpacity="0" />
+                  <stop offset="30%" stopColor="#8B5CF6" stopOpacity="0.75" />
+                  <stop offset="65%" stopColor="#D946EF" stopOpacity="0.9" />
+                  <stop offset="90%" stopColor="#F472B6" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="#FB7185" stopOpacity="0" />
                 </linearGradient>
+                <linearGradient id="auroraWaveFill" x1="25%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.25" />
+                  <stop offset="50%" stopColor="#C026D3" stopOpacity="0.16" />
+                  <stop offset="100%" stopColor="#DB2777" stopOpacity="0" />
+                </linearGradient>
+                <filter id="auroraRibbonBlur" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="10" result="blur1" />
+                  <feGaussianBlur stdDeviation="3" result="blur2" />
+                  <feMerge>
+                    <feMergeNode in="blur1" />
+                    <feMergeNode in="blur2" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
               </defs>
+              <rect width="1200" height="220" fill="url(#auroraNebulaGlow)" />
+              <path d="M 320,130 C 480,195 660,70 880,45 C 1010,30 1110,65 1200,85 L 1200,0 L 320,0 Z" fill="url(#auroraWaveFill)" />
+              <path d="M 260,150 C 440,215 620,105 780,48 C 930,-2 1060,42 1200,80" stroke="url(#auroraWaveGrad1)" strokeWidth="16" strokeLinecap="round" opacity="0.3" filter="url(#auroraRibbonBlur)" />
+              <path d="M 300,140 C 470,205 640,95 800,42 C 950,-5 1080,40 1200,75" stroke="url(#auroraWaveGrad2)" strokeWidth="3.5" strokeLinecap="round" opacity="0.9" />
+              <path d="M 280,155 C 450,220 620,110 790,50 C 935,2 1070,45 1200,84" stroke="url(#auroraWaveGrad1)" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+              <path d="M 350,125 C 500,190 660,85 820,38 C 960,-6 1090,35 1200,70" stroke="#F472B6" strokeWidth="1" strokeLinecap="round" opacity="0.65" />
             </svg>
           </div>
 
-          {/* 1. En-tête de Bienvenue directement sur le fond (sans carte) */}
+          {/* 1. En-tête de Bienvenue directement sur le fond */}
           <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-4 pt-1">
             <div>
               <h1 className="text-xl sm:text-2xl md:text-[1.65rem] font-bold text-white tracking-tight flex items-center gap-2.5">
