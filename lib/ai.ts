@@ -291,19 +291,33 @@ async function callAgentRouter(promptText: string, isJson: boolean = false, syst
   messages.push({ role: 'user', content: promptText })
 
   try {
-    const response = await agentRouter.chat.completions.create({
+    const params: any = {
       model,
       messages,
-      ...(isJson && (model.includes('gpt') || model.includes('sol')) ? { response_format: { type: 'json_object' } } : {}),
-    })
+      max_tokens: 4096,
+    }
 
-    const content = response?.choices?.[0]?.message?.content || ''
-    if (!content) {
+    const response = await agentRouter.chat.completions.create(params)
+
+    // @ts-expect-error - safety fallback
+    if (response?.error) {
       // @ts-expect-error - safety fallback
-      if (response?.error) {
-        // @ts-expect-error - safety fallback
-        throw new Error(`AgentRouter: ${response.error.message || JSON.stringify(response.error)}`)
-      }
+      throw new Error(`AgentRouter: ${response.error.message || JSON.stringify(response.error)}`)
+    }
+
+    const choice = response?.choices?.[0] as any
+    const message = choice?.message
+    
+    // Extraction multi-champs (content, reasoning_content, text, etc.)
+    let content = message?.content || message?.reasoning_content || message?.text || choice?.text || ''
+
+    // Si content est un tableau (parties de contenu structuré)
+    if (Array.isArray(content)) {
+      content = content.map((c: any) => (typeof c === 'string' ? c : c?.text || '')).join('')
+    }
+
+    if (!content || !content.trim()) {
+      console.warn('[callAgentRouter] Empty content. Full response object:', JSON.stringify(response))
       throw new Error('Réponse vide reçue du modèle IA')
     }
 
