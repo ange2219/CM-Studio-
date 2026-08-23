@@ -17,11 +17,7 @@ const agentRouterKey = process.env.AGENTROUTER_API_KEY || ''
 const anthropicKey = process.env.ANTHROPIC_API_KEY || ''
 const openaiKey = process.env.OPENAI_API_KEY || ''
 
-// Client AgentRouter universel (OpenAI compatible)
-const agentRouter = new OpenAI({
-  baseURL: process.env.AGENTROUTER_BASE_URL || 'https://agentrouter.org/v1',
-  apiKey: agentRouterKey || 'dummy',
-})
+// AgentRouter est appelé via `fetch` direct (voir callAgentRouter) — pas de client SDK.
 
 // Client Anthropic officiel (si clé sk-ant- directe)
 const anthropic = new Anthropic({
@@ -301,6 +297,7 @@ async function callAgentRouter(promptText: string, isJson: boolean = false, syst
   const payload: any = {
     model,
     messages,
+    max_tokens: 4096,
   }
 
   let res: Response
@@ -310,6 +307,10 @@ async function callAgentRouter(promptText: string, isJson: boolean = false, syst
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`,
+        'Accept': 'application/json',
+        // Certains services (AgentRouter derrière Aliyun WAF) bloquent les requêtes
+        // sans User-Agent « navigateur ». Tentative de contournement au mieux.
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       },
       body: JSON.stringify(payload),
     })
@@ -319,6 +320,13 @@ async function callAgentRouter(promptText: string, isJson: boolean = false, syst
   }
 
   const rawText = await res.text()
+
+  // Détection d'une page de pare-feu / anti-bot (Aliyun WAF, Cloudflare…) :
+  // le service renvoie du HTML au lieu du JSON attendu. Message clair pour déclencher le repli.
+  if (/^\s*<(?:!doctype|html|head|meta|title)\b/i.test(rawText) || rawText.includes('aliyun_waf')) {
+    console.error('[AgentRouter] Page HTML reçue (pare-feu probable):', rawText.slice(0, 200))
+    throw new Error(`AgentRouter injoignable : ${baseUrl} a renvoyé une page de pare-feu (WAF) au lieu de JSON. Les requêtes depuis un serveur (Vercel) sont bloquées par ce service.`)
+  }
 
   if (!res.ok) {
     console.error(`[AgentRouter] HTTP ${res.status}:`, rawText)
@@ -355,91 +363,55 @@ async function callAgentRouter(promptText: string, isJson: boolean = false, syst
   return content.trim()
 }
 
-// ─── Génération via Claude (Anthropic) — plans payants ────────────────────────
+// ─── Helpers de parsing JSON ──────────────────────────────────────────────────
 
-async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
-  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
-  const prompt = buildPrompt(req, targetPlatform)
+function extractJsonObject(raw: string): string {
+  const cleaned = raw.replace(/```json/gi, '').replace(/```/g, '').trim()
+  const first = cleaned.indexOf('{')
+  const last = cleaned.lastIndexOf('}')
+  return (first !== -1 && last !== -1) ? cleaned.slice(first, last + 1) : cleaned
+}
 
-  if (agentRouterKey) {
-    const raw = await callAgentRouter(prompt, true, systemPrompt, CLAUDE_MODEL)
-    const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
-    const firstBrace = cleaned.indexOf('{')
-    const lastBrace = cleaned.lastIndexOf('}')
-    const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
-    const parsed = JSON.parse(jsonStr)
-    if (targetPlatform && parsed.post) {
-      return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
-    }
-    return parsed as GenerateResponse
-  }
-
-  const message = await anthropic.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 2048,
-    system: systemPrompt || undefined,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const text = message.content?.[0]?.type === 'text' ? message.content[0].text : ''
-  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
-  const firstBrace = cleaned.indexOf('{')
-  const lastBrace = cleaned.lastIndexOf('}')
-  const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
-  const parsed = JSON.parse(jsonStr)
-  if (targetPlatform && parsed.post) {
-    return {
-      variants: {
-        [targetPlatform]: parsed.post
-      },
-      ...parsed
-    } as any
+function shapeGenerateResponse(parsed: any, targetPlatform?: Platform): GenerateResponse {
+  if (targetPlatform && parsed?.post) {
+    return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
   }
   return parsed as GenerateResponse
 }
 
-// ─── Génération via OpenAI / GPT (AgentRouter ou OpenAI) ──────────────────────
+// ─── Générateurs par fournisseur (découplés, sans repli interne) ──────────────
 
-async function generateWithGPT(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+async function genViaAgentRouter(req: GenerateRequest, targetPlatform: Platform | undefined, model: string): Promise<GenerateResponse> {
   const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
-  const prompt = buildPrompt(req, targetPlatform)
+  const raw = await callAgentRouter(buildPrompt(req, targetPlatform), true, systemPrompt, model)
+  return shapeGenerateResponse(JSON.parse(extractJsonObject(raw)), targetPlatform)
+}
 
-  if (agentRouterKey) {
-    const raw = await callAgentRouter(prompt, true, systemPrompt, GPT_MODEL)
-    const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
-    const firstBrace = cleaned.indexOf('{')
-    const lastBrace = cleaned.lastIndexOf('}')
-    const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
-    const parsed = JSON.parse(jsonStr)
-    if (targetPlatform && parsed.post) {
-      return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
-    }
-    return parsed as GenerateResponse
-  }
+async function genViaAnthropic(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
+  const message = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 2048,
+    system: systemPrompt || undefined,
+    messages: [{ role: 'user', content: buildPrompt(req, targetPlatform) }],
+  })
+  const text = message.content?.[0]?.type === 'text' ? message.content[0].text : ''
+  return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
+}
 
+// ─── Génération via OpenAI / GPT (clé OpenAI directe ou GitHub Models) ────────
+
+async function genViaOpenAI(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
+  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
   const response = await openaiClient.chat.completions.create({
     model: GPT_MODEL,
     messages: [
       ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
-      { role: 'user' as const, content: prompt },
+      { role: 'user' as const, content: buildPrompt(req, targetPlatform) },
     ],
   })
-
   const text = response?.choices?.[0]?.message?.content || '{}'
-  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
-  const firstBrace = cleaned.indexOf('{')
-  const lastBrace = cleaned.lastIndexOf('}')
-  const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
-  const parsed = JSON.parse(jsonStr)
-  if (targetPlatform && parsed.post) {
-    return {
-      variants: {
-        [targetPlatform]: parsed.post
-      },
-      ...parsed
-    } as any
-  }
-  return parsed as GenerateResponse
+  return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
 }
 
 // ─── Génération via Gemini 1.5 Flash (Repli) ──────────────────────────────────
@@ -461,45 +433,64 @@ async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Pla
   return parsed as GenerateResponse
 }
 
-// ─── Génération Simple (AgentRouter -> Claude -> GPT -> Gemini) ───────────────
+// ─── Génération Simple avec repli en chaîne (AgentRouter → Claude → GPT → Gemini) ─
 
 async function callSimpleAI(promptText: string, isJson: boolean = false): Promise<string> {
-  // 1. Priorité absolue : AgentRouter
+  const chain: { name: string; run: () => Promise<string> }[] = []
+
   if (agentRouterKey) {
-    return await callAgentRouter(promptText, isJson)
+    chain.push({ name: 'AgentRouter', run: () => callAgentRouter(promptText, isJson) })
   }
-
-  // 2. Clé Anthropic officielle
   if (anthropicKey) {
-    const msg = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 2048,
-      messages: [{ role: 'user', content: promptText }],
-    })
-    return msg.content[0].type === 'text' ? msg.content[0].text : ''
+    chain.push({ name: 'Anthropic', run: async () => {
+      const msg = await anthropic.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: promptText }],
+      })
+      return msg.content[0]?.type === 'text' ? msg.content[0].text : ''
+    } })
   }
-
-  // 3. Clé OpenAI officielle
   if (openaiKey || process.env.GITHUB_TOKEN) {
-    const res = await openaiClient.chat.completions.create({
-      model: GPT_MODEL,
-      messages: [{ role: 'user', content: promptText }],
-      ...(isJson ? { response_format: { type: 'json_object' } } : {}),
-    })
-    return res.choices[0]?.message?.content || ''
+    chain.push({ name: 'OpenAI', run: async () => {
+      const res = await openaiClient.chat.completions.create({
+        model: GPT_MODEL,
+        messages: [{ role: 'user', content: promptText }],
+        ...(isJson ? { response_format: { type: 'json_object' } } : {}),
+      })
+      return res.choices[0]?.message?.content || ''
+    } })
   }
-
-  // 4. Gemini (si configuré)
   if (gemini) {
-    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: promptText }] }],
-      generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
-    })
-    return result.response.text()
+    const g = gemini
+    chain.push({ name: 'Gemini', run: async () => {
+      const model = g.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: promptText }] }],
+        generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
+      })
+      return result.response.text()
+    } })
   }
 
-  throw new Error('Aucun fournisseur IA configuré. Veuillez renseigner AGENTROUTER_API_KEY dans votre fichier .env.local')
+  if (chain.length === 0) {
+    throw new Error('Aucun fournisseur IA configuré. Renseignez AGENTROUTER_API_KEY ou GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
+  }
+
+  let lastErr: any
+  for (let i = 0; i < chain.length; i++) {
+    const step = chain[i]
+    try {
+      const out = await step.run()
+      if (out && out.trim()) return out
+      throw new Error('réponse vide')
+    } catch (e: any) {
+      lastErr = e
+      const suite = i < chain.length - 1 ? `Repli sur « ${chain[i + 1].name} »…` : 'Plus de repli disponible.'
+      console.error(`[AI] Fournisseur « ${step.name} » a échoué : ${e?.message}. ${suite}`)
+    }
+  }
+  throw new Error(`Tous les fournisseurs IA ont échoué. Dernière erreur : ${lastErr?.message || lastErr}`)
 }
 
 // ─── Réécriture ────────────────────────────────────────────────────────────────
@@ -572,31 +563,40 @@ export async function generateImage(prompt: string): Promise<string | null> {
 export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<GenerateResponse> {
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
     const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
+    const routerModel = (provider === 'openai' || provider === 'gpt') ? GPT_MODEL : CLAUDE_MODEL
 
-    // 1. AgentRouter (Prioritaire pour Claude et GPT)
+    // Chaîne de repli : on tente chaque fournisseur configuré dans l'ordre,
+    // et on passe au suivant dès qu'un échoue (WAF, réponse vide, erreur réseau…).
+    const chain: { name: string; run: () => Promise<GenerateResponse> }[] = []
     if (agentRouterKey) {
-      if (provider === 'openai' || provider === 'gpt') {
-        return await generateWithGPT(req, targetPlatform)
-      }
-      return await generateWithClaude(req, targetPlatform)
+      chain.push({ name: 'AgentRouter', run: () => genViaAgentRouter(req, targetPlatform, routerModel) })
     }
-
-    // 2. Si provider est OpenAI/GPT officiel
-    if ((provider === 'openai' || provider === 'gpt') && (openaiKey || process.env.GITHUB_TOKEN)) {
-      return await generateWithGPT(req, targetPlatform)
-    }
-
-    // 3. Si provider Anthropic officiel
     if (anthropicKey) {
-      return await generateWithClaude(req, targetPlatform)
+      chain.push({ name: 'Anthropic', run: () => genViaAnthropic(req, targetPlatform) })
     }
-
-    // 4. Fallback Gemini Free
+    if (openaiKey || process.env.GITHUB_TOKEN) {
+      chain.push({ name: 'OpenAI', run: () => genViaOpenAI(req, targetPlatform) })
+    }
     if (gemini) {
-      return await generateWithGeminiFree(req, targetPlatform)
+      chain.push({ name: 'Gemini', run: () => generateWithGeminiFree(req, targetPlatform) })
     }
 
-    throw new Error('Aucun fournisseur IA configuré. Veuillez renseigner AGENTROUTER_API_KEY dans votre fichier .env.local')
+    if (chain.length === 0) {
+      throw new Error('Aucun fournisseur IA configuré. Renseignez AGENTROUTER_API_KEY ou GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
+    }
+
+    let lastErr: any
+    for (let i = 0; i < chain.length; i++) {
+      const step = chain[i]
+      try {
+        return await step.run()
+      } catch (e: any) {
+        lastErr = e
+        const suite = i < chain.length - 1 ? `Repli sur « ${chain[i + 1].name} »…` : 'Plus de repli disponible.'
+        console.error(`[AI] Fournisseur « ${step.name} » a échoué : ${e?.message}. ${suite}`)
+      }
+    }
+    throw new Error(`Tous les fournisseurs IA ont échoué. Dernière erreur : ${lastErr?.message || lastErr}`)
   }
 
   // Mode UNIFIÉ : 1 seul appel avec la plateforme principale, distribué sur toutes
