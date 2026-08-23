@@ -290,13 +290,28 @@ async function callAgentRouter(promptText: string, isJson: boolean = false, syst
   }
   messages.push({ role: 'user', content: promptText })
 
-  const response = await agentRouter.chat.completions.create({
-    model,
-    messages,
-    ...(isJson ? { response_format: { type: 'json_object' } } : {}),
-  })
+  try {
+    const response = await agentRouter.chat.completions.create({
+      model,
+      messages,
+      ...(isJson && (model.includes('gpt') || model.includes('sol')) ? { response_format: { type: 'json_object' } } : {}),
+    })
 
-  return response.choices[0]?.message?.content || ''
+    const content = response?.choices?.[0]?.message?.content || ''
+    if (!content) {
+      // @ts-expect-error - safety fallback
+      if (response?.error) {
+        // @ts-expect-error - safety fallback
+        throw new Error(`AgentRouter: ${response.error.message || JSON.stringify(response.error)}`)
+      }
+      throw new Error('Réponse vide reçue du modèle IA')
+    }
+
+    return content
+  } catch (err: any) {
+    console.error('[callAgentRouter] Error:', err?.message || err)
+    throw new Error(err?.message || 'Erreur lors de la communication avec AgentRouter')
+  }
 }
 
 // ─── Génération via Claude (Anthropic) — plans payants ────────────────────────
@@ -308,7 +323,10 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
   if (agentRouterKey) {
     const raw = await callAgentRouter(prompt, true, systemPrompt, CLAUDE_MODEL)
     const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
-    const parsed = JSON.parse(cleaned)
+    const firstBrace = cleaned.indexOf('{')
+    const lastBrace = cleaned.lastIndexOf('}')
+    const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
+    const parsed = JSON.parse(jsonStr)
     if (targetPlatform && parsed.post) {
       return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
     }
@@ -322,8 +340,12 @@ async function generateWithClaude(req: GenerateRequest, targetPlatform?: Platfor
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
-  const parsed = JSON.parse(text.trim())
+  const text = message.content?.[0]?.type === 'text' ? message.content[0].text : ''
+  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
+  const firstBrace = cleaned.indexOf('{')
+  const lastBrace = cleaned.lastIndexOf('}')
+  const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
+  const parsed = JSON.parse(jsonStr)
   if (targetPlatform && parsed.post) {
     return {
       variants: {
@@ -344,7 +366,10 @@ async function generateWithGPT(req: GenerateRequest, targetPlatform?: Platform):
   if (agentRouterKey) {
     const raw = await callAgentRouter(prompt, true, systemPrompt, GPT_MODEL)
     const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
-    const parsed = JSON.parse(cleaned)
+    const firstBrace = cleaned.indexOf('{')
+    const lastBrace = cleaned.lastIndexOf('}')
+    const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
+    const parsed = JSON.parse(jsonStr)
     if (targetPlatform && parsed.post) {
       return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
     }
@@ -357,11 +382,14 @@ async function generateWithGPT(req: GenerateRequest, targetPlatform?: Platform):
       ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
       { role: 'user' as const, content: prompt },
     ],
-    response_format: { type: 'json_object' },
   })
 
-  const text = response.choices[0]?.message?.content || '{}'
-  const parsed = JSON.parse(text.trim())
+  const text = response?.choices?.[0]?.message?.content || '{}'
+  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
+  const firstBrace = cleaned.indexOf('{')
+  const lastBrace = cleaned.lastIndexOf('}')
+  const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
+  const parsed = JSON.parse(jsonStr)
   if (targetPlatform && parsed.post) {
     return {
       variants: {
@@ -680,12 +708,37 @@ export async function generateIdeas(req: GenerateIdeasRequest, plan: Plan): Prom
   const prompt = buildIdeasPrompt(req)
   const rawText = await callSimpleAI(prompt, true)
   const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
-  return JSON.parse(cleaned) as GenerateIdeasResponse
+  const firstBrace = cleaned.indexOf('{')
+  const lastBrace = cleaned.lastIndexOf('}')
+  const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
+
+  try {
+    const parsed = JSON.parse(jsonStr)
+    if (parsed && parsed.idees && Array.isArray(parsed.idees)) {
+      return parsed as GenerateIdeasResponse
+    }
+    if (Array.isArray(parsed)) {
+      return { idees: parsed } as any
+    }
+    return parsed as GenerateIdeasResponse
+  } catch (err) {
+    console.error('[generateIdeas] JSON parse error, raw:', rawText)
+    throw new Error('Format de réponse invalide reçu du modèle IA.')
+  }
 }
 
 export async function generateBrief(req: GenerateBriefRequest, plan: Plan): Promise<GenerateBriefResponse> {
   const prompt = buildBriefPrompt(req)
   const rawText = await callSimpleAI(prompt, true)
   const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim()
-  return JSON.parse(cleaned) as GenerateBriefResponse
+  const firstBrace = cleaned.indexOf('{')
+  const lastBrace = cleaned.lastIndexOf('}')
+  const jsonStr = (firstBrace !== -1 && lastBrace !== -1) ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned
+
+  try {
+    return JSON.parse(jsonStr) as GenerateBriefResponse
+  } catch (err) {
+    console.error('[generateBrief] JSON parse error, raw:', rawText)
+    throw new Error('Format de brief invalide reçu du modèle IA.')
+  }
 }
