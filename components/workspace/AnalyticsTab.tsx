@@ -1,15 +1,14 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Eye, Users, MousePointer2, Target, Percent,
-  Calendar, ChevronDown, ArrowUpRight, ArrowRight,
-  TrendingUp, BarChart3, Globe, Sparkles, Filter,
-  Share2, MessageCircle, Heart, Check, X, ExternalLink
+  Calendar, ChevronDown, ArrowRight,
+  Globe, X, Check
 } from 'lucide-react'
 import { IconLinkedIn, IconInstagram, IconFacebook, IconTwitterX } from '@/components/icons/BrandIcons'
 
-// ─── Types & Données ─────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type Period = '7d' | '30d' | '90d' | 'custom'
 type Granularity = 'day' | 'week' | 'month'
@@ -22,37 +21,62 @@ interface PostItem {
   views: number
   engagements: number
   engagementRate: number
-  imageUrl?: string
+  imageUrl: string
 }
 
-// ─── Sparkline Wave SVG Helper ────────────────────────────────────────────────
+// ─── Sparkline Wave SVG Helper avec Effet Néon Lumineux ───────────────────────
 
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+function GlowingSparkline({ data, color }: { data: number[]; color: string }) {
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
-  const width = 160
-  const height = 40
+  const width = 180
+  const height = 48
+
   const points = data.map((val, idx) => {
     const x = (idx / (data.length - 1)) * width
-    const y = height - ((val - min) / range) * (height - 10) - 5
-    return `${x},${y}`
+    const y = height - ((val - min) / range) * (height - 14) - 7
+    return { x, y }
   })
 
-  const pathD = `M ${points.join(' L ')}`
-  const areaD = `M 0,${height} L ${points.join(' L ')} L ${width},${height} Z`
-  const gradientId = `spark-grad-${color.replace('#', '')}-${Math.random().toString(36).substring(2, 7)}`
+  // Smooth Bezier Curve Path
+  const makeSmoothPath = (pts: { x: number; y: number }[]) => {
+    return pts.reduce((acc, pt, i, arr) => {
+      if (i === 0) return `M ${pt.x},${pt.y}`
+      const prev = arr[i - 1]
+      const cp1x = prev.x + (pt.x - prev.x) / 2
+      const cp1y = prev.y
+      const cp2x = prev.x + (pt.x - prev.x) / 2
+      const cp2y = pt.y
+      return `${acc} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${pt.x},${pt.y}`
+    }, '')
+  }
+
+  const pathD = makeSmoothPath(points)
+  const areaD = `${pathD} L ${width},${height} L 0,${height} Z`
+  const gradientId = `glow-spark-grad-${color.replace('#', '')}`
 
   return (
-    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible select-none">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.28" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
           <stop offset="100%" stopColor={color} stopOpacity="0.0" />
         </linearGradient>
+        <filter id={`glow-${color.replace('#', '')}`} x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={color} floodOpacity="0.6" />
+        </filter>
       </defs>
       <path d={areaD} fill={`url(#${gradientId})`} />
-      <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={pathD}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        filter={`url(#glow-${color.replace('#', '')})`}
+      />
     </svg>
   )
 }
@@ -69,7 +93,7 @@ export default function AnalyticsTab() {
   const [showAllPostsModal, setShowAllPostsModal] = useState(false)
   const [showAudienceModal, setShowAudienceModal] = useState(false)
 
-  // Date range label
+  // Label de la plage de date
   const dateRangeLabel = useMemo(() => {
     switch (period) {
       case '7d': return '12 mai – 18 mai 2024'
@@ -79,64 +103,68 @@ export default function AnalyticsTab() {
     }
   }, [period])
 
-  // Données KPIs selon la période
+  // 5 KPIs du haut avec effets de lumière dédiés
   const kpis = useMemo(() => {
-    const mult = period === '30d' ? 3.8 : period === '90d' ? 11.2 : 1
     return [
       {
         id: 'views',
         label: 'Vues',
         value: period === '7d' ? '24,5K' : period === '30d' ? '98,2K' : '312K',
-        change: '+ 18,6%',
+        change: '18,6%',
         comparison: 'vs 5 mai – 11 mai',
+        changeColor: '#10B981', // Vert
         color: '#A855F7', // Violet
         icon: Eye,
-        sparkline: [12, 14, 18, 15, 22, 26, 24.5],
+        sparkline: [10, 14, 18, 15, 23, 27, 24.5],
       },
       {
         id: 'engagements',
         label: 'Engagements',
         value: period === '7d' ? '3,8K' : period === '30d' ? '15,4K' : '48,1K',
-        change: '+ 22,4%',
+        change: '22,4%',
         comparison: 'vs 5 mai – 11 mai',
+        changeColor: '#10B981', // Vert
         color: '#3B82F6', // Bleu
         icon: Users,
-        sparkline: [2.1, 2.5, 3.1, 2.8, 3.6, 4.1, 3.8],
+        sparkline: [2.0, 2.6, 3.2, 2.7, 3.7, 4.2, 3.8],
       },
       {
         id: 'clicks',
         label: 'Clics',
         value: period === '7d' ? '1,2K' : period === '30d' ? '4,9K' : '15,8K',
-        change: '+ 15,7%',
+        change: '15,7%',
         comparison: 'vs 5 mai – 11 mai',
+        changeColor: '#10B981', // Vert
         color: '#10B981', // Vert émeraude
         icon: MousePointer2,
-        sparkline: [0.8, 1.0, 1.3, 1.1, 1.5, 1.4, 1.2],
+        sparkline: [0.7, 1.1, 1.4, 1.0, 1.6, 1.4, 1.2],
       },
       {
         id: 'conversions',
         label: 'Conversions',
         value: period === '7d' ? '156' : period === '30d' ? '612' : '1 890',
-        change: '+ 12,1%',
+        change: '12,1%',
         comparison: 'vs 5 mai – 11 mai',
+        changeColor: '#F97316', // Orange / Ambre
         color: '#F97316', // Orange
         icon: Target,
-        sparkline: [95, 110, 130, 115, 148, 162, 156],
+        sparkline: [90, 115, 135, 110, 152, 168, 156],
       },
       {
         id: 'engRate',
         label: "Taux d'engagement",
         value: '6,42%',
-        change: '+ 8,3%',
+        change: '8,3%',
         comparison: 'vs 5 mai – 11 mai',
+        changeColor: '#10B981', // Vert
         color: '#06B6D4', // Cyan
         icon: Percent,
-        sparkline: [5.2, 5.5, 6.1, 5.8, 6.6, 6.8, 6.42],
+        sparkline: [5.0, 5.6, 6.2, 5.7, 6.7, 6.9, 6.42],
       },
     ]
   }, [period])
 
-  // Données pour le grand graphique d'évolution
+  // Données du graphique multi-lignes central
   const chartData = useMemo(() => {
     return [
       { date: '12 mai', vues: 6200, engagements: 2800, clics: 1200 },
@@ -149,7 +177,7 @@ export default function AnalyticsTab() {
     ]
   }, [])
 
-  // Données plateformes pour le donut chart
+  // Données plateformes pour le donut
   const platformStats = [
     { name: 'LinkedIn', pct: 45, count: '11K', color: '#0A66C2', icon: IconLinkedIn },
     { name: 'Instagram', pct: 25, count: '6,1K', color: '#E1306C', icon: IconInstagram },
@@ -168,7 +196,7 @@ export default function AnalyticsTab() {
       views: 8200,
       engagements: 1200,
       engagementRate: 14.6,
-      imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&auto=format&fit=crop&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=120&auto=format&fit=crop&q=80',
     },
     {
       id: '2',
@@ -178,7 +206,7 @@ export default function AnalyticsTab() {
       views: 6100,
       engagements: 872,
       engagementRate: 14.3,
-      imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=100&auto=format&fit=crop&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=120&auto=format&fit=crop&q=80',
     },
     {
       id: '3',
@@ -188,7 +216,7 @@ export default function AnalyticsTab() {
       views: 4300,
       engagements: 623,
       engagementRate: 14.5,
-      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&auto=format&fit=crop&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=120&auto=format&fit=crop&q=80',
     },
     {
       id: '4',
@@ -198,11 +226,11 @@ export default function AnalyticsTab() {
       views: 2100,
       engagements: 312,
       engagementRate: 14.9,
-      imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&auto=format&fit=crop&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=120&auto=format&fit=crop&q=80',
     },
   ]
 
-  // Données démographiques Audience
+  // Âge et genre
   const ageData = [
     { age: '18-24', male: 18, female: 12 },
     { age: '25-34', male: 38, female: 28 },
@@ -211,6 +239,7 @@ export default function AnalyticsTab() {
     { age: '55+', male: 6, female: 4 },
   ]
 
+  // Top pays
   const topCountries = [
     { flag: '🇫🇷', name: 'France', pct: 32 },
     { flag: '🇨🇮', name: "Côte d'Ivoire", pct: 18 },
@@ -219,11 +248,10 @@ export default function AnalyticsTab() {
     { flag: '🇸🇳', name: 'Sénégal', pct: 6 },
   ]
 
-  // Donut chart path calculations
+  // Calcul segments Donut
   const donutSlices = useMemo(() => {
     let accPct = 0
     const radius = 64
-    const strokeWidth = 22
     const circumference = 2 * Math.PI * radius
 
     return platformStats.map(item => {
@@ -241,22 +269,33 @@ export default function AnalyticsTab() {
   return (
     <div className="w-full min-h-screen bg-[#070B14] text-[#E2E8F0] p-4 sm:p-6 lg:p-7 space-y-4 max-w-[1600px] mx-auto">
       
-      {/* ─── 1. Header Section ─────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-1">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
+      {/* ─── 1. Header Conforme à la Maquette ───────────────────────────────── */}
+      <div className="space-y-3">
+        {/* Première ligne : Titre à Gauche | Plage de Date à Droite */}
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Analytics
           </h1>
-          <p className="text-sm text-[#8E9BB0] mt-0.5">
-            Suivez vos performances et mesurez votre impact.
-          </p>
+
+          {/* Bouton Plage de Date (Positionné en haut à droite) */}
+          <button
+            onClick={() => setDateRangeOpen(!dateRangeOpen)}
+            className="inline-flex items-center gap-2 bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-white transition-all shadow-sm flex-shrink-0"
+          >
+            <Calendar size={14} className="text-[#8E9BB0]" />
+            <span>{dateRangeLabel}</span>
+            <ChevronDown size={14} className="text-[#8E9BB0]" />
+          </button>
         </div>
 
-        {/* Date Filters & Controls */}
-        <div className="flex flex-wrap items-center gap-2">
-          
-          {/* Period selector pills */}
-          <div className="inline-flex items-center bg-[#0D1424] border border-[#1E293B] rounded-xl p-1 gap-1">
+        {/* Deuxième ligne : Sous-titre */}
+        <p className="text-sm text-[#8E9BB0] -mt-1">
+          Suivez vos performances et mesurez votre impact.
+        </p>
+
+        {/* Troisième ligne : Groupe de Pilules de Période (Positionné sous le sous-titre) */}
+        <div className="pt-1">
+          <div className="inline-flex items-center bg-[#0D1424] border border-[#1E293B] rounded-xl p-1 gap-1 shadow-sm">
             <button
               onClick={() => setPeriod('7d')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -302,66 +341,62 @@ export default function AnalyticsTab() {
               <span>Personnalisé</span>
             </button>
           </div>
-
-          {/* Date Picker Button */}
-          <button
-            onClick={() => setDateRangeOpen(!dateRangeOpen)}
-            className="inline-flex items-center gap-2 bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-white transition-all shadow-sm"
-          >
-            <Calendar size={14} className="text-[#8E9BB0]" />
-            <span>{dateRangeLabel}</span>
-            <ChevronDown size={14} className="text-[#8E9BB0]" />
-          </button>
         </div>
       </div>
 
-      {/* ─── 2. Top 5 Metric Cards ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      {/* ─── 2. Top 5 Metric Cards avec Effet de Lumière Subtil ─────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
         {kpis.map(kpi => {
           const Icon = kpi.icon
           return (
             <div
               key={kpi.id}
-              className="bg-[#0B1120] border border-[#1E293B]/80 hover:border-[#334155] rounded-xl p-4 flex flex-col justify-between transition-all duration-200 shadow-sm relative overflow-hidden group"
+              className="rounded-xl p-4 flex flex-col justify-between transition-all duration-200 shadow-md relative overflow-hidden group"
+              style={{
+                background: `radial-gradient(circle at 85% 15%, ${kpi.color}1E 0%, transparent 65%), #0B1120`,
+                border: `1px solid ${kpi.color}33`,
+                boxShadow: `0 4px 20px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 ${kpi.color}40`,
+              }}
             >
-              {/* Header: Label + Badge Icon */}
+              {/* Header: Label + Badge Icon Circulaire Lumineux */}
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-[#94A3B8]">{kpi.label}</span>
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
                   style={{
-                    backgroundColor: `${kpi.color}15`,
+                    backgroundColor: `${kpi.color}20`,
                     color: kpi.color,
-                    border: `1px solid ${kpi.color}30`,
+                    border: `1px solid ${kpi.color}50`,
+                    boxShadow: `0 0 12px 0px ${kpi.color}35`,
                   }}
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                 </div>
               </div>
 
               {/* Metric Value */}
-              <div className="my-2">
+              <div className="my-2.5">
                 <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {kpi.value}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 text-[11px]">
-                  <span className="font-semibold text-[#10B981] flex items-center">
+                  <span className="font-semibold flex items-center" style={{ color: kpi.changeColor }}>
                     ↑ {kpi.change}
                   </span>
                   <span className="text-[#64748B]">{kpi.comparison}</span>
                 </div>
               </div>
 
-              {/* Sparkline Graphic */}
+              {/* Sparkline Graphic avec effet néon */}
               <div className="w-full pt-1">
-                <Sparkline data={kpi.sparkline} color={kpi.color} />
+                <GlowingSparkline data={kpi.sparkline} color={kpi.color} />
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* ─── 3. Middle Row : Performance Spline + Platform Donut ───────────── */}
+      {/* ─── 3. Ligne Centrale : Spline Graphique & Donut ──────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         
         {/* Left Card (7 cols) : Évolution des performances */}
@@ -430,7 +465,6 @@ export default function AnalyticsTab() {
           <div className="relative w-full h-[260px] select-none pt-2">
             <svg viewBox="0 0 650 220" className="w-full h-full overflow-visible">
               <defs>
-                {/* Gradients */}
                 <linearGradient id="gradVuesBig" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#A855F7" stopOpacity="0.22" />
                   <stop offset="100%" stopColor="#A855F7" stopOpacity="0.0" />
@@ -461,11 +495,6 @@ export default function AnalyticsTab() {
                 </g>
               ))}
 
-              {/* Coordinates: X positions from 45 to 630 */}
-              {/* 
-                Calculations for Y:
-                Max = 20000 (y = 20), Min = 0 (y = 195) -> Range 175px
-              */}
               {(() => {
                 const getX = (i: number) => 45 + i * (585 / (chartData.length - 1))
                 const getY = (v: number) => 195 - (v / 20000) * 175
@@ -496,24 +525,20 @@ export default function AnalyticsTab() {
 
                 return (
                   <>
-                    {/* Area fills */}
                     <path d={areaVues} fill="url(#gradVuesBig)" />
                     <path d={areaEng} fill="url(#gradEngBig)" />
                     <path d={areaClics} fill="url(#gradClicsBig)" />
 
-                    {/* Strokes */}
                     <path d={pathVues} fill="none" stroke="#A855F7" strokeWidth="2.5" strokeLinecap="round" />
                     <path d={pathEng} fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" />
                     <path d={pathClics} fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
 
-                    {/* Interactive dots & hover lines */}
                     {chartData.map((d, i) => {
                       const isHovered = hoveredPointIdx === i
                       const x = getX(i)
 
                       return (
                         <g key={d.date} onMouseEnter={() => setHoveredPointIdx(i)} onMouseLeave={() => setHoveredPointIdx(null)}>
-                          {/* Invisible hover slice hit target */}
                           <rect
                             x={x - 25}
                             y="10"
@@ -523,17 +548,14 @@ export default function AnalyticsTab() {
                             className="cursor-pointer"
                           />
 
-                          {/* Hover vertical guide */}
                           {isHovered && (
                             <line x1={x} y1="20" x2={x} y2="195" stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
                           )}
 
-                          {/* Points */}
                           <circle cx={x} cy={getY(d.vues)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#A855F7" strokeWidth="2" />
                           <circle cx={x} cy={getY(d.engagements)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#3B82F6" strokeWidth="2" />
                           <circle cx={x} cy={getY(d.clics)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#10B981" strokeWidth="2" />
 
-                          {/* X-axis labels */}
                           <text
                             x={x}
                             y="212"
@@ -552,7 +574,6 @@ export default function AnalyticsTab() {
               })()}
             </svg>
 
-            {/* Hover Tooltip Card */}
             {hoveredPointIdx !== null && (
               <div
                 className="absolute top-2 bg-[#0F172A] border border-[#334155] rounded-xl p-3 shadow-2xl pointer-events-none text-xs z-30 space-y-1.5 transition-all"
@@ -587,7 +608,6 @@ export default function AnalyticsTab() {
               Répartition par plateforme
             </h2>
 
-            {/* Donut Layout : Donut on Left, List on Right */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-5 my-2">
               
               {/* Donut SVG with central count */}
@@ -611,7 +631,6 @@ export default function AnalyticsTab() {
                   ))}
                 </svg>
 
-                {/* Donut Center text */}
                 <div className="absolute flex flex-col items-center justify-center text-center pointer-events-none">
                   <span className="text-xl font-extrabold text-white tracking-tight">24,5K</span>
                   <span className="text-[10px] text-[#8E9BB0] font-medium">Vues totales</span>
@@ -646,7 +665,6 @@ export default function AnalyticsTab() {
             </div>
           </div>
 
-          {/* Footer Action */}
           <div className="pt-3 border-t border-[#1E293B]/60 flex justify-end">
             <button
               onClick={() => setShowAllPostsModal(true)}
@@ -665,7 +683,6 @@ export default function AnalyticsTab() {
         {/* Left Card : Meilleurs contenus */}
         <div className="bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
           <div>
-            {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white tracking-tight">
                 Meilleurs contenus
@@ -678,7 +695,6 @@ export default function AnalyticsTab() {
               </button>
             </div>
 
-            {/* Table */}
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
@@ -692,10 +708,8 @@ export default function AnalyticsTab() {
                 <tbody className="divide-y divide-[#1E293B]/40">
                   {topPosts.map(post => (
                     <tr key={post.id} className="hover:bg-[#1E293B]/20 transition-colors group">
-                      {/* Post thumbnail + info */}
                       <td className="py-2.5 pl-1">
                         <div className="flex items-center gap-2.5">
-                          {/* Platform Icon Badge */}
                           <div
                             className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
                             style={{
@@ -706,7 +720,6 @@ export default function AnalyticsTab() {
                             {post.platform === 'linkedin' ? <IconLinkedIn size={13} /> : <IconInstagram size={13} />}
                           </div>
 
-                          {/* Image preview */}
                           <div className="w-9 h-9 rounded-md bg-[#1E293B] overflow-hidden flex-shrink-0 border border-[#334155]/40">
                             {post.imageUrl ? (
                               <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
@@ -715,7 +728,6 @@ export default function AnalyticsTab() {
                             )}
                           </div>
 
-                          {/* Title & Date */}
                           <div className="min-w-0 max-w-[170px] sm:max-w-[220px]">
                             <p className="font-semibold text-white truncate text-xs group-hover:text-[#3B82F6] transition-colors">
                               {post.title}
@@ -725,17 +737,14 @@ export default function AnalyticsTab() {
                         </div>
                       </td>
 
-                      {/* Views */}
                       <td className="py-2.5 text-right font-bold text-white">
                         {(post.views / 1000).toFixed(1).replace('.', ',')}K
                       </td>
 
-                      {/* Engagements */}
                       <td className="py-2.5 text-right font-medium text-[#CBD5E1]">
                         {post.engagements >= 1000 ? `${(post.engagements / 1000).toFixed(1).replace('.', ',')}K` : post.engagements}
                       </td>
 
-                      {/* Rate */}
                       <td className="py-2.5 text-right pr-1">
                         <span className="font-bold text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-md">
                           {post.engagementRate.toFixed(1).replace('.', ',')}%
@@ -752,7 +761,6 @@ export default function AnalyticsTab() {
         {/* Right Card : Audience */}
         <div className="bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
           <div>
-            {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white tracking-tight">
                 Audience
@@ -766,7 +774,6 @@ export default function AnalyticsTab() {
               </button>
             </div>
 
-            {/* Sub-grid 2 columns inside Audience */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-5">
               
               {/* Left column (7 cols) : Âge et genre */}
@@ -785,7 +792,6 @@ export default function AnalyticsTab() {
 
                 {/* Age bar chart */}
                 <div className="relative h-[160px] w-full pt-2">
-                  {/* Grid background lines */}
                   <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
                     {[40, 30, 20, 10, 0].map(val => (
                       <div key={val} className="flex items-center gap-1.5 w-full">
@@ -795,20 +801,17 @@ export default function AnalyticsTab() {
                     ))}
                   </div>
 
-                  {/* Vertical Bars */}
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between pl-7 pr-1 h-full pb-6">
                     {ageData.map(group => (
                       <div key={group.age} className="flex flex-col items-center gap-1 h-full justify-end">
                         <div className="flex items-end gap-1">
-                          {/* Male Bar */}
                           <div
-                            className="w-3 sm:w-3.5 bg-[#3B82F6] hover:brightness-110 rounded-t-sm transition-all"
+                            className="w-3 sm:w-3.5 bg-[#3B82F6] hover:brightness-110 rounded-t-sm transition-all shadow-[0_0_8px_rgba(59,130,246,0.4)]"
                             style={{ height: `${(group.male / 40) * 115}px` }}
                             title={`Hommes: ${group.male}%`}
                           />
-                          {/* Female Bar */}
                           <div
-                            className="w-3 sm:w-3.5 bg-[#A855F7] hover:brightness-110 rounded-t-sm transition-all"
+                            className="w-3 sm:w-3.5 bg-[#A855F7] hover:brightness-110 rounded-t-sm transition-all shadow-[0_0_8px_rgba(168,85,247,0.4)]"
                             style={{ height: `${(group.female / 40) * 115}px` }}
                             title={`Femmes: ${group.female}%`}
                           />
@@ -853,7 +856,7 @@ export default function AnalyticsTab() {
 
       {/* ─── Modals (Interactions) ────────────────────────────────────────── */}
 
-      {/* Modal: Voir tout les posts */}
+      {/* Modal: Voir tous les posts */}
       {showAllPostsModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#0B1120] border border-[#1E293B] rounded-xl max-w-2xl w-full p-5 space-y-4 shadow-2xl">
