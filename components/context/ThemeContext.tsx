@@ -15,11 +15,15 @@ const ThemeContext = createContext<ThemeContextType>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
 
   useEffect(() => {
     const saved = localStorage.getItem('cm_studio_theme')
-    if (saved === 'dark') {
+    if (saved === 'light') {
+      setDarkMode(false)
+    } else if (saved === 'dark') {
+      setDarkMode(true)
+    } else {
       setDarkMode(true)
     }
   }, [])

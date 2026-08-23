@@ -273,35 +273,35 @@ export default function AnalyticsTab() {
       <div className="space-y-3">
         {/* Première ligne : Titre à Gauche | Plage de Date à Droite */}
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Analytics
           </h1>
 
           {/* Bouton Plage de Date (Positionné en haut à droite) */}
           <button
             onClick={() => setDateRangeOpen(!dateRangeOpen)}
-            className="inline-flex items-center gap-2 bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-white transition-all shadow-sm flex-shrink-0"
+            className="inline-flex items-center gap-2 bg-white dark:bg-[#0D1424] hover:bg-slate-50 dark:hover:bg-[#152036] border border-slate-200 dark:border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-slate-800 dark:text-white transition-all shadow-sm flex-shrink-0"
           >
-            <Calendar size={14} className="text-[#8E9BB0]" />
+            <Calendar size={14} className="text-slate-500 dark:text-[#8E9BB0]" />
             <span>{dateRangeLabel}</span>
-            <ChevronDown size={14} className="text-[#8E9BB0]" />
+            <ChevronDown size={14} className="text-slate-500 dark:text-[#8E9BB0]" />
           </button>
         </div>
 
         {/* Deuxième ligne : Sous-titre */}
-        <p className="text-sm text-[#8E9BB0] -mt-1">
+        <p className="text-sm text-slate-500 dark:text-[#8E9BB0] -mt-1">
           Suivez vos performances et mesurez votre impact.
         </p>
 
         {/* Troisième ligne : Groupe de Pilules de Période (Positionné sous le sous-titre) */}
         <div className="pt-1">
-          <div className="inline-flex items-center bg-[#0D1424] border border-[#1E293B] rounded-xl p-1 gap-1 shadow-sm">
+          <div className="inline-flex items-center bg-white dark:bg-[#0D1424] border border-slate-200 dark:border-[#1E293B] rounded-xl p-1 gap-1 shadow-sm">
             <button
               onClick={() => setPeriod('7d')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 period === '7d'
                   ? 'bg-[#1877F2] text-white shadow-sm'
-                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+                  : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
               7 derniers jours
@@ -311,7 +311,7 @@ export default function AnalyticsTab() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 period === '30d'
                   ? 'bg-[#1877F2] text-white shadow-sm'
-                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+                  : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
               30 jours
@@ -321,7 +321,7 @@ export default function AnalyticsTab() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 period === '90d'
                   ? 'bg-[#1877F2] text-white shadow-sm'
-                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+                  : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
               90 jours
@@ -334,7 +334,7 @@ export default function AnalyticsTab() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 period === 'custom'
                   ? 'bg-[#1877F2] text-white shadow-sm'
-                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+                  : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
               <Calendar size={13} />
