@@ -1180,7 +1180,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             <div>
               <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', margin: '0 0 .2rem 0', lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '.5rem', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.01em' }}>
                 <span style={{ color: '#38BDF8' }}>✨</span>
-                Bienvenue dans votre Workspace, {activeOrganization?.name?.split(' ')[0] || 'Ange'} ! 👋
+                {activeOrganization?.name?.split(' ')[0] || 'Ange'} — votre Workspace 👋
               </h1>
               <p style={{ fontSize: '.82rem', color: '#94A3B8', margin: 0 }}>
                 Votre centre de création, de planification et d&apos;analyse.
