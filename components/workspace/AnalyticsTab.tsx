@@ -267,7 +267,7 @@ export default function AnalyticsTab() {
   }, [platformStats])
 
   return (
-    <div className="w-full min-h-screen bg-[#070B14] text-[#E2E8F0] p-4 sm:p-6 lg:p-7 space-y-4 max-w-[1600px] mx-auto">
+    <div className="w-full min-h-full bg-transparent text-[#E2E8F0] space-y-4 max-w-[1600px] mx-auto pb-8">
       
       {/* ─── 1. Header Conforme à la Maquette ───────────────────────────────── */}
       <div className="space-y-3">
