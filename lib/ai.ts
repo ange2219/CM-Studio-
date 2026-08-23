@@ -277,24 +277,6 @@ Génère ${postsCount} posts variés avec des sujets différents. Réponds UNIQU
 Aucun texte avant ou après le JSON.`
 }
 
-// ─── Génération via Gemini 2.0 Flash — plan gratuit ───────────────────────────
-
-async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
-  if (!gemini) throw new Error('GEMINI_API_KEY manquante. Veuillez ajouter votre clé API Gemini dans .env.local')
-  const prompt = buildPrompt(req, targetPlatform)
-  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { responseMimeType: 'application/json' }
-  })
-  const text = result.response.text()
-  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
-  const parsed = JSON.parse(cleaned)
-  if (targetPlatform && parsed.post) {
-    return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
-  }
-  return parsed as GenerateResponse
-}
 
 // ─── Appel Unifié AgentRouter (Claude Opus 4.8 / GPT-5.6 Sol / etc.) ─────────
 
