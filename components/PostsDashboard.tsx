@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage, Lightbulb, Video, Award, Check } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage, Lightbulb, Video, Award, Check, Users } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 import { useOrg } from '@/components/context/OrgContext'
+import { useUser } from '@/components/context/UserContext'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
   switch (platform) {
@@ -139,6 +140,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const router = useRouter()
   const { toast } = useToast()
   
+  const { user } = useUser()
+  const userName = user?.full_name?.split(' ')[0] || user?.username || 'Ange'
   const { activeOrganization, organizations, switchOrganization } = useOrg()
   const [brandSelectorOpen, setBrandSelectorOpen] = useState(false)
   const brandSelectorRef = useRef<HTMLDivElement>(null)
@@ -1135,202 +1138,261 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         </div>
       )}
 
-      {/* ── HEADER WORKSPACE ── */}
+      {/* ── HEADER WORKSPACE ULTRA-PREMIUM ── */}
       {!allPosts && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '-.5rem', marginBottom: '1.5rem' }}>
-        
-        {/* Titre, Sous-titre et Sélecteur de Marque */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif", margin: '0 0 .2rem 0', lineHeight: 1.2 }}>
-              Workspace
-            </h1>
-            <p style={{ fontSize: '.85rem', color: 'var(--t3)', margin: 0 }}>
-              Votre centre de création, de planification et d'analyse.
-            </p>
+        <div className="flex flex-col gap-4 mb-6 -mt-2">
+          
+          {/* 1. Bannière de Bienvenue avec Onde Lumineuse d'Ambiance */}
+          <div
+            className="relative overflow-hidden rounded-2xl p-5 sm:p-7 select-none shadow-xl transition-all"
+            style={{
+              background: 'linear-gradient(135deg, #070C1B 0%, #0B132B 45%, #160D2E 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)',
+            }}
+          >
+            {/* Onde fluide néon en arrière-plan */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-80">
+              <svg className="w-full h-full" viewBox="0 0 1000 240" preserveAspectRatio="none" fill="none">
+                <path d="M 0,120 C 350,30 650,220 1000,70 L 1000,0 L 0,0 Z" fill="url(#workspaceWaveGrad)" />
+                <path d="M 150,160 C 450,20 750,240 1150,90" stroke="url(#workspaceWaveStroke1)" strokeWidth="3" opacity="0.35" filter="blur(4px)" />
+                <path d="M 50,140 C 380,25 680,210 1050,80" stroke="url(#workspaceWaveStroke2)" strokeWidth="1.8" opacity="0.6" />
+                <defs>
+                  <linearGradient id="workspaceWaveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.12" />
+                    <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#EC4899" stopOpacity="0.08" />
+                  </linearGradient>
+                  <linearGradient id="workspaceWaveStroke1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="50%" stopColor="#A855F7" />
+                    <stop offset="100%" stopColor="#EC4899" />
+                  </linearGradient>
+                  <linearGradient id="workspaceWaveStroke2" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#60A5FA" />
+                    <stop offset="50%" stopColor="#C084FC" />
+                    <stop offset="100%" stopColor="#F472B6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            {/* Contenu de la bannière */}
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-[1.75rem] font-extrabold text-white tracking-tight flex items-center gap-2.5">
+                  <span className="text-[#38BDF8] text-lg sm:text-xl">✨</span>
+                  <span>Bienvenue dans votre Workspace, {userName} ! 👋</span>
+                </h1>
+                <p className="text-xs sm:text-sm text-[#94A3B8] mt-1 font-normal">
+                  Votre centre de création, de planification et d&apos;analyse.
+                </p>
+              </div>
+
+              {/* Sélecteur de Marque / Organisation */}
+              <div ref={brandSelectorRef} className="relative self-start md:self-center">
+                <button
+                  onClick={() => setBrandSelectorOpen(prev => !prev)}
+                  className="inline-flex items-center gap-2 bg-[#0D1527]/90 hover:bg-[#16223D] border border-white/15 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-all shadow-sm flex-shrink-0"
+                >
+                  <Users size={14} className="text-[#38BDF8]" />
+                  <span className="truncate max-w-[130px]">{activeOrganization?.name || 'OKLM'}</span>
+                  <ChevronDown size={14} className={`text-[#94A3B8] transition-transform duration-200 ${brandSelectorOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {brandSelectorOpen && organizations && organizations.length > 0 && (
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-[#0D1527] border border-white/15 rounded-xl p-1.5 min-w-[180px] shadow-2xl">
+                    <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1">
+                      Mes Marques
+                    </div>
+                    {organizations.map((org: any) => (
+                      <button
+                        key={org.id}
+                        onClick={() => {
+                          switchOrganization(org.id)
+                          setBrandSelectorOpen(false)
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+                          activeOrganization?.id === org.id
+                            ? 'bg-[#1877F2]/20 text-[#38BDF8]'
+                            : 'text-[#E2E8F0] hover:bg-white/10'
+                        }`}
+                      >
+                        <span className="truncate">{org.name}</span>
+                        {activeOrganization?.id === org.id && <Check size={13} className="text-[#38BDF8]" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Brand Selector Dropdown */}
-          <div ref={brandSelectorRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setBrandSelectorOpen(prev => !prev)}
+          {/* 2. Les 4 Cartes d'Action en Grille */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            
+            {/* Carte 1 : Nouveau post (Bleu Royal) */}
+            <div
+              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 0.95rem',
-                borderRadius: '12px',
-                border: '1px solid var(--b1)',
-                background: 'var(--card)',
-                color: 'var(--t1)',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: 'var(--shadow)'
-              }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-              onMouseLeave={e => {
-                if (!brandSelectorOpen) {
-                  e.currentTarget.style.borderColor = 'var(--b1)'
-                }
+                background: 'linear-gradient(145deg, rgba(30, 64, 175, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
+                border: '1px solid rgba(59, 130, 246, 0.35)',
+                boxShadow: '0 8px 24px -4px rgba(30, 64, 175, 0.25), inset 0 1px 0 0 rgba(59, 130, 246, 0.4)',
               }}
             >
-              <Award className="w-4 h-4 text-[#1677FF]" />
-              <span className="truncate max-w-[130px]">{activeOrganization?.name || 'Ma Marque'}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${brandSelectorOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {brandSelectorOpen && organizations && organizations.length > 0 && (
-              <div style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                right: 0,
-                zIndex: 200,
-                background: 'var(--card)',
-                border: '1px solid var(--b1)',
-                borderRadius: '12px',
-                padding: '0.4rem',
-                minWidth: '180px',
-                boxShadow: '0 8px 24px rgba(0,0,0,.45)'
-              }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--t3)', marginBottom: '4px', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Mes Marques
-                </div>
-                {organizations.map((org: any) => (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#1D4ED8] text-white flex items-center justify-center shadow-[0_0_14px_rgba(29,78,216,0.6)]">
+                    <PenLine size={18} />
+                  </div>
                   <button
-                    key={org.id}
-                    onClick={() => {
-                      switchOrganization(org.id)
-                      setBrandSelectorOpen(false)
-                    }}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: activeOrganization?.id === org.id ? 'rgba(22, 119, 255, 0.08)' : 'transparent',
-                      color: activeOrganization?.id === org.id ? 'var(--accent)' : 'var(--t1)',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      textAlign: 'left',
-                      transition: 'all 0.15s'
-                    }}
-                    onMouseEnter={e => {
-                      if (activeOrganization?.id !== org.id) {
-                        e.currentTarget.style.background = 'var(--s2)'
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (activeOrganization?.id !== org.id) {
-                        e.currentTarget.style.background = 'transparent'
-                      }
-                    }}
+                    onClick={() => setCreateModalOpen(true)}
+                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
                   >
-                    <span className="truncate">{org.name}</span>
-                    {activeOrganization?.id === org.id && <Check className="w-3.5 h-3.5 text-[#1677FF]" />}
+                    <Plus size={13} />
                   </button>
-                ))}
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Nouveau post</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
+                  Créez du contenu engageant en un clin d&apos;œil.
+                </p>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── ACTION CARDS (Carousel mobile / Grid desktop) ── */}
-        <div className="sb-scroll flex md:grid" style={{ 
-          gap: '1rem', 
-          overflowX: 'auto', 
-          paddingBottom: '.5rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
-        }}>
-          {/* Nouveau post */}
-          <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: 'var(--shadow)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent-light)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PenLine size={18} />
-              </div>
-              <div onClick={() => setCreateModalOpen(true)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid var(--b1)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-                <Plus size={12} />
-              </div>
-            </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Nouveau post</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Créez ou générez du contenu avec l'IA.</p>
-            
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setCreateModalOpen(true)} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-                Créer <ArrowRight size={12} />
+              <button
+                onClick={() => setCreateModalOpen(true)}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
+              >
+                <span>Créer</span>
+                <ArrowRight size={13} />
               </button>
             </div>
-          </div>
 
-          {/* Calendrier */}
-          <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Calendar size={18} />
+            {/* Carte 2 : Calendrier (Teal / Émeraude) */}
+            <div
+              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
+              style={{
+                background: 'linear-gradient(145deg, rgba(13, 148, 136, 0.4) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
+                border: '1px solid rgba(20, 184, 166, 0.35)',
+                boxShadow: '0 8px 24px -4px rgba(13, 148, 136, 0.25), inset 0 1px 0 0 rgba(20, 184, 166, 0.4)',
+              }}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#0D9488] text-white flex items-center justify-center shadow-[0_0_14px_rgba(13,148,136,0.6)]">
+                    <Calendar size={18} />
+                  </div>
+                  <button
+                    onClick={() => router.push('/workspace/calendrier')}
+                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
+                  >
+                    <Plus size={13} />
+                  </button>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Calendrier</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
+                  Planifiez et programmez vos publications.
+                </p>
               </div>
-              <div onClick={() => router.push('/workspace/calendrier')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid var(--b1)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-                <Plus size={12} />
-              </div>
+              <button
+                onClick={() => router.push('/workspace/calendrier')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
+              >
+                <span>Ouvrir</span>
+                <ArrowRight size={13} />
+              </button>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Calendrier</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Planifiez et programmez vos publications.</p>
-            <button onClick={() => router.push('/workspace/calendrier')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-              Ouvrir <ArrowRight size={12} />
-            </button>
-          </div>
 
-          {/* Analytique */}
-          <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BarChart3 size={18} />
+            {/* Carte 3 : Analytique (Orange / Ambre) */}
+            <div
+              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
+              style={{
+                background: 'linear-gradient(145deg, rgba(234, 88, 12, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
+                border: '1px solid rgba(249, 115, 22, 0.35)',
+                boxShadow: '0 8px 24px -4px rgba(234, 88, 12, 0.25), inset 0 1px 0 0 rgba(249, 115, 22, 0.4)',
+              }}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shadow-[0_0_14px_rgba(234,88,12,0.6)]">
+                    <BarChart3 size={18} />
+                  </div>
+                  <button
+                    onClick={() => router.push('/workspace/analytics')}
+                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
+                  >
+                    <Plus size={13} />
+                  </button>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Analytique</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
+                  Suivez vos performances et votre croissance.
+                </p>
               </div>
+              <button
+                onClick={() => router.push('/workspace/analytics')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#C2410C] hover:bg-[#9A3412] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
+              >
+                <span>Voir</span>
+                <ArrowRight size={13} />
+              </button>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Analytique</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Suivez vos performances et votre croissance.</p>
-            <button onClick={() => router.push('/workspace/analytics')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-              Voir <ArrowRight size={12} />
-            </button>
-          </div>
 
-          {/* Média */}
-          <div className="w-[145px] md:w-auto shrink-0 md:shrink" style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '16px', padding: '.8rem', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '.8rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--s2)', color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <ImageIcon size={18} />
+            {/* Carte 4 : Média (Violet / Pourpre) */}
+            <div
+              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
+              style={{
+                background: 'linear-gradient(145deg, rgba(126, 34, 206, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
+                border: '1px solid rgba(168, 85, 247, 0.35)',
+                boxShadow: '0 8px 24px -4px rgba(126, 34, 206, 0.25), inset 0 1px 0 0 rgba(168, 85, 247, 0.4)',
+              }}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#7E22CE] text-white flex items-center justify-center shadow-[0_0_14px_rgba(126,34,206,0.6)]">
+                    <ImageIcon size={18} />
+                  </div>
+                  <button
+                    onClick={() => router.push('/workspace/media')}
+                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
+                  >
+                    <Plus size={13} />
+                  </button>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Média</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
+                  Gérez vos images, vidéos et ressources.
+                </p>
               </div>
-              <div onClick={() => router.push('/workspace/media')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid var(--b1)', color: 'var(--t3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--t1)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-                <Plus size={12} />
-              </div>
+              <button
+                onClick={() => router.push('/workspace/media')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#6B21A8] hover:bg-[#581C87] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
+              >
+                <span>Gérer</span>
+                <ArrowRight size={13} />
+              </button>
             </div>
-            <h3 style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--t1)', margin: '0 0 .2rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Média</h3>
-            <p style={{ fontSize: '.65rem', color: 'var(--t3)', lineHeight: 1.3, flex: 1, margin: '0 0 .8rem 0' }}>Gérez vos images, vidéos et ressources.</p>
-            <button onClick={() => router.push('/workspace/media')} style={{ width: '100%', padding: '.45rem', borderRadius: '8px', border: 'none', background: 'var(--accent-light)', color: 'var(--accent)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--s2)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-light)'}>
-              Gérer <ArrowRight size={12} />
-            </button>
+
           </div>
         </div>
-      </div>
       )}
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         
         {/* Header & Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight" style={{ margin: 0 }}>
               {allPosts ? 'Mes Posts' : 'Posts récents'}
             </h2>
-            <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+            <span className="bg-[#1E293B] text-[#94A3B8] text-xs font-semibold px-2 py-0.5 rounded-full">
+              {nonDeletedCount}
+            </span>
             {!allPosts && displayPosts.length >= 5 && (
-              <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
+              <button
+                onClick={() => router.push('/workspace/posts')}
+                className="bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] text-white text-xs font-medium px-3 py-1 rounded-lg transition-all ml-1"
+              >
                 Voir tout
               </button>
             )}
