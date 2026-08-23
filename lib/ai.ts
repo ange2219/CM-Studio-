@@ -13,11 +13,8 @@ import { buildPinterestPrompt } from './pinterest-prompt'
 
 // ─── Clients & Configuration IA ───────────────────────────────────────────────
 
-const agentRouterKey = process.env.AGENTROUTER_API_KEY || ''
 const anthropicKey = process.env.ANTHROPIC_API_KEY || ''
 const openaiKey = process.env.OPENAI_API_KEY || ''
-
-// AgentRouter est appelé via `fetch` direct (voir callAgentRouter) — pas de client SDK.
 
 // Client Anthropic officiel (si clé sk-ant- directe)
 const anthropic = new Anthropic({
@@ -274,95 +271,6 @@ Aucun texte avant ou après le JSON.`
 }
 
 
-// ─── Appel Unifié AgentRouter (Claude Opus 4.8 / GPT-5.6 Sol / etc.) ─────────
-
-async function callAgentRouter(promptText: string, isJson: boolean = false, systemPrompt?: string, modelOverride?: string): Promise<string> {
-  const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
-  const model = modelOverride || ((provider === 'openai' || provider === 'gpt') ? GPT_MODEL : CLAUDE_MODEL)
-  const key = (agentRouterKey || process.env.AGENTROUTER_API_KEY || '').trim()
-
-  if (!key) {
-    throw new Error('Variable AGENTROUTER_API_KEY manquante sur Vercel.')
-  }
-
-  const messages: { role: string; content: string }[] = []
-  if (systemPrompt) {
-    messages.push({ role: 'system', content: systemPrompt })
-  }
-  messages.push({ role: 'user', content: promptText })
-
-  const baseUrl = (process.env.AGENTROUTER_BASE_URL || 'https://agentrouter.org/v1').replace(/\/+$/, '')
-  const endpoint = `${baseUrl}/chat/completions`
-
-  const payload: any = {
-    model,
-    messages,
-    max_tokens: 4096,
-  }
-
-  let res: Response
-  try {
-    res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`,
-        'Accept': 'application/json',
-        // Certains services (AgentRouter derrière Aliyun WAF) bloquent les requêtes
-        // sans User-Agent « navigateur ». Tentative de contournement au mieux.
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      },
-      body: JSON.stringify(payload),
-    })
-  } catch (netErr: any) {
-    console.error('[AgentRouter] Network error:', netErr)
-    throw new Error(`Impossible de joindre AgentRouter (${endpoint}): ${netErr?.message}`)
-  }
-
-  const rawText = await res.text()
-
-  // Détection d'une page de pare-feu / anti-bot (Aliyun WAF, Cloudflare…) :
-  // le service renvoie du HTML au lieu du JSON attendu. Message clair pour déclencher le repli.
-  if (/^\s*<(?:!doctype|html|head|meta|title)\b/i.test(rawText) || rawText.includes('aliyun_waf')) {
-    console.error('[AgentRouter] Page HTML reçue (pare-feu probable):', rawText.slice(0, 200))
-    throw new Error(`AgentRouter injoignable : ${baseUrl} a renvoyé une page de pare-feu (WAF) au lieu de JSON. Les requêtes depuis un serveur (Vercel) sont bloquées par ce service.`)
-  }
-
-  if (!res.ok) {
-    console.error(`[AgentRouter] HTTP ${res.status}:`, rawText)
-    try {
-      const errJson = JSON.parse(rawText)
-      const msg = errJson.error?.message || errJson.message || errJson.detail || rawText
-      throw new Error(`AgentRouter (${res.status}): ${msg}`)
-    } catch (e: any) {
-      if (e.message.startsWith('AgentRouter')) throw e
-      throw new Error(`AgentRouter (${res.status}): ${rawText.slice(0, 200)}`)
-    }
-  }
-
-  let data: any
-  try {
-    data = JSON.parse(rawText)
-  } catch {
-    throw new Error(`Réponse non-JSON reçue d'AgentRouter: ${rawText.slice(0, 200)}`)
-  }
-
-  const choice = data.choices?.[0]
-  const message = choice?.message
-  let content = message?.content || message?.reasoning_content || message?.text || choice?.text || ''
-
-  if (Array.isArray(content)) {
-    content = content.map((c: any) => (typeof c === 'string' ? c : c?.text || '')).join('')
-  }
-
-  if (!content || !content.trim()) {
-    console.error('[AgentRouter] Réponse sans contenu:', rawText)
-    throw new Error(`AgentRouter a retourné une réponse vide pour le modèle ${model}. Données: ${rawText.slice(0, 150)}`)
-  }
-
-  return content.trim()
-}
-
 // ─── Helpers de parsing JSON ──────────────────────────────────────────────────
 
 function extractJsonObject(raw: string): string {
@@ -380,12 +288,6 @@ function shapeGenerateResponse(parsed: any, targetPlatform?: Platform): Generate
 }
 
 // ─── Générateurs par fournisseur (découplés, sans repli interne) ──────────────
-
-async function genViaAgentRouter(req: GenerateRequest, targetPlatform: Platform | undefined, model: string): Promise<GenerateResponse> {
-  const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
-  const raw = await callAgentRouter(buildPrompt(req, targetPlatform), true, systemPrompt, model)
-  return shapeGenerateResponse(JSON.parse(extractJsonObject(raw)), targetPlatform)
-}
 
 async function genViaAnthropic(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
@@ -414,12 +316,12 @@ async function genViaOpenAI(req: GenerateRequest, targetPlatform?: Platform): Pr
   return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
 }
 
-// ─── Génération via Gemini 1.5 Flash (Repli) ──────────────────────────────────
+// ─── Génération via Gemini 2.5 Flash (fournisseur principal) ──────────────────
 
 async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   if (!gemini) throw new Error('GEMINI_API_KEY manquante.')
   const prompt = buildPrompt(req, targetPlatform)
-  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
+  const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash' })
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: { responseMimeType: 'application/json' }
@@ -433,13 +335,21 @@ async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Pla
   return parsed as GenerateResponse
 }
 
-// ─── Génération Simple avec repli en chaîne (AgentRouter → Claude → GPT → Gemini) ─
+// ─── Génération Simple avec repli en chaîne (Gemini → Claude → GPT) ───────────
 
 async function callSimpleAI(promptText: string, isJson: boolean = false): Promise<string> {
   const chain: { name: string; run: () => Promise<string> }[] = []
 
-  if (agentRouterKey) {
-    chain.push({ name: 'AgentRouter', run: () => callAgentRouter(promptText, isJson) })
+  if (gemini) {
+    const g = gemini
+    chain.push({ name: 'Gemini', run: async () => {
+      const model = g.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: promptText }] }],
+        generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
+      })
+      return result.response.text()
+    } })
   }
   if (anthropicKey) {
     chain.push({ name: 'Anthropic', run: async () => {
@@ -461,20 +371,9 @@ async function callSimpleAI(promptText: string, isJson: boolean = false): Promis
       return res.choices[0]?.message?.content || ''
     } })
   }
-  if (gemini) {
-    const g = gemini
-    chain.push({ name: 'Gemini', run: async () => {
-      const model = g.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: promptText }] }],
-        generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
-      })
-      return result.response.text()
-    } })
-  }
 
   if (chain.length === 0) {
-    throw new Error('Aucun fournisseur IA configuré. Renseignez AGENTROUTER_API_KEY ou GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
+    throw new Error('Aucun fournisseur IA configuré. Renseignez GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
   }
 
   let lastErr: any
@@ -527,14 +426,14 @@ Réponds UNIQUEMENT en JSON : {"hashtags": ["#tag1", "#tag2", ...]}`
   }
 }
 
-// ─── Génération d'image via Gemini 2.0 Flash (Imagen 3 / "Nano Banana 2") ─────
+// ─── Génération d'image via Gemini 2.5 Flash Image ("Nano Banana") ────────────
 
 export async function generateImage(prompt: string): Promise<string | null> {
   try {
     if (!gemini) return null
 
     const model = gemini.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp-image-generation',
+      model: 'gemini-2.5-flash-image',
     })
 
     const result = await model.generateContent({
@@ -562,14 +461,11 @@ export async function generateImage(prompt: string): Promise<string | null> {
 
 export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<GenerateResponse> {
   async function callAI(targetPlatform?: Platform): Promise<GenerateResponse> {
-    const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
-    const routerModel = (provider === 'openai' || provider === 'gpt') ? GPT_MODEL : CLAUDE_MODEL
-
     // Chaîne de repli : on tente chaque fournisseur configuré dans l'ordre,
-    // et on passe au suivant dès qu'un échoue (WAF, réponse vide, erreur réseau…).
+    // et on passe au suivant dès qu'un échoue (réponse vide, erreur réseau…).
     const chain: { name: string; run: () => Promise<GenerateResponse> }[] = []
-    if (agentRouterKey) {
-      chain.push({ name: 'AgentRouter', run: () => genViaAgentRouter(req, targetPlatform, routerModel) })
+    if (gemini) {
+      chain.push({ name: 'Gemini', run: () => generateWithGeminiFree(req, targetPlatform) })
     }
     if (anthropicKey) {
       chain.push({ name: 'Anthropic', run: () => genViaAnthropic(req, targetPlatform) })
@@ -577,12 +473,9 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
     if (openaiKey || process.env.GITHUB_TOKEN) {
       chain.push({ name: 'OpenAI', run: () => genViaOpenAI(req, targetPlatform) })
     }
-    if (gemini) {
-      chain.push({ name: 'Gemini', run: () => generateWithGeminiFree(req, targetPlatform) })
-    }
 
     if (chain.length === 0) {
-      throw new Error('Aucun fournisseur IA configuré. Renseignez AGENTROUTER_API_KEY ou GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
+      throw new Error('Aucun fournisseur IA configuré. Renseignez GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
     }
 
     let lastErr: any

@@ -1,160 +1,927 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { BarChart2, Heart, MessageCircle, Share2, Eye, TrendingUp } from 'lucide-react'
-import { AnalyticsSkeleton } from '@/components/ui/Skeleton'
+import { useEffect, useState, useMemo } from 'react'
+import {
+  Eye, Users, MousePointer2, Target, Percent,
+  Calendar, ChevronDown, ArrowUpRight, ArrowRight,
+  TrendingUp, BarChart3, Globe, Sparkles, Filter,
+  Share2, MessageCircle, Heart, Check, X, ExternalLink
+} from 'lucide-react'
+import { IconLinkedIn, IconInstagram, IconFacebook, IconTwitterX } from '@/components/icons/BrandIcons'
 
-interface PlatformStats {
-  impressions: number
-  reach:       number
-  likes:       number
-  comments:    number
-  shares:      number
+// ─── Types & Données ─────────────────────────────────────────────────────────
+
+type Period = '7d' | '30d' | '90d' | 'custom'
+type Granularity = 'day' | 'week' | 'month'
+
+interface PostItem {
+  id: string
+  title: string
+  date: string
+  platform: 'linkedin' | 'instagram' | 'facebook' | 'twitter'
+  views: number
+  engagements: number
+  engagementRate: number
+  imageUrl?: string
 }
 
-interface AnalyticsRow {
-  platform:     string
-  impressions:  number
-  reach:        number
-  likes:        number
-  comments:     number
-  shares:       number
-  fetched_at:   string
-}
+// ─── Sparkline Wave SVG Helper ────────────────────────────────────────────────
 
-const PLATFORM_COLORS: Record<string, string> = {
-  instagram: '#E1306C', facebook: '#1877F2', tiktok: '#9333EA',
-  twitter: '#1DA1F2', linkedin: '#0077B5', youtube: '#FF0000', pinterest: '#E60023',
-}
-const PLATFORM_NAMES: Record<string, string> = {
-  instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok',
-  twitter: 'X / Twitter', linkedin: 'LinkedIn', youtube: 'YouTube', pinterest: 'Pinterest',
-}
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  const range = max - min || 1
+  const width = 160
+  const height = 40
+  const points = data.map((val, idx) => {
+    const x = (idx / (data.length - 1)) * width
+    const y = height - ((val - min) / range) * (height - 10) - 5
+    return `${x},${y}`
+  })
 
-function fmt(n: number): string {
-  return n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M'
-       : n >= 1_000     ? (n / 1_000).toFixed(1) + 'K'
-       : String(n)
-}
-
-export default function AnalyticsTab() {
-  const [data,    setData]    = useState<AnalyticsRow[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/api/posts?limit=200')
-      .then(r => r.json())
-      .then(d => {
-        const posts: any[] = d.posts || []
-        // Build analytics from post analytics field
-        const rows: AnalyticsRow[] = posts
-          .filter((p: any) => p.analytics)
-          .flatMap((p: any) =>
-            (p.platforms || []).map((platform: string) => ({
-              platform,
-              impressions: p.analytics?.impressions ?? 0,
-              reach:       p.analytics?.reach       ?? 0,
-              likes:       p.analytics?.likes       ?? 0,
-              comments:    p.analytics?.comments    ?? 0,
-              shares:      p.analytics?.shares      ?? 0,
-              fetched_at:  p.created_at,
-            }))
-          )
-        setData(rows)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
-
-  const totals = {
-    impressions: data.reduce((s, a) => s + a.impressions, 0),
-    reach:       data.reduce((s, a) => s + a.reach,       0),
-    likes:       data.reduce((s, a) => s + a.likes,       0),
-    comments:    data.reduce((s, a) => s + a.comments,    0),
-    shares:      data.reduce((s, a) => s + a.shares,      0),
-  }
-
-  const byPlatform = data.reduce<Record<string, PlatformStats>>((acc, a) => {
-    if (!acc[a.platform]) acc[a.platform] = { impressions: 0, reach: 0, likes: 0, comments: 0, shares: 0 }
-    acc[a.platform].impressions += a.impressions
-    acc[a.platform].reach       += a.reach
-    acc[a.platform].likes       += a.likes
-    acc[a.platform].comments    += a.comments
-    acc[a.platform].shares      += a.shares
-    return acc
-  }, {})
-
-  const STATS = [
-    { label: 'Impressions',  value: totals.impressions, icon: Eye,           color: '#7B5CF5' },
-    { label: 'Portée',       value: totals.reach,       icon: TrendingUp,    color: '#F59E0B' },
-    { label: "J'aime",       value: totals.likes,       icon: Heart,         color: '#EF4444' },
-    { label: 'Commentaires', value: totals.comments,    icon: MessageCircle, color: '#22C55E' },
-    { label: 'Partages',     value: totals.shares,      icon: Share2,        color: '#7B5CF5' },
-  ]
-
-  if (loading) return <AnalyticsSkeleton />
+  const pathD = `M ${points.join(' L ')}`
+  const areaD = `M 0,${height} L ${points.join(' L ')} L ${width},${height} Z`
+  const gradientId = `spark-grad-${color.replace('#', '')}-${Math.random().toString(36).substring(2, 7)}`
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--t1)', margin: 0 }}>
-          Analytiques
-        </h2>
-        <p style={{ color: 'var(--t3)', fontSize: '.82rem', margin: '.25rem 0 0' }}>Performance de vos publications</p>
-      </div>
+    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.28" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#${gradientId})`} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
-      {/* Global stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        {STATS.map(stat => (
-          <div key={stat.label} style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1rem' }}>
-            <div style={{ color: stat.color, marginBottom: '.5rem' }}><stat.icon size={18} /></div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--t1)', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
-              {fmt(stat.value)}
-            </div>
-            <div style={{ fontSize: '.75rem', color: 'var(--t3)', marginTop: '.15rem' }}>{stat.label}</div>
+// ─── Composant Principal AnalyticsTab ─────────────────────────────────────────
+
+export default function AnalyticsTab() {
+  const [period, setPeriod] = useState<Period>('7d')
+  const [granularity, setGranularity] = useState<Granularity>('day')
+  const [granularityOpen, setGranularityOpen] = useState(false)
+  const [dateRangeOpen, setDateRangeOpen] = useState(false)
+  const [hoveredPointIdx, setHoveredPointIdx] = useState<number | null>(null)
+  const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null)
+  const [showAllPostsModal, setShowAllPostsModal] = useState(false)
+  const [showAudienceModal, setShowAudienceModal] = useState(false)
+
+  // Date range label
+  const dateRangeLabel = useMemo(() => {
+    switch (period) {
+      case '7d': return '12 mai – 18 mai 2024'
+      case '30d': return '19 avr. – 18 mai 2024'
+      case '90d': return '18 févr. – 18 mai 2024'
+      case 'custom': return '1 mai – 18 mai 2024'
+    }
+  }, [period])
+
+  // Données KPIs selon la période
+  const kpis = useMemo(() => {
+    const mult = period === '30d' ? 3.8 : period === '90d' ? 11.2 : 1
+    return [
+      {
+        id: 'views',
+        label: 'Vues',
+        value: period === '7d' ? '24,5K' : period === '30d' ? '98,2K' : '312K',
+        change: '+ 18,6%',
+        comparison: 'vs 5 mai – 11 mai',
+        color: '#A855F7', // Violet
+        icon: Eye,
+        sparkline: [12, 14, 18, 15, 22, 26, 24.5],
+      },
+      {
+        id: 'engagements',
+        label: 'Engagements',
+        value: period === '7d' ? '3,8K' : period === '30d' ? '15,4K' : '48,1K',
+        change: '+ 22,4%',
+        comparison: 'vs 5 mai – 11 mai',
+        color: '#3B82F6', // Bleu
+        icon: Users,
+        sparkline: [2.1, 2.5, 3.1, 2.8, 3.6, 4.1, 3.8],
+      },
+      {
+        id: 'clicks',
+        label: 'Clics',
+        value: period === '7d' ? '1,2K' : period === '30d' ? '4,9K' : '15,8K',
+        change: '+ 15,7%',
+        comparison: 'vs 5 mai – 11 mai',
+        color: '#10B981', // Vert émeraude
+        icon: MousePointer2,
+        sparkline: [0.8, 1.0, 1.3, 1.1, 1.5, 1.4, 1.2],
+      },
+      {
+        id: 'conversions',
+        label: 'Conversions',
+        value: period === '7d' ? '156' : period === '30d' ? '612' : '1 890',
+        change: '+ 12,1%',
+        comparison: 'vs 5 mai – 11 mai',
+        color: '#F97316', // Orange
+        icon: Target,
+        sparkline: [95, 110, 130, 115, 148, 162, 156],
+      },
+      {
+        id: 'engRate',
+        label: "Taux d'engagement",
+        value: '6,42%',
+        change: '+ 8,3%',
+        comparison: 'vs 5 mai – 11 mai',
+        color: '#06B6D4', // Cyan
+        icon: Percent,
+        sparkline: [5.2, 5.5, 6.1, 5.8, 6.6, 6.8, 6.42],
+      },
+    ]
+  }, [period])
+
+  // Données pour le grand graphique d'évolution
+  const chartData = useMemo(() => {
+    return [
+      { date: '12 mai', vues: 6200, engagements: 2800, clics: 1200 },
+      { date: '13 mai', vues: 10400, engagements: 4900, clics: 2100 },
+      { date: '14 mai', vues: 12800, engagements: 6200, clics: 3100 },
+      { date: '15 mai', vues: 11200, engagements: 5100, clics: 2400 },
+      { date: '16 mai', vues: 18200, engagements: 8900, clics: 4300 },
+      { date: '17 mai', vues: 14600, engagements: 6800, clics: 3200 },
+      { date: '18 mai', vues: 13200, engagements: 6100, clics: 2800 },
+    ]
+  }, [])
+
+  // Données plateformes pour le donut chart
+  const platformStats = [
+    { name: 'LinkedIn', pct: 45, count: '11K', color: '#0A66C2', icon: IconLinkedIn },
+    { name: 'Instagram', pct: 25, count: '6,1K', color: '#E1306C', icon: IconInstagram },
+    { name: 'Facebook', pct: 15, count: '3,7K', color: '#1877F2', icon: IconFacebook },
+    { name: 'Twitter', pct: 10, count: '2,4K', color: '#06B6D4', icon: IconTwitterX },
+    { name: 'Autres', pct: 5, count: '1,3K', color: '#64748B', icon: Globe },
+  ]
+
+  // Meilleurs contenus
+  const topPosts: PostItem[] = [
+    {
+      id: '1',
+      title: 'Infographie - Tendances 2024',
+      date: '12 mai 2024',
+      platform: 'linkedin',
+      views: 8200,
+      engagements: 1200,
+      engagementRate: 14.6,
+      imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      id: '2',
+      title: 'Nouvelle Collection',
+      date: '10 mai 2024',
+      platform: 'linkedin',
+      views: 6100,
+      engagements: 872,
+      engagementRate: 14.3,
+      imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      id: '3',
+      title: 'Équipe en action',
+      date: '8 mai 2024',
+      platform: 'instagram',
+      views: 4300,
+      engagements: 623,
+      engagementRate: 14.5,
+      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      id: '4',
+      title: 'Brouillon - Campagne été',
+      date: '6 mai 2024',
+      platform: 'linkedin',
+      views: 2100,
+      engagements: 312,
+      engagementRate: 14.9,
+      imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&auto=format&fit=crop&q=80',
+    },
+  ]
+
+  // Données démographiques Audience
+  const ageData = [
+    { age: '18-24', male: 18, female: 12 },
+    { age: '25-34', male: 38, female: 28 },
+    { age: '35-44', male: 24, female: 16 },
+    { age: '45-54', male: 12, female: 8 },
+    { age: '55+', male: 6, female: 4 },
+  ]
+
+  const topCountries = [
+    { flag: '🇫🇷', name: 'France', pct: 32 },
+    { flag: '🇨🇮', name: "Côte d'Ivoire", pct: 18 },
+    { flag: '🇺🇸', name: 'USA', pct: 14 },
+    { flag: '🇨🇦', name: 'Canada', pct: 8 },
+    { flag: '🇸🇳', name: 'Sénégal', pct: 6 },
+  ]
+
+  // Donut chart path calculations
+  const donutSlices = useMemo(() => {
+    let accPct = 0
+    const radius = 64
+    const strokeWidth = 22
+    const circumference = 2 * Math.PI * radius
+
+    return platformStats.map(item => {
+      const strokeDasharray = `${(item.pct / 100) * circumference} ${circumference}`
+      const strokeDashoffset = -(accPct / 100) * circumference
+      accPct += item.pct
+      return {
+        ...item,
+        strokeDasharray,
+        strokeDashoffset,
+      }
+    })
+  }, [platformStats])
+
+  return (
+    <div className="w-full min-h-screen bg-[#070B14] text-[#E2E8F0] p-4 sm:p-6 lg:p-7 space-y-4 max-w-[1600px] mx-auto">
+      
+      {/* ─── 1. Header Section ─────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-1">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            Analytics
+          </h1>
+          <p className="text-sm text-[#8E9BB0] mt-0.5">
+            Suivez vos performances et mesurez votre impact.
+          </p>
+        </div>
+
+        {/* Date Filters & Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          
+          {/* Period selector pills */}
+          <div className="inline-flex items-center bg-[#0D1424] border border-[#1E293B] rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setPeriod('7d')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                period === '7d'
+                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+              }`}
+            >
+              7 derniers jours
+            </button>
+            <button
+              onClick={() => setPeriod('30d')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                period === '30d'
+                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+              }`}
+            >
+              30 jours
+            </button>
+            <button
+              onClick={() => setPeriod('90d')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                period === '90d'
+                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+              }`}
+            >
+              90 jours
+            </button>
+            <button
+              onClick={() => {
+                setPeriod('custom')
+                setDateRangeOpen(true)
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                period === 'custom'
+                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  : 'text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50'
+              }`}
+            >
+              <Calendar size={13} />
+              <span>Personnalisé</span>
+            </button>
           </div>
-        ))}
+
+          {/* Date Picker Button */}
+          <button
+            onClick={() => setDateRangeOpen(!dateRangeOpen)}
+            className="inline-flex items-center gap-2 bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-white transition-all shadow-sm"
+          >
+            <Calendar size={14} className="text-[#8E9BB0]" />
+            <span>{dateRangeLabel}</span>
+            <ChevronDown size={14} className="text-[#8E9BB0]" />
+          </button>
+        </div>
       </div>
 
-      {/* By platform */}
-      {Object.keys(byPlatform).length > 0 && (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--t1)', margin: '0 0 1rem' }}>Par plateforme</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-            {Object.entries(byPlatform).map(([platform, stats]) => {
-              const color      = PLATFORM_COLORS[platform] || '#666'
-              const engagement = stats.likes + stats.comments + stats.shares
-              const engRate    = stats.reach > 0 ? ((engagement / stats.reach) * 100).toFixed(1) : '0'
-              return (
-                <div key={platform} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '130px', flexShrink: 0 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                    <span style={{ fontSize: '.82rem', color: 'var(--t2)' }}>{PLATFORM_NAMES[platform] || platform}</span>
-                  </div>
-                  <div style={{ flex: 1, background: 'var(--s2)', borderRadius: '100px', height: 6, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.min((stats.impressions / (totals.impressions || 1)) * 100, 100)}%`, height: '100%', background: color, borderRadius: '100px' }} />
-                  </div>
-                  <div style={{ display: 'flex', gap: '1rem', fontSize: '.75rem', color: 'var(--t3)', width: '150px', flexShrink: 0, justifyContent: 'flex-end' }}>
-                    <span>{fmt(stats.impressions)} imp.</span>
-                    <span style={{ color: '#22C55E' }}>{engRate}% eng.</span>
+      {/* ─── 2. Top 5 Metric Cards ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        {kpis.map(kpi => {
+          const Icon = kpi.icon
+          return (
+            <div
+              key={kpi.id}
+              className="bg-[#0B1120] border border-[#1E293B]/80 hover:border-[#334155] rounded-xl p-4 flex flex-col justify-between transition-all duration-200 shadow-sm relative overflow-hidden group"
+            >
+              {/* Header: Label + Badge Icon */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#94A3B8]">{kpi.label}</span>
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
+                  style={{
+                    backgroundColor: `${kpi.color}15`,
+                    color: kpi.color,
+                    border: `1px solid ${kpi.color}30`,
+                  }}
+                >
+                  <Icon size={16} />
+                </div>
+              </div>
+
+              {/* Metric Value */}
+              <div className="my-2">
+                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  {kpi.value}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 text-[11px]">
+                  <span className="font-semibold text-[#10B981] flex items-center">
+                    ↑ {kpi.change}
+                  </span>
+                  <span className="text-[#64748B]">{kpi.comparison}</span>
+                </div>
+              </div>
+
+              {/* Sparkline Graphic */}
+              <div className="w-full pt-1">
+                <Sparkline data={kpi.sparkline} color={kpi.color} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ─── 3. Middle Row : Performance Spline + Platform Donut ───────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+        
+        {/* Left Card (7 cols) : Évolution des performances */}
+        <div className="lg:col-span-7 bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 className="text-base font-bold text-white tracking-tight">
+                Évolution des performances
+              </h2>
+              {/* Legend Dots */}
+              <div className="flex items-center gap-4 mt-1.5 text-xs text-[#94A3B8]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#A855F7]" />
+                  <span>Vues</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" />
+                  <span>Engagements</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                  <span>Clics</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Granularity dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setGranularityOpen(!granularityOpen)}
+                className="bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-3 py-1.5 rounded-lg text-xs text-white font-medium flex items-center gap-2"
+              >
+                <span>{granularity === 'day' ? 'Par jour' : granularity === 'week' ? 'Par semaine' : 'Par mois'}</span>
+                <ChevronDown size={14} className="text-[#8E9BB0]" />
+              </button>
+              {granularityOpen && (
+                <div className="absolute right-0 mt-1 w-32 bg-[#0D1424] border border-[#1E293B] rounded-lg shadow-xl z-20 overflow-hidden text-xs py-1">
+                  <button
+                    onClick={() => { setGranularity('day'); setGranularityOpen(false) }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-[#1E293B] text-white flex items-center justify-between"
+                  >
+                    <span>Par jour</span>
+                    {granularity === 'day' && <Check size={12} className="text-[#3B82F6]" />}
+                  </button>
+                  <button
+                    onClick={() => { setGranularity('week'); setGranularityOpen(false) }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-[#1E293B] text-white flex items-center justify-between"
+                  >
+                    <span>Par semaine</span>
+                    {granularity === 'week' && <Check size={12} className="text-[#3B82F6]" />}
+                  </button>
+                  <button
+                    onClick={() => { setGranularity('month'); setGranularityOpen(false) }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-[#1E293B] text-white flex items-center justify-between"
+                  >
+                    <span>Par mois</span>
+                    {granularity === 'month' && <Check size={12} className="text-[#3B82F6]" />}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* SVG Smooth Multi-Line Chart */}
+          <div className="relative w-full h-[260px] select-none pt-2">
+            <svg viewBox="0 0 650 220" className="w-full h-full overflow-visible">
+              <defs>
+                {/* Gradients */}
+                <linearGradient id="gradVuesBig" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#A855F7" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#A855F7" stopOpacity="0.0" />
+                </linearGradient>
+                <linearGradient id="gradEngBig" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                </linearGradient>
+                <linearGradient id="gradClicsBig" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              {/* Horizontal grid lines */}
+              {[
+                { val: '20K', y: 20 },
+                { val: '15K', y: 65 },
+                { val: '10K', y: 110 },
+                { val: '5K',  y: 155 },
+                { val: '0',   y: 195 },
+              ].map(grid => (
+                <g key={grid.val}>
+                  <text x="0" y={grid.y + 4} fill="#64748B" fontSize="10" fontWeight="500">
+                    {grid.val}
+                  </text>
+                  <line x1="30" y1={grid.y} x2="650" y2={grid.y} stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
+                </g>
+              ))}
+
+              {/* Coordinates: X positions from 45 to 630 */}
+              {/* 
+                Calculations for Y:
+                Max = 20000 (y = 20), Min = 0 (y = 195) -> Range 175px
+              */}
+              {(() => {
+                const getX = (i: number) => 45 + i * (585 / (chartData.length - 1))
+                const getY = (v: number) => 195 - (v / 20000) * 175
+
+                const ptsVues = chartData.map((d, i) => ({ x: getX(i), y: getY(d.vues) }))
+                const ptsEng  = chartData.map((d, i) => ({ x: getX(i), y: getY(d.engagements) }))
+                const ptsClics = chartData.map((d, i) => ({ x: getX(i), y: getY(d.clics) }))
+
+                const makeSmoothPath = (pts: { x: number; y: number }[]) => {
+                  return pts.reduce((acc, pt, i, arr) => {
+                    if (i === 0) return `M ${pt.x},${pt.y}`
+                    const prev = arr[i - 1]
+                    const cp1x = prev.x + (pt.x - prev.x) / 2
+                    const cp1y = prev.y
+                    const cp2x = prev.x + (pt.x - prev.x) / 2
+                    const cp2y = pt.y
+                    return `${acc} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${pt.x},${pt.y}`
+                  }, '')
+                }
+
+                const pathVues = makeSmoothPath(ptsVues)
+                const pathEng  = makeSmoothPath(ptsEng)
+                const pathClics = makeSmoothPath(ptsClics)
+
+                const areaVues = `${pathVues} L ${getX(chartData.length - 1)},195 L ${getX(0)},195 Z`
+                const areaEng  = `${pathEng} L ${getX(chartData.length - 1)},195 L ${getX(0)},195 Z`
+                const areaClics = `${pathClics} L ${getX(chartData.length - 1)},195 L ${getX(0)},195 Z`
+
+                return (
+                  <>
+                    {/* Area fills */}
+                    <path d={areaVues} fill="url(#gradVuesBig)" />
+                    <path d={areaEng} fill="url(#gradEngBig)" />
+                    <path d={areaClics} fill="url(#gradClicsBig)" />
+
+                    {/* Strokes */}
+                    <path d={pathVues} fill="none" stroke="#A855F7" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d={pathEng} fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d={pathClics} fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
+
+                    {/* Interactive dots & hover lines */}
+                    {chartData.map((d, i) => {
+                      const isHovered = hoveredPointIdx === i
+                      const x = getX(i)
+
+                      return (
+                        <g key={d.date} onMouseEnter={() => setHoveredPointIdx(i)} onMouseLeave={() => setHoveredPointIdx(null)}>
+                          {/* Invisible hover slice hit target */}
+                          <rect
+                            x={x - 25}
+                            y="10"
+                            width="50"
+                            height="190"
+                            fill="transparent"
+                            className="cursor-pointer"
+                          />
+
+                          {/* Hover vertical guide */}
+                          {isHovered && (
+                            <line x1={x} y1="20" x2={x} y2="195" stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
+                          )}
+
+                          {/* Points */}
+                          <circle cx={x} cy={getY(d.vues)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#A855F7" strokeWidth="2" />
+                          <circle cx={x} cy={getY(d.engagements)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#3B82F6" strokeWidth="2" />
+                          <circle cx={x} cy={getY(d.clics)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#10B981" strokeWidth="2" />
+
+                          {/* X-axis labels */}
+                          <text
+                            x={x}
+                            y="212"
+                            textAnchor="middle"
+                            fill={isHovered ? '#FFFFFF' : '#64748B'}
+                            fontSize="10"
+                            fontWeight={isHovered ? '600' : '400'}
+                          >
+                            {d.date}
+                          </text>
+                        </g>
+                      )
+                    })}
+                  </>
+                )
+              })()}
+            </svg>
+
+            {/* Hover Tooltip Card */}
+            {hoveredPointIdx !== null && (
+              <div
+                className="absolute top-2 bg-[#0F172A] border border-[#334155] rounded-xl p-3 shadow-2xl pointer-events-none text-xs z-30 space-y-1.5 transition-all"
+                style={{
+                  left: `${(hoveredPointIdx / (chartData.length - 1)) * 75 + 10}%`,
+                }}
+              >
+                <div className="font-bold text-white border-b border-[#1E293B] pb-1">
+                  {chartData[hoveredPointIdx].date}
+                </div>
+                <div className="flex items-center justify-between gap-4 text-[#A855F7]">
+                  <span>Vues :</span>
+                  <span className="font-bold text-white">{chartData[hoveredPointIdx].vues.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 text-[#3B82F6]">
+                  <span>Engagements :</span>
+                  <span className="font-bold text-white">{chartData[hoveredPointIdx].engagements.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 text-[#10B981]">
+                  <span>Clics :</span>
+                  <span className="font-bold text-white">{chartData[hoveredPointIdx].clics.toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Card (5 cols) : Répartition par plateforme */}
+        <div className="lg:col-span-5 bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <h2 className="text-base font-bold text-white tracking-tight mb-4">
+              Répartition par plateforme
+            </h2>
+
+            {/* Donut Layout : Donut on Left, List on Right */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-5 my-2">
+              
+              {/* Donut SVG with central count */}
+              <div className="relative w-40 h-40 flex items-center justify-center flex-shrink-0">
+                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 160 160">
+                  {donutSlices.map(slice => (
+                    <circle
+                      key={slice.name}
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      fill="transparent"
+                      stroke={slice.color}
+                      strokeWidth={hoveredPlatform === slice.name ? '24' : '20'}
+                      strokeDasharray={slice.strokeDasharray}
+                      strokeDashoffset={slice.strokeDashoffset}
+                      className="transition-all duration-200 cursor-pointer"
+                      onMouseEnter={() => setHoveredPlatform(slice.name)}
+                      onMouseLeave={() => setHoveredPlatform(null)}
+                    />
+                  ))}
+                </svg>
+
+                {/* Donut Center text */}
+                <div className="absolute flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span className="text-xl font-extrabold text-white tracking-tight">24,5K</span>
+                  <span className="text-[10px] text-[#8E9BB0] font-medium">Vues totales</span>
+                </div>
+              </div>
+
+              {/* Platform breakdown list */}
+              <div className="flex-1 w-full space-y-2.5">
+                {platformStats.map(item => {
+                  const isHovered = hoveredPlatform === item.name
+                  return (
+                    <div
+                      key={item.name}
+                      className={`flex items-center justify-between text-xs p-1.5 rounded-lg transition-all cursor-pointer ${
+                        isHovered ? 'bg-[#1E293B]/60' : 'hover:bg-[#1E293B]/30'
+                      }`}
+                      onMouseEnter={() => setHoveredPlatform(item.name)}
+                      onMouseLeave={() => setHoveredPlatform(null)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="font-medium text-[#CBD5E1]">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-white">{item.pct}%</span>
+                        <span className="text-[#64748B] w-8 text-right font-medium">{item.count}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Action */}
+          <div className="pt-3 border-t border-[#1E293B]/60 flex justify-end">
+            <button
+              onClick={() => setShowAllPostsModal(true)}
+              className="text-xs font-semibold text-[#1877F2] hover:text-[#3B82F6] flex items-center gap-1 group transition-colors"
+            >
+              <span>Voir le détail</span>
+              <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 4. Bottom Row : Meilleurs contenus & Audience ─────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        
+        {/* Left Card : Meilleurs contenus */}
+        <div className="bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white tracking-tight">
+                Meilleurs contenus
+              </h2>
+              <button
+                onClick={() => setShowAllPostsModal(true)}
+                className="bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-2.5 py-1 rounded-lg text-xs font-medium text-[#94A3B8] hover:text-white transition-all"
+              >
+                Voir tout
+              </button>
+            </div>
+
+            {/* Table */}
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#64748B] border-b border-[#1E293B]/80 font-medium">
+                    <th className="pb-2.5 pl-1">Contenu</th>
+                    <th className="pb-2.5 text-right font-medium">Vues</th>
+                    <th className="pb-2.5 text-right font-medium">Engagements</th>
+                    <th className="pb-2.5 text-right pr-1 font-medium">Taux d&apos;eng.</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1E293B]/40">
+                  {topPosts.map(post => (
+                    <tr key={post.id} className="hover:bg-[#1E293B]/20 transition-colors group">
+                      {/* Post thumbnail + info */}
+                      <td className="py-2.5 pl-1">
+                        <div className="flex items-center gap-2.5">
+                          {/* Platform Icon Badge */}
+                          <div
+                            className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                            style={{
+                              backgroundColor: post.platform === 'linkedin' ? '#0A66C2' : '#E1306C',
+                              color: '#fff',
+                            }}
+                          >
+                            {post.platform === 'linkedin' ? <IconLinkedIn size={13} /> : <IconInstagram size={13} />}
+                          </div>
+
+                          {/* Image preview */}
+                          <div className="w-9 h-9 rounded-md bg-[#1E293B] overflow-hidden flex-shrink-0 border border-[#334155]/40">
+                            {post.imageUrl ? (
+                              <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[#64748B]">📄</div>
+                            )}
+                          </div>
+
+                          {/* Title & Date */}
+                          <div className="min-w-0 max-w-[170px] sm:max-w-[220px]">
+                            <p className="font-semibold text-white truncate text-xs group-hover:text-[#3B82F6] transition-colors">
+                              {post.title}
+                            </p>
+                            <p className="text-[10px] text-[#64748B] mt-0.5">{post.date}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Views */}
+                      <td className="py-2.5 text-right font-bold text-white">
+                        {(post.views / 1000).toFixed(1).replace('.', ',')}K
+                      </td>
+
+                      {/* Engagements */}
+                      <td className="py-2.5 text-right font-medium text-[#CBD5E1]">
+                        {post.engagements >= 1000 ? `${(post.engagements / 1000).toFixed(1).replace('.', ',')}K` : post.engagements}
+                      </td>
+
+                      {/* Rate */}
+                      <td className="py-2.5 text-right pr-1">
+                        <span className="font-bold text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-md">
+                          {post.engagementRate.toFixed(1).replace('.', ',')}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Card : Audience */}
+        <div className="bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-white tracking-tight">
+                Audience
+              </h2>
+              <button
+                onClick={() => setShowAudienceModal(true)}
+                className="text-xs font-semibold text-[#1877F2] hover:text-[#3B82F6] flex items-center gap-1 group transition-colors"
+              >
+                <span>Voir le détail</span>
+                <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+              </button>
+            </div>
+
+            {/* Sub-grid 2 columns inside Audience */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5">
+              
+              {/* Left column (7 cols) : Âge et genre */}
+              <div className="sm:col-span-7 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white">Âge et genre</span>
+                  <div className="flex items-center gap-2.5 text-[10px] font-medium">
+                    <span className="flex items-center gap-1 text-[#3B82F6]">
+                      <span className="w-2 h-2 rounded-xs bg-[#3B82F6]" /> Hommes 58%
+                    </span>
+                    <span className="flex items-center gap-1 text-[#A855F7]">
+                      <span className="w-2 h-2 rounded-xs bg-[#A855F7]" /> Femmes 42%
+                    </span>
                   </div>
                 </div>
-              )
-            })}
+
+                {/* Age bar chart */}
+                <div className="relative h-[160px] w-full pt-2">
+                  {/* Grid background lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
+                    {[40, 30, 20, 10, 0].map(val => (
+                      <div key={val} className="flex items-center gap-1.5 w-full">
+                        <span className="text-[9px] text-[#64748B] w-5 text-right">{val}%</span>
+                        <div className="flex-1 border-b border-[#1E293B]/40" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Vertical Bars */}
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between pl-7 pr-1 h-full pb-6">
+                    {ageData.map(group => (
+                      <div key={group.age} className="flex flex-col items-center gap-1 h-full justify-end">
+                        <div className="flex items-end gap-1">
+                          {/* Male Bar */}
+                          <div
+                            className="w-3 sm:w-3.5 bg-[#3B82F6] hover:brightness-110 rounded-t-sm transition-all"
+                            style={{ height: `${(group.male / 40) * 115}px` }}
+                            title={`Hommes: ${group.male}%`}
+                          />
+                          {/* Female Bar */}
+                          <div
+                            className="w-3 sm:w-3.5 bg-[#A855F7] hover:brightness-110 rounded-t-sm transition-all"
+                            style={{ height: `${(group.female / 40) * 115}px` }}
+                            title={`Femmes: ${group.female}%`}
+                          />
+                        </div>
+                        <span className="text-[9px] font-medium text-[#64748B] mt-1">{group.age}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right column (5 cols) : Top pays */}
+              <div className="sm:col-span-5 space-y-2 border-t sm:border-t-0 sm:border-l border-[#1E293B]/60 pt-3 sm:pt-0 sm:pl-4">
+                <span className="text-xs font-bold text-white block">Top pays</span>
+                <div className="space-y-2">
+                  {topCountries.map(country => (
+                    <div key={country.name} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">{country.flag}</span>
+                        <span className="text-[#CBD5E1] font-medium text-[11px] truncate max-w-[80px]">
+                          {country.name}
+                        </span>
+                      </div>
+                      <span className="font-bold text-white text-[11px]">{country.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => setShowAudienceModal(true)}
+                    className="text-[11px] font-semibold text-[#1877F2] hover:underline"
+                  >
+                    Voir plus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Modals (Interactions) ────────────────────────────────────────── */}
+
+      {/* Modal: Voir tout les posts */}
+      {showAllPostsModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0B1120] border border-[#1E293B] rounded-xl max-w-2xl w-full p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
+              <h3 className="text-lg font-bold text-white">Tous les contenus</h3>
+              <button
+                onClick={() => setShowAllPostsModal(false)}
+                className="text-[#94A3B8] hover:text-white p-1 rounded-lg hover:bg-[#1E293B]"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+              {topPosts.map(post => (
+                <div key={post.id} className="flex items-center justify-between p-3 bg-[#0D1424] border border-[#1E293B]/70 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[#1E293B]">
+                      {post.imageUrl && <img src={post.imageUrl} alt="" className="w-full h-full object-cover" />}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">{post.title}</h4>
+                      <p className="text-xs text-[#64748B]">{post.date} • {post.platform.toUpperCase()}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold text-white text-sm">{(post.views / 1000).toFixed(1)}K vues</span>
+                    <span className="block text-xs text-[#10B981] font-semibold">{post.engagementRate}% eng.</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Empty state */}
-      {data.length === 0 && (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '12px', padding: '4rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '14px', background: 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-            <BarChart2 size={24} color="var(--t3)" />
+      {/* Modal: Détail Audience */}
+      {showAudienceModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0B1120] border border-[#1E293B] rounded-xl max-w-xl w-full p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
+              <h3 className="text-lg font-bold text-white">Détails de l&apos;Audience</h3>
+              <button
+                onClick={() => setShowAudienceModal(false)}
+                className="text-[#94A3B8] hover:text-white p-1 rounded-lg hover:bg-[#1E293B]"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-4 text-xs">
+              <div className="p-3 bg-[#0D1424] rounded-xl border border-[#1E293B]">
+                <h4 className="font-bold text-white mb-2">Répartition Globale</h4>
+                <p className="text-[#94A3B8]">Votre audience est majoritairement composée de professionnels âgés de 25 à 34 ans situés en France et en Afrique de l&apos;Ouest.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-[#0D1424] rounded-xl border border-[#1E293B]">
+                  <span className="text-[#64748B] font-medium">Pic d&apos;activité</span>
+                  <p className="text-base font-bold text-white mt-1">Mardi & Jeudi • 18h - 20h</p>
+                </div>
+                <div className="p-3 bg-[#0D1424] rounded-xl border border-[#1E293B]">
+                  <span className="text-[#64748B] font-medium">Fidélité de l&apos;audience</span>
+                  <p className="text-base font-bold text-[#10B981] mt-1">+64% récurrents</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p style={{ color: 'var(--t2)', fontWeight: 600, margin: '0 0 .25rem' }}>Pas encore de données</p>
-          <p style={{ color: 'var(--t3)', fontSize: '.82rem', margin: 0 }}>Publiez des posts pour voir vos statistiques ici</p>
         </div>
       )}
+
     </div>
   )
 }
