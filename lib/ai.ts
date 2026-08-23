@@ -283,49 +283,76 @@ Aucun texte avant ou après le JSON.`
 async function callAgentRouter(promptText: string, isJson: boolean = false, systemPrompt?: string, modelOverride?: string): Promise<string> {
   const provider = process.env.AI_PROVIDER?.toLowerCase() || 'anthropic'
   const model = modelOverride || ((provider === 'openai' || provider === 'gpt') ? GPT_MODEL : CLAUDE_MODEL)
+  const key = (agentRouterKey || process.env.AGENTROUTER_API_KEY || '').trim()
 
-  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = []
+  if (!key) {
+    throw new Error('Variable AGENTROUTER_API_KEY manquante sur Vercel.')
+  }
+
+  const messages: { role: string; content: string }[] = []
   if (systemPrompt) {
     messages.push({ role: 'system', content: systemPrompt })
   }
   messages.push({ role: 'user', content: promptText })
 
-  try {
-    const params: any = {
-      model,
-      messages,
-      max_tokens: 4096,
-    }
+  const baseUrl = (process.env.AGENTROUTER_BASE_URL || 'https://agentrouter.org/v1').replace(/\/+$/, '')
+  const endpoint = `${baseUrl}/chat/completions`
 
-    const response = await agentRouter.chat.completions.create(params)
-
-    // @ts-expect-error - safety fallback
-    if (response?.error) {
-      // @ts-expect-error - safety fallback
-      throw new Error(`AgentRouter: ${response.error.message || JSON.stringify(response.error)}`)
-    }
-
-    const choice = response?.choices?.[0] as any
-    const message = choice?.message
-    
-    // Extraction multi-champs (content, reasoning_content, text, etc.)
-    let content = message?.content || message?.reasoning_content || message?.text || choice?.text || ''
-
-    // Si content est un tableau (parties de contenu structuré)
-    if (Array.isArray(content)) {
-      content = content.map((c: any) => (typeof c === 'string' ? c : c?.text || '')).join('')
-    }
-
-    if (!content || !content.trim()) {
-      console.warn('[callAgentRouter] Empty content. Full response object:', JSON.stringify(response))
-      throw new Error('Réponse vide reçue du modèle IA')
-    }
-
-    return content
-  } catch (err: any) {
-    console.error('[callAgentRouter] Error:', err?.message || err)
-    throw new Error(err?.message || 'Erreur lors de la communication avec AgentRouter')
+  const payload: any = {
+    model,
+    messages,
   }
+
+  let res: Response
+  try {
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+      },
+      body: JSON.stringify(payload),
+    })
+  } catch (netErr: any) {
+    console.error('[AgentRouter] Network error:', netErr)
+    throw new Error(`Impossible de joindre AgentRouter (${endpoint}): ${netErr?.message}`)
+  }
+
+  const rawText = await res.text()
+
+  if (!res.ok) {
+    console.error(`[AgentRouter] HTTP ${res.status}:`, rawText)
+    try {
+      const errJson = JSON.parse(rawText)
+      const msg = errJson.error?.message || errJson.message || errJson.detail || rawText
+      throw new Error(`AgentRouter (${res.status}): ${msg}`)
+    } catch (e: any) {
+      if (e.message.startsWith('AgentRouter')) throw e
+      throw new Error(`AgentRouter (${res.status}): ${rawText.slice(0, 200)}`)
+    }
+  }
+
+  let data: any
+  try {
+    data = JSON.parse(rawText)
+  } catch {
+    throw new Error(`Réponse non-JSON reçue d'AgentRouter: ${rawText.slice(0, 200)}`)
+  }
+
+  const choice = data.choices?.[0]
+  const message = choice?.message
+  let content = message?.content || message?.reasoning_content || message?.text || choice?.text || ''
+
+  if (Array.isArray(content)) {
+    content = content.map((c: any) => (typeof c === 'string' ? c : c?.text || '')).join('')
+  }
+
+  if (!content || !content.trim()) {
+    console.error('[AgentRouter] Réponse sans contenu:', rawText)
+    throw new Error(`AgentRouter a retourné une réponse vide pour le modèle ${model}. Données: ${rawText.slice(0, 150)}`)
+  }
+
+  return content.trim()
 }
 
 // ─── Génération via Claude (Anthropic) — plans payants ────────────────────────
