@@ -7,6 +7,7 @@ import {
   Globe, X, Check
 } from 'lucide-react'
 import { IconLinkedIn, IconInstagram, IconFacebook, IconTwitterX } from '@/components/icons/BrandIcons'
+import { useTheme } from '@/components/context/ThemeContext'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,7 +27,7 @@ interface PostItem {
 
 // ─── Sparkline Wave SVG Helper avec Effet Néon Lumineux ───────────────────────
 
-function GlowingSparkline({ data, color }: { data: number[]; color: string }) {
+function GlowingSparkline({ data, color, isDark }: { data: number[]; color: string; isDark: boolean }) {
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
@@ -54,17 +55,17 @@ function GlowingSparkline({ data, color }: { data: number[]; color: string }) {
 
   const pathD = makeSmoothPath(points)
   const areaD = `${pathD} L ${width},${height} L 0,${height} Z`
-  const gradientId = `glow-spark-grad-${color.replace('#', '')}`
+  const gradientId = `glow-spark-grad-${color.replace('#', '')}-${isDark ? 'dark' : 'light'}`
 
   return (
     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible select-none">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="0%" stopColor={color} stopOpacity={isDark ? 0.25 : 0.18} />
           <stop offset="100%" stopColor={color} stopOpacity="0.0" />
         </linearGradient>
         <filter id={`glow-${color.replace('#', '')}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={color} floodOpacity="0.6" />
+          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={color} floodOpacity={isDark ? 0.6 : 0.3} />
         </filter>
       </defs>
       <path d={areaD} fill={`url(#${gradientId})`} />
@@ -84,6 +85,7 @@ function GlowingSparkline({ data, color }: { data: number[]; color: string }) {
 // ─── Composant Principal AnalyticsTab ─────────────────────────────────────────
 
 export default function AnalyticsTab() {
+  const { darkMode } = useTheme()
   const [period, setPeriod] = useState<Period>('7d')
   const [granularity, setGranularity] = useState<Granularity>('day')
   const [granularityOpen, setGranularityOpen] = useState(false)
@@ -267,7 +269,7 @@ export default function AnalyticsTab() {
   }, [platformStats])
 
   return (
-    <div className="w-full min-h-full bg-transparent text-[#E2E8F0] space-y-4 max-w-[1600px] mx-auto pb-8">
+    <div className="w-full min-h-full bg-transparent space-y-4 max-w-[1600px] mx-auto pb-8">
       
       {/* ─── 1. Header Conforme à la Maquette ───────────────────────────────── */}
       <div className="space-y-3">
@@ -280,7 +282,7 @@ export default function AnalyticsTab() {
           {/* Bouton Plage de Date (Positionné en haut à droite) */}
           <button
             onClick={() => setDateRangeOpen(!dateRangeOpen)}
-            className="inline-flex items-center gap-2 bg-white dark:bg-[#0D1424] hover:bg-slate-50 dark:hover:bg-[#152036] border border-slate-200 dark:border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-slate-800 dark:text-white transition-all shadow-sm flex-shrink-0"
+            className="inline-flex items-center gap-2 bg-white dark:bg-[#0D1424] hover:bg-slate-50 dark:hover:bg-[#152036] border border-slate-200 dark:border-[#1E293B] px-3.5 py-2 rounded-xl text-xs font-medium text-slate-800 dark:text-white transition-all shadow-xs flex-shrink-0"
           >
             <Calendar size={14} className="text-slate-500 dark:text-[#8E9BB0]" />
             <span>{dateRangeLabel}</span>
@@ -295,12 +297,12 @@ export default function AnalyticsTab() {
 
         {/* Troisième ligne : Groupe de Pilules de Période (Positionné sous le sous-titre) */}
         <div className="pt-1">
-          <div className="inline-flex items-center bg-white dark:bg-[#0D1424] border border-slate-200 dark:border-[#1E293B] rounded-xl p-1 gap-1 shadow-sm">
+          <div className="inline-flex items-center bg-white dark:bg-[#0D1424] border border-slate-200 dark:border-[#1E293B] rounded-xl p-1 gap-1 shadow-xs">
             <button
               onClick={() => setPeriod('7d')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 period === '7d'
-                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  ? 'bg-[#1877F2] text-white shadow-xs'
                   : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
@@ -310,7 +312,7 @@ export default function AnalyticsTab() {
               onClick={() => setPeriod('30d')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 period === '30d'
-                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  ? 'bg-[#1877F2] text-white shadow-xs'
                   : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
@@ -320,7 +322,7 @@ export default function AnalyticsTab() {
               onClick={() => setPeriod('90d')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 period === '90d'
-                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  ? 'bg-[#1877F2] text-white shadow-xs'
                   : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
@@ -333,7 +335,7 @@ export default function AnalyticsTab() {
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 period === 'custom'
-                  ? 'bg-[#1877F2] text-white shadow-sm'
+                  ? 'bg-[#1877F2] text-white shadow-xs'
                   : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E293B]/50'
               }`}
             >
@@ -344,30 +346,34 @@ export default function AnalyticsTab() {
         </div>
       </div>
 
-      {/* ─── 2. Top 5 Metric Cards avec Effet de Lumière Subtil ─────────────── */}
+      {/* ─── 2. Top 5 Metric Cards avec Adaptation Mode Clair & Sombre ──────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
         {kpis.map(kpi => {
           const Icon = kpi.icon
           return (
             <div
               key={kpi.id}
-              className="rounded-xl p-4 flex flex-col justify-between transition-all duration-200 shadow-md relative overflow-hidden group"
+              className="rounded-xl p-4 flex flex-col justify-between transition-all duration-200 shadow-xs dark:shadow-md relative overflow-hidden group bg-white dark:bg-[#0B1120]"
               style={{
-                background: `radial-gradient(circle at 85% 15%, ${kpi.color}1E 0%, transparent 65%), #0B1120`,
-                border: `1px solid ${kpi.color}33`,
-                boxShadow: `0 4px 20px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 ${kpi.color}40`,
+                background: darkMode
+                  ? `radial-gradient(circle at 85% 15%, ${kpi.color}1E 0%, transparent 65%), #0B1120`
+                  : `radial-gradient(circle at 85% 15%, ${kpi.color}12 0%, transparent 65%), #FFFFFF`,
+                border: darkMode ? `1px solid ${kpi.color}33` : `1px solid ${kpi.color}30`,
+                boxShadow: darkMode
+                  ? `0 4px 20px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 ${kpi.color}40`
+                  : `0 2px 10px -1px rgba(0, 0, 0, 0.04), inset 0 1px 0 0 ${kpi.color}25`,
               }}
             >
               {/* Header: Label + Badge Icon Circulaire Lumineux */}
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-[#94A3B8]">{kpi.label}</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-[#94A3B8]">{kpi.label}</span>
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
                   style={{
-                    backgroundColor: `${kpi.color}20`,
+                    backgroundColor: darkMode ? `${kpi.color}20` : `${kpi.color}15`,
                     color: kpi.color,
-                    border: `1px solid ${kpi.color}50`,
-                    boxShadow: `0 0 12px 0px ${kpi.color}35`,
+                    border: darkMode ? `1px solid ${kpi.color}50` : `1px solid ${kpi.color}35`,
+                    boxShadow: darkMode ? `0 0 12px 0px ${kpi.color}35` : `0 0 8px 0px ${kpi.color}20`,
                   }}
                 >
                   <Icon size={15} />
@@ -376,20 +382,20 @@ export default function AnalyticsTab() {
 
               {/* Metric Value */}
               <div className="my-2.5">
-                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   {kpi.value}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 text-[11px]">
                   <span className="font-semibold flex items-center" style={{ color: kpi.changeColor }}>
                     ↑ {kpi.change}
                   </span>
-                  <span className="text-[#64748B]">{kpi.comparison}</span>
+                  <span className="text-slate-400 dark:text-[#64748B]">{kpi.comparison}</span>
                 </div>
               </div>
 
               {/* Sparkline Graphic avec effet néon */}
               <div className="w-full pt-1">
-                <GlowingSparkline data={kpi.sparkline} color={kpi.color} />
+                <GlowingSparkline data={kpi.sparkline} color={kpi.color} isDark={darkMode} />
               </div>
             </div>
           )
@@ -400,15 +406,15 @@ export default function AnalyticsTab() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         
         {/* Left Card (7 cols) : Évolution des performances */}
-        <div className="lg:col-span-7 bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-xs dark:shadow-none">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                 Évolution des performances
               </h2>
               {/* Legend Dots */}
-              <div className="flex items-center gap-4 mt-1.5 text-xs text-[#94A3B8]">
+              <div className="flex items-center gap-4 mt-1.5 text-xs text-slate-600 dark:text-[#94A3B8]">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#A855F7]" />
                   <span>Vues</span>
@@ -428,30 +434,30 @@ export default function AnalyticsTab() {
             <div className="relative">
               <button
                 onClick={() => setGranularityOpen(!granularityOpen)}
-                className="bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-3 py-1.5 rounded-lg text-xs text-white font-medium flex items-center gap-2"
+                className="bg-slate-50 dark:bg-[#0D1424] hover:bg-slate-100 dark:hover:bg-[#152036] border border-slate-200 dark:border-[#1E293B] px-3 py-1.5 rounded-lg text-xs text-slate-800 dark:text-white font-medium flex items-center gap-2"
               >
                 <span>{granularity === 'day' ? 'Par jour' : granularity === 'week' ? 'Par semaine' : 'Par mois'}</span>
-                <ChevronDown size={14} className="text-[#8E9BB0]" />
+                <ChevronDown size={14} className="text-slate-500 dark:text-[#8E9BB0]" />
               </button>
               {granularityOpen && (
-                <div className="absolute right-0 mt-1 w-32 bg-[#0D1424] border border-[#1E293B] rounded-lg shadow-xl z-20 overflow-hidden text-xs py-1">
+                <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-[#0D1424] border border-slate-200 dark:border-[#1E293B] rounded-lg shadow-xl z-20 overflow-hidden text-xs py-1">
                   <button
                     onClick={() => { setGranularity('day'); setGranularityOpen(false) }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-[#1E293B] text-white flex items-center justify-between"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-[#1E293B] text-slate-800 dark:text-white flex items-center justify-between"
                   >
                     <span>Par jour</span>
                     {granularity === 'day' && <Check size={12} className="text-[#3B82F6]" />}
                   </button>
                   <button
                     onClick={() => { setGranularity('week'); setGranularityOpen(false) }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-[#1E293B] text-white flex items-center justify-between"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-[#1E293B] text-slate-800 dark:text-white flex items-center justify-between"
                   >
                     <span>Par semaine</span>
                     {granularity === 'week' && <Check size={12} className="text-[#3B82F6]" />}
                   </button>
                   <button
                     onClick={() => { setGranularity('month'); setGranularityOpen(false) }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-[#1E293B] text-white flex items-center justify-between"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-[#1E293B] text-slate-800 dark:text-white flex items-center justify-between"
                   >
                     <span>Par mois</span>
                     {granularity === 'month' && <Check size={12} className="text-[#3B82F6]" />}
@@ -466,15 +472,15 @@ export default function AnalyticsTab() {
             <svg viewBox="0 0 650 220" className="w-full h-full overflow-visible">
               <defs>
                 <linearGradient id="gradVuesBig" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#A855F7" stopOpacity="0.22" />
+                  <stop offset="0%" stopColor="#A855F7" stopOpacity={darkMode ? 0.22 : 0.15} />
                   <stop offset="100%" stopColor="#A855F7" stopOpacity="0.0" />
                 </linearGradient>
                 <linearGradient id="gradEngBig" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.18" />
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity={darkMode ? 0.18 : 0.12} />
                   <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
                 </linearGradient>
                 <linearGradient id="gradClicsBig" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.15" />
+                  <stop offset="0%" stopColor="#10B981" stopOpacity={darkMode ? 0.15 : 0.10} />
                   <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
@@ -488,10 +494,17 @@ export default function AnalyticsTab() {
                 { val: '0',   y: 195 },
               ].map(grid => (
                 <g key={grid.val}>
-                  <text x="0" y={grid.y + 4} fill="#64748B" fontSize="10" fontWeight="500">
+                  <text x="0" y={grid.y + 4} fill={darkMode ? '#64748B' : '#94A3B8'} fontSize="10" fontWeight="500">
                     {grid.val}
                   </text>
-                  <line x1="30" y1={grid.y} x2="650" y2={grid.y} stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
+                  <line
+                    x1="30"
+                    y1={grid.y}
+                    x2="650"
+                    y2={grid.y}
+                    stroke={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+                    strokeDasharray="3 3"
+                  />
                 </g>
               ))}
 
@@ -549,18 +562,47 @@ export default function AnalyticsTab() {
                           />
 
                           {isHovered && (
-                            <line x1={x} y1="20" x2={x} y2="195" stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
+                            <line
+                              x1={x}
+                              y1="20"
+                              x2={x}
+                              y2="195"
+                              stroke={darkMode ? '#475569' : '#CBD5E1'}
+                              strokeWidth="1"
+                              strokeDasharray="3 3"
+                            />
                           )}
 
-                          <circle cx={x} cy={getY(d.vues)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#A855F7" strokeWidth="2" />
-                          <circle cx={x} cy={getY(d.engagements)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#3B82F6" strokeWidth="2" />
-                          <circle cx={x} cy={getY(d.clics)} r={isHovered ? 5 : 3.5} fill="#0B1120" stroke="#10B981" strokeWidth="2" />
+                          <circle
+                            cx={x}
+                            cy={getY(d.vues)}
+                            r={isHovered ? 5 : 3.5}
+                            fill={darkMode ? '#0B1120' : '#FFFFFF'}
+                            stroke="#A855F7"
+                            strokeWidth="2"
+                          />
+                          <circle
+                            cx={x}
+                            cy={getY(d.engagements)}
+                            r={isHovered ? 5 : 3.5}
+                            fill={darkMode ? '#0B1120' : '#FFFFFF'}
+                            stroke="#3B82F6"
+                            strokeWidth="2"
+                          />
+                          <circle
+                            cx={x}
+                            cy={getY(d.clics)}
+                            r={isHovered ? 5 : 3.5}
+                            fill={darkMode ? '#0B1120' : '#FFFFFF'}
+                            stroke="#10B981"
+                            strokeWidth="2"
+                          />
 
                           <text
                             x={x}
                             y="212"
                             textAnchor="middle"
-                            fill={isHovered ? '#FFFFFF' : '#64748B'}
+                            fill={isHovered ? (darkMode ? '#FFFFFF' : '#0F172A') : (darkMode ? '#64748B' : '#94A3B8')}
                             fontSize="10"
                             fontWeight={isHovered ? '600' : '400'}
                           >
@@ -576,25 +618,25 @@ export default function AnalyticsTab() {
 
             {hoveredPointIdx !== null && (
               <div
-                className="absolute top-2 bg-[#0F172A] border border-[#334155] rounded-xl p-3 shadow-2xl pointer-events-none text-xs z-30 space-y-1.5 transition-all"
+                className="absolute top-2 bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-[#334155] rounded-xl p-3 shadow-xl pointer-events-none text-xs z-30 space-y-1.5 transition-all"
                 style={{
                   left: `${(hoveredPointIdx / (chartData.length - 1)) * 75 + 10}%`,
                 }}
               >
-                <div className="font-bold text-white border-b border-[#1E293B] pb-1">
+                <div className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-[#1E293B] pb-1">
                   {chartData[hoveredPointIdx].date}
                 </div>
                 <div className="flex items-center justify-between gap-4 text-[#A855F7]">
                   <span>Vues :</span>
-                  <span className="font-bold text-white">{chartData[hoveredPointIdx].vues.toLocaleString()}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{chartData[hoveredPointIdx].vues.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4 text-[#3B82F6]">
                   <span>Engagements :</span>
-                  <span className="font-bold text-white">{chartData[hoveredPointIdx].engagements.toLocaleString()}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{chartData[hoveredPointIdx].engagements.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4 text-[#10B981]">
                   <span>Clics :</span>
-                  <span className="font-bold text-white">{chartData[hoveredPointIdx].clics.toLocaleString()}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{chartData[hoveredPointIdx].clics.toLocaleString()}</span>
                 </div>
               </div>
             )}
@@ -602,9 +644,9 @@ export default function AnalyticsTab() {
         </div>
 
         {/* Right Card (5 cols) : Répartition par plateforme */}
-        <div className="lg:col-span-5 bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-xs dark:shadow-none">
           <div>
-            <h2 className="text-base font-bold text-white tracking-tight mb-4">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight mb-4">
               Répartition par plateforme
             </h2>
 
@@ -632,8 +674,8 @@ export default function AnalyticsTab() {
                 </svg>
 
                 <div className="absolute flex flex-col items-center justify-center text-center pointer-events-none">
-                  <span className="text-xl font-extrabold text-white tracking-tight">24,5K</span>
-                  <span className="text-[10px] text-[#8E9BB0] font-medium">Vues totales</span>
+                  <span className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">24,5K</span>
+                  <span className="text-[10px] text-slate-500 dark:text-[#8E9BB0] font-medium">Vues totales</span>
                 </div>
               </div>
 
@@ -645,18 +687,20 @@ export default function AnalyticsTab() {
                     <div
                       key={item.name}
                       className={`flex items-center justify-between text-xs p-1.5 rounded-lg transition-all cursor-pointer ${
-                        isHovered ? 'bg-[#1E293B]/60' : 'hover:bg-[#1E293B]/30'
+                        isHovered
+                          ? 'bg-slate-100 dark:bg-[#1E293B]/60'
+                          : 'hover:bg-slate-50 dark:hover:bg-[#1E293B]/30'
                       }`}
                       onMouseEnter={() => setHoveredPlatform(item.name)}
                       onMouseLeave={() => setHoveredPlatform(null)}
                     >
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                        <span className="font-medium text-[#CBD5E1]">{item.name}</span>
+                        <span className="font-medium text-slate-700 dark:text-[#CBD5E1]">{item.name}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-white">{item.pct}%</span>
-                        <span className="text-[#64748B] w-8 text-right font-medium">{item.count}</span>
+                        <span className="font-bold text-slate-900 dark:text-white">{item.pct}%</span>
+                        <span className="text-slate-400 dark:text-[#64748B] w-8 text-right font-medium">{item.count}</span>
                       </div>
                     </div>
                   )
@@ -665,7 +709,7 @@ export default function AnalyticsTab() {
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[#1E293B]/60 flex justify-end">
+          <div className="pt-3 border-t border-slate-100 dark:border-[#1E293B]/60 flex justify-end">
             <button
               onClick={() => setShowAllPostsModal(true)}
               className="text-xs font-semibold text-[#1877F2] hover:text-[#3B82F6] flex items-center gap-1 group transition-colors"
@@ -681,15 +725,15 @@ export default function AnalyticsTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         
         {/* Left Card : Meilleurs contenus */}
-        <div className="bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-xs dark:shadow-none">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white tracking-tight">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                 Meilleurs contenus
               </h2>
               <button
                 onClick={() => setShowAllPostsModal(true)}
-                className="bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] px-2.5 py-1 rounded-lg text-xs font-medium text-[#94A3B8] hover:text-white transition-all"
+                className="bg-slate-50 dark:bg-[#0D1424] hover:bg-slate-100 dark:hover:bg-[#152036] border border-slate-200 dark:border-[#1E293B] px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white transition-all"
               >
                 Voir tout
               </button>
@@ -698,16 +742,16 @@ export default function AnalyticsTab() {
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="text-[#64748B] border-b border-[#1E293B]/80 font-medium">
+                  <tr className="text-slate-400 dark:text-[#64748B] border-b border-slate-100 dark:border-[#1E293B]/80 font-medium">
                     <th className="pb-2.5 pl-1">Contenu</th>
                     <th className="pb-2.5 text-right font-medium">Vues</th>
                     <th className="pb-2.5 text-right font-medium">Engagements</th>
                     <th className="pb-2.5 text-right pr-1 font-medium">Taux d&apos;eng.</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E293B]/40">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#1E293B]/40">
                   {topPosts.map(post => (
-                    <tr key={post.id} className="hover:bg-[#1E293B]/20 transition-colors group">
+                    <tr key={post.id} className="hover:bg-slate-50 dark:hover:bg-[#1E293B]/20 transition-colors group">
                       <td className="py-2.5 pl-1">
                         <div className="flex items-center gap-2.5">
                           <div
@@ -720,28 +764,28 @@ export default function AnalyticsTab() {
                             {post.platform === 'linkedin' ? <IconLinkedIn size={13} /> : <IconInstagram size={13} />}
                           </div>
 
-                          <div className="w-9 h-9 rounded-md bg-[#1E293B] overflow-hidden flex-shrink-0 border border-[#334155]/40">
+                          <div className="w-9 h-9 rounded-md bg-slate-100 dark:bg-[#1E293B] overflow-hidden flex-shrink-0 border border-slate-200 dark:border-[#334155]/40">
                             {post.imageUrl ? (
                               <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[#64748B]">📄</div>
+                              <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-[#64748B]">📄</div>
                             )}
                           </div>
 
                           <div className="min-w-0 max-w-[170px] sm:max-w-[220px]">
-                            <p className="font-semibold text-white truncate text-xs group-hover:text-[#3B82F6] transition-colors">
+                            <p className="font-semibold text-slate-900 dark:text-white truncate text-xs group-hover:text-[#3B82F6] transition-colors">
                               {post.title}
                             </p>
-                            <p className="text-[10px] text-[#64748B] mt-0.5">{post.date}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-[#64748B] mt-0.5">{post.date}</p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="py-2.5 text-right font-bold text-white">
+                      <td className="py-2.5 text-right font-bold text-slate-900 dark:text-white">
                         {(post.views / 1000).toFixed(1).replace('.', ',')}K
                       </td>
 
-                      <td className="py-2.5 text-right font-medium text-[#CBD5E1]">
+                      <td className="py-2.5 text-right font-medium text-slate-600 dark:text-[#CBD5E1]">
                         {post.engagements >= 1000 ? `${(post.engagements / 1000).toFixed(1).replace('.', ',')}K` : post.engagements}
                       </td>
 
@@ -759,10 +803,10 @@ export default function AnalyticsTab() {
         </div>
 
         {/* Right Card : Audience */}
-        <div className="bg-[#0B1120] border border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B]/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-xs dark:shadow-none">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-white tracking-tight">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                 Audience
               </h2>
               <button
@@ -779,7 +823,7 @@ export default function AnalyticsTab() {
               {/* Left column (7 cols) : Âge et genre */}
               <div className="sm:col-span-7 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">Âge et genre</span>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Âge et genre</span>
                   <div className="flex items-center gap-2.5 text-[10px] font-medium">
                     <span className="flex items-center gap-1 text-[#3B82F6]">
                       <span className="w-2 h-2 rounded-xs bg-[#3B82F6]" /> Hommes 58%
@@ -795,8 +839,8 @@ export default function AnalyticsTab() {
                   <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
                     {[40, 30, 20, 10, 0].map(val => (
                       <div key={val} className="flex items-center gap-1.5 w-full">
-                        <span className="text-[9px] text-[#64748B] w-5 text-right">{val}%</span>
-                        <div className="flex-1 border-b border-[#1E293B]/40" />
+                        <span className="text-[9px] text-slate-400 dark:text-[#64748B] w-5 text-right">{val}%</span>
+                        <div className="flex-1 border-b border-slate-100 dark:border-[#1E293B]/40" />
                       </div>
                     ))}
                   </div>
@@ -816,7 +860,7 @@ export default function AnalyticsTab() {
                             title={`Femmes: ${group.female}%`}
                           />
                         </div>
-                        <span className="text-[9px] font-medium text-[#64748B] mt-1">{group.age}</span>
+                        <span className="text-[9px] font-medium text-slate-400 dark:text-[#64748B] mt-1">{group.age}</span>
                       </div>
                     ))}
                   </div>
@@ -824,18 +868,18 @@ export default function AnalyticsTab() {
               </div>
 
               {/* Right column (5 cols) : Top pays */}
-              <div className="sm:col-span-5 space-y-2 border-t sm:border-t-0 sm:border-l border-[#1E293B]/60 pt-3 sm:pt-0 sm:pl-4">
-                <span className="text-xs font-bold text-white block">Top pays</span>
+              <div className="sm:col-span-5 space-y-2 border-t sm:border-t-0 sm:border-l border-slate-200/80 dark:border-[#1E293B]/60 pt-3 sm:pt-0 sm:pl-4">
+                <span className="text-xs font-bold text-slate-900 dark:text-white block">Top pays</span>
                 <div className="space-y-2">
                   {topCountries.map(country => (
                     <div key={country.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">{country.flag}</span>
-                        <span className="text-[#CBD5E1] font-medium text-[11px] truncate max-w-[80px]">
+                        <span className="text-slate-700 dark:text-[#CBD5E1] font-medium text-[11px] truncate max-w-[80px]">
                           {country.name}
                         </span>
                       </div>
-                      <span className="font-bold text-white text-[11px]">{country.pct}%</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-[11px]">{country.pct}%</span>
                     </div>
                   ))}
                 </div>
@@ -859,30 +903,30 @@ export default function AnalyticsTab() {
       {/* Modal: Voir tous les posts */}
       {showAllPostsModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0B1120] border border-[#1E293B] rounded-xl max-w-2xl w-full p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
-              <h3 className="text-lg font-bold text-white">Tous les contenus</h3>
+          <div className="bg-white dark:bg-[#0B1120] border border-slate-200 dark:border-[#1E293B] rounded-xl max-w-2xl w-full p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E293B] pb-3">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Tous les contenus</h3>
               <button
                 onClick={() => setShowAllPostsModal(false)}
-                className="text-[#94A3B8] hover:text-white p-1 rounded-lg hover:bg-[#1E293B]"
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1E293B]"
               >
                 <X size={18} />
               </button>
             </div>
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
               {topPosts.map(post => (
-                <div key={post.id} className="flex items-center justify-between p-3 bg-[#0D1424] border border-[#1E293B]/70 rounded-xl">
+                <div key={post.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-[#1E293B]/70 rounded-xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[#1E293B]">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-[#1E293B]">
                       {post.imageUrl && <img src={post.imageUrl} alt="" className="w-full h-full object-cover" />}
                     </div>
                     <div>
-                      <h4 className="font-bold text-white text-sm">{post.title}</h4>
-                      <p className="text-xs text-[#64748B]">{post.date} • {post.platform.toUpperCase()}</p>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{post.title}</h4>
+                      <p className="text-xs text-slate-500 dark:text-[#64748B]">{post.date} • {post.platform.toUpperCase()}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="font-bold text-white text-sm">{(post.views / 1000).toFixed(1)}K vues</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{(post.views / 1000).toFixed(1)}K vues</span>
                     <span className="block text-xs text-[#10B981] font-semibold">{post.engagementRate}% eng.</span>
                   </div>
                 </div>
@@ -895,28 +939,28 @@ export default function AnalyticsTab() {
       {/* Modal: Détail Audience */}
       {showAudienceModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0B1120] border border-[#1E293B] rounded-xl max-w-xl w-full p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
-              <h3 className="text-lg font-bold text-white">Détails de l&apos;Audience</h3>
+          <div className="bg-white dark:bg-[#0B1120] border border-slate-200 dark:border-[#1E293B] rounded-xl max-w-xl w-full p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E293B] pb-3">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Détails de l&apos;Audience</h3>
               <button
                 onClick={() => setShowAudienceModal(false)}
-                className="text-[#94A3B8] hover:text-white p-1 rounded-lg hover:bg-[#1E293B]"
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1E293B]"
               >
                 <X size={18} />
               </button>
             </div>
             <div className="space-y-4 text-xs">
-              <div className="p-3 bg-[#0D1424] rounded-xl border border-[#1E293B]">
-                <h4 className="font-bold text-white mb-2">Répartition Globale</h4>
-                <p className="text-[#94A3B8]">Votre audience est majoritairement composée de professionnels âgés de 25 à 34 ans situés en France et en Afrique de l&apos;Ouest.</p>
+              <div className="p-3 bg-slate-50 dark:bg-[#0D1424] rounded-xl border border-slate-200 dark:border-[#1E293B]">
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Répartition Globale</h4>
+                <p className="text-slate-600 dark:text-[#94A3B8]">Votre audience est majoritairement composée de professionnels âgés de 25 à 34 ans situés en France et en Afrique de l&apos;Ouest.</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-[#0D1424] rounded-xl border border-[#1E293B]">
-                  <span className="text-[#64748B] font-medium">Pic d&apos;activité</span>
-                  <p className="text-base font-bold text-white mt-1">Mardi & Jeudi • 18h - 20h</p>
+                <div className="p-3 bg-slate-50 dark:bg-[#0D1424] rounded-xl border border-slate-200 dark:border-[#1E293B]">
+                  <span className="text-slate-500 dark:text-[#64748B] font-medium">Pic d&apos;activité</span>
+                  <p className="text-base font-bold text-slate-900 dark:text-white mt-1">Mardi & Jeudi • 18h - 20h</p>
                 </div>
-                <div className="p-3 bg-[#0D1424] rounded-xl border border-[#1E293B]">
-                  <span className="text-[#64748B] font-medium">Fidélité de l&apos;audience</span>
+                <div className="p-3 bg-slate-50 dark:bg-[#0D1424] rounded-xl border border-slate-200 dark:border-[#1E293B]">
+                  <span className="text-slate-500 dark:text-[#64748B] font-medium">Fidélité de l&apos;audience</span>
                   <p className="text-base font-bold text-[#10B981] mt-1">+64% récurrents</p>
                 </div>
               </div>
