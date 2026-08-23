@@ -1140,91 +1140,75 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
       {/* ── HEADER WORKSPACE ULTRA-PREMIUM ── */}
       {!allPosts && (
-        <div className="flex flex-col gap-4 mb-6 -mt-2">
+        <div className="relative flex flex-col gap-5 mb-7 -mt-2">
           
-          {/* 1. Bannière de Bienvenue avec Onde Lumineuse d'Ambiance */}
-          <div
-            className="relative overflow-hidden rounded-2xl p-5 sm:p-7 select-none shadow-xl transition-all"
-            style={{
-              background: 'linear-gradient(135deg, #070C1B 0%, #0B132B 45%, #160D2E 100%)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)',
-            }}
-          >
-            {/* Onde fluide néon en arrière-plan */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-80">
-              <svg className="w-full h-full" viewBox="0 0 1000 240" preserveAspectRatio="none" fill="none">
-                <path d="M 0,120 C 350,30 650,220 1000,70 L 1000,0 L 0,0 Z" fill="url(#workspaceWaveGrad)" />
-                <path d="M 150,160 C 450,20 750,240 1150,90" stroke="url(#workspaceWaveStroke1)" strokeWidth="3" opacity="0.35" filter="blur(4px)" />
-                <path d="M 50,140 C 380,25 680,210 1050,80" stroke="url(#workspaceWaveStroke2)" strokeWidth="1.8" opacity="0.6" />
-                <defs>
-                  <linearGradient id="workspaceWaveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.12" />
-                    <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.15" />
-                    <stop offset="100%" stopColor="#EC4899" stopOpacity="0.08" />
-                  </linearGradient>
-                  <linearGradient id="workspaceWaveStroke1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#38BDF8" />
-                    <stop offset="50%" stopColor="#A855F7" />
-                    <stop offset="100%" stopColor="#EC4899" />
-                  </linearGradient>
-                  <linearGradient id="workspaceWaveStroke2" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#60A5FA" />
-                    <stop offset="50%" stopColor="#C084FC" />
-                    <stop offset="100%" stopColor="#F472B6" />
-                  </linearGradient>
-                </defs>
-              </svg>
+          {/* Onde fluide d'ambiance néon en arrière-plan flottant */}
+          <div className="absolute -top-6 right-0 w-[600px] h-[160px] pointer-events-none overflow-hidden opacity-85 z-0">
+            <svg className="w-full h-full" viewBox="0 0 600 160" preserveAspectRatio="none" fill="none">
+              <path d="M 0,90 C 200,20 400,150 600,40" stroke="url(#workspaceHeaderWave1)" strokeWidth="3" opacity="0.4" filter="blur(6px)" />
+              <path d="M 50,80 C 220,15 420,130 600,50" stroke="url(#workspaceHeaderWave2)" strokeWidth="2" opacity="0.7" />
+              <defs>
+                <linearGradient id="workspaceHeaderWave1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#38BDF8" />
+                  <stop offset="50%" stopColor="#A855F7" />
+                  <stop offset="100%" stopColor="#EC4899" />
+                </linearGradient>
+                <linearGradient id="workspaceHeaderWave2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#60A5FA" />
+                  <stop offset="50%" stopColor="#C084FC" />
+                  <stop offset="100%" stopColor="#F472B6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          {/* 1. En-tête de Bienvenue directement sur le fond (sans carte) */}
+          <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-4 pt-1">
+            <div>
+              <h1 className="text-xl sm:text-2xl md:text-[1.65rem] font-bold text-white tracking-tight flex items-center gap-2.5">
+                <span className="text-[#38BDF8] text-lg sm:text-xl">✨</span>
+                <span>Bienvenue dans votre Workspace, {userName} ! 👋</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-[#94A3B8] mt-1.5 font-normal">
+                Votre centre de création, de planification et d&apos;analyse.
+              </p>
             </div>
 
-            {/* Contenu de la bannière */}
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-xl sm:text-2xl md:text-[1.75rem] font-extrabold text-white tracking-tight flex items-center gap-2.5">
-                  <span className="text-[#38BDF8] text-lg sm:text-xl">✨</span>
-                  <span>Bienvenue dans votre Workspace, {userName} ! 👋</span>
-                </h1>
-                <p className="text-xs sm:text-sm text-[#94A3B8] mt-1 font-normal">
-                  Votre centre de création, de planification et d&apos;analyse.
-                </p>
-              </div>
+            {/* Sélecteur de Marque / Organisation */}
+            <div ref={brandSelectorRef} className="relative self-start md:self-center">
+              <button
+                onClick={() => setBrandSelectorOpen(prev => !prev)}
+                className="inline-flex items-center gap-2 bg-[#0D1527]/90 hover:bg-[#16223D] border border-white/15 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-all shadow-sm flex-shrink-0"
+              >
+                <Users size={14} className="text-[#38BDF8]" />
+                <span className="truncate max-w-[130px]">{activeOrganization?.name || 'OKLM'}</span>
+                <ChevronDown size={14} className={`text-[#94A3B8] transition-transform duration-200 ${brandSelectorOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-              {/* Sélecteur de Marque / Organisation */}
-              <div ref={brandSelectorRef} className="relative self-start md:self-center">
-                <button
-                  onClick={() => setBrandSelectorOpen(prev => !prev)}
-                  className="inline-flex items-center gap-2 bg-[#0D1527]/90 hover:bg-[#16223D] border border-white/15 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-all shadow-sm flex-shrink-0"
-                >
-                  <Users size={14} className="text-[#38BDF8]" />
-                  <span className="truncate max-w-[130px]">{activeOrganization?.name || 'OKLM'}</span>
-                  <ChevronDown size={14} className={`text-[#94A3B8] transition-transform duration-200 ${brandSelectorOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {brandSelectorOpen && organizations && organizations.length > 0 && (
-                  <div className="absolute right-0 top-full mt-2 z-50 bg-[#0D1527] border border-white/15 rounded-xl p-1.5 min-w-[180px] shadow-2xl">
-                    <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1">
-                      Mes Marques
-                    </div>
-                    {organizations.map((org: any) => (
-                      <button
-                        key={org.id}
-                        onClick={() => {
-                          switchOrganization(org.id)
-                          setBrandSelectorOpen(false)
-                        }}
-                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
-                          activeOrganization?.id === org.id
-                            ? 'bg-[#1877F2]/20 text-[#38BDF8]'
-                            : 'text-[#E2E8F0] hover:bg-white/10'
-                        }`}
-                      >
-                        <span className="truncate">{org.name}</span>
-                        {activeOrganization?.id === org.id && <Check size={13} className="text-[#38BDF8]" />}
-                      </button>
-                    ))}
+              {brandSelectorOpen && organizations && organizations.length > 0 && (
+                <div className="absolute right-0 top-full mt-2 z-50 bg-[#0D1527] border border-white/15 rounded-xl p-1.5 min-w-[180px] shadow-2xl">
+                  <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1">
+                    Mes Marques
                   </div>
-                )}
-              </div>
+                  {organizations.map((org: any) => (
+                    <button
+                      key={org.id}
+                      onClick={() => {
+                        switchOrganization(org.id)
+                        setBrandSelectorOpen(false)
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        activeOrganization?.id === org.id
+                          ? 'bg-[#1877F2]/20 text-[#38BDF8]'
+                          : 'text-[#E2E8F0] hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="truncate">{org.name}</span>
+                      {activeOrganization?.id === org.id && <Check size={13} className="text-[#38BDF8]" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
