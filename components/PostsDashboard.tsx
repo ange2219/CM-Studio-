@@ -7,7 +7,6 @@ import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 import { useOrg } from '@/components/context/OrgContext'
-import { useUser } from '@/components/context/UserContext'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
   switch (platform) {
@@ -140,8 +139,6 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const router = useRouter()
   const { toast } = useToast()
   
-  const { user } = useUser()
-  const userName = user?.full_name?.split(' ')[0] || user?.username || 'Ange'
   const { activeOrganization, organizations, switchOrganization } = useOrg()
   const [brandSelectorOpen, setBrandSelectorOpen] = useState(false)
   const brandSelectorRef = useRef<HTMLDivElement>(null)
@@ -1138,273 +1135,238 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         </div>
       )}
 
-      {/* ── HEADER WORKSPACE ULTRA-PREMIUM ── */}
+      {/* ── HEADER WORKSPACE ── */}
       {!allPosts && (
-        <div className="relative flex flex-col gap-6 mb-7 -mt-2">
-          
-          {/* Onde fluide d'ambiance néon photoréaliste en arrière-plan */}
-          <div className="absolute -top-8 right-0 left-0 h-[220px] pointer-events-none overflow-hidden opacity-90 z-0">
-            <svg className="w-full h-full" viewBox="0 0 1200 220" preserveAspectRatio="none" fill="none">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '-.5rem', marginBottom: '1.25rem' }}>
+        
+        {/* ── BANNIÈRE Bienvenue + Onde SVG ── */}
+        <div style={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '14px',
+          padding: '1.1rem 1.4rem',
+          background: 'linear-gradient(135deg, #070C1B 0%, #0D1230 55%, #160C2C 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
+        }}>
+          {/* Onde lumineuse SVG */}
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+            <svg width="100%" height="100%" viewBox="0 0 1000 120" preserveAspectRatio="none" fill="none" style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '55%' }}>
               <defs>
-                <radialGradient id="auroraNebulaGlow" cx="75%" cy="25%" r="60%">
-                  <stop offset="0%" stopColor="#9333EA" stopOpacity="0.45" />
-                  <stop offset="35%" stopColor="#C026D3" stopOpacity="0.25" />
-                  <stop offset="70%" stopColor="#3B82F6" stopOpacity="0.08" />
-                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                </radialGradient>
-                <linearGradient id="auroraWaveGrad1" x1="15%" y1="100%" x2="95%" y2="0%">
-                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0" />
-                  <stop offset="25%" stopColor="#6366F1" stopOpacity="0.5" />
-                  <stop offset="55%" stopColor="#A855F7" stopOpacity="0.85" />
-                  <stop offset="80%" stopColor="#EC4899" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#F43F5E" stopOpacity="0" />
+                <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.18" />
+                  <stop offset="60%" stopColor="#8B5CF6" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#EC4899" stopOpacity="0.1" />
                 </linearGradient>
-                <linearGradient id="auroraWaveGrad2" x1="20%" y1="90%" x2="90%" y2="10%">
-                  <stop offset="0%" stopColor="#06B6D4" stopOpacity="0" />
-                  <stop offset="30%" stopColor="#8B5CF6" stopOpacity="0.75" />
-                  <stop offset="65%" stopColor="#D946EF" stopOpacity="0.9" />
-                  <stop offset="90%" stopColor="#F472B6" stopOpacity="0.7" />
-                  <stop offset="100%" stopColor="#FB7185" stopOpacity="0" />
+                <linearGradient id="ws1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#38BDF8" />
+                  <stop offset="50%" stopColor="#A855F7" />
+                  <stop offset="100%" stopColor="#EC4899" />
                 </linearGradient>
-                <linearGradient id="auroraWaveFill" x1="25%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.25" />
-                  <stop offset="50%" stopColor="#C026D3" stopOpacity="0.16" />
-                  <stop offset="100%" stopColor="#DB2777" stopOpacity="0" />
+                <linearGradient id="ws2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.7" />
+                  <stop offset="50%" stopColor="#C084FC" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="#F472B6" stopOpacity="0.7" />
                 </linearGradient>
-                <filter id="auroraRibbonBlur" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="10" result="blur1" />
-                  <feGaussianBlur stdDeviation="3" result="blur2" />
-                  <feMerge>
-                    <feMergeNode in="blur1" />
-                    <feMergeNode in="blur2" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
               </defs>
-              <rect width="1200" height="220" fill="url(#auroraNebulaGlow)" />
-              <path d="M 320,130 C 480,195 660,70 880,45 C 1010,30 1110,65 1200,85 L 1200,0 L 320,0 Z" fill="url(#auroraWaveFill)" />
-              <path d="M 260,150 C 440,215 620,105 780,48 C 930,-2 1060,42 1200,80" stroke="url(#auroraWaveGrad1)" strokeWidth="16" strokeLinecap="round" opacity="0.3" filter="url(#auroraRibbonBlur)" />
-              <path d="M 300,140 C 470,205 640,95 800,42 C 950,-5 1080,40 1200,75" stroke="url(#auroraWaveGrad2)" strokeWidth="3.5" strokeLinecap="round" opacity="0.9" />
-              <path d="M 280,155 C 450,220 620,110 790,50 C 935,2 1070,45 1200,84" stroke="url(#auroraWaveGrad1)" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
-              <path d="M 350,125 C 500,190 660,85 820,38 C 960,-6 1090,35 1200,70" stroke="#F472B6" strokeWidth="1" strokeLinecap="round" opacity="0.65" />
+              <path d="M 0,60 C 200,10 600,110 1000,30 L 1000,0 L 0,0 Z" fill="url(#wg1)" />
+              <path d="M 50,80 C 280,10 620,115 1050,40" stroke="url(#ws1)" strokeWidth="2.5" opacity="0.5" />
+              <path d="M 0,95 C 300,20 650,100 1100,50" stroke="url(#ws2)" strokeWidth="1.5" opacity="0.45" />
             </svg>
           </div>
 
-          {/* 1. En-tête de Bienvenue directement sur le fond */}
-          <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-4 pt-1">
+          {/* Contenu bannière */}
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-[1.65rem] font-bold text-white tracking-tight flex items-center gap-2.5">
-                <span className="text-[#38BDF8] text-lg sm:text-xl">✨</span>
-                <span>Bienvenue dans votre Workspace, {userName} ! 👋</span>
+              <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', margin: '0 0 .2rem 0', lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '.5rem', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.01em' }}>
+                <span style={{ color: '#38BDF8' }}>✨</span>
+                Bienvenue dans votre Workspace, {activeOrganization?.name?.split(' ')[0] || 'Ange'} ! 👋
               </h1>
-              <p className="text-xs sm:text-sm text-[#94A3B8] mt-1.5 font-normal">
+              <p style={{ fontSize: '.82rem', color: '#94A3B8', margin: 0 }}>
                 Votre centre de création, de planification et d&apos;analyse.
               </p>
             </div>
 
-            {/* Sélecteur de Marque / Organisation */}
-            <div ref={brandSelectorRef} className="relative self-start md:self-center">
+            {/* Brand Selector */}
+            <div ref={brandSelectorRef} style={{ position: 'relative', flexShrink: 0 }}>
               <button
                 onClick={() => setBrandSelectorOpen(prev => !prev)}
-                className="inline-flex items-center gap-2 bg-[#0D1527]/90 hover:bg-[#16223D] border border-white/15 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-all shadow-sm flex-shrink-0"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.45rem',
+                  padding: '0.45rem 0.9rem',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: 'rgba(13,21,39,0.85)',
+                  color: '#fff', fontSize: '12px', fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(56,189,248,0.5)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
               >
-                <Users size={14} className="text-[#38BDF8]" />
-                <span className="truncate max-w-[130px]">{activeOrganization?.name || 'OKLM'}</span>
-                <ChevronDown size={14} className={`text-[#94A3B8] transition-transform duration-200 ${brandSelectorOpen ? 'rotate-180' : ''}`} />
+                <Users size={13} style={{ color: '#38BDF8' }} />
+                <span style={{ maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeOrganization?.name || 'OKLM'}</span>
+                <ChevronDown size={13} style={{ color: '#94A3B8', transition: 'transform .2s', transform: brandSelectorOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
 
               {brandSelectorOpen && organizations && organizations.length > 0 && (
-                <div className="absolute right-0 top-full mt-2 z-50 bg-[#0D1527] border border-white/15 rounded-xl p-1.5 min-w-[180px] shadow-2xl">
-                  <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider px-2 py-1">
-                    Mes Marques
-                  </div>
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 200,
+                  background: '#0D1527', border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '12px', padding: '0.4rem', minWidth: '180px',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', marginBottom: '4px', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Mes Marques</div>
                   {organizations.map((org: any) => (
-                    <button
-                      key={org.id}
-                      onClick={() => {
-                        switchOrganization(org.id)
-                        setBrandSelectorOpen(false)
+                    <button key={org.id}
+                      onClick={() => { switchOrganization(org.id); setBrandSelectorOpen(false) }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 10px', borderRadius: '8px', border: 'none',
+                        background: activeOrganization?.id === org.id ? 'rgba(24,119,242,0.18)' : 'transparent',
+                        color: activeOrganization?.id === org.id ? '#38BDF8' : '#E2E8F0',
+                        cursor: 'pointer', fontSize: '12px', fontWeight: 600, textAlign: 'left', transition: 'all 0.15s',
                       }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
-                        activeOrganization?.id === org.id
-                          ? 'bg-[#1877F2]/20 text-[#38BDF8]'
-                          : 'text-[#E2E8F0] hover:bg-white/10'
-                      }`}
+                      onMouseEnter={e => { if (activeOrganization?.id !== org.id) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+                      onMouseLeave={e => { if (activeOrganization?.id !== org.id) e.currentTarget.style.background = 'transparent' }}
                     >
-                      <span className="truncate">{org.name}</span>
-                      {activeOrganization?.id === org.id && <Check size={13} className="text-[#38BDF8]" />}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
+                      {activeOrganization?.id === org.id && <Check size={13} style={{ color: '#38BDF8', flexShrink: 0 }} />}
                     </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
-
-          {/* 2. Les 4 Cartes d'Action en Grille */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            
-            {/* Carte 1 : Nouveau post (Bleu Royal) */}
-            <div
-              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
-              style={{
-                background: 'linear-gradient(145deg, rgba(30, 64, 175, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
-                border: '1px solid rgba(59, 130, 246, 0.35)',
-                boxShadow: '0 8px 24px -4px rgba(30, 64, 175, 0.25), inset 0 1px 0 0 rgba(59, 130, 246, 0.4)',
-              }}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-full bg-[#1D4ED8] text-white flex items-center justify-center shadow-[0_0_14px_rgba(29,78,216,0.6)]">
-                    <PenLine size={18} />
-                  </div>
-                  <button
-                    onClick={() => setCreateModalOpen(true)}
-                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
-                  >
-                    <Plus size={13} />
-                  </button>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Nouveau post</h3>
-                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
-                  Créez du contenu engageant en un clin d&apos;œil.
-                </p>
-              </div>
-              <button
-                onClick={() => setCreateModalOpen(true)}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
-              >
-                <span>Créer</span>
-                <ArrowRight size={13} />
-              </button>
-            </div>
-
-            {/* Carte 2 : Calendrier (Teal / Émeraude) */}
-            <div
-              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
-              style={{
-                background: 'linear-gradient(145deg, rgba(13, 148, 136, 0.4) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
-                border: '1px solid rgba(20, 184, 166, 0.35)',
-                boxShadow: '0 8px 24px -4px rgba(13, 148, 136, 0.25), inset 0 1px 0 0 rgba(20, 184, 166, 0.4)',
-              }}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-full bg-[#0D9488] text-white flex items-center justify-center shadow-[0_0_14px_rgba(13,148,136,0.6)]">
-                    <Calendar size={18} />
-                  </div>
-                  <button
-                    onClick={() => router.push('/workspace/calendrier')}
-                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
-                  >
-                    <Plus size={13} />
-                  </button>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Calendrier</h3>
-                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
-                  Planifiez et programmez vos publications.
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/workspace/calendrier')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
-              >
-                <span>Ouvrir</span>
-                <ArrowRight size={13} />
-              </button>
-            </div>
-
-            {/* Carte 3 : Analytique (Orange / Ambre) */}
-            <div
-              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
-              style={{
-                background: 'linear-gradient(145deg, rgba(234, 88, 12, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
-                border: '1px solid rgba(249, 115, 22, 0.35)',
-                boxShadow: '0 8px 24px -4px rgba(234, 88, 12, 0.25), inset 0 1px 0 0 rgba(249, 115, 22, 0.4)',
-              }}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shadow-[0_0_14px_rgba(234,88,12,0.6)]">
-                    <BarChart3 size={18} />
-                  </div>
-                  <button
-                    onClick={() => router.push('/workspace/analytics')}
-                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
-                  >
-                    <Plus size={13} />
-                  </button>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Analytique</h3>
-                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
-                  Suivez vos performances et votre croissance.
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/workspace/analytics')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#C2410C] hover:bg-[#9A3412] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
-              >
-                <span>Voir</span>
-                <ArrowRight size={13} />
-              </button>
-            </div>
-
-            {/* Carte 4 : Média (Violet / Pourpre) */}
-            <div
-              className="rounded-xl p-5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden group shadow-lg"
-              style={{
-                background: 'linear-gradient(145deg, rgba(126, 34, 206, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%), #0B1120',
-                border: '1px solid rgba(168, 85, 247, 0.35)',
-                boxShadow: '0 8px 24px -4px rgba(126, 34, 206, 0.25), inset 0 1px 0 0 rgba(168, 85, 247, 0.4)',
-              }}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-full bg-[#7E22CE] text-white flex items-center justify-center shadow-[0_0_14px_rgba(126,34,206,0.6)]">
-                    <ImageIcon size={18} />
-                  </div>
-                  <button
-                    onClick={() => router.push('/workspace/media')}
-                    className="w-6 h-6 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-colors"
-                  >
-                    <Plus size={13} />
-                  </button>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-white mb-1 tracking-tight">Média</h3>
-                <p className="text-xs text-[#94A3B8] leading-relaxed mb-5">
-                  Gérez vos images, vidéos et ressources.
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/workspace/media')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#6B21A8] hover:bg-[#581C87] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
-              >
-                <span>Gérer</span>
-                <ArrowRight size={13} />
-              </button>
-            </div>
-
-          </div>
         </div>
+
+        {/* ── 4 CARTES D'ACTION ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }} className="workspace-action-cards">
+          
+          {/* Carte 1 : Nouveau post — Bleu */}
+          <div
+            style={{
+              borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
+              background: 'linear-gradient(145deg, rgba(29,78,216,0.5) 0%, rgba(11,17,32,0.97) 100%)',
+              border: '1px solid rgba(59,130,246,0.4)',
+              boxShadow: '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)',
+              transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(29,78,216,0.4), inset 0 1px 0 rgba(59,130,246,0.35)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#1D4ED8', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(29,78,216,0.65)' }}>
+                <PenLine size={17} color="#fff" />
+              </div>
+              <button onClick={() => setCreateModalOpen(true)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+                <Plus size={12} />
+              </button>
+            </div>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Nouveau post</h3>
+            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Créez du contenu engageant en un clin d&apos;œil.</p>
+            <button onClick={() => setCreateModalOpen(true)} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#1877F2', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#166FE5'} onMouseLeave={e => e.currentTarget.style.background = '#1877F2'}>
+              Créer <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Carte 2 : Calendrier — Teal */}
+          <div
+            style={{
+              borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
+              background: 'linear-gradient(145deg, rgba(13,148,136,0.5) 0%, rgba(11,17,32,0.97) 100%)',
+              border: '1px solid rgba(20,184,166,0.4)',
+              boxShadow: '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)',
+              transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(13,148,136,0.4), inset 0 1px 0 rgba(20,184,166,0.35)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(13,148,136,0.65)' }}>
+                <Calendar size={17} color="#fff" />
+              </div>
+              <button onClick={() => router.push('/workspace/calendrier')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+                <Plus size={12} />
+              </button>
+            </div>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Calendrier</h3>
+            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Planifiez et programmez vos publications.</p>
+            <button onClick={() => router.push('/workspace/calendrier')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#0D9488', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#0F766E'} onMouseLeave={e => e.currentTarget.style.background = '#0D9488'}>
+              Ouvrir <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Carte 3 : Analytique — Orange */}
+          <div
+            style={{
+              borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
+              background: 'linear-gradient(145deg, rgba(194,65,12,0.55) 0%, rgba(11,17,32,0.97) 100%)',
+              border: '1px solid rgba(249,115,22,0.4)',
+              boxShadow: '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)',
+              transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(194,65,12,0.4), inset 0 1px 0 rgba(249,115,22,0.35)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#C2410C', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(194,65,12,0.65)' }}>
+                <BarChart3 size={17} color="#fff" />
+              </div>
+              <button onClick={() => router.push('/workspace/analytics')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+                <Plus size={12} />
+              </button>
+            </div>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Analytique</h3>
+            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Suivez vos performances et votre croissance.</p>
+            <button onClick={() => router.push('/workspace/analytics')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#C2410C', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#9A3412'} onMouseLeave={e => e.currentTarget.style.background = '#C2410C'}>
+              Voir <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Carte 4 : Média — Violet */}
+          <div
+            style={{
+              borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
+              background: 'linear-gradient(145deg, rgba(107,33,168,0.55) 0%, rgba(11,17,32,0.97) 100%)',
+              border: '1px solid rgba(168,85,247,0.4)',
+              boxShadow: '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)',
+              transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(107,33,168,0.4), inset 0 1px 0 rgba(168,85,247,0.35)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#7E22CE', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(107,33,168,0.65)' }}>
+                <ImageIcon size={17} color="#fff" />
+              </div>
+              <button onClick={() => router.push('/workspace/media')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+                <Plus size={12} />
+              </button>
+            </div>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Média</h3>
+            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Gérez vos images, vidéos et ressources.</p>
+            <button onClick={() => router.push('/workspace/media')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#7E22CE', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#6B21A8'} onMouseLeave={e => e.currentTarget.style.background = '#7E22CE'}>
+              Gérer <ArrowRight size={12} />
+            </button>
+          </div>
+
+        </div>
+      </div>
       )}
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         
         {/* Header & Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight" style={{ margin: 0 }}>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>
               {allPosts ? 'Mes Posts' : 'Posts récents'}
             </h2>
-            <span className="bg-[#1E293B] text-[#94A3B8] text-xs font-semibold px-2 py-0.5 rounded-full">
-              {nonDeletedCount}
-            </span>
+            <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
             {!allPosts && displayPosts.length >= 5 && (
-              <button
-                onClick={() => router.push('/workspace/posts')}
-                className="bg-[#0D1424] hover:bg-[#152036] border border-[#1E293B] text-white text-xs font-medium px-3 py-1 rounded-lg transition-all ml-1"
-              >
+              <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
                 Voir tout
               </button>
             )}
