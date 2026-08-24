@@ -4,27 +4,52 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useToast } from '@/components/ui/Toast'
 import {
   Platform, PostObjective,
-  PLATFORM_NAMES, PLATFORM_COLORS, OBJECTIVE_LABELS,
+  PLATFORM_NAMES, PLATFORM_COLORS,
 } from '@/types'
 import {
   IconInstagram, IconFacebook, IconTikTok,
   IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest,
 } from '@/components/icons/BrandIcons'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import {
-  Send, Save, Clock, X, Image as ImageIcon, RotateCcw, Hash,
-  ChevronDown, ChevronRight, Check, User, Edit3, Monitor, Sparkles
+  X, ChevronLeft, ChevronRight, Sparkles, Hash, RotateCcw,
+  Clock, Send, Upload, Trash2, Image as ImageIcon,
+  Heart, MessageCircle, Share2, Bookmark, SendHorizontal
 } from 'lucide-react'
-import { LinkedInFeedCard } from './mockups/LinkedInFeedCard'
-import { FacebookFeedCard } from './mockups/FacebookFeedCard'
-import { InstagramFeedCard } from './mockups/InstagramFeedCard'
-import { TwitterFeedCard } from './mockups/TwitterFeedCard'
-import { StudioLightboxEditor, type CardState, type SocialAccount } from './studio/StudioLightboxEditor'
 
-export { type SocialAccount }
+export interface SocialAccount {
+  platform: Platform
+  platform_username: string | null
+  platform_avatar_url: string | null
+}
 
-// ─── Platform icon ────────────────────────────────────────────────────────────
+export interface CardState {
+  content: string
+  imageUrl: string | null
+  imageLoading: boolean
+  scheduledAt: string | null
+}
 
-function PlatformIcon({ platform, size = 16 }: { platform: Platform; size?: number }) {
+export interface GeneratedPostsViewProps {
+  platforms:             Platform[]
+  variants:              Partial<Record<Platform, string>>
+  objective:             PostObjective | null
+  quotaUsed:             number
+  quotaLimit:            number | 'unlimited'
+  isPro:                 boolean
+  userName?:             string | null
+  socialAccounts?:       SocialAccount[]
+  initialImages?:        Partial<Record<Platform, string>>
+  initialScheduledAt?:   string
+  allowPlatformToggle?:  boolean
+  unifiedMode?:          boolean
+  onSaveDraft:           (platform: Platform, content: string, imageUrl: string | null) => Promise<void>
+  onPublish:             (platform: Platform, content: string, imageUrl: string | null) => Promise<void>
+  onSchedule:            (platform: Platform, content: string, imageUrl: string | null, scheduledAt: string) => Promise<void>
+  onClose?:              () => void
+}
+
+function PlatformIcon({ platform, size = 18 }: { platform: Platform; size?: number }) {
   switch (platform) {
     case 'instagram': return <IconInstagram size={size} />
     case 'facebook':  return <IconFacebook  size={size} />
@@ -36,8 +61,6 @@ function PlatformIcon({ platform, size = 16 }: { platform: Platform; size?: numb
   }
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function lowercaseHashtags(text: string): string {
   return text.replace(/#(\w+)/g, (_, tag) => '#' + tag.toLowerCase())
 }
@@ -47,8 +70,6 @@ function formatScheduled(iso: string): string {
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) +
     ', ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
-
-// ─── Char limits per platform ─────────────────────────────────────────────────
 
 const CHAR_LIMITS: Partial<Record<Platform, number>> = {
   twitter:   280,
@@ -100,18 +121,18 @@ function WheelColumn({
     <div style={{ position: 'relative', height: ITEM_H * 5, overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H * 2,
-        background: 'linear-gradient(to bottom, var(--card) 0%, transparent 100%)',
+        background: 'linear-gradient(to bottom, #1e293b 0%, transparent 100%)',
         pointerEvents: 'none', zIndex: 2,
       }} />
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H * 2,
-        background: 'linear-gradient(to top, var(--card) 0%, transparent 100%)',
+        background: 'linear-gradient(to top, #1e293b 0%, transparent 100%)',
         pointerEvents: 'none', zIndex: 2,
       }} />
       <div style={{
         position: 'absolute', top: ITEM_H * 2, left: 6, right: 6, height: ITEM_H,
-        background: 'rgba(22,119,255,.12)', borderRadius: '8px',
-        border: '1px solid rgba(22,119,255,.2)',
+        background: 'rgba(56,189,248,.18)', borderRadius: '8px',
+        border: '1px solid rgba(56,189,248,.3)',
         pointerEvents: 'none', zIndex: 1,
       }} />
       <div
@@ -139,7 +160,7 @@ function WheelColumn({
               scrollSnapAlign: 'center',
               fontSize: i === selectedIndex ? '.95rem' : '.85rem',
               fontWeight: i === selectedIndex ? 600 : 400,
-              color: i === selectedIndex ? 'var(--t1)' : 'var(--t3)',
+              color: i === selectedIndex ? '#FFFFFF' : '#94A3B8',
               cursor: 'pointer', userSelect: 'none',
               transition: 'color .12s, font-size .12s',
             }}
@@ -152,7 +173,7 @@ function WheelColumn({
   )
 }
 
-// ─── SchedulerSheet ───────────────────────────────────────────────────────────
+// ─── SchedulerSheet Modal ─────────────────────────────────────────────────────
 
 function SchedulerSheet({
   onConfirm, onClose, alreadyScheduled, onDeactivate,
@@ -227,23 +248,24 @@ function SchedulerSheet({
     <div
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(6px)',
+        background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(8px)',
         zIndex: 900, display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '1rem',
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="anim-fade-scale" style={{
-        background: 'var(--card)', border: '1px solid var(--b1)',
+        background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)',
         borderRadius: '16px', width: '100%', maxWidth: '380px',
         padding: '0 1.5rem 1.5rem',
-        boxShadow: '0 24px 64px rgba(0,0,0,.45)',
+        boxShadow: '0 24px 64px rgba(0,0,0,.6)',
+        color: '#FFFFFF',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 0 .5rem' }}>
-          <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '1.05rem', fontWeight: 700, color: 'var(--t1)' }}>
+          <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#FFFFFF' }}>
             Date et heure de publication
           </span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t3)', display: 'flex', padding: '4px', borderRadius: '6px' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', padding: '4px', borderRadius: '6px' }}>
             <X size={18} />
           </button>
         </div>
@@ -251,16 +273,16 @@ function SchedulerSheet({
         <div style={{
           display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '6px',
           marginBottom: '1.1rem',
-          background: 'var(--s2)', borderRadius: '14px', padding: '.25rem',
-          border: '1px solid var(--b1)',
+          background: '#0f172a', borderRadius: '14px', padding: '.25rem',
+          border: '1px solid rgba(255,255,255,0.1)',
         }}>
           <WheelColumn items={dayItems}    selectedIndex={dayIdx}    onChange={handleDayChange}    />
           <WheelColumn items={hourItems}   selectedIndex={hourIdx}   onChange={handleHourChange}   />
           <WheelColumn items={minuteItems} selectedIndex={minuteIdx} onChange={handleMinuteChange} />
         </div>
 
-        <p style={{ fontSize: '.72rem', color: 'var(--t3)', textAlign: 'center', lineHeight: 1.55, margin: '0 0 1.1rem' }}>
-          En continuant, tu donnes ton accord pour que ta publication soit programmée jusqu&apos;à la date planifiée.
+        <p style={{ fontSize: '.72rem', color: '#94A3B8', textAlign: 'center', lineHeight: 1.55, margin: '0 0 1.1rem' }}>
+          Votre publication sera programmée et envoyée automatiquement à l&apos;heure sélectionnée.
         </p>
 
         <div style={{ display: 'flex', gap: '.6rem' }}>
@@ -269,8 +291,8 @@ function SchedulerSheet({
               onClick={onDeactivate}
               style={{
                 flex: 1, padding: '.7rem', borderRadius: '10px',
-                border: '1px solid var(--b1)', background: 'var(--s2)',
-                color: 'var(--t2)', cursor: 'pointer', fontSize: '.88rem', fontWeight: 600,
+                border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)',
+                color: '#EF4444', cursor: 'pointer', fontSize: '.88rem', fontWeight: 600,
               }}
             >
               Désactiver
@@ -290,25 +312,6 @@ function SchedulerSheet({
 }
 
 // ─── Main GeneratedPostsView ──────────────────────────────────────────────────
-
-export interface GeneratedPostsViewProps {
-  platforms:             Platform[]
-  variants:              Partial<Record<Platform, string>>
-  objective:             PostObjective | null
-  quotaUsed:             number
-  quotaLimit:            number | 'unlimited'
-  isPro:                 boolean
-  userName?:             string | null
-  socialAccounts?:       SocialAccount[]
-  initialImages?:        Partial<Record<Platform, string>>
-  initialScheduledAt?:   string
-  allowPlatformToggle?:  boolean
-  unifiedMode?:          boolean
-  onSaveDraft:           (platform: Platform, content: string, imageUrl: string | null) => Promise<void>
-  onPublish:             (platform: Platform, content: string, imageUrl: string | null) => Promise<void>
-  onSchedule:            (platform: Platform, content: string, imageUrl: string | null, scheduledAt: string) => Promise<void>
-  onClose?:              () => void
-}
 
 export function GeneratedPostsView({
   platforms, variants, objective,
@@ -345,48 +348,61 @@ export function GeneratedPostsView({
     })
   }, [variants, platforms])
 
-  const [activePlatforms, setActivePlatforms] = useState<Platform[]>(platforms)
+  const [currentIdx, setCurrentIdx] = useState(0)
   const [schedulerPlatform, setSchedulerPlatform] = useState<Platform | null>(null)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
-  const [isStudioOpen, setIsStudioOpen] = useState(false)
-  const [studioInitialPlatform, setStudioInitialPlatform] = useState<Platform | undefined>(undefined)
+  const [showImageMenu, setShowImageMenu] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageMenuRef = useRef<HTMLDivElement>(null)
 
+  const activePlatforms = platforms
+  const currentPlatform = activePlatforms[currentIdx] || activePlatforms[0]
+  const card = cards[currentPlatform] || { content: '', imageUrl: null, imageLoading: false, scheduledAt: null }
+
+  // Keyboard navigation (← / → and Escape)
   useEffect(() => {
-    setActivePlatforms(prev => prev.filter(p => platforms.includes(p)))
-  }, [platforms])
-
-  function togglePlatform(p: Platform) {
-    setActivePlatforms(prev => {
-      if (prev.includes(p)) {
-        if (prev.length === 1) return prev
-        return prev.filter(x => x !== p)
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') handleCloseAndSaveDraft()
+      if (e.key === 'ArrowLeft' && currentIdx > 0) {
+        setCurrentIdx(i => i - 1)
       }
-      setCards(c => c[p] ? c : {
-        ...c,
-        [p]: {
-          content: variants[p] ? lowercaseHashtags(variants[p]!) : '',
-          imageUrl: initialImages?.[p] ?? null,
-          imageLoading: false,
-          scheduledAt: initialScheduledAt ?? null,
-        },
-      })
-      return [...prev, p]
-    })
-  }
+      if (e.key === 'ArrowRight' && currentIdx < activePlatforms.length - 1) {
+        setCurrentIdx(i => i + 1)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentIdx, activePlatforms.length])
+
+  // Click outside image menu
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (imageMenuRef.current && !imageMenuRef.current.contains(e.target as Node)) {
+        setShowImageMenu(false)
+      }
+    }
+    if (showImageMenu) document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [showImageMenu])
 
   function updateCard(platform: Platform, partial: Partial<CardState>) {
     setCards(prev => ({ ...prev, [platform]: { ...prev[platform], ...partial } }))
   }
 
-  async function handleDraft(platform: Platform) {
-    const key = `draft-${platform}`
-    if (loadingAction) return
-    setLoadingAction(key)
+  // Quitter via la croix ✕ : enregistre directement tous les posts en brouillon et quitte
+  async function handleCloseAndSaveDraft() {
     try {
-      await onSaveDraft(platform, cards[platform]?.content || '', cards[platform]?.imageUrl || null)
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur', 'error')
-    } finally { setLoadingAction(null) }
+      for (const p of activePlatforms) {
+        const c = cards[p]
+        if (c?.content) {
+          await onSaveDraft(p, c.content, c.imageUrl)
+        }
+      }
+      toast('Posts sauvegardés en brouillon', 'success')
+      onClose?.()
+    } catch {
+      onClose?.()
+    }
   }
 
   async function handlePublish(platform: Platform) {
@@ -459,380 +475,664 @@ export function GeneratedPostsView({
     finally { setLoadingAction(null) }
   }
 
-  function openStudioForPlatform(platform: Platform) {
-    setStudioInitialPlatform(platform)
-    setIsStudioOpen(true)
-  }
-
-  // Rendu de la carte réseau social fidèle
-  function renderFeedCardForPlatform(p: Platform) {
-    const cardData = cards[p] || { content: '', imageUrl: null, imageLoading: false, scheduledAt: null }
-    const platformAccount = socialAccounts?.find(a => a.platform === p)
-    const displayName = platformAccount?.platform_username || userName || 'Ange-Marie DAHOU'
-    const avatarUrl = platformAccount?.platform_avatar_url || null
-
-    switch (p) {
-      case 'linkedin':
-        return (
-          <LinkedInFeedCard
-            content={cardData.content}
-            imageUrl={cardData.imageUrl}
-            userName={displayName}
-            avatarUrl={avatarUrl}
-            onContentChange={(v) => updateCard('linkedin', { content: v })}
-          />
-        )
-      case 'facebook':
-        return (
-          <FacebookFeedCard
-            content={cardData.content}
-            imageUrl={cardData.imageUrl}
-            userName={displayName}
-            avatarUrl={avatarUrl}
-            onContentChange={(v) => updateCard('facebook', { content: v })}
-          />
-        )
-      case 'instagram':
-        return (
-          <InstagramFeedCard
-            content={cardData.content}
-            imageUrl={cardData.imageUrl}
-            userName={displayName}
-            avatarUrl={avatarUrl}
-            onContentChange={(v) => updateCard('instagram', { content: v })}
-          />
-        )
-      case 'twitter':
-        return (
-          <TwitterFeedCard
-            content={cardData.content}
-            imageUrl={cardData.imageUrl}
-            userName={displayName}
-            avatarUrl={avatarUrl}
-            onContentChange={(v) => updateCard('twitter', { content: v })}
-          />
-        )
-      default:
-        return (
-          <LinkedInFeedCard
-            content={cardData.content}
-            imageUrl={cardData.imageUrl}
-            userName={displayName}
-            avatarUrl={avatarUrl}
-            onContentChange={(v) => updateCard(p, { content: v })}
-          />
-        )
+  async function handleGenerateImage() {
+    setShowImageMenu(false)
+    updateCard(currentPlatform, { imageLoading: true })
+    try {
+      const res = await fetch('/api/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postContent: card.content.slice(0, 300), platform: currentPlatform }),
+      })
+      const data = await res.json()
+      if (res.ok && data.url) {
+        updateCard(currentPlatform, { imageUrl: data.url, imageLoading: false })
+      } else {
+        toast(data.error || 'Erreur génération image', 'error')
+        updateCard(currentPlatform, { imageLoading: false })
+      }
+    } catch {
+      toast('Erreur génération image', 'error')
+      updateCard(currentPlatform, { imageLoading: false })
     }
   }
 
-  const ALL_PLATFORMS_LIST: Platform[] = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'pinterest']
-  const connectedPlatforms: Platform[] = isPro
-    ? ALL_PLATFORMS_LIST
-    : ['instagram', 'facebook']
+  async function handleImportImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setShowImageMenu(false)
+    updateCard(currentPlatform, { imageLoading: true })
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (res.ok && data.url) {
+        updateCard(currentPlatform, { imageUrl: data.url, imageLoading: false })
+      } else {
+        toast(data.error || 'Erreur upload', 'error')
+        updateCard(currentPlatform, { imageLoading: false })
+      }
+    } catch {
+      toast('Erreur upload', 'error')
+      updateCard(currentPlatform, { imageLoading: false })
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
-  const activeList = activePlatforms.length > 0 ? activePlatforms : platforms
+  const platformAccount = socialAccounts?.find(a => a.platform === currentPlatform)
+  const displayName = platformAccount?.platform_username || userName || 'Ange Dahou'
+  const avatarUrl = platformAccount?.platform_avatar_url || null
+
+  const isRewriting = loadingAction === `rewrite-${currentPlatform}`
+  const isPublishing = loadingAction === `publish-${currentPlatform}` || loadingAction === `schedule-${currentPlatform}`
+  const limit = CHAR_LIMITS[currentPlatform]
+  const isOver = limit ? card.content.length > limit : false
 
   return (
-    <div>
-      {/* ── 1. Barre d'outils supérieure avec accès Mode Éditeur Studio ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-          padding: '12px 16px',
-          background: 'var(--card, #ffffff)',
-          border: '1px solid var(--b1, #e2e8f0)',
-          borderRadius: '12px',
-          marginBottom: '1.25rem',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--t1)' }}>
-            {activeList.length} {activeList.length > 1 ? 'posts générés' : 'post généré'}
-          </span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--t3)' }}>
-            • Cliquez directement sur un post pour l&apos;éditer en temps réel
-          </span>
-        </div>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#0B0F19',
+        zIndex: 500,
+        display: 'flex',
+        overflow: 'hidden',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      }}
+    >
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImportImage} />
 
+      {/* ── Flèche de navigation Gauche (←) ── */}
+      {currentIdx > 0 && (
         <button
           type="button"
-          onClick={() => openStudioForPlatform(activeList[0])}
+          onClick={() => setCurrentIdx(i => i - 1)}
+          title="Réseau précédent"
           style={{
+            position: 'absolute',
+            left: '16px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            background: 'rgba(15,23,42,0.85)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '7px 14px',
-            borderRadius: '8px',
-            background: 'linear-gradient(135deg, #1677FF, #7B5CF5)',
-            color: '#fff',
-            border: 'none',
-            fontSize: '0.82rem',
-            fontWeight: 700,
+            justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(22,119,255,0.25)',
-            transition: 'transform 0.1s',
+            zIndex: 40,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            transition: 'all 0.15s',
           }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
         >
-          <Sparkles size={14} />
-          <span>Mode Éditeur Studio (Plein Écran)</span>
+          <ChevronLeft size={22} />
         </button>
-      </div>
-
-      {/* ── 2. Sélecteur de plateformes (création manuelle) ── */}
-      {allowPlatformToggle && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.25rem' }}>
-          {connectedPlatforms.map((p) => {
-            const isActive = activePlatforms.includes(p)
-            const color = PLATFORM_COLORS[p]
-            return (
-              <button
-                key={p}
-                onClick={() => togglePlatform(p)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '.35rem',
-                  padding: '.32rem .7rem', borderRadius: '8px', fontSize: '.76rem', fontWeight: 500,
-                  border: `1px solid ${isActive ? color + '55' : 'var(--b1)'}`,
-                  background: isActive ? color + '14' : 'var(--card)',
-                  color: isActive ? color : 'var(--t3)',
-                  cursor: 'pointer', transition: '.12s',
-                }}
-              >
-                <PlatformIcon platform={p} size={13} />
-                {PLATFORM_NAMES[p]}
-              </button>
-            )
-          })}
-        </div>
       )}
 
-      {/* ── 3. VUE CÔTE À CÔTE (Mockups Réseaux Sociaux Réalistes sans image vide) ── */}
+      {/* ── Flèche de navigation Droite (→) ── */}
+      {currentIdx < activePlatforms.length - 1 && (
+        <button
+          type="button"
+          onClick={() => setCurrentIdx(i => i + 1)}
+          title="Réseau suivant"
+          style={{
+            position: 'absolute',
+            right: '460px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            background: 'rgba(15,23,42,0.85)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            color: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 40,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+        >
+          <ChevronRight size={22} />
+        </button>
+      )}
+
+      {/* ── VOLET GAUCHE : Zone Média / Image / Carrousel ── */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: activeList.length === 1 ? 'minmax(320px, 540px)' : 'repeat(auto-fit, minmax(340px, 1fr))',
-          gap: '1rem',
-          maxWidth: activeList.length === 1 ? '560px' : '1120px',
-          margin: '0 auto',
-          alignItems: 'start',
+          flex: 1,
+          minWidth: 0,
+          background: '#000000',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          padding: '2rem',
         }}
       >
-        {activeList.map((p) => {
-          const cardData = cards[p] || { content: '', imageUrl: null, imageLoading: false, scheduledAt: null }
-          const limit = CHAR_LIMITS[p]
-          const isOver = limit ? cardData.content.length > limit : false
-          const isRewriting = loadingAction === `rewrite-${p}`
-          const isDrafting = loadingAction === `draft-${p}`
-          const isPublishing = loadingAction === `publish-${p}` || loadingAction === `schedule-${p}`
-
-          return (
-            <div
-              key={p}
+        {card.imageLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(255,255,255,0.2)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+            <span style={{ fontSize: '0.84rem', color: '#94A3B8', fontWeight: 500 }}>Génération de l&apos;image IA en cours...</span>
+          </div>
+        ) : card.imageUrl ? (
+          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img
+              src={card.imageUrl}
+              alt="Média du post"
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                background: 'var(--card, #ffffff)',
-                border: '1px solid var(--b1, #e2e8f0)',
-                borderRadius: '14px',
-                padding: '12px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
               }}
-            >
-              {/* Header de la carte : Badge réseau + Outils IA */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px 4px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <PlatformIcon platform={p} size={16} />
-                  <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--t1)' }}>
-                    {PLATFORM_NAMES[p]}
-                  </span>
-                </div>
+            />
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleRewrite(p)}
-                    disabled={isRewriting}
-                    title="Réécrire avec l'IA"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '3px',
-                      padding: '3px 7px', borderRadius: '6px',
-                      border: '1px solid var(--b1)', background: 'var(--s2, #f8fafc)',
-                      color: isRewriting ? 'var(--accent)' : 'var(--t2)',
-                      fontSize: '0.72rem', fontWeight: 600, cursor: isRewriting ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {isRewriting ? (
-                      <div style={{ width: '10px', height: '10px', border: '2px solid rgba(22,119,255,0.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
-                    ) : (
-                      <RotateCcw size={10} />
-                    )}
-                    <span>Réécrire</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleHashtags(p)}
-                    title="Générer hashtags"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '3px',
-                      padding: '3px 7px', borderRadius: '6px',
-                      border: '1px solid var(--b1)', background: 'var(--s2, #f8fafc)',
-                      color: '#06B6D4',
-                      fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
-                    }}
-                  >
-                    <Hash size={10} />
-                    <span>Tags</span>
-                  </button>
-
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: isOver ? '#EF4444' : 'var(--t3)', marginLeft: '2px' }}>
-                    {cardData.content.length}{limit ? `/${limit}` : ''}
-                  </span>
-                </div>
-              </div>
-
-              {/* Mockup fidèle du réseau social (LinkedIn / Facebook / Instagram / Twitter) */}
-              <div>
-                {renderFeedCardForPlatform(p)}
-              </div>
-
-              {/* Barre d'action inférieure de la carte */}
-              <div
+            {/* Bouton supprimer / changer en haut à droite de l'image */}
+            <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => updateCard(currentPlatform, { imageUrl: null })}
+                title="Supprimer l'image"
                 style={{
-                  borderTop: '1px solid var(--b1, #e2e8f0)',
-                  paddingTop: '8px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  background: 'rgba(239,68,68,0.85)',
+                  border: 'none',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '0.74rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '4px',
                 }}
               >
-                {/* Bouton pour ouvrir en studio */}
-                <button
-                  type="button"
-                  onClick={() => openStudioForPlatform(p)}
-                  title="Ouvrir dans le mode studio complet"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    padding: '7px 10px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(22,119,255,0.25)',
-                    background: 'rgba(22,119,255,0.06)',
-                    color: 'var(--accent, #1677FF)',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Edit3 size={13} />
-                  <span>Éditer Studio</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDraft(p)}
-                  disabled={isDrafting}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    padding: '7px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--b1)',
-                    background: 'var(--s2, #f8fafc)',
-                    color: 'var(--t2)',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: isDrafting ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  <Save size={13} />
-                  <span>Brouillon</span>
-                </button>
-
-                {cardData.scheduledAt ? (
-                  <button
-                    type="button"
-                    onClick={() => handlePublishScheduled(p)}
-                    disabled={isPublishing}
-                    className="btn-primary"
-                    style={{
-                      flex: 1.4,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '7px',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      cursor: isPublishing ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <Clock size={13} />
-                    <span>Programmer</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handlePublish(p)}
-                    disabled={isPublishing}
-                    className="btn-primary"
-                    style={{
-                      flex: 1.4,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '7px',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      cursor: isPublishing ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <Send size={13} />
-                    <span>Publier</span>
-                  </button>
-                )}
-              </div>
+                <Trash2 size={12} />
+                <span>Supprimer</span>
+              </button>
             </div>
-          )
-        })}
+          </div>
+        ) : (
+          /* Quand il n'y a pas d'image : fond sombre épuré avec incitation discrète */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', maxWidth: '320px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ImageIcon size={22} color="#64748B" />
+            </div>
+            <div style={{ fontSize: '0.86rem', color: '#64748B', fontWeight: 500 }}>
+              Aucun visuel associé à ce post
+            </div>
+            <button
+              type="button"
+              onClick={handleGenerateImage}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                background: 'rgba(56,189,248,0.15)',
+                border: '1px solid rgba(56,189,248,0.3)',
+                color: '#38BDF8',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <Sparkles size={13} />
+              <span>Générer un visuel IA</span>
+            </button>
+          </div>
+        )}
+
+        {/* Indicateur de pagination (1/3, 2/3, etc.) au bas de la zone gauche */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            background: 'rgba(0,0,0,0.65)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#E2E8F0',
+            fontSize: '0.76rem',
+            fontWeight: 600,
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          {currentIdx + 1} / {activePlatforms.length}
+        </div>
       </div>
 
-      {/* ── 4. MODE ÉDITEUR STUDIO (Lightbox Plein Écran) ── */}
-      {isStudioOpen && (
-        <StudioLightboxEditor
-          platforms={activeList}
-          initialPlatform={studioInitialPlatform}
-          cards={cards}
-          objective={objective}
-          userName={userName}
-          socialAccounts={socialAccounts}
-          isPro={isPro}
-          onClose={() => setIsStudioOpen(false)}
-          onUpdateCard={updateCard}
-          onSaveDraft={handleDraft}
-          onPublish={handlePublish}
-          onScheduleOpen={(p) => setSchedulerPlatform(p)}
-          onPublishScheduled={handlePublishScheduled}
-          onRewrite={handleRewrite}
-          onHashtags={handleHashtags}
-          loadingAction={loadingAction}
-        />
-      )}
+      {/* ── VOLET DROIT : Détails du post, Entête fixe, Texte défilant, Footer fixe ── */}
+      <div
+        style={{
+          width: '440px',
+          maxWidth: '440px',
+          minWidth: '360px',
+          background: '#182234',
+          borderLeft: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          color: '#FFFFFF',
+        }}
+      >
+        {/* 1. EN-TÊTE FIXE (Ne bouge pas au défilement) */}
+        <div
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <UserAvatar avatarUrl={avatarUrl} size={42} fallbackColor="#475569" iconSize={22} />
+            <div>
+              <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.25 }}>
+                {displayName}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                <span>Le 25 juillet à 02:47</span>
+                <span>·</span>
+                <span>🌐</span>
+              </div>
+            </div>
+          </div>
 
-      {/* ── 5. Scheduler Sheet Modal ── */}
+          {/* Coin droit : Logo officiel du réseau + Croix ✕ pour fermer et enregistrer en brouillon */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              title={`Post formaté pour ${PLATFORM_NAMES[currentPlatform]}`}
+              style={{
+                width: '26px',
+                height: '26px',
+                borderRadius: '6px',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <PlatformIcon platform={currentPlatform} size={24} />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCloseAndSaveDraft}
+              title="Fermer et enregistrer en brouillon"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94A3B8',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                borderRadius: '6px',
+                transition: '0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#94A3B8' }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* 2. CORPS DÉFILANT : TEXTE SEULEMENT (C'est la seule partie qui défile !) */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}
+        >
+          {/* Textarea d'édition inline WYSIWYG */}
+          <textarea
+            value={card.content}
+            onChange={e => updateCard(currentPlatform, { content: e.target.value })}
+            placeholder="Rédigez votre post..."
+            style={{
+              width: '100%',
+              minHeight: '140px',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              resize: 'none',
+              fontSize: '0.92rem',
+              lineHeight: 1.6,
+              color: '#F1F5F9',
+              fontFamily: 'inherit',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          />
+
+          {/* Outils IA rapides + Compteur de caractères */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => handleRewrite(currentPlatform)}
+                disabled={isRewriting}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: isRewriting ? '#38BDF8' : '#CBD5E1',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  cursor: isRewriting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {isRewriting ? (
+                  <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                ) : (
+                  <RotateCcw size={11} />
+                )}
+                <span>Réécrire IA</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleHashtags(currentPlatform)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  background: 'rgba(6,182,212,0.1)',
+                  border: '1px solid rgba(6,182,212,0.25)',
+                  color: '#38BDF8',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <Hash size={11} />
+                <span>Hashtags</span>
+              </button>
+            </div>
+
+            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
+              {card.content.length}{limit ? ` / ${limit}` : ''}
+            </span>
+          </div>
+        </div>
+
+        {/* 3. BAS FIXE (Réactions, commentaires simulés, input et boutons d'action qui ne bougent JAMAIS) */}
+        <div
+          style={{
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            background: '#131B2A',
+            padding: '12px 16px 16px',
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}
+        >
+          {/* Ligne des réactions du post */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.82rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                <Heart size={18} />
+                <span>1</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                <MessageCircle size={18} />
+                <span>1</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                <Share2 size={18} />
+                <span>1</span>
+              </div>
+            </div>
+
+            <Bookmark size={18} style={{ cursor: 'pointer' }} />
+          </div>
+
+          {/* Commentaire simulé (exactement comme le screenshot) */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.78rem' }}>
+            <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#fff', flexShrink: 0 }}>
+              👤
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, color: '#E2E8F0' }}>Ange Marie DAHOU</div>
+              <div style={{ color: '#CBD5E1', margin: '1px 0' }}>Oklm</div>
+              <div style={{ fontSize: '0.68rem', color: '#64748B', display: 'flex', gap: '8px' }}>
+                <span>29 j</span>
+                <span style={{ cursor: 'pointer' }}>Répondre</span>
+              </div>
+            </div>
+            <Heart size={14} color="#64748B" style={{ cursor: 'pointer', marginTop: '2px' }} />
+          </div>
+
+          {/* Champ d'ajout de commentaire */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '4px 10px' }}>
+            <UserAvatar avatarUrl={avatarUrl} size={22} fallbackColor="#475569" iconSize={12} />
+            <input
+              type="text"
+              placeholder="Ajouter un commentaire..."
+              readOnly
+              style={{
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                fontSize: '0.76rem',
+                color: '#94A3B8',
+              }}
+            />
+            <SendHorizontal size={14} color="#64748B" style={{ cursor: 'pointer' }} />
+          </div>
+
+          {/* ── BARRE D'ACTIONS FINALES : [ Image ] [ Programmer ] [ Publier ] ── */}
+          <div style={{ display: 'flex', gap: '8px', position: 'relative' }} ref={imageMenuRef}>
+
+            {/* Bouton IMAGE (remplace l'ancien bouton brouillon !) */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setShowImageMenu(v => !v)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#E2E8F0',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: '0.12s',
+                }}
+              >
+                <ImageIcon size={15} color="#38BDF8" />
+                <span>Image</span>
+              </button>
+
+              {/* Menu popup pour l'image */}
+              {showImageMenu && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 'calc(100% + 8px)',
+                    left: 0,
+                    width: '200px',
+                    background: '#1E293B',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+                    zIndex: 100,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={handleGenerateImage}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 12px',
+                      background: 'none',
+                      border: 'none',
+                      color: '#F1F5F9',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                  >
+                    <Sparkles size={14} color="#38BDF8" />
+                    <span>Générer avec l&apos;IA</span>
+                  </button>
+
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+
+                  <button
+                    type="button"
+                    onClick={() => { setShowImageMenu(false); fileInputRef.current?.click() }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 12px',
+                      background: 'none',
+                      border: 'none',
+                      color: '#F1F5F9',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                  >
+                    <Upload size={14} color="#10B981" />
+                    <span>Importer une photo</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Bouton Programmer */}
+            <button
+              type="button"
+              onClick={() => setSchedulerPlatform(currentPlatform)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                padding: '9px 12px',
+                borderRadius: '8px',
+                border: `1px solid ${card.scheduledAt ? 'rgba(56,189,248,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                background: card.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
+                color: card.scheduledAt ? '#38BDF8' : '#E2E8F0',
+                fontSize: '0.84rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <Clock size={15} />
+              <span>{card.scheduledAt ? 'Planifié' : 'Programmer'}</span>
+            </button>
+
+            {/* Bouton Publier */}
+            {card.scheduledAt ? (
+              <button
+                type="button"
+                onClick={() => handlePublishScheduled(currentPlatform)}
+                disabled={isPublishing}
+                className="btn-primary"
+                style={{
+                  flex: 1.4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  cursor: isPublishing ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {isPublishing ? (
+                  <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                ) : (
+                  <Clock size={15} />
+                )}
+                <span>Valider</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handlePublish(currentPlatform)}
+                disabled={isPublishing}
+                className="btn-primary"
+                style={{
+                  flex: 1.4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  cursor: isPublishing ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {isPublishing ? (
+                  <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                ) : (
+                  <Send size={15} />
+                )}
+                <span>Publier</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Scheduler Modal ── */}
       {schedulerPlatform && (
         <SchedulerSheet
           onConfirm={handleScheduleConfirm}

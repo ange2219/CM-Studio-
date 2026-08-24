@@ -319,7 +319,7 @@ export default function ResultsPage() {
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         onSchedule={handleSchedule}
-        onClose={() => setShowLeaveModal(true)}
+        onClose={handleLeaveAsDraft}
       />
     </div>
   )
