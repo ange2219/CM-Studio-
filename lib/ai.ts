@@ -376,7 +376,8 @@ async function callSimpleAI(promptText: string, isJson: boolean = false): Promis
     throw new Error('Aucun fournisseur IA configuré. Renseignez GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
   }
 
-  let lastErr: any
+  const errors: string[] = []
+  if (!gemini) errors.push('Gemini → non configuré (GEMINI_API_KEY absente côté serveur)')
   for (let i = 0; i < chain.length; i++) {
     const step = chain[i]
     try {
@@ -384,12 +385,12 @@ async function callSimpleAI(promptText: string, isJson: boolean = false): Promis
       if (out && out.trim()) return out
       throw new Error('réponse vide')
     } catch (e: any) {
-      lastErr = e
+      errors.push(`${step.name} → ${e?.message || e}`)
       const suite = i < chain.length - 1 ? `Repli sur « ${chain[i + 1].name} »…` : 'Plus de repli disponible.'
       console.error(`[AI] Fournisseur « ${step.name} » a échoué : ${e?.message}. ${suite}`)
     }
   }
-  throw new Error(`Tous les fournisseurs IA ont échoué. Dernière erreur : ${lastErr?.message || lastErr}`)
+  throw new Error(`Tous les fournisseurs IA ont échoué. Détail : ${errors.join(' | ')}`)
 }
 
 // ─── Réécriture ────────────────────────────────────────────────────────────────
@@ -478,18 +479,19 @@ export async function generatePosts(req: GenerateRequest, plan: Plan): Promise<G
       throw new Error('Aucun fournisseur IA configuré. Renseignez GEMINI_API_KEY dans vos variables d’environnement (Vercel).')
     }
 
-    let lastErr: any
+    const errors: string[] = []
+    if (!gemini) errors.push('Gemini → non configuré (GEMINI_API_KEY absente côté serveur)')
     for (let i = 0; i < chain.length; i++) {
       const step = chain[i]
       try {
         return await step.run()
       } catch (e: any) {
-        lastErr = e
+        errors.push(`${step.name} → ${e?.message || e}`)
         const suite = i < chain.length - 1 ? `Repli sur « ${chain[i + 1].name} »…` : 'Plus de repli disponible.'
         console.error(`[AI] Fournisseur « ${step.name} » a échoué : ${e?.message}. ${suite}`)
       }
     }
-    throw new Error(`Tous les fournisseurs IA ont échoué. Dernière erreur : ${lastErr?.message || lastErr}`)
+    throw new Error(`Tous les fournisseurs IA ont échoué. Détail : ${errors.join(' | ')}`)
   }
 
   // Mode UNIFIÉ : 1 seul appel avec la plateforme principale, distribué sur toutes
