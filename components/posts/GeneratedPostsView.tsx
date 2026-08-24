@@ -14,7 +14,8 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import {
   X, ChevronLeft, ChevronRight, Sparkles, Hash, RotateCcw,
   Clock, Send, Upload, Trash2, Image as ImageIcon,
-  Heart, MessageCircle, Share2, Bookmark, SendHorizontal
+  Globe, Heart, MessageCircle, Repeat2, Bookmark, BarChart2,
+  Share2, ThumbsUp
 } from 'lucide-react'
 
 export interface SocialAccount {
@@ -49,7 +50,7 @@ export interface GeneratedPostsViewProps {
   onClose?:              () => void
 }
 
-function PlatformIcon({ platform, size = 18 }: { platform: Platform; size?: number }) {
+function PlatformIcon({ platform, size = 20 }: { platform: Platform; size?: number }) {
   switch (platform) {
     case 'instagram': return <IconInstagram size={size} />
     case 'facebook':  return <IconFacebook  size={size} />
@@ -522,13 +523,235 @@ export function GeneratedPostsView({
   }
 
   const platformAccount = socialAccounts?.find(a => a.platform === currentPlatform)
-  const displayName = platformAccount?.platform_username || userName || 'Ange Dahou'
+  const displayName = platformAccount?.platform_username || userName || 'Ange-Marie DAHOU'
   const avatarUrl = platformAccount?.platform_avatar_url || null
 
   const isRewriting = loadingAction === `rewrite-${currentPlatform}`
   const isPublishing = loadingAction === `publish-${currentPlatform}` || loadingAction === `schedule-${currentPlatform}`
   const limit = CHAR_LIMITS[currentPlatform]
   const isOver = limit ? card.content.length > limit : false
+
+  // ── Rendu de l'en-tête spécifique au réseau ────────────────────────────────
+  function renderPlatformHeader() {
+    switch (currentPlatform) {
+      case 'linkedin':
+        return (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <UserAvatar avatarUrl={avatarUrl} size={42} fallbackColor="#475569" iconSize={22} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>
+                  {displayName}
+                </span>
+                <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>• Vous</span>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: '#94A3B8', lineHeight: 1.25, margin: '1px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                Futur Data Scientist | Machine Learning & IA
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: '#64748B' }}>
+                <span>1 an(s)</span>
+                <span>•</span>
+                <Globe size={10} />
+              </div>
+            </div>
+          </div>
+        )
+      case 'facebook':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <UserAvatar avatarUrl={avatarUrl} size={42} fallbackColor="#475569" iconSize={22} />
+            <div>
+              <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#FFFFFF' }}>
+                {displayName}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', color: '#94A3B8', marginTop: '1px' }}>
+                <span>13 juin</span>
+                <span>·</span>
+                <Globe size={11} />
+              </div>
+            </div>
+          </div>
+        )
+      case 'instagram':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ padding: '2px', borderRadius: '50%', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4)' }}>
+              <div style={{ padding: '1px', background: '#182234', borderRadius: '50%' }}>
+                <UserAvatar avatarUrl={avatarUrl} size={36} fallbackColor="#475569" iconSize={18} />
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>
+                {displayName.toLowerCase().replace(/[^a-z0-9._]/g, '_')}
+              </div>
+              <div style={{ fontSize: '0.68rem', color: '#94A3B8' }}>
+                🎵 Son original · Tendances
+              </div>
+            </div>
+          </div>
+        )
+      case 'twitter':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#1D9BF0">
+                  <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
+                </svg>
+              </div>
+              <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+                @{displayName.toLowerCase().replace(/[^a-z0-9]/g, '')} · 2h
+              </div>
+            </div>
+          </div>
+        )
+      default:
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
+            <div>
+              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</div>
+              <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>{PLATFORM_NAMES[currentPlatform]}</div>
+            </div>
+          </div>
+        )
+    }
+  }
+
+  // ── Rendu de la barre de réactions spécifique au réseau ────────────────────
+  function renderPlatformSocialActions() {
+    switch (currentPlatform) {
+      case 'linkedin':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Ligne des compteurs LinkedIn */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.72rem', color: '#94A3B8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#0A66C2', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+                    <svg width="8" height="8" viewBox="0 0 16 16" fill="white"><path d="M14.5 7.5a1.5 1.5 0 0 0-1.5-1.5h-3V3.5A2.5 2.5 0 0 0 7.5 1h-.293a.5.5 0 0 0-.414.22L4.316 4.938A2.5 2.5 0 0 0 3.5 6.708V13.5A1.5 1.5 0 0 0 5 15h6.72a2.5 2.5 0 0 0 2.404-1.815l1.2-4.5A1.5 1.5 0 0 0 14.5 7.5zM1 6a1 1 0 0 1 1-1h1v9H2a1 1 0 0 1-1-1V6z"/></svg>
+                  </span>
+                  <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#DF704D', marginLeft: '-3px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                    <svg width="8" height="8" viewBox="0 0 16 16" fill="white"><path d="M8 14s-6-4.35-6-8.5A4.5 4.5 0 0 1 6.5 1C7.5 1 8 2 8 2s.5-1 1.5-1A4.5 4.5 0 0 1 14 5.5C14 9.65 8 14 8 14z"/></svg>
+                  </span>
+                  <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#44A368', marginLeft: '-3px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                    <svg width="8" height="8" viewBox="0 0 16 16" fill="white"><path d="M4 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/></svg>
+                  </span>
+                </span>
+                <span style={{ fontWeight: 600, color: '#CBD5E1' }}>12</span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span>6 commentaires</span>
+                <span>•</span>
+                <span>1 republication</span>
+              </div>
+            </div>
+
+            {/* Boutons d'action LinkedIn */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <ThumbsUp size={13} />
+                <span>J&apos;aime</span>
+              </button>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <MessageCircle size={13} />
+                <span>Commenter</span>
+              </button>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <Repeat2 size={13} />
+                <span>Republier</span>
+              </button>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <Send size={13} />
+                <span>Envoyer</span>
+              </button>
+            </div>
+          </div>
+        )
+      case 'facebook':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.78rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                <ThumbsUp size={15} />
+                <span>5</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                <MessageCircle size={15} />
+                <span>1</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                <Share2 size={15} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <span style={{ fontSize: '14px', zIndex: 3 }}>😆</span>
+              <span style={{ fontSize: '14px', marginLeft: '-3px', zIndex: 2 }}>👍</span>
+              <span style={{ fontSize: '14px', marginLeft: '-3px', zIndex: 1 }}>❤️</span>
+            </div>
+          </div>
+        )
+      case 'instagram':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#FFFFFF' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+                <Heart size={20} />
+                <span>41</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+                <MessageCircle size={20} />
+                <span>1</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+                <Repeat2 size={20} />
+                <span>1</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+                <Send size={18} />
+                <span>1</span>
+              </div>
+            </div>
+            <Bookmark size={20} style={{ cursor: 'pointer' }} />
+          </div>
+        )
+      case 'twitter':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.76rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <MessageCircle size={14} />
+              <span>12</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <Repeat2 size={14} />
+              <span>4</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <Heart size={14} />
+              <span>38</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <BarChart2 size={14} />
+              <span>1.2k</span>
+            </div>
+            <Share2 size={14} style={{ cursor: 'pointer' }} />
+          </div>
+        )
+      default:
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.8rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Heart size={16} />
+              <MessageCircle size={16} />
+              <Share2 size={16} />
+            </div>
+            <Bookmark size={16} />
+          </div>
+        )
+    }
+  }
 
   return (
     <div
@@ -641,7 +864,7 @@ export function GeneratedPostsView({
               }}
             />
 
-            {/* Bouton supprimer / changer en haut à droite de l'image */}
+            {/* Bouton supprimer l'image */}
             <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
               <button
                 type="button"
@@ -666,7 +889,7 @@ export function GeneratedPostsView({
             </div>
           </div>
         ) : (
-          /* Quand il n'y a pas d'image : fond sombre épuré avec incitation discrète */
+          /* Quand il n'y a pas d'image : fond épuré avec incitation discrète */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', maxWidth: '320px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ImageIcon size={22} color="#64748B" />
@@ -697,7 +920,7 @@ export function GeneratedPostsView({
           </div>
         )}
 
-        {/* Indicateur de pagination (1/3, 2/3, etc.) au bas de la zone gauche */}
+        {/* Indicateur de pagination au bas de l'image (1/3, 2/3...) */}
         <div
           style={{
             position: 'absolute',
@@ -732,7 +955,7 @@ export function GeneratedPostsView({
           color: '#FFFFFF',
         }}
       >
-        {/* 1. EN-TÊTE FIXE (Ne bouge pas au défilement) */}
+        {/* 1. EN-TÊTE FIXE DU RÉSEAU (Ne bouge jamais au défilement) */}
         <div
           style={{
             padding: '16px',
@@ -743,35 +966,22 @@ export function GeneratedPostsView({
             flexShrink: 0,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <UserAvatar avatarUrl={avatarUrl} size={42} fallbackColor="#475569" iconSize={22} />
-            <div>
-              <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.25 }}>
-                {displayName}
-              </div>
-              <div style={{ fontSize: '0.74rem', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                <span>Le 25 juillet à 02:47</span>
-                <span>·</span>
-                <span>🌐</span>
-              </div>
-            </div>
+          {/* Structure authentique du profil selon la plateforme */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {renderPlatformHeader()}
           </div>
 
-          {/* Coin droit : Logo officiel du réseau + Croix ✕ pour fermer et enregistrer en brouillon */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Coin droit : Logo officiel du réseau + Croix ✕ pour enregistrer et fermer */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: '8px' }}>
             <div
               title={`Post formaté pour ${PLATFORM_NAMES[currentPlatform]}`}
               style={{
-                width: '26px',
-                height: '26px',
-                borderRadius: '6px',
-                overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <PlatformIcon platform={currentPlatform} size={24} />
+              <PlatformIcon platform={currentPlatform} size={22} />
             </div>
 
             <button
@@ -807,11 +1017,18 @@ export function GeneratedPostsView({
             gap: '12px',
           }}
         >
+          {/* Badge spécial @à la une si Facebook */}
+          {currentPlatform === 'facebook' && (
+            <div style={{ color: '#38BDF8', fontWeight: 600, fontSize: '0.86rem' }}>
+              @à la une
+            </div>
+          )}
+
           {/* Textarea d'édition inline WYSIWYG */}
           <textarea
             value={card.content}
             onChange={e => updateCard(currentPlatform, { content: e.target.value })}
-            placeholder="Rédigez votre post..."
+            placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[currentPlatform]}...`}
             style={{
               width: '100%',
               minHeight: '140px',
@@ -885,7 +1102,7 @@ export function GeneratedPostsView({
           </div>
         </div>
 
-        {/* 3. BAS FIXE (Réactions, commentaires simulés, input et boutons d'action qui ne bougent JAMAIS) */}
+        {/* 3. BAS FIXE DU RÉSEAU (Réactions du réseau + Barre d'actions SaaS fixes) */}
         <div
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -897,60 +1114,8 @@ export function GeneratedPostsView({
             gap: '12px',
           }}
         >
-          {/* Ligne des réactions du post */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.82rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <Heart size={18} />
-                <span>1</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <MessageCircle size={18} />
-                <span>1</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <Share2 size={18} />
-                <span>1</span>
-              </div>
-            </div>
-
-            <Bookmark size={18} style={{ cursor: 'pointer' }} />
-          </div>
-
-          {/* Commentaire simulé (exactement comme le screenshot) */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.78rem' }}>
-            <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#fff', flexShrink: 0 }}>
-              👤
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, color: '#E2E8F0' }}>Ange Marie DAHOU</div>
-              <div style={{ color: '#CBD5E1', margin: '1px 0' }}>Oklm</div>
-              <div style={{ fontSize: '0.68rem', color: '#64748B', display: 'flex', gap: '8px' }}>
-                <span>29 j</span>
-                <span style={{ cursor: 'pointer' }}>Répondre</span>
-              </div>
-            </div>
-            <Heart size={14} color="#64748B" style={{ cursor: 'pointer', marginTop: '2px' }} />
-          </div>
-
-          {/* Champ d'ajout de commentaire */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '4px 10px' }}>
-            <UserAvatar avatarUrl={avatarUrl} size={22} fallbackColor="#475569" iconSize={12} />
-            <input
-              type="text"
-              placeholder="Ajouter un commentaire..."
-              readOnly
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                fontSize: '0.76rem',
-                color: '#94A3B8',
-              }}
-            />
-            <SendHorizontal size={14} color="#64748B" style={{ cursor: 'pointer' }} />
-          </div>
+          {/* Ligne des réactions et actions officielles du réseau */}
+          {renderPlatformSocialActions()}
 
           {/* ── BARRE D'ACTIONS FINALES : [ Image ] [ Programmer ] [ Publier ] ── */}
           <div style={{ display: 'flex', gap: '8px', position: 'relative' }} ref={imageMenuRef}>
