@@ -355,6 +355,7 @@ export function GeneratedPostsView({
   const [showImageMenu, setShowImageMenu] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageMenuRef = useRef<HTMLDivElement>(null)
+  const textareaRef  = useRef<HTMLTextAreaElement>(null)
 
   const activePlatforms = platforms
   const currentPlatform = activePlatforms[currentIdx] || activePlatforms[0]
@@ -1024,81 +1025,85 @@ export function GeneratedPostsView({
             </div>
           )}
 
-          {/* Textarea d'édition inline WYSIWYG */}
-          <textarea
-            value={card.content}
-            onChange={e => updateCard(currentPlatform, { content: e.target.value })}
-            placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[currentPlatform]}...`}
+          {/* Boîte de texte avec textarea + bouton Réécrire en bas à droite */}
+          <div
             style={{
-              width: '100%',
-              minHeight: '140px',
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              resize: 'none',
-              fontSize: '0.92rem',
-              lineHeight: 1.6,
-              color: '#F1F5F9',
-              fontFamily: 'inherit',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
+              position: 'relative',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              padding: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '180px',
             }}
-          />
+          >
+            <textarea
+              ref={textareaRef}
+              value={card.content}
+              onChange={e => updateCard(currentPlatform, { content: e.target.value })}
+              placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[currentPlatform]}...`}
+              style={{
+                width: '100%',
+                flex: 1,
+                minHeight: '130px',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                resize: 'none',
+                fontSize: '0.92rem',
+                lineHeight: 1.6,
+                color: '#F1F5F9',
+                fontFamily: 'inherit',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                paddingBottom: '28px',
+              }}
+            />
 
-          {/* Outils IA rapides + Compteur de caractères */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display: 'flex', gap: '6px' }}>
+            {/* Pied de la boîte de texte : Compteur à gauche + Bouton Réécrire IA en bas à droite */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingTop: '6px',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
+                {card.content.length}{limit ? ` / ${limit}` : ''}
+              </span>
+
+              {/* Bouton Réécrire IA placé en bas à droite */}
               <button
                 type="button"
                 onClick={() => handleRewrite(currentPlatform)}
                 disabled={isRewriting}
+                title="Améliorer le post avec l'IA"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  padding: '4px 8px',
+                  padding: '4px 9px',
                   borderRadius: '6px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: isRewriting ? '#38BDF8' : '#CBD5E1',
+                  background: 'rgba(56,189,248,0.12)',
+                  border: '1px solid rgba(56,189,248,0.25)',
+                  color: isRewriting ? '#94A3B8' : '#38BDF8',
                   fontSize: '0.74rem',
                   fontWeight: 600,
                   cursor: isRewriting ? 'not-allowed' : 'pointer',
+                  transition: '0.12s',
                 }}
               >
                 {isRewriting ? (
-                  <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                  <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
                 ) : (
                   <RotateCcw size={11} />
                 )}
-                <span>Réécrire IA</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleHashtags(currentPlatform)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  background: 'rgba(6,182,212,0.1)',
-                  border: '1px solid rgba(6,182,212,0.25)',
-                  color: '#38BDF8',
-                  fontSize: '0.74rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                <Hash size={11} />
-                <span>Hashtags</span>
+                <span>Réécrire</span>
               </button>
             </div>
-
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
-              {card.content.length}{limit ? ` / ${limit}` : ''}
-            </span>
           </div>
         </div>
 
@@ -1117,129 +1122,164 @@ export function GeneratedPostsView({
           {/* Ligne des réactions et actions officielles du réseau */}
           {renderPlatformSocialActions()}
 
-          {/* ── BARRE D'ACTIONS FINALES : [ Image ] [ Programmer ] [ Publier ] ── */}
-          <div style={{ display: 'flex', gap: '8px', position: 'relative' }} ref={imageMenuRef}>
+          {/* ── BARRE D'ACTIONS : Ligne 1 (Éditer, Image, Programmer) + Ligne 2 (Publier pleine largeur) ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
-            {/* Bouton IMAGE (remplace l'ancien bouton brouillon !) */}
-            <div style={{ flex: 1, position: 'relative' }}>
+            {/* LIGNE 1 : Trois boutons (Éditer, Image, Programmer) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', position: 'relative' }} ref={imageMenuRef}>
+
+              {/* Bouton Éditer */}
               <button
                 type="button"
-                onClick={() => setShowImageMenu(v => !v)}
+                onClick={() => textareaRef.current?.focus()}
                 style={{
-                  width: '100%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '5px',
-                  padding: '9px 12px',
+                  padding: '9px 8px',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.15)',
                   background: 'rgba(255,255,255,0.06)',
                   color: '#E2E8F0',
-                  fontSize: '0.84rem',
+                  fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: '0.12s',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
               >
-                <ImageIcon size={15} color="#38BDF8" />
-                <span>Image</span>
+                <Sparkles size={14} color="#A78BFA" />
+                <span>Éditer</span>
               </button>
 
-              {/* Menu popup pour l'image */}
-              {showImageMenu && (
-                <div
+              {/* Bouton Image */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowImageMenu(v => !v)}
                   style={{
-                    position: 'absolute',
-                    bottom: 'calc(100% + 8px)',
-                    left: 0,
-                    width: '200px',
-                    background: '#1E293B',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    padding: '9px 8px',
+                    borderRadius: '8px',
                     border: '1px solid rgba(255,255,255,0.15)',
-                    borderRadius: '10px',
-                    overflow: 'hidden',
-                    boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
-                    zIndex: 100,
+                    background: 'rgba(255,255,255,0.06)',
+                    color: '#E2E8F0',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: '0.12s',
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
                 >
-                  <button
-                    type="button"
-                    onClick={handleGenerateImage}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 12px',
-                      background: 'none',
-                      border: 'none',
-                      color: '#F1F5F9',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
-                  >
-                    <Sparkles size={14} color="#38BDF8" />
-                    <span>Générer avec l&apos;IA</span>
-                  </button>
+                  <ImageIcon size={14} color="#38BDF8" />
+                  <span>Image</span>
+                </button>
 
-                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
-
-                  <button
-                    type="button"
-                    onClick={() => { setShowImageMenu(false); fileInputRef.current?.click() }}
+                {/* Menu popup pour l'image */}
+                {showImageMenu && (
+                  <div
                     style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 12px',
-                      background: 'none',
-                      border: 'none',
-                      color: '#F1F5F9',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'left',
+                      position: 'absolute',
+                      bottom: 'calc(100% + 8px)',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '200px',
+                      background: '#1E293B',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+                      zIndex: 100,
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
                   >
-                    <Upload size={14} color="#10B981" />
-                    <span>Importer une photo</span>
-                  </button>
-                </div>
-              )}
+                    <button
+                      type="button"
+                      onClick={handleGenerateImage}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 12px',
+                        background: 'none',
+                        border: 'none',
+                        color: '#F1F5F9',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                    >
+                      <Sparkles size={14} color="#38BDF8" />
+                      <span>Générer avec l&apos;IA</span>
+                    </button>
+
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+
+                    <button
+                      type="button"
+                      onClick={() => { setShowImageMenu(false); fileInputRef.current?.click() }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 12px',
+                        background: 'none',
+                        border: 'none',
+                        color: '#F1F5F9',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                    >
+                      <Upload size={14} color="#10B981" />
+                      <span>Importer une photo</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Bouton Programmer */}
+              <button
+                type="button"
+                onClick={() => setSchedulerPlatform(currentPlatform)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '9px 8px',
+                  borderRadius: '8px',
+                  border: `1px solid ${card.scheduledAt ? 'rgba(56,189,248,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                  background: card.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: card.scheduledAt ? '#38BDF8' : '#E2E8F0',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: '0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = card.scheduledAt ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.1)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = card.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)' }}
+              >
+                <Clock size={14} />
+                <span>{card.scheduledAt ? 'Planifié' : 'Programmer'}</span>
+              </button>
             </div>
 
-            {/* Bouton Programmer */}
-            <button
-              type="button"
-              onClick={() => setSchedulerPlatform(currentPlatform)}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px',
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: `1px solid ${card.scheduledAt ? 'rgba(56,189,248,0.5)' : 'rgba(255,255,255,0.15)'}`,
-                background: card.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
-                color: card.scheduledAt ? '#38BDF8' : '#E2E8F0',
-                fontSize: '0.84rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <Clock size={15} />
-              <span>{card.scheduledAt ? 'Planifié' : 'Programmer'}</span>
-            </button>
-
-            {/* Bouton Publier */}
+            {/* LIGNE 2 : Bouton PUBLIER (Seul sur sa ligne, 100% pleine largeur !) */}
             {card.scheduledAt ? (
               <button
                 type="button"
@@ -1247,24 +1287,24 @@ export function GeneratedPostsView({
                 disabled={isPublishing}
                 className="btn-primary"
                 style={{
-                  flex: 1.4,
+                  width: '100%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '5px',
-                  padding: '9px 12px',
+                  gap: '6px',
+                  padding: '11px 16px',
                   borderRadius: '8px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
+                  fontSize: '0.88rem',
+                  fontWeight: 700,
                   cursor: isPublishing ? 'not-allowed' : 'pointer',
                 }}
               >
                 {isPublishing ? (
-                  <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                  <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
                 ) : (
-                  <Clock size={15} />
+                  <Clock size={16} />
                 )}
-                <span>Valider</span>
+                <span>Valider la programmation</span>
               </button>
             ) : (
               <button
@@ -1273,24 +1313,24 @@ export function GeneratedPostsView({
                 disabled={isPublishing}
                 className="btn-primary"
                 style={{
-                  flex: 1.4,
+                  width: '100%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '5px',
-                  padding: '9px 12px',
+                  gap: '6px',
+                  padding: '11px 16px',
                   borderRadius: '8px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
+                  fontSize: '0.88rem',
+                  fontWeight: 700,
                   cursor: isPublishing ? 'not-allowed' : 'pointer',
                 }}
               >
                 {isPublishing ? (
-                  <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                  <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
                 ) : (
-                  <Send size={15} />
+                  <Send size={16} />
                 )}
-                <span>Publier</span>
+                <span>Publier sur {PLATFORM_NAMES[currentPlatform]}</span>
               </button>
             )}
           </div>
