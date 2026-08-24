@@ -10,8 +10,9 @@ import {
   IconInstagram, IconFacebook, IconTikTok,
   IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest,
 } from '@/components/icons/BrandIcons'
-import { Send, Save, Clock, X, Image as ImageIcon, RotateCcw, Hash, ChevronDown, ChevronRight, Check, User } from 'lucide-react'
+import { Send, Save, Clock, X, Image as ImageIcon, RotateCcw, Hash, ChevronDown, ChevronRight, Check, User, LayoutGrid, Monitor } from 'lucide-react'
 import { UserAvatar } from '@/components/ui/UserAvatar'
+import { StudioPostEditor } from './StudioPostEditor'
 
 // ─── Platform icon ────────────────────────────────────────────────────────────
 
@@ -927,66 +928,151 @@ export function GeneratedPostsView({
     ? ALL_PLATFORMS_LIST
     : ['instagram', 'facebook']
 
+  const [viewMode, setViewMode] = useState<'studio' | 'grid'>('studio')
+
   return (
     <div>
-      {/* ── Sélecteur de plateformes (création manuelle uniquement) ── */}
-      {allowPlatformToggle && (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.25rem' }}>
-        {connectedPlatforms.map(p => {
-          const isActive = activePlatforms.includes(p)
-          const color    = PLATFORM_COLORS[p]
-          return (
-            <button
-              key={p}
-              onClick={() => togglePlatform(p)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '.35rem',
-                padding: '.32rem .7rem', borderRadius: '8px', fontSize: '.76rem', fontWeight: 500,
-                border: `1px solid ${isActive ? color + '55' : 'var(--b1)'}`,
-                background: isActive ? color + '14' : 'var(--card)',
-                color: isActive ? color : 'var(--t3)',
-                cursor: 'pointer', transition: '.12s',
-              }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = color + '44'; e.currentTarget.style.color = color } }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.color = 'var(--t3)' } }}
-            >
-              <PlatformIcon platform={p} size={13} />
-              {PLATFORM_NAMES[p]}
-            </button>
-          )
-        })}
+      {/* ── Bascule de vue (Studio WYSIWYG vs Vue Grille) ── */}
+      <div className="flex items-center justify-between mb-3.5">
+        <div className="flex items-center gap-1 p-0.5 bg-slate-100 dark:bg-slate-800/80 rounded-[10px] border border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setViewMode('studio')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-bold transition-all ${
+              viewMode === 'studio'
+                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Monitor size={13} />
+            <span>Studio Réseaux (WYSIWYG)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-bold transition-all ${
+              viewMode === 'grid'
+                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <LayoutGrid size={13} />
+            <span>Vue Grille</span>
+          </button>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span>Édition en direct activée</span>
+        </div>
       </div>
-      )}
 
-      {/* ── Cards ── */}
-      {unifiedMode && activePlatforms.length > 0 ? (
-        // Mode unifié : une seule carte pour toutes les plateformes
-        <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-          <PostPlatformCard {...cardProps(activePlatforms[0], activePlatforms)} />
-        </div>
-      ) : (
-        // Mode normal : une carte par plateforme
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', gap: '1rem',
-          maxWidth: '860px', margin: '0 auto', justifyContent: 'center',
-        }}>
-          {activePlatforms.map(p => (
-            <div key={p} style={{ width: activePlatforms.length === 1 ? 'min(420px, 100%)' : 'calc(50% - 0.5rem)' }}>
-              <PostPlatformCard {...cardProps(p)} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Scheduler sheet */}
-      {schedulerPlatform && (
-        <SchedulerSheet
-          onConfirm={handleScheduleConfirm}
-          onClose={() => setSchedulerPlatform(null)}
-          alreadyScheduled={!!cards[schedulerPlatform]?.scheduledAt}
-          onDeactivate={handleScheduleDeactivate}
+      {viewMode === 'studio' ? (
+        /* ── OPTION A : STUDIO WYSIWYG IMMERSIF ── */
+        <StudioPostEditor
+          platforms={activePlatforms.length > 0 ? activePlatforms : platforms}
+          variants={variants}
+          objective={objective}
+          isPro={isPro}
+          userName={userName}
+          socialAccounts={socialAccounts}
+          initialImages={initialImages}
+          initialScheduledAt={initialScheduledAt}
+          unifiedMode={unifiedMode}
+          onSaveDraft={onSaveDraft}
+          onPublish={onPublish}
+          onSchedule={onSchedule}
+          onClose={onClose}
         />
+      ) : (
+        /* ── VUE GRILLE CLASSIQUE ── */
+        <>
+          {/* Sélecteur de plateformes (création manuelle uniquement) */}
+          {allowPlatformToggle && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.25rem' }}>
+              {connectedPlatforms.map((p) => {
+                const isActive = activePlatforms.includes(p)
+                const color = PLATFORM_COLORS[p]
+                return (
+                  <button
+                    key={p}
+                    onClick={() => togglePlatform(p)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '.35rem',
+                      padding: '.32rem .7rem',
+                      borderRadius: '8px',
+                      fontSize: '.76rem',
+                      fontWeight: 500,
+                      border: `1px solid ${isActive ? color + '55' : 'var(--b1)'}`,
+                      background: isActive ? color + '14' : 'var(--card)',
+                      color: isActive ? color : 'var(--t3)',
+                      cursor: 'pointer',
+                      transition: '.12s',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.borderColor = color + '44'
+                        e.currentTarget.style.color = color
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.borderColor = 'var(--b1)'
+                        e.currentTarget.style.color = 'var(--t3)'
+                      }
+                    }}
+                  >
+                    <PlatformIcon platform={p} size={13} />
+                    {PLATFORM_NAMES[p]}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Cards */}
+          {unifiedMode && activePlatforms.length > 0 ? (
+            <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+              <PostPlatformCard {...cardProps(activePlatforms[0], activePlatforms)} />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                maxWidth: '860px',
+                margin: '0 auto',
+                justifyContent: 'center',
+              }}
+            >
+              {activePlatforms.map((p) => (
+                <div
+                  key={p}
+                  style={{
+                    width: activePlatforms.length === 1 ? 'min(420px, 100%)' : 'calc(50% - 0.5rem)',
+                  }}
+                >
+                  <PostPlatformCard {...cardProps(p)} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Scheduler sheet */}
+          {schedulerPlatform && (
+            <SchedulerSheet
+              onConfirm={handleScheduleConfirm}
+              onClose={() => setSchedulerPlatform(null)}
+              alreadyScheduled={!!cards[schedulerPlatform]?.scheduledAt}
+              onDeactivate={handleScheduleDeactivate}
+            />
+          )}
+        </>
       )}
     </div>
   )
 }
+
