@@ -321,3 +321,42 @@ export interface GenerateBriefResponse {
   brief: string
 }
 
+// ─── Strategy types ───────────────────────────────────────────────────────────
+
+export type StrategyStatus = 'up_to_date' | 'to_review' | 'archived'
+
+export interface StrategyKPI {
+  id: string
+  name: string
+  target: number
+  current: number
+  unit: string
+}
+
+export interface EditorialPlatformPriority {
+  platform: Platform
+  content_type: string
+  frequency?: string
+  note?: string
+}
+
+export interface EditorialLine {
+  tone: string
+  pillars: string[]
+  platform_priorities: EditorialPlatformPriority[]
+}
+
+export interface Strategy {
+  id: string
+  organization_id: string
+  period: string // 'YYYY-MM'
+  monthly_objective: string
+  target_audience?: string | null
+  editorial_line: EditorialLine
+  kpis: StrategyKPI[]
+  status: StrategyStatus
+  created_by?: string | null
+  created_at: string
+  updated_at: string
+}
+
