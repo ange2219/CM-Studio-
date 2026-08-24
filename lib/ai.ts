@@ -35,6 +35,11 @@ const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null
 
+// Modèles Gemini — gemini-2.5-flash a été retiré par Google en 2026.
+// Défaut sur 3.6 (recommandé par l'API), surchargeable via env sans redéploiement code.
+const GEMINI_TEXT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.6-flash-image'
+
 // ─── Contraintes par plateforme ────────────────────────────────────────────────
 
 const PLATFORM_CONSTRAINTS: Record<Platform, string> = {
@@ -321,7 +326,7 @@ async function genViaOpenAI(req: GenerateRequest, targetPlatform?: Platform): Pr
 async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   if (!gemini) throw new Error('GEMINI_API_KEY manquante.')
   const prompt = buildPrompt(req, targetPlatform)
-  const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const model = gemini.getGenerativeModel({ model: GEMINI_TEXT_MODEL })
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: { responseMimeType: 'application/json' }
@@ -343,7 +348,7 @@ async function callSimpleAI(promptText: string, isJson: boolean = false): Promis
   if (gemini) {
     const g = gemini
     chain.push({ name: 'Gemini', run: async () => {
-      const model = g.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const model = g.getGenerativeModel({ model: GEMINI_TEXT_MODEL })
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: promptText }] }],
         generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
@@ -434,7 +439,7 @@ export async function generateImage(prompt: string): Promise<string | null> {
     if (!gemini) return null
 
     const model = gemini.getGenerativeModel({
-      model: 'gemini-2.5-flash-image',
+      model: GEMINI_IMAGE_MODEL,
     })
 
     const result = await model.generateContent({
