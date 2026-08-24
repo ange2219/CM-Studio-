@@ -1007,7 +1007,7 @@ export function GeneratedPostsView({
           </div>
         </div>
 
-        {/* 2. CORPS DÉFILANT : TEXTE SEULEMENT (C'est la seule partie qui défile !) */}
+        {/* 2. CORPS DÉFILANT : TEXTE SEULEMENT (C'est la seule partie qui défile, sans case/bordure !) */}
         <div
           style={{
             flex: 1,
@@ -1015,95 +1015,82 @@ export function GeneratedPostsView({
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
+            gap: '8px',
           }}
         >
           {/* Badge spécial @à la une si Facebook */}
           {currentPlatform === 'facebook' && (
-            <div style={{ color: '#38BDF8', fontWeight: 600, fontSize: '0.86rem' }}>
+            <div style={{ color: '#38BDF8', fontWeight: 600, fontSize: '0.86rem', marginBottom: '2px' }}>
               @à la une
             </div>
           )}
 
-          {/* Boîte de texte avec textarea + bouton Réécrire en bas à droite */}
+          {/* Textarea naturel et transparent, sans case ni bordure */}
+          <textarea
+            ref={textareaRef}
+            value={card.content}
+            onChange={e => updateCard(currentPlatform, { content: e.target.value })}
+            placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[currentPlatform]}...`}
+            style={{
+              width: '100%',
+              flex: 1,
+              minHeight: '160px',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              resize: 'none',
+              fontSize: '0.94rem',
+              lineHeight: 1.6,
+              color: '#F1F5F9',
+              fontFamily: 'inherit',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              padding: 0,
+              margin: 0,
+            }}
+          />
+
+          {/* Ligne discrète en bas du texte : Compteur à gauche + Bouton Réécrire en bas à droite */}
           <div
             style={{
-              position: 'relative',
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              padding: '12px',
               display: 'flex',
-              flexDirection: 'column',
-              minHeight: '180px',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingTop: '8px',
             }}
           >
-            <textarea
-              ref={textareaRef}
-              value={card.content}
-              onChange={e => updateCard(currentPlatform, { content: e.target.value })}
-              placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[currentPlatform]}...`}
-              style={{
-                width: '100%',
-                flex: 1,
-                minHeight: '130px',
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                resize: 'none',
-                fontSize: '0.92rem',
-                lineHeight: 1.6,
-                color: '#F1F5F9',
-                fontFamily: 'inherit',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                paddingBottom: '28px',
-              }}
-            />
+            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
+              {card.content.length}{limit ? ` / ${limit}` : ''}
+            </span>
 
-            {/* Pied de la boîte de texte : Compteur à gauche + Bouton Réécrire IA en bas à droite */}
-            <div
+            {/* Bouton Réécrire IA placé en bas à droite du texte */}
+            <button
+              type="button"
+              onClick={() => handleRewrite(currentPlatform)}
+              disabled={isRewriting}
+              title="Améliorer le post avec l'IA"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingTop: '6px',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
+                gap: '4px',
+                padding: '4px 9px',
+                borderRadius: '6px',
+                background: 'rgba(56,189,248,0.12)',
+                border: '1px solid rgba(56,189,248,0.25)',
+                color: isRewriting ? '#94A3B8' : '#38BDF8',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                cursor: isRewriting ? 'not-allowed' : 'pointer',
+                transition: '0.12s',
               }}
             >
-              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
-                {card.content.length}{limit ? ` / ${limit}` : ''}
-              </span>
-
-              {/* Bouton Réécrire IA placé en bas à droite */}
-              <button
-                type="button"
-                onClick={() => handleRewrite(currentPlatform)}
-                disabled={isRewriting}
-                title="Améliorer le post avec l'IA"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 9px',
-                  borderRadius: '6px',
-                  background: 'rgba(56,189,248,0.12)',
-                  border: '1px solid rgba(56,189,248,0.25)',
-                  color: isRewriting ? '#94A3B8' : '#38BDF8',
-                  fontSize: '0.74rem',
-                  fontWeight: 600,
-                  cursor: isRewriting ? 'not-allowed' : 'pointer',
-                  transition: '0.12s',
-                }}
-              >
-                {isRewriting ? (
-                  <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
-                ) : (
-                  <RotateCcw size={11} />
-                )}
-                <span>Réécrire</span>
-              </button>
-            </div>
+              {isRewriting ? (
+                <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+              ) : (
+                <RotateCcw size={11} />
+              )}
+              <span>Réécrire</span>
+            </button>
           </div>
         </div>
 
