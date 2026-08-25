@@ -12,10 +12,9 @@ import {
 } from '@/components/icons/BrandIcons'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import {
-  X, ChevronLeft, ChevronRight, Sparkles, Hash, RotateCcw,
-  Clock, Send, Upload, Trash2, Image as ImageIcon,
-  Globe, Heart, MessageCircle, Repeat2, Bookmark, BarChart2,
-  Share2, ThumbsUp
+  X, Sparkles, RotateCcw, Clock, Send, Upload, Trash2,
+  Image as ImageIcon, Globe, Heart, MessageCircle, Repeat2,
+  Bookmark, BarChart2, Share2, ThumbsUp
 } from 'lucide-react'
 
 export interface SocialAccount {
@@ -64,12 +63,6 @@ function PlatformIcon({ platform, size = 20 }: { platform: Platform; size?: numb
 
 function lowercaseHashtags(text: string): string {
   return text.replace(/#(\w+)/g, (_, tag) => '#' + tag.toLowerCase())
-}
-
-function formatScheduled(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) +
-    ', ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
 const CHAR_LIMITS: Partial<Record<Platform, number>> = {
@@ -349,43 +342,35 @@ export function GeneratedPostsView({
     })
   }, [variants, platforms])
 
-  const [currentIdx, setCurrentIdx] = useState(0)
   const [schedulerPlatform, setSchedulerPlatform] = useState<Platform | null>(null)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
-  const [showImageMenu, setShowImageMenu] = useState(false)
+  const [activeImageMenuPlatform, setActiveImageMenuPlatform] = useState<Platform | null>(null)
+  const [activeUploadPlatform, setActiveUploadPlatform] = useState<Platform | null>(null)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const imageMenuRef = useRef<HTMLDivElement>(null)
-  const textareaRef  = useRef<HTMLTextAreaElement>(null)
+  const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
 
   const activePlatforms = platforms
-  const currentPlatform = activePlatforms[currentIdx] || activePlatforms[0]
-  const card = cards[currentPlatform] || { content: '', imageUrl: null, imageLoading: false, scheduledAt: null }
 
-  // Keyboard navigation (← / → and Escape)
+  // Escape key closes & saves drafts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') handleCloseAndSaveDraft()
-      if (e.key === 'ArrowLeft' && currentIdx > 0) {
-        setCurrentIdx(i => i - 1)
-      }
-      if (e.key === 'ArrowRight' && currentIdx < activePlatforms.length - 1) {
-        setCurrentIdx(i => i + 1)
-      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentIdx, activePlatforms.length])
+  }, [activePlatforms, cards])
 
-  // Click outside image menu
+  // Close image popup on outside click
   useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (imageMenuRef.current && !imageMenuRef.current.contains(e.target as Node)) {
-        setShowImageMenu(false)
-      }
+    function handleOutside() {
+      if (activeImageMenuPlatform) setActiveImageMenuPlatform(null)
     }
-    if (showImageMenu) document.addEventListener('mousedown', handleOutside)
-    return () => document.removeEventListener('mousedown', handleOutside)
-  }, [showImageMenu])
+    if (activeImageMenuPlatform) {
+      document.addEventListener('click', handleOutside)
+      return () => document.removeEventListener('click', handleOutside)
+    }
+  }, [activeImageMenuPlatform])
 
   function updateCard(platform: Platform, partial: Partial<CardState>) {
     setCards(prev => ({ ...prev, [platform]: { ...prev[platform], ...partial } }))
@@ -458,98 +443,81 @@ export function GeneratedPostsView({
     finally { setLoadingAction(null) }
   }
 
-  async function handleHashtags(platform: Platform) {
-    if (loadingAction) return
-    setLoadingAction(`hashtags-${platform}`)
-    try {
-      const res = await fetch('/api/ai/hashtags', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: cards[platform]?.content, platform }),
-      })
-      const data = await res.json()
-      if (res.ok && data.hashtags) {
-        const c = cards[platform]?.content || ''
-        const tags = (data.hashtags as string[]).map((h: string) => h.toLowerCase()).join(' ')
-        updateCard(platform, { content: c.trimEnd() + '\n\n' + tags })
-      } else toast(data.error || 'Erreur hashtags', 'error')
-    } catch { toast('Erreur hashtags', 'error') }
-    finally { setLoadingAction(null) }
-  }
-
-  async function handleGenerateImage() {
-    setShowImageMenu(false)
-    updateCard(currentPlatform, { imageLoading: true })
+  async function handleGenerateImage(platform: Platform) {
+    setActiveImageMenuPlatform(null)
+    updateCard(platform, { imageLoading: true })
     try {
       const res = await fetch('/api/ai/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postContent: card.content.slice(0, 300), platform: currentPlatform }),
+        body: JSON.stringify({ postContent: cards[platform]?.content?.slice(0, 300) || '', platform }),
       })
       const data = await res.json()
       if (res.ok && data.url) {
-        updateCard(currentPlatform, { imageUrl: data.url, imageLoading: false })
+        updateCard(platform, { imageUrl: data.url, imageLoading: false })
       } else {
         toast(data.error || 'Erreur génération image', 'error')
-        updateCard(currentPlatform, { imageLoading: false })
+        updateCard(platform, { imageLoading: false })
       }
     } catch {
       toast('Erreur génération image', 'error')
-      updateCard(currentPlatform, { imageLoading: false })
+      updateCard(platform, { imageLoading: false })
     }
   }
 
-  async function handleImportImage(e: React.ChangeEvent<HTMLInputElement>) {
+  function triggerImportImage(platform: Platform) {
+    setActiveImageMenuPlatform(null)
+    setActiveUploadPlatform(platform)
+    fileInputRef.current?.click()
+  }
+
+  async function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
-    setShowImageMenu(false)
-    updateCard(currentPlatform, { imageLoading: true })
+    const platform = activeUploadPlatform
+    if (!file || !platform) return
+    updateCard(platform, { imageLoading: true })
     try {
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
       const data = await res.json()
       if (res.ok && data.url) {
-        updateCard(currentPlatform, { imageUrl: data.url, imageLoading: false })
+        updateCard(platform, { imageUrl: data.url, imageLoading: false })
       } else {
         toast(data.error || 'Erreur upload', 'error')
-        updateCard(currentPlatform, { imageLoading: false })
+        updateCard(platform, { imageLoading: false })
       }
     } catch {
       toast('Erreur upload', 'error')
-      updateCard(currentPlatform, { imageLoading: false })
+      updateCard(platform, { imageLoading: false })
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = ''
+      setActiveUploadPlatform(null)
     }
   }
 
-  const platformAccount = socialAccounts?.find(a => a.platform === currentPlatform)
-  const displayName = platformAccount?.platform_username || userName || 'Ange-Marie DAHOU'
-  const avatarUrl = platformAccount?.platform_avatar_url || null
+  // ── Rendu de l'en-tête spécifique à une plateforme ─────────────────────────
+  function renderPlatformHeader(platform: Platform) {
+    const platformAccount = socialAccounts?.find(a => a.platform === platform)
+    const displayName = platformAccount?.platform_username || userName || 'Ange-Marie DAHOU'
+    const avatarUrl = platformAccount?.platform_avatar_url || null
 
-  const isRewriting = loadingAction === `rewrite-${currentPlatform}`
-  const isPublishing = loadingAction === `publish-${currentPlatform}` || loadingAction === `schedule-${currentPlatform}`
-  const limit = CHAR_LIMITS[currentPlatform]
-  const isOver = limit ? card.content.length > limit : false
-
-  // ── Rendu de l'en-tête spécifique au réseau ────────────────────────────────
-  function renderPlatformHeader() {
-    switch (currentPlatform) {
+    switch (platform) {
       case 'linkedin':
         return (
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-            <UserAvatar avatarUrl={avatarUrl} size={42} fallbackColor="#475569" iconSize={22} />
+            <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>
                   {displayName}
                 </span>
-                <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>• Vous</span>
+                <span style={{ fontSize: '0.76rem', color: '#94A3B8' }}>• Vous</span>
               </div>
-              <p style={{ fontSize: '0.72rem', color: '#94A3B8', lineHeight: 1.25, margin: '1px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <p style={{ fontSize: '0.7rem', color: '#94A3B8', lineHeight: 1.25, margin: '1px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 Futur Data Scientist | Machine Learning & IA
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: '#64748B' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.66rem', color: '#64748B' }}>
                 <span>1 an(s)</span>
                 <span>•</span>
                 <Globe size={10} />
@@ -560,15 +528,15 @@ export function GeneratedPostsView({
       case 'facebook':
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <UserAvatar avatarUrl={avatarUrl} size={42} fallbackColor="#475569" iconSize={22} />
+            <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
             <div>
-              <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#FFFFFF' }}>
+              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>
                 {displayName}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', color: '#94A3B8', marginTop: '1px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#94A3B8', marginTop: '1px' }}>
                 <span>13 juin</span>
                 <span>·</span>
-                <Globe size={11} />
+                <Globe size={10} />
               </div>
             </div>
           </div>
@@ -578,14 +546,14 @@ export function GeneratedPostsView({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ padding: '2px', borderRadius: '50%', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4)' }}>
               <div style={{ padding: '1px', background: '#182234', borderRadius: '50%' }}>
-                <UserAvatar avatarUrl={avatarUrl} size={36} fallbackColor="#475569" iconSize={18} />
+                <UserAvatar avatarUrl={avatarUrl} size={34} fallbackColor="#475569" iconSize={17} />
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#FFFFFF' }}>
                 {displayName.toLowerCase().replace(/[^a-z0-9._]/g, '_')}
               </div>
-              <div style={{ fontSize: '0.68rem', color: '#94A3B8' }}>
+              <div style={{ fontSize: '0.66rem', color: '#94A3B8' }}>
                 🎵 Son original · Tendances
               </div>
             </div>
@@ -594,15 +562,15 @@ export function GeneratedPostsView({
       case 'twitter':
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
+            <UserAvatar avatarUrl={avatarUrl} size={38} fallbackColor="#475569" iconSize={19} />
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#1D9BF0">
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#1D9BF0">
                   <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
                 </svg>
               </div>
-              <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
                 @{displayName.toLowerCase().replace(/[^a-z0-9]/g, '')} · 2h
               </div>
             </div>
@@ -611,521 +579,145 @@ export function GeneratedPostsView({
       default:
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
+            <UserAvatar avatarUrl={avatarUrl} size={38} fallbackColor="#475569" iconSize={19} />
             <div>
-              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</div>
-              <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>{PLATFORM_NAMES[currentPlatform]}</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</div>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>{PLATFORM_NAMES[platform]}</div>
             </div>
           </div>
         )
     }
   }
 
-  // ── Rendu de la barre de réactions spécifique au réseau ────────────────────
-  function renderPlatformSocialActions() {
-    switch (currentPlatform) {
+  // ── Rendu de la barre de réactions spécifique à une plateforme ─────────────
+  function renderPlatformSocialActions(platform: Platform) {
+    switch (platform) {
       case 'linkedin':
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {/* Ligne des compteurs LinkedIn */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.72rem', color: '#94A3B8' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', color: '#94A3B8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                  <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#0A66C2', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
-                    <svg width="8" height="8" viewBox="0 0 16 16" fill="white"><path d="M14.5 7.5a1.5 1.5 0 0 0-1.5-1.5h-3V3.5A2.5 2.5 0 0 0 7.5 1h-.293a.5.5 0 0 0-.414.22L4.316 4.938A2.5 2.5 0 0 0 3.5 6.708V13.5A1.5 1.5 0 0 0 5 15h6.72a2.5 2.5 0 0 0 2.404-1.815l1.2-4.5A1.5 1.5 0 0 0 14.5 7.5zM1 6a1 1 0 0 1 1-1h1v9H2a1 1 0 0 1-1-1V6z"/></svg>
+                  <span style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#0A66C2', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+                    <svg width="7" height="7" viewBox="0 0 16 16" fill="white"><path d="M14.5 7.5a1.5 1.5 0 0 0-1.5-1.5h-3V3.5A2.5 2.5 0 0 0 7.5 1h-.293a.5.5 0 0 0-.414.22L4.316 4.938A2.5 2.5 0 0 0 3.5 6.708V13.5A1.5 1.5 0 0 0 5 15h6.72a2.5 2.5 0 0 0 2.404-1.815l1.2-4.5A1.5 1.5 0 0 0 14.5 7.5zM1 6a1 1 0 0 1 1-1h1v9H2a1 1 0 0 1-1-1V6z"/></svg>
                   </span>
-                  <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#DF704D', marginLeft: '-3px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
-                    <svg width="8" height="8" viewBox="0 0 16 16" fill="white"><path d="M8 14s-6-4.35-6-8.5A4.5 4.5 0 0 1 6.5 1C7.5 1 8 2 8 2s.5-1 1.5-1A4.5 4.5 0 0 1 14 5.5C14 9.65 8 14 8 14z"/></svg>
+                  <span style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#DF704D', marginLeft: '-3px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                    <svg width="7" height="7" viewBox="0 0 16 16" fill="white"><path d="M8 14s-6-4.35-6-8.5A4.5 4.5 0 0 1 6.5 1C7.5 1 8 2 8 2s.5-1 1.5-1A4.5 4.5 0 0 1 14 5.5C14 9.65 8 14 8 14z"/></svg>
                   </span>
-                  <span style={{ width: '15px', height: '15px', borderRadius: '50%', background: '#44A368', marginLeft: '-3px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-                    <svg width="8" height="8" viewBox="0 0 16 16" fill="white"><path d="M4 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/></svg>
+                  <span style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#44A368', marginLeft: '-3px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                    <svg width="7" height="7" viewBox="0 0 16 16" fill="white"><path d="M4 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/></svg>
                   </span>
                 </span>
                 <span style={{ fontWeight: 600, color: '#CBD5E1' }}>12</span>
               </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <span>6 commentaires</span>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <span>6 comm.</span>
                 <span>•</span>
-                <span>1 republication</span>
+                <span>1 rep.</span>
               </div>
             </div>
 
-            {/* Boutons d'action LinkedIn */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-                <ThumbsUp size={13} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.72rem', fontWeight: 600, padding: '4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <ThumbsUp size={12} />
                 <span>J&apos;aime</span>
               </button>
-              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-                <MessageCircle size={13} />
-                <span>Commenter</span>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.72rem', fontWeight: 600, padding: '4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <MessageCircle size={12} />
+                <span>Comm.</span>
               </button>
-              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-                <Repeat2 size={13} />
-                <span>Republier</span>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.72rem', fontWeight: 600, padding: '4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <Repeat2 size={12} />
+                <span>Rep.</span>
               </button>
-              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.74rem', fontWeight: 600, padding: '5px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-                <Send size={13} />
-                <span>Envoyer</span>
+              <button type="button" style={{ background: 'none', border: 'none', color: '#CBD5E1', fontSize: '0.72rem', fontWeight: 600, padding: '4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                <Send size={12} />
+                <span>Env.</span>
               </button>
             </div>
           </div>
         )
       case 'facebook':
         return (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.78rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.76rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <ThumbsUp size={15} />
+                <ThumbsUp size={14} />
                 <span>5</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <MessageCircle size={15} />
+                <MessageCircle size={14} />
                 <span>1</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <Share2 size={15} />
+                <Share2 size={14} />
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ fontSize: '14px', zIndex: 3 }}>😆</span>
-              <span style={{ fontSize: '14px', marginLeft: '-3px', zIndex: 2 }}>👍</span>
-              <span style={{ fontSize: '14px', marginLeft: '-3px', zIndex: 1 }}>❤️</span>
+              <span style={{ fontSize: '13px', zIndex: 3 }}>😆</span>
+              <span style={{ fontSize: '13px', marginLeft: '-3px', zIndex: 2 }}>👍</span>
+              <span style={{ fontSize: '13px', marginLeft: '-3px', zIndex: 1 }}>❤️</span>
             </div>
           </div>
         )
       case 'instagram':
         return (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#FFFFFF' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
-                <Heart size={20} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                <Heart size={18} />
                 <span>41</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
-                <MessageCircle size={20} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                <MessageCircle size={18} />
                 <span>1</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
-                <Repeat2 size={20} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                <Repeat2 size={18} />
                 <span>1</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
-                <Send size={18} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                <Send size={16} />
                 <span>1</span>
               </div>
             </div>
-            <Bookmark size={20} style={{ cursor: 'pointer' }} />
+            <Bookmark size={18} style={{ cursor: 'pointer' }} />
           </div>
         )
       case 'twitter':
         return (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.76rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.74rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-              <MessageCircle size={14} />
+              <MessageCircle size={13} />
               <span>12</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-              <Repeat2 size={14} />
+              <Repeat2 size={13} />
               <span>4</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-              <Heart size={14} />
+              <Heart size={13} />
               <span>38</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-              <BarChart2 size={14} />
+              <BarChart2 size={13} />
               <span>1.2k</span>
             </div>
-            <Share2 size={14} style={{ cursor: 'pointer' }} />
+            <Share2 size={13} style={{ cursor: 'pointer' }} />
           </div>
         )
       default:
         return (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.8rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Heart size={16} />
-              <MessageCircle size={16} />
-              <Share2 size={16} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.78rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Heart size={15} />
+              <MessageCircle size={15} />
+              <Share2 size={15} />
             </div>
-            <Bookmark size={16} />
+            <Bookmark size={15} />
           </div>
         )
     }
-  }
-
-  const hasImage = !!card.imageUrl
-
-  // ── Rendu du panneau de post (En-tête fixe, Corps défilant, Footer fixe) ──
-  function renderPostPanel(isSplit: boolean) {
-    return (
-      <div
-        style={{
-          width: '100%',
-          maxWidth: isSplit ? '440px' : '560px',
-          minWidth: '340px',
-          background: '#182234',
-          borderLeft: '1px solid rgba(255,255,255,0.08)',
-          borderRight: isSplit ? 'none' : '1px solid rgba(255,255,255,0.08)',
-          borderTop: 'none',
-          borderBottom: 'none',
-          borderRadius: '0',
-          boxShadow: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          color: '#FFFFFF',
-          overflow: 'hidden',
-        }}
-      >
-        {/* 1. EN-TÊTE FIXE DU RÉSEAU (Ne bouge jamais au défilement) */}
-        <div
-          style={{
-            padding: '16px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexShrink: 0,
-          }}
-        >
-          {/* Structure authentique du profil selon la plateforme */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {renderPlatformHeader()}
-          </div>
-
-          {/* Coin droit : Logo officiel du réseau */}
-          <div
-            title={`Post formaté pour ${PLATFORM_NAMES[currentPlatform]}`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              marginLeft: '8px',
-            }}
-          >
-            <PlatformIcon platform={currentPlatform} size={22} />
-          </div>
-        </div>
-
-        {/* 2. CORPS DÉFILANT : TEXTE SEULEMENT (C'est la seule partie qui défile, sans case/bordure !) */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}
-        >
-          {/* Badge spécial @à la une si Facebook */}
-          {currentPlatform === 'facebook' && (
-            <div style={{ color: '#38BDF8', fontWeight: 600, fontSize: '0.86rem', marginBottom: '2px' }}>
-              @à la une
-            </div>
-          )}
-
-          {/* Textarea naturel et transparent, sans case ni bordure */}
-          <textarea
-            ref={textareaRef}
-            value={card.content}
-            onChange={e => updateCard(currentPlatform, { content: e.target.value })}
-            placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[currentPlatform]}...`}
-            style={{
-              width: '100%',
-              flex: 1,
-              minHeight: '160px',
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              resize: 'none',
-              fontSize: '0.94rem',
-              lineHeight: 1.6,
-              color: '#F1F5F9',
-              fontFamily: 'inherit',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              padding: 0,
-              margin: 0,
-            }}
-          />
-
-          {/* Ligne discrète en bas du texte : Compteur à gauche + Bouton Réécrire en bas à droite */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingTop: '8px',
-            }}
-          >
-            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
-              {card.content.length}{limit ? ` / ${limit}` : ''}
-            </span>
-
-            {/* Bouton Réécrire IA placé en bas à droite du texte */}
-            <button
-              type="button"
-              onClick={() => handleRewrite(currentPlatform)}
-              disabled={isRewriting}
-              title="Améliorer le post avec l'IA"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 9px',
-                borderRadius: '6px',
-                background: 'rgba(56,189,248,0.12)',
-                border: '1px solid rgba(56,189,248,0.25)',
-                color: isRewriting ? '#94A3B8' : '#38BDF8',
-                fontSize: '0.74rem',
-                fontWeight: 600,
-                cursor: isRewriting ? 'not-allowed' : 'pointer',
-                transition: '0.12s',
-              }}
-            >
-              {isRewriting ? (
-                <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
-              ) : (
-                <RotateCcw size={11} />
-              )}
-              <span>Réécrire</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 3. BAS FIXE DU RÉSEAU (Réactions du réseau + Barre d'actions SaaS fixes) */}
-        <div
-          style={{
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            background: '#131B2A',
-            padding: '12px 16px 16px',
-            flexShrink: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-          }}
-        >
-          {/* Ligne des réactions et actions officielles du réseau */}
-          {renderPlatformSocialActions()}
-
-          {/* ── BARRE D'ACTIONS : Ligne 1 (Éditer, Image, Programmer) + Ligne 2 (Publier pleine largeur) ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
-            {/* LIGNE 1 : Trois boutons (Éditer, Image, Programmer) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', position: 'relative' }} ref={imageMenuRef}>
-
-              {/* Bouton Éditer */}
-              <button
-                type="button"
-                onClick={() => textareaRef.current?.focus()}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '5px',
-                  padding: '9px 8px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#E2E8F0',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: '0.12s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-              >
-                <Sparkles size={14} color="#A78BFA" />
-                <span>Éditer</span>
-              </button>
-
-              {/* Bouton Image */}
-              <div style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowImageMenu(v => !v)}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '5px',
-                    padding: '9px 8px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#E2E8F0',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: '0.12s',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-                >
-                  <ImageIcon size={14} color="#38BDF8" />
-                  <span>Image</span>
-                </button>
-
-                {/* Menu popup pour l'image */}
-                {showImageMenu && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: 'calc(100% + 8px)',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: '200px',
-                      background: '#1E293B',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
-                      zIndex: 100,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={handleGenerateImage}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 12px',
-                        background: 'none',
-                        border: 'none',
-                        color: '#F1F5F9',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
-                    >
-                      <Sparkles size={14} color="#38BDF8" />
-                      <span>Générer avec l&apos;IA</span>
-                    </button>
-
-                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
-
-                    <button
-                      type="button"
-                      onClick={() => { setShowImageMenu(false); fileInputRef.current?.click() }}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 12px',
-                        background: 'none',
-                        border: 'none',
-                        color: '#F1F5F9',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
-                    >
-                      <Upload size={14} color="#10B981" />
-                      <span>Importer une photo</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Bouton Programmer */}
-              <button
-                type="button"
-                onClick={() => setSchedulerPlatform(currentPlatform)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '5px',
-                  padding: '9px 8px',
-                  borderRadius: '8px',
-                  border: `1px solid ${card.scheduledAt ? 'rgba(56,189,248,0.5)' : 'rgba(255,255,255,0.15)'}`,
-                  background: card.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
-                  color: card.scheduledAt ? '#38BDF8' : '#E2E8F0',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: '0.12s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = card.scheduledAt ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.1)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = card.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)' }}
-              >
-                <Clock size={14} />
-                <span>{card.scheduledAt ? 'Planifié' : 'Programmer'}</span>
-              </button>
-            </div>
-
-            {/* LIGNE 2 : Bouton PUBLIER (Seul sur sa ligne, 100% pleine largeur !) */}
-            {card.scheduledAt ? (
-              <button
-                type="button"
-                onClick={() => handlePublishScheduled(currentPlatform)}
-                disabled={isPublishing}
-                className="btn-primary"
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  padding: '11px 16px',
-                  borderRadius: '8px',
-                  fontSize: '0.88rem',
-                  fontWeight: 700,
-                  cursor: isPublishing ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {isPublishing ? (
-                  <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
-                ) : (
-                  <Clock size={16} />
-                )}
-                <span>Valider la programmation</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handlePublish(currentPlatform)}
-                disabled={isPublishing}
-                className="btn-primary"
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  padding: '11px 16px',
-                  borderRadius: '8px',
-                  fontSize: '0.88rem',
-                  fontWeight: 700,
-                  cursor: isPublishing ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {isPublishing ? (
-                  <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
-                ) : (
-                  <Send size={16} />
-                )}
-                <span>Publier sur {PLATFORM_NAMES[currentPlatform]}</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -1136,20 +728,21 @@ export function GeneratedPostsView({
         background: '#0B0F19',
         zIndex: 500,
         display: 'flex',
+        flexDirection: 'column',
         overflow: 'hidden',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
-      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImportImage} />
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileInputChange} />
 
-      {/* ── Bouton Fermer (Croix ✕) dans le coin supérieur droit de la grande carte / écran ── */}
+      {/* ── Bouton Fermer (Croix ✕) dans le coin supérieur droit de la grande vue ── */}
       <button
         type="button"
         onClick={handleCloseAndSaveDraft}
-        title="Fermer et enregistrer en brouillon"
+        title="Fermer et enregistrer tous les posts en brouillon"
         style={{
-          position: 'absolute',
-          top: '16px',
+          position: 'fixed',
+          top: '14px',
           right: '16px',
           width: '36px',
           height: '36px',
@@ -1161,7 +754,7 @@ export function GeneratedPostsView({
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          zIndex: 60,
+          zIndex: 80,
           boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
           transition: 'all 0.15s',
         }}
@@ -1171,232 +764,423 @@ export function GeneratedPostsView({
         <X size={18} />
       </button>
 
-      {/* ── CAS 1 : AVEC IMAGE -> Split-View (Média à gauche, Post à droite) ── */}
-      {hasImage ? (
-        <>
-          {/* Flèche Gauche (←) si plusieurs plateformes */}
-          {activePlatforms.length > 1 && currentIdx > 0 && (
-            <button
-              type="button"
-              onClick={() => setCurrentIdx(i => i - 1)}
-              title="Réseau précédent"
+      {/* ── GRILLE CÔTE À CÔTE DES POSTS GÉNÉRÉS (Tous affichés simultanément !) ── */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '14px',
+          justifyContent: activePlatforms.length <= 3 ? 'center' : 'flex-start',
+          alignItems: 'stretch',
+          width: '100%',
+          height: '100%',
+          padding: '16px 20px',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+        }}
+      >
+        {activePlatforms.map(platform => {
+          const cardData = cards[platform] || { content: '', imageUrl: null, imageLoading: false, scheduledAt: null }
+          const limit = CHAR_LIMITS[platform]
+          const isOver = limit ? cardData.content.length > limit : false
+          const isRewriting = loadingAction === `rewrite-${platform}`
+          const isPublishing = loadingAction === `publish-${platform}` || loadingAction === `schedule-${platform}`
+          const isImageMenuOpen = activeImageMenuPlatform === platform
+
+          return (
+            <div
+              key={platform}
               style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '42px',
-                height: '42px',
-                borderRadius: '50%',
-                background: 'rgba(15,23,42,0.85)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#FFFFFF',
+                flex: activePlatforms.length === 1 ? '0 0 min(540px, 100%)' : activePlatforms.length === 2 ? '0 0 min(480px, 48%)' : '0 0 min(400px, 32%)',
+                maxWidth: activePlatforms.length === 1 ? '560px' : '480px',
+                minWidth: '320px',
+                height: '100%',
+                background: '#182234',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 40,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                transition: 'all 0.15s',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
             >
-              <ChevronLeft size={22} />
-            </button>
-          )}
-
-          {/* Flèche Droite (→) si plusieurs plateformes */}
-          {activePlatforms.length > 1 && currentIdx < activePlatforms.length - 1 && (
-            <button
-              type="button"
-              onClick={() => setCurrentIdx(i => i + 1)}
-              title="Réseau suivant"
-              style={{
-                position: 'absolute',
-                right: '460px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '42px',
-                height: '42px',
-                borderRadius: '50%',
-                background: 'rgba(15,23,42,0.85)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 40,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-            >
-              <ChevronRight size={22} />
-            </button>
-          )}
-
-          {/* VOLET GAUCHE : Zone Média / Image */}
-          <div
-            style={{
-              flex: 1,
-              minWidth: 0,
-              background: '#000000',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              padding: '2rem',
-            }}
-          >
-            <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img
-                src={card.imageUrl!}
-                alt="Média du post"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
-                }}
-              />
-
-              {/* Bouton supprimer l'image */}
-              <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
-                <button
-                  type="button"
-                  onClick={() => updateCard(currentPlatform, { imageUrl: null })}
-                  title="Supprimer l'image"
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    background: 'rgba(239,68,68,0.85)',
-                    border: 'none',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: '0.74rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <Trash2 size={12} />
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Indicateur de pagination si plusieurs plateformes */}
-            {activePlatforms.length > 1 && (
+              {/* 1. EN-TÊTE FIXE DU RÉSEAU */}
               <div
                 style={{
-                  position: 'absolute',
-                  bottom: '16px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  padding: '4px 12px',
-                  borderRadius: '20px',
-                  background: 'rgba(0,0,0,0.65)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#E2E8F0',
-                  fontSize: '0.76rem',
-                  fontWeight: 600,
-                  backdropFilter: 'blur(6px)',
+                  padding: '14px 16px',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexShrink: 0,
                 }}
               >
-                {currentIdx + 1} / {activePlatforms.length}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {renderPlatformHeader(platform)}
+                </div>
+
+                <div
+                  title={`Post formaté pour ${PLATFORM_NAMES[platform]}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginLeft: '8px',
+                  }}
+                >
+                  <PlatformIcon platform={platform} size={22} />
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* VOLET DROIT : Panneau de post */}
-          {renderPostPanel(true)}
-        </>
-      ) : (
-        /* ── CAS 2 : SANS IMAGE (ou plateforme unique sans média) -> POST CENTRÉ PLEINE HAUTEUR ── */
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            padding: 0,
-          }}
-        >
-          {/* Flèche Gauche (←) si plusieurs plateformes */}
-          {activePlatforms.length > 1 && currentIdx > 0 && (
-            <button
-              type="button"
-              onClick={() => setCurrentIdx(i => i - 1)}
-              title="Réseau précédent"
-              style={{
-                position: 'absolute',
-                left: '24px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                background: 'rgba(15,23,42,0.85)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 40,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-            >
-              <ChevronLeft size={22} />
-            </button>
-          )}
+              {/* 2. CORPS DÉFILANT (Image si présente + Texte défilant) */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}
+              >
+                {/* Image du post si présente */}
+                {cardData.imageLoading ? (
+                  <div style={{ height: '160px', background: '#0F172A', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <div style={{ width: '28px', height: '28px', border: '3px solid rgba(255,255,255,0.2)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                    <span style={{ fontSize: '0.76rem', color: '#94A3B8' }}>Génération de l&apos;image IA...</span>
+                  </div>
+                ) : cardData.imageUrl ? (
+                  <div style={{ position: 'relative', width: '100%', maxHeight: '220px', borderRadius: '8px', overflow: 'hidden', background: '#000000', marginBottom: '4px' }}>
+                    <img src={cardData.imageUrl} alt="" style={{ width: '100%', maxHeight: '220px', objectFit: 'contain', display: 'block' }} />
+                    <button
+                      type="button"
+                      onClick={() => updateCard(platform, { imageUrl: null })}
+                      title="Supprimer l'image"
+                      style={{
+                        position: 'absolute', top: '8px', right: '8px',
+                        padding: '4px 8px', borderRadius: '6px',
+                        background: 'rgba(239,68,68,0.85)', border: 'none',
+                        color: '#fff', cursor: 'pointer', fontSize: '0.7rem',
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                      }}
+                    >
+                      <Trash2 size={11} />
+                      <span>Supprimer</span>
+                    </button>
+                  </div>
+                ) : null}
 
-          {/* Flèche Droite (→) si plusieurs plateformes */}
-          {activePlatforms.length > 1 && currentIdx < activePlatforms.length - 1 && (
-            <button
-              type="button"
-              onClick={() => setCurrentIdx(i => i + 1)}
-              title="Réseau suivant"
-              style={{
-                position: 'absolute',
-                right: '24px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                background: 'rgba(15,23,42,0.85)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 40,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-            >
-              <ChevronRight size={22} />
-            </button>
-          )}
+                {/* Badge spécial @à la une si Facebook */}
+                {platform === 'facebook' && (
+                  <div style={{ color: '#38BDF8', fontWeight: 600, fontSize: '0.84rem', marginBottom: '2px' }}>
+                    @à la une
+                  </div>
+                )}
 
-          {/* Panneau du post centré élégamment */}
-          {renderPostPanel(false)}
-        </div>
-      )}
+                {/* Textarea naturel et transparent */}
+                <textarea
+                  ref={el => { textareaRefs.current[platform] = el }}
+                  value={cardData.content}
+                  onChange={e => updateCard(platform, { content: e.target.value })}
+                  placeholder={`Rédigez votre post pour ${PLATFORM_NAMES[platform]}...`}
+                  style={{
+                    width: '100%',
+                    flex: 1,
+                    minHeight: '140px',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    resize: 'none',
+                    fontSize: '0.92rem',
+                    lineHeight: 1.55,
+                    color: '#F1F5F9',
+                    fontFamily: 'inherit',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    padding: 0,
+                    margin: 0,
+                  }}
+                />
+
+                {/* Pied du texte : Compteur à gauche + Bouton Réécrire en bas à droite */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingTop: '6px',
+                  }}
+                >
+                  <span style={{ fontSize: '0.72rem', fontWeight: 600, color: isOver ? '#EF4444' : '#64748B' }}>
+                    {cardData.content.length}{limit ? ` / ${limit}` : ''}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRewrite(platform)}
+                    disabled={isRewriting}
+                    title="Améliorer le post avec l'IA"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 9px',
+                      borderRadius: '6px',
+                      background: 'rgba(56,189,248,0.12)',
+                      border: '1px solid rgba(56,189,248,0.25)',
+                      color: isRewriting ? '#94A3B8' : '#38BDF8',
+                      fontSize: '0.74rem',
+                      fontWeight: 600,
+                      cursor: isRewriting ? 'not-allowed' : 'pointer',
+                      transition: '0.12s',
+                    }}
+                  >
+                    {isRewriting ? (
+                      <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                    ) : (
+                      <RotateCcw size={11} />
+                    )}
+                    <span>Réécrire</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. BAS FIXE DU RÉSEAU (Réactions + Actions SaaS) */}
+              <div
+                style={{
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  background: '#131B2A',
+                  padding: '10px 14px 14px',
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+              >
+                {/* Ligne des réactions du réseau */}
+                {renderPlatformSocialActions(platform)}
+
+                {/* ── BARRE D'ACTIONS : Ligne 1 (Éditer, Image, Programmer) + Ligne 2 (Publier pleine largeur) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+
+                  {/* LIGNE 1 : Trois boutons (Éditer, Image, Programmer) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', position: 'relative' }}>
+
+                    {/* Bouton Éditer */}
+                    <button
+                      type="button"
+                      onClick={() => textareaRefs.current[platform]?.focus()}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        padding: '8px 4px',
+                        borderRadius: '7px',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        background: 'rgba(255,255,255,0.06)',
+                        color: '#E2E8F0',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: '0.12s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                    >
+                      <Sparkles size={13} color="#A78BFA" />
+                      <span>Éditer</span>
+                    </button>
+
+                    {/* Bouton Image avec menu dropdown */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setActiveImageMenuPlatform(isImageMenuOpen ? null : platform)
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          padding: '8px 4px',
+                          borderRadius: '7px',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          background: 'rgba(255,255,255,0.06)',
+                          color: '#E2E8F0',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: '0.12s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                      >
+                        <ImageIcon size={13} color="#38BDF8" />
+                        <span>Image</span>
+                      </button>
+
+                      {/* Menu popup Image */}
+                      {isImageMenuOpen && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            position: 'absolute',
+                            bottom: 'calc(100% + 6px)',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '190px',
+                            background: '#1E293B',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+                            zIndex: 100,
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateImage(platform)}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '9px 12px',
+                              background: 'none',
+                              border: 'none',
+                              color: '#F1F5F9',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                          >
+                            <Sparkles size={13} color="#38BDF8" />
+                            <span>Générer avec l&apos;IA</span>
+                          </button>
+
+                          <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+
+                          <button
+                            type="button"
+                            onClick={() => triggerImportImage(platform)}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '9px 12px',
+                              background: 'none',
+                              border: 'none',
+                              color: '#F1F5F9',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none' }}
+                          >
+                            <Upload size={13} color="#10B981" />
+                            <span>Importer une photo</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bouton Programmer */}
+                    <button
+                      type="button"
+                      onClick={() => setSchedulerPlatform(platform)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        padding: '8px 4px',
+                        borderRadius: '7px',
+                        border: `1px solid ${cardData.scheduledAt ? 'rgba(56,189,248,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                        background: cardData.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
+                        color: cardData.scheduledAt ? '#38BDF8' : '#E2E8F0',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: '0.12s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = cardData.scheduledAt ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.1)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = cardData.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)' }}
+                    >
+                      <Clock size={13} />
+                      <span>{cardData.scheduledAt ? 'Planifié' : 'Programmer'}</span>
+                    </button>
+                  </div>
+
+                  {/* LIGNE 2 : Bouton PUBLIER (100% pleine largeur) */}
+                  {cardData.scheduledAt ? (
+                    <button
+                      type="button"
+                      onClick={() => handlePublishScheduled(platform)}
+                      disabled={isPublishing}
+                      className="btn-primary"
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        fontSize: '0.84rem',
+                        fontWeight: 700,
+                        cursor: isPublishing ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {isPublishing ? (
+                        <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                      ) : (
+                        <Clock size={15} />
+                      )}
+                      <span>Valider la programmation</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handlePublish(platform)}
+                      disabled={isPublishing}
+                      className="btn-primary"
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        fontSize: '0.84rem',
+                        fontWeight: 700,
+                        cursor: isPublishing ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {isPublishing ? (
+                        <div style={{ width: '13px', height: '13px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                      ) : (
+                        <Send size={15} />
+                      )}
+                      <span>Publier sur {PLATFORM_NAMES[platform]}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
       {/* ── Scheduler Modal ── */}
       {schedulerPlatform && (
