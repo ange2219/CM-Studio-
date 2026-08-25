@@ -3,7 +3,7 @@
  * Couche 1 : Classification automatique du type d'image
  * Couche 2 : Transformateur IA Post → Prompt (chaîne Gemini → Claude → GPT)
  * Couche 3 : Constructeur de prompt de base (fallback)
- * Couche 4 : Génération des pixels — Gemini image (principal) → Pollinations/Flux (secours gratuit)
+ * Couche 4 : Génération des pixels via le modèle image de Gemini (exclusif, sans repli)
  */
 
 import { callSimpleAI, generateGeminiImage } from './ai'
@@ -43,7 +43,7 @@ export interface ImagePromptContext {
 
 export interface ImageResult {
   url: string
-  provider: 'gemini-image' | 'pollinations-flux'
+  provider: 'gemini-image'
   imageType: ImageType
 }
 
@@ -242,34 +242,13 @@ Generate the image prompt for this post.`
   return buildImagePrompt(ctx)
 }
 
-// ─── Couche 4 : Providers ─────────────────────────────────────────────────────
+// ─── Couche 4 : Génération de l'image via Gemini ──────────────────────────────
 
 /**
- * Génération via Pollinations.ai — gratuit, sans clé API, modèle Flux.
- * Retourne une URL permanente directement utilisable.
+ * Génère l'image de marque EXCLUSIVEMENT via le modèle image de Gemini.
+ * Aucun repli : si Gemini échoue, l'erreur détaillée (par modèle) remonte
+ * jusqu'à l'appelant pour être affichée et diagnostiquée.
  */
-async function generateWithPollinations(prompt: string): Promise<string> {
-  // Encode le prompt et construit l'URL Pollinations
-  const encoded = encodeURIComponent(prompt.slice(0, 1500))
-  const seed = Math.floor(Math.random() * 99999)
-  const url = `https://image.pollinations.ai/prompt/${encoded}?model=flux&width=1024&height=1024&seed=${seed}&nologo=true&enhance=true`
-
-  console.log('[pollinations] Requesting image generation...')
-
-  // Pollinations retourne directement le binaire de l'image
-  const res = await fetch(url, { signal: AbortSignal.timeout(55000) })
-  if (!res.ok) throw new Error(`Pollinations error: ${res.status} ${res.statusText}`)
-
-  const contentType = res.headers.get('content-type') || 'image/jpeg'
-  const buffer = await res.arrayBuffer()
-  const base64 = Buffer.from(buffer).toString('base64')
-
-  console.log(`[pollinations] Image received: ${contentType}, ${buffer.byteLength} bytes`)
-  return `data:${contentType};base64,${base64}`
-}
-
-// ─── Export principal ─────────────────────────────────────────────────────────
-
 export async function generateBrandedImage(
   ctx: ImagePromptContext,
   plan: Plan
@@ -280,15 +259,7 @@ export async function generateBrandedImage(
   const prompt = await transformPostToImagePrompt(ctx)
   console.log(`[image-generation] prompt (200 chars): ${prompt.slice(0, 200)}`)
 
-  // Principal : modèle image de Gemini (meilleure qualité, cohérence, gère le texte/infographies)
-  try {
-    const url = await generateGeminiImage(prompt)
-    return { url, provider: 'gemini-image', imageType: ctx.imageType }
-  } catch (err) {
-    console.warn('[image-generation] Gemini image indisponible, repli sur Pollinations/Flux :', err instanceof Error ? err.message : err)
-  }
-
-  // Filet de sécurité : Pollinations/Flux (gratuit, sans clé) pour ne jamais échouer totalement
-  const url = await generateWithPollinations(prompt)
-  return { url, provider: 'pollinations-flux', imageType: ctx.imageType }
+  // Gemini uniquement — pas de repli Flux. Qualité garantie, ou erreur claire.
+  const url = await generateGeminiImage(prompt)
+  return { url, provider: 'gemini-image', imageType: ctx.imageType }
 }
