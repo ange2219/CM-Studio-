@@ -794,38 +794,18 @@ export function GeneratedPostsView({
             {renderPlatformHeader()}
           </div>
 
-          {/* Coin droit : Logo officiel du réseau + Croix ✕ pour enregistrer et fermer */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: '8px' }}>
-            <div
-              title={`Post formaté pour ${PLATFORM_NAMES[currentPlatform]}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <PlatformIcon platform={currentPlatform} size={22} />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCloseAndSaveDraft}
-              title="Fermer et enregistrer en brouillon"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#94A3B8',
-                cursor: 'pointer',
-                padding: '4px',
-                display: 'flex',
-                borderRadius: '6px',
-                transition: '0.12s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF' }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#94A3B8' }}
-            >
-              <X size={20} />
-            </button>
+          {/* Coin droit : Logo officiel du réseau */}
+          <div
+            title={`Post formaté pour ${PLATFORM_NAMES[currentPlatform]}`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginLeft: '8px',
+            }}
+          >
+            <PlatformIcon platform={currentPlatform} size={22} />
           </div>
         </div>
 
@@ -1161,6 +1141,35 @@ export function GeneratedPostsView({
       }}
     >
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImportImage} />
+
+      {/* ── Bouton Fermer (Croix ✕) dans le coin supérieur droit de la grande carte / écran ── */}
+      <button
+        type="button"
+        onClick={handleCloseAndSaveDraft}
+        title="Fermer et enregistrer en brouillon"
+        style={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          width: '36px',
+          height: '36px',
+          borderRadius: '50%',
+          background: 'rgba(15,23,42,0.85)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          color: '#94A3B8',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          zIndex: 60,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.background = 'rgba(239,68,68,0.85)'; e.currentTarget.style.borderColor = 'transparent' }}
+        onMouseLeave={e => { e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+      >
+        <X size={18} />
+      </button>
 
       {/* ── CAS 1 : AVEC IMAGE -> Split-View (Média à gauche, Post à droite) ── */}
       {hasImage ? (
