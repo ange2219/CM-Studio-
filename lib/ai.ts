@@ -39,6 +39,21 @@ const gemini = process.env.GEMINI_API_KEY
 // Défaut sur 3.6 (recommandé par l'API), surchargeable via env sans redéploiement code.
 const GEMINI_TEXT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
 
+// Modèle image Gemini. Vide = auto-découverte via l'API (résiste aux renommages/retraits Google).
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || ''
+
+// Candidats essayés dans l'ordre (du plus récent au plus ancien) quand aucun modèle n'est configuré.
+const GEMINI_IMAGE_CANDIDATES = [
+  'gemini-3.6-flash-image',
+  'gemini-2.5-flash-image',
+  'gemini-2.0-flash-preview-image-generation',
+]
+
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+
+// Mémorise le modèle image qui a fonctionné (évite de re-tester à chaque appel sur la même instance).
+let cachedGeminiImageModel: string | null = null
+
 // ─── Contraintes par plateforme ────────────────────────────────────────────────
 
 const PLATFORM_CONSTRAINTS: Record<Platform, string> = {
@@ -395,6 +410,108 @@ export async function callSimpleAI(promptText: string, isJson: boolean = false):
     }
   }
   throw new Error(`Tous les fournisseurs IA ont échoué. Détail : ${errors.join(' | ')}`)
+}
+
+// ─── Génération d'images via Gemini (modèle image « Nano Banana ») ────────────
+
+// Appel REST direct (indépendant du SDK) pour générer une image avec un modèle donné.
+// Retourne une data URL base64. Essaie plusieurs combinaisons de modalités.
+async function callGeminiImageREST(key: string, model: string, prompt: string): Promise<string> {
+  const modalityCombos: string[][] = [['TEXT', 'IMAGE'], ['IMAGE']]
+  let lastErr = ''
+  for (const modalities of modalityCombos) {
+    const res = await fetch(`${GEMINI_API_BASE}/models/${model}:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: modalities },
+      }),
+      signal: AbortSignal.timeout(60000),
+    })
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      lastErr = `HTTP ${res.status} ${body.slice(0, 160)}`
+      // 400 = souvent une combinaison de modalités non supportée → on tente la suivante.
+      if (res.status === 400) continue
+      throw new Error(lastErr)
+    }
+    const j: any = await res.json()
+    const parts = j?.candidates?.[0]?.content?.parts || []
+    const inline = parts.map((p: any) => p.inlineData || p.inline_data).find((d: any) => d?.data)
+    if (inline?.data) {
+      const mime = inline.mimeType || inline.mime_type || 'image/png'
+      return `data:${mime};base64,${inline.data}`
+    }
+    lastErr = 'réponse sans partie image'
+  }
+  throw new Error(lastErr || 'échec inconnu')
+}
+
+// Découvre dynamiquement un modèle image disponible sur le compte (résilient aux renommages Google).
+async function discoverGeminiImageModel(key: string): Promise<string | null> {
+  const res = await fetch(`${GEMINI_API_BASE}/models?key=${key}&pageSize=1000`)
+  if (!res.ok) return null
+  const j: any = await res.json()
+  const models: any[] = j.models || []
+  const supportsGen = (m: any) => (m.supportedGenerationMethods || []).includes('generateContent')
+  const name = (m: any) => String(m.name || '').replace('models/', '')
+  // 1. Un des candidats connus, s'il est présent et actif
+  for (const c of GEMINI_IMAGE_CANDIDATES) {
+    if (models.find(m => name(m) === c && supportsGen(m))) return c
+  }
+  // 2. N'importe quel « *flash-image* » supportant generateContent
+  const flashImg = models.find(m => /flash.*image/i.test(name(m)) && supportsGen(m))
+  if (flashImg) return name(flashImg)
+  // 3. N'importe quel modèle « image » supportant generateContent
+  const anyImg = models.find(m => /image/i.test(name(m)) && supportsGen(m))
+  return anyImg ? name(anyImg) : null
+}
+
+/**
+ * Génère une image avec Gemini et retourne une data URL base64.
+ * Stratégie : modèle configuré → candidats connus → auto-découverte via l'API.
+ * Lève une erreur détaillée (par modèle) si tout échoue.
+ */
+export async function generateGeminiImage(prompt: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY
+  if (!key) throw new Error('GEMINI_API_KEY absente côté serveur')
+
+  const attempts: string[] = []
+  if (GEMINI_IMAGE_MODEL) attempts.push(GEMINI_IMAGE_MODEL)
+  if (cachedGeminiImageModel) attempts.push(cachedGeminiImageModel)
+  attempts.push(...GEMINI_IMAGE_CANDIDATES)
+  const unique = Array.from(new Set(attempts))
+
+  const errors: string[] = []
+  for (const model of unique) {
+    try {
+      const dataUrl = await callGeminiImageREST(key, model, prompt)
+      cachedGeminiImageModel = model
+      console.log(`[gemini-image] image générée avec « ${model} »`)
+      return dataUrl
+    } catch (e: any) {
+      errors.push(`${model} → ${e?.message || e}`)
+    }
+  }
+
+  // Dernier recours : découverte dynamique du bon modèle sur ce compte
+  try {
+    const discovered = await discoverGeminiImageModel(key)
+    if (discovered && !unique.includes(discovered)) {
+      const dataUrl = await callGeminiImageREST(key, discovered, prompt)
+      cachedGeminiImageModel = discovered
+      console.log(`[gemini-image] image générée via auto-découverte « ${discovered} »`)
+      return dataUrl
+    }
+    errors.push(discovered
+      ? `auto-découverte a proposé « ${discovered} » (déjà essayé, échec)`
+      : 'auto-découverte → aucun modèle image disponible sur ce compte')
+  } catch (e: any) {
+    errors.push(`auto-découverte → ${e?.message || e}`)
+  }
+
+  throw new Error(`Gemini image a échoué. Détail : ${errors.join(' | ')}`)
 }
 
 // ─── Réécriture ────────────────────────────────────────────────────────────────

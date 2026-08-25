@@ -3,10 +3,10 @@
  * Couche 1 : Classification automatique du type d'image
  * Couche 2 : Transformateur IA Post → Prompt (chaîne Gemini → Claude → GPT)
  * Couche 3 : Constructeur de prompt de base (fallback)
- * Couche 4 : Génération des pixels via Pollinations.ai (modèle Flux, gratuit)
+ * Couche 4 : Génération des pixels — Gemini image (principal) → Pollinations/Flux (secours gratuit)
  */
 
-import { callSimpleAI } from './ai'
+import { callSimpleAI, generateGeminiImage } from './ai'
 import type { Platform, Plan } from '@/types'
 
 // Instantiation moved inside the function to prevent build errors
@@ -43,7 +43,7 @@ export interface ImagePromptContext {
 
 export interface ImageResult {
   url: string
-  provider: 'pollinations-flux'
+  provider: 'gemini-image' | 'pollinations-flux'
   imageType: ImageType
 }
 
@@ -203,7 +203,7 @@ export async function transformPostToImagePrompt(
     : `Industry: ${brand.industry} → use ${INDUSTRY_COLOR_HINTS[brand.industry] || 'professional'} palette`
 
   const prompt = `You are an expert art director specializing in AI image generation for social media.
-Transform the social media post below into a precise, optimized image prompt for Flux/Stable Diffusion.
+Transform the social media post below into a precise, optimized image generation prompt.
 
 Rules:
 - Describe ONE concrete, coherent visual scene
@@ -280,6 +280,15 @@ export async function generateBrandedImage(
   const prompt = await transformPostToImagePrompt(ctx)
   console.log(`[image-generation] prompt (200 chars): ${prompt.slice(0, 200)}`)
 
+  // Principal : modèle image de Gemini (meilleure qualité, cohérence, gère le texte/infographies)
+  try {
+    const url = await generateGeminiImage(prompt)
+    return { url, provider: 'gemini-image', imageType: ctx.imageType }
+  } catch (err) {
+    console.warn('[image-generation] Gemini image indisponible, repli sur Pollinations/Flux :', err instanceof Error ? err.message : err)
+  }
+
+  // Filet de sécurité : Pollinations/Flux (gratuit, sans clé) pour ne jamais échouer totalement
   const url = await generateWithPollinations(prompt)
   return { url, provider: 'pollinations-flux', imageType: ctx.imageType }
 }
