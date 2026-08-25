@@ -762,17 +762,18 @@ export function GeneratedPostsView({
       <div
         style={{
           width: '100%',
-          maxWidth: isSplit ? '440px' : '520px',
+          maxWidth: isSplit ? '440px' : '560px',
           minWidth: '340px',
           background: '#182234',
-          borderLeft: isSplit ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.12)',
-          border: isSplit ? 'none' : '1px solid rgba(255,255,255,0.12)',
-          borderRadius: isSplit ? '0' : '16px',
-          boxShadow: isSplit ? 'none' : '0 30px 80px rgba(0,0,0,0.85)',
+          borderLeft: '1px solid rgba(255,255,255,0.08)',
+          borderRight: isSplit ? 'none' : '1px solid rgba(255,255,255,0.08)',
+          borderTop: 'none',
+          borderBottom: 'none',
+          borderRadius: '0',
+          boxShadow: 'none',
           display: 'flex',
           flexDirection: 'column',
-          height: isSplit ? '100%' : 'auto',
-          maxHeight: isSplit ? '100%' : '92vh',
+          height: '100%',
           color: '#FFFFFF',
           overflow: 'hidden',
         }}
@@ -1307,7 +1308,7 @@ export function GeneratedPostsView({
           {renderPostPanel(true)}
         </>
       ) : (
-        /* ── CAS 2 : SANS IMAGE (ou plateforme unique sans média) -> POST CENTRÉ ── */
+        /* ── CAS 2 : SANS IMAGE (ou plateforme unique sans média) -> POST CENTRÉ PLEINE HAUTEUR ── */
         <div
           style={{
             width: '100%',
@@ -1316,7 +1317,7 @@ export function GeneratedPostsView({
             alignItems: 'center',
             justifyContent: 'center',
             position: 'relative',
-            padding: '1.5rem',
+            padding: 0,
           }}
         >
           {/* Flèche Gauche (←) si plusieurs plateformes */}
