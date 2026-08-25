@@ -754,206 +754,27 @@ export function GeneratedPostsView({
     }
   }
 
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: '#0B0F19',
-        zIndex: 500,
-        display: 'flex',
-        overflow: 'hidden',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      }}
-    >
-      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImportImage} />
+  const hasImage = !!card.imageUrl
 
-      {/* ── Flèche de navigation Gauche (←) ── */}
-      {currentIdx > 0 && (
-        <button
-          type="button"
-          onClick={() => setCurrentIdx(i => i - 1)}
-          title="Réseau précédent"
-          style={{
-            position: 'absolute',
-            left: '16px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            background: 'rgba(15,23,42,0.85)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 40,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-        >
-          <ChevronLeft size={22} />
-        </button>
-      )}
-
-      {/* ── Flèche de navigation Droite (→) ── */}
-      {currentIdx < activePlatforms.length - 1 && (
-        <button
-          type="button"
-          onClick={() => setCurrentIdx(i => i + 1)}
-          title="Réseau suivant"
-          style={{
-            position: 'absolute',
-            right: '460px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            background: 'rgba(15,23,42,0.85)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 40,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-        >
-          <ChevronRight size={22} />
-        </button>
-      )}
-
-      {/* ── VOLET GAUCHE : Zone Média / Image / Carrousel ── */}
+  // ── Rendu du panneau de post (En-tête fixe, Corps défilant, Footer fixe) ──
+  function renderPostPanel(isSplit: boolean) {
+    return (
       <div
         style={{
-          flex: 1,
-          minWidth: 0,
-          background: '#000000',
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          padding: '2rem',
-        }}
-      >
-        {card.imageLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(255,255,255,0.2)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
-            <span style={{ fontSize: '0.84rem', color: '#94A3B8', fontWeight: 500 }}>Génération de l&apos;image IA en cours...</span>
-          </div>
-        ) : card.imageUrl ? (
-          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img
-              src={card.imageUrl}
-              alt="Média du post"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
-              }}
-            />
-
-            {/* Bouton supprimer l'image */}
-            <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
-              <button
-                type="button"
-                onClick={() => updateCard(currentPlatform, { imageUrl: null })}
-                title="Supprimer l'image"
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  background: 'rgba(239,68,68,0.85)',
-                  border: 'none',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: '0.74rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <Trash2 size={12} />
-                <span>Supprimer</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* Quand il n'y a pas d'image : fond épuré avec incitation discrète */
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center', maxWidth: '320px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ImageIcon size={22} color="#64748B" />
-            </div>
-            <div style={{ fontSize: '0.86rem', color: '#64748B', fontWeight: 500 }}>
-              Aucun visuel associé à ce post
-            </div>
-            <button
-              type="button"
-              onClick={handleGenerateImage}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '7px 14px',
-                borderRadius: '8px',
-                background: 'rgba(56,189,248,0.15)',
-                border: '1px solid rgba(56,189,248,0.3)',
-                color: '#38BDF8',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <Sparkles size={13} />
-              <span>Générer un visuel IA</span>
-            </button>
-          </div>
-        )}
-
-        {/* Indicateur de pagination au bas de l'image (1/3, 2/3...) */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '16px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '4px 12px',
-            borderRadius: '20px',
-            background: 'rgba(0,0,0,0.65)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#E2E8F0',
-            fontSize: '0.76rem',
-            fontWeight: 600,
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          {currentIdx + 1} / {activePlatforms.length}
-        </div>
-      </div>
-
-      {/* ── VOLET DROIT : Détails du post, Entête fixe, Texte défilant, Footer fixe ── */}
-      <div
-        style={{
-          width: '440px',
-          maxWidth: '440px',
-          minWidth: '360px',
+          width: '100%',
+          maxWidth: isSplit ? '440px' : '520px',
+          minWidth: '340px',
           background: '#182234',
-          borderLeft: '1px solid rgba(255,255,255,0.08)',
+          borderLeft: isSplit ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.12)',
+          border: isSplit ? 'none' : '1px solid rgba(255,255,255,0.12)',
+          borderRadius: isSplit ? '0' : '16px',
+          boxShadow: isSplit ? 'none' : '0 30px 80px rgba(0,0,0,0.85)',
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
+          height: isSplit ? '100%' : 'auto',
+          maxHeight: isSplit ? '100%' : '92vh',
           color: '#FFFFFF',
+          overflow: 'hidden',
         }}
       >
         {/* 1. EN-TÊTE FIXE DU RÉSEAU (Ne bouge jamais au défilement) */}
@@ -1323,6 +1144,249 @@ export function GeneratedPostsView({
           </div>
         </div>
       </div>
+    )
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#0B0F19',
+        zIndex: 500,
+        display: 'flex',
+        overflow: 'hidden',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      }}
+    >
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImportImage} />
+
+      {/* ── CAS 1 : AVEC IMAGE -> Split-View (Média à gauche, Post à droite) ── */}
+      {hasImage ? (
+        <>
+          {/* Flèche Gauche (←) si plusieurs plateformes */}
+          {activePlatforms.length > 1 && currentIdx > 0 && (
+            <button
+              type="button"
+              onClick={() => setCurrentIdx(i => i - 1)}
+              title="Réseau précédent"
+              style={{
+                position: 'absolute',
+                left: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                background: 'rgba(15,23,42,0.85)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 40,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+            >
+              <ChevronLeft size={22} />
+            </button>
+          )}
+
+          {/* Flèche Droite (→) si plusieurs plateformes */}
+          {activePlatforms.length > 1 && currentIdx < activePlatforms.length - 1 && (
+            <button
+              type="button"
+              onClick={() => setCurrentIdx(i => i + 1)}
+              title="Réseau suivant"
+              style={{
+                position: 'absolute',
+                right: '460px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                background: 'rgba(15,23,42,0.85)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 40,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+            >
+              <ChevronRight size={22} />
+            </button>
+          )}
+
+          {/* VOLET GAUCHE : Zone Média / Image */}
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: '#000000',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              padding: '2rem',
+            }}
+          >
+            <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img
+                src={card.imageUrl!}
+                alt="Média du post"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '8px',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
+                }}
+              />
+
+              {/* Bouton supprimer l'image */}
+              <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => updateCard(currentPlatform, { imageUrl: null })}
+                  title="Supprimer l'image"
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(239,68,68,0.85)',
+                    border: 'none',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '0.74rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <Trash2 size={12} />
+                  <span>Supprimer</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Indicateur de pagination si plusieurs plateformes */}
+            {activePlatforms.length > 1 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  padding: '4px 12px',
+                  borderRadius: '20px',
+                  background: 'rgba(0,0,0,0.65)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#E2E8F0',
+                  fontSize: '0.76rem',
+                  fontWeight: 600,
+                  backdropFilter: 'blur(6px)',
+                }}
+              >
+                {currentIdx + 1} / {activePlatforms.length}
+              </div>
+            )}
+          </div>
+
+          {/* VOLET DROIT : Panneau de post */}
+          {renderPostPanel(true)}
+        </>
+      ) : (
+        /* ── CAS 2 : SANS IMAGE (ou plateforme unique sans média) -> POST CENTRÉ ── */
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            padding: '1.5rem',
+          }}
+        >
+          {/* Flèche Gauche (←) si plusieurs plateformes */}
+          {activePlatforms.length > 1 && currentIdx > 0 && (
+            <button
+              type="button"
+              onClick={() => setCurrentIdx(i => i - 1)}
+              title="Réseau précédent"
+              style={{
+                position: 'absolute',
+                left: '24px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(15,23,42,0.85)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 40,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+            >
+              <ChevronLeft size={22} />
+            </button>
+          )}
+
+          {/* Flèche Droite (→) si plusieurs plateformes */}
+          {activePlatforms.length > 1 && currentIdx < activePlatforms.length - 1 && (
+            <button
+              type="button"
+              onClick={() => setCurrentIdx(i => i + 1)}
+              title="Réseau suivant"
+              style={{
+                position: 'absolute',
+                right: '24px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(15,23,42,0.85)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 40,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+            >
+              <ChevronRight size={22} />
+            </button>
+          )}
+
+          {/* Panneau du post centré élégamment */}
+          {renderPostPanel(false)}
+        </div>
+      )}
 
       {/* ── Scheduler Modal ── */}
       {schedulerPlatform && (
