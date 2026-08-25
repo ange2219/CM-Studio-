@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useToast } from '@/components/ui/Toast'
 import {
   Platform, PostObjective,
-  PLATFORM_NAMES, PLATFORM_COLORS,
+  PLATFORM_NAMES,
 } from '@/types'
 import {
   IconInstagram, IconFacebook, IconTikTok,
@@ -14,8 +14,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import {
   X, Sparkles, RotateCcw, Clock, Send, Upload, Trash2,
   Image as ImageIcon, Globe, Heart, MessageCircle, Repeat2,
-  Bookmark, BarChart2, Share2, ThumbsUp, ChevronLeft, ChevronRight,
-  ArrowLeft
+  Bookmark, BarChart2, Share2, ThumbsUp, ChevronLeft, ChevronRight
 } from 'lucide-react'
 
 export interface SocialAccount {
@@ -306,7 +305,7 @@ function SchedulerSheet({
   )
 }
 
-// ─── Main GeneratedPostsView ──────────────────────────────────────────────────
+// ─── Main GeneratedPostsView Component ────────────────────────────────────────
 
 export function GeneratedPostsView({
   platforms, variants, objective,
@@ -350,13 +349,11 @@ export function GeneratedPostsView({
     })
   }, [variants, platforms])
 
-  // ── Mode Édition (Lightbox plein écran avec volet média) ──
-  // Si editingPlatform est défini, on ouvre la section d'édition plein écran sur cette plateforme
+  // ── Mode Édition Plein Écran (Section d'Édition Lightbox avec Zone Média) ──
   const [editingPlatform, setEditingPlatform] = useState<Platform | null>(null)
 
   const [schedulerPlatform, setSchedulerPlatform] = useState<Platform | null>(null)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
-  const [activeImageMenuPlatform, setActiveImageMenuPlatform] = useState<Platform | null>(null)
   const [activeUploadPlatform, setActiveUploadPlatform] = useState<Platform | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -386,17 +383,6 @@ export function GeneratedPostsView({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [activePlatforms, cards, editingPlatform])
 
-  // Close image popup on outside click
-  useEffect(() => {
-    function handleOutside() {
-      if (activeImageMenuPlatform) setActiveImageMenuPlatform(null)
-    }
-    if (activeImageMenuPlatform) {
-      document.addEventListener('click', handleOutside)
-      return () => document.removeEventListener('click', handleOutside)
-    }
-  }, [activeImageMenuPlatform])
-
   function updateCard(platform: Platform, partial: Partial<CardState>) {
     setCards(prev => {
       if (isUnifiedPost) {
@@ -410,7 +396,7 @@ export function GeneratedPostsView({
     })
   }
 
-  // Quitter via la croix ✕ : enregistre directement les posts en brouillon et quitte
+  // Quitter via la croix ✕ : enregistre directement tous les posts en brouillon et quitte
   async function handleCloseAndSaveDraft() {
     try {
       if (isUnifiedPost) {
@@ -486,7 +472,6 @@ export function GeneratedPostsView({
   }
 
   async function handleGenerateImage(platform: Platform) {
-    setActiveImageMenuPlatform(null)
     updateCard(platform, { imageLoading: true })
     try {
       const res = await fetch('/api/ai/generate-image', {
@@ -508,7 +493,6 @@ export function GeneratedPostsView({
   }
 
   function triggerImportImage(platform: Platform) {
-    setActiveImageMenuPlatform(null)
     setActiveUploadPlatform(platform)
     fileInputRef.current?.click()
   }
@@ -609,7 +593,7 @@ export function GeneratedPostsView({
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#1D9BF0">
-                  <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
+                  <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
                 </svg>
               </div>
               <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
@@ -763,7 +747,7 @@ export function GeneratedPostsView({
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // VUE 1 : MODE ÉDITION LIGHTBOX PLEIN ÉCRAN (Quand editingPlatform est actif)
+  // VUE 1 : SECTION D'ÉDITION PLEIN ÉCRAN (Quand on clique sur Image ou Éditer)
   // ──────────────────────────────────────────────────────────────────────────
   if (editingPlatform) {
     const curPlatform = editingPlatform
@@ -788,11 +772,11 @@ export function GeneratedPostsView({
       >
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileInputChange} />
 
-        {/* Bouton pour fermer le mode édition et revenir à la vue des posts */}
+        {/* Bouton pour fermer la section d'édition */}
         <button
           type="button"
           onClick={() => setEditingPlatform(null)}
-          title="Fermer le mode édition"
+          title="Fermer l'édition"
           style={{
             position: 'fixed',
             top: '16px',
@@ -817,7 +801,7 @@ export function GeneratedPostsView({
           <X size={18} />
         </button>
 
-        {/* Flèche Gauche (←) pour aller à la plateforme précédente */}
+        {/* Flèche Gauche (←) pour naviguer entre plateformes */}
         {!isUnifiedPost && activePlatforms.length > 1 && curIdx > 0 && (
           <button
             type="button"
@@ -840,16 +824,13 @@ export function GeneratedPostsView({
               cursor: 'pointer',
               zIndex: 40,
               boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-              transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
           >
             <ChevronLeft size={22} />
           </button>
         )}
 
-        {/* Flèche Droite (→) pour aller à la plateforme suivante */}
+        {/* Flèche Droite (→) pour naviguer entre plateformes */}
         {!isUnifiedPost && activePlatforms.length > 1 && curIdx < activePlatforms.length - 1 && (
           <button
             type="button"
@@ -872,16 +853,13 @@ export function GeneratedPostsView({
               cursor: 'pointer',
               zIndex: 40,
               boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-              transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#1677FF'; e.currentTarget.style.borderColor = '#1677FF' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,23,42,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
           >
             <ChevronRight size={22} />
           </button>
         )}
 
-        {/* ── VOLET GAUCHE : SECTION MÉDIA / IMAGE PLEIN ÉCRAN ── */}
+        {/* ── VOLET GAUCHE : SECTION MÉDIA DU POST ── */}
         <div
           style={{
             flex: 1,
@@ -914,7 +892,6 @@ export function GeneratedPostsView({
                 }}
               />
 
-              {/* Boutons actions sur l'image */}
               <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
@@ -958,17 +935,16 @@ export function GeneratedPostsView({
               </div>
             </div>
           ) : (
-            /* Aucune image encore : proposition de génération ou d'importation */
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center', maxWidth: '340px' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <ImageIcon size={26} color="#64748B" />
               </div>
               <div>
                 <div style={{ fontSize: '0.94rem', color: '#F1F5F9', fontWeight: 600 }}>
-                  Ajouter un visuel à cette publication
+                  Générer ou importer un visuel
                 </div>
                 <div style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '4px' }}>
-                  Générez une image sur-mesure avec l&apos;IA ou importez votre propre photo.
+                  Créez une image IA personnalisée ou importez votre visuel.
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
@@ -1013,7 +989,6 @@ export function GeneratedPostsView({
             </div>
           )}
 
-          {/* Indicateur de pagination si plusieurs plateformes */}
           {!isUnifiedPost && activePlatforms.length > 1 && (
             <div
               style={{
@@ -1050,7 +1025,7 @@ export function GeneratedPostsView({
             color: '#FFFFFF',
           }}
         >
-          {/* 1. En-tête du post */}
+          {/* En-tête */}
           <div
             style={{
               padding: '16px',
@@ -1088,7 +1063,7 @@ export function GeneratedPostsView({
             </div>
           </div>
 
-          {/* 2. Corps défilant du texte */}
+          {/* Corps défilant du texte */}
           <div
             style={{
               flex: 1,
@@ -1171,7 +1146,7 @@ export function GeneratedPostsView({
             </div>
           </div>
 
-          {/* 3. Bas fixe avec réactions + actions */}
+          {/* Bas fixe avec réactions + actions */}
           <div
             style={{
               borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -1301,7 +1276,7 @@ export function GeneratedPostsView({
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // VUE 2 : GRILLE D'ENSEMBLE DES POSTS GÉNÉRÉS (Multi-colonnes ou Unifié)
+  // VUE 2 : GRILLE D'ENSEMBLE DIRECTE SANS EFFET DE CARTES FLOTTANTES
   // ──────────────────────────────────────────────────────────────────────────
   return (
     <div
@@ -1311,21 +1286,20 @@ export function GeneratedPostsView({
         background: '#0B0F19',
         zIndex: 500,
         display: 'flex',
-        flexDirection: 'column',
         overflow: 'hidden',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileInputChange} />
 
-      {/* ── Bouton Fermer (Croix ✕) dans le coin supérieur droit global ── */}
+      {/* ── Bouton Fermer (Croix ✕) dans le coin supérieur droit ── */}
       <button
         type="button"
         onClick={handleCloseAndSaveDraft}
-        title="Fermer et enregistrer tous les posts en brouillon"
+        title="Fermer et enregistrer en brouillon"
         style={{
           position: 'fixed',
-          top: '14px',
+          top: '16px',
           right: '16px',
           width: '36px',
           height: '36px',
@@ -1347,21 +1321,19 @@ export function GeneratedPostsView({
         <X size={18} />
       </button>
 
-      {/* ── CONTENEUR PRINCIPAL DES CARTES ── */}
+      {/* ── CONTENEUR PRINCIPAL PLEINE HAUTEUR SANS CADRE NI BOÎTE ── */}
       <div
         style={{
           display: 'flex',
-          gap: '14px',
-          justifyContent: (isUnifiedPost || activePlatforms.length <= 3) ? 'center' : 'flex-start',
+          justifyContent: isUnifiedPost ? 'center' : (activePlatforms.length <= 3 ? 'center' : 'flex-start'),
           alignItems: 'stretch',
           width: '100%',
           height: '100%',
-          padding: '16px 20px',
           overflowX: 'auto',
           overflowY: 'hidden',
         }}
       >
-        {/* CAS UNIFIÉ : 1 SEULE CARTE CENTRÉE AVEC TOUS LES LOGOS DES RÉSEAUX */}
+        {/* CAS UNIFIÉ : 1 SEULE COLONNE CENTRÉE */}
         {isUnifiedPost ? (
           (() => {
             const mainPlatform = activePlatforms[0] || 'instagram'
@@ -1382,18 +1354,17 @@ export function GeneratedPostsView({
                   minWidth: '320px',
                   height: '100%',
                   background: '#182234',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px',
+                  borderLeft: '1px solid rgba(255,255,255,0.08)',
+                  borderRight: '1px solid rgba(255,255,255,0.08)',
                   display: 'flex',
                   flexDirection: 'column',
                   overflow: 'hidden',
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
                 }}
               >
                 {/* 1. En-tête avec tous les logos des réseaux */}
                 <div
                   style={{
-                    padding: '14px 16px',
+                    padding: '16px',
                     borderBottom: '1px solid rgba(255,255,255,0.08)',
                     display: 'flex',
                     alignItems: 'center',
@@ -1440,7 +1411,7 @@ export function GeneratedPostsView({
                   style={{
                     flex: 1,
                     overflowY: 'auto',
-                    padding: '14px 16px',
+                    padding: '16px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
@@ -1517,7 +1488,7 @@ export function GeneratedPostsView({
                   style={{
                     borderTop: '1px solid rgba(255,255,255,0.08)',
                     background: '#131B2A',
-                    padding: '10px 14px 14px',
+                    padding: '12px 16px 16px',
                     flexShrink: 0,
                     display: 'flex',
                     flexDirection: 'column',
@@ -1671,8 +1642,8 @@ export function GeneratedPostsView({
             )
           })()
         ) : (
-          /* CAS MULTI-VARIANTES : LES CARTES CÔTE À CÔTE SANS IMAGES AU DÉPART */
-          activePlatforms.map(platform => {
+          /* CAS MULTI-VARIANTES : COLONNES PLEINE HAUTEUR SÉPARÉES PAR DES DIVIDERS */
+          activePlatforms.map((platform, idx) => {
             const cardData = cards[platform] || { content: '', imageUrl: null, imageLoading: false, scheduledAt: null }
             const limit = CHAR_LIMITS[platform]
             const isOver = limit ? cardData.content.length > limit : false
@@ -1683,23 +1654,22 @@ export function GeneratedPostsView({
               <div
                 key={platform}
                 style={{
-                  flex: activePlatforms.length === 1 ? '0 0 min(540px, 100%)' : activePlatforms.length === 2 ? '0 0 min(480px, 48%)' : '0 0 min(400px, 32%)',
+                  flex: activePlatforms.length === 1 ? '0 0 min(540px, 100%)' : activePlatforms.length === 2 ? '0 0 min(480px, 50%)' : '0 0 min(400px, 33.333%)',
                   maxWidth: activePlatforms.length === 1 ? '560px' : '480px',
                   minWidth: '320px',
                   height: '100%',
                   background: '#182234',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px',
+                  borderRight: idx < activePlatforms.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                  borderLeft: (idx === 0 && activePlatforms.length > 1) ? '1px solid rgba(255,255,255,0.08)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   overflow: 'hidden',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                 }}
               >
                 {/* 1. EN-TÊTE FIXE DU RÉSEAU */}
                 <div
                   style={{
-                    padding: '14px 16px',
+                    padding: '16px',
                     borderBottom: '1px solid rgba(255,255,255,0.08)',
                     display: 'flex',
                     alignItems: 'center',
@@ -1730,7 +1700,7 @@ export function GeneratedPostsView({
                   style={{
                     flex: 1,
                     overflowY: 'auto',
-                    padding: '14px 16px',
+                    padding: '16px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
@@ -1813,7 +1783,7 @@ export function GeneratedPostsView({
                   style={{
                     borderTop: '1px solid rgba(255,255,255,0.08)',
                     background: '#131B2A',
-                    padding: '10px 14px 14px',
+                    padding: '12px 16px 16px',
                     flexShrink: 0,
                     display: 'flex',
                     flexDirection: 'column',
@@ -1842,10 +1812,7 @@ export function GeneratedPostsView({
                           fontSize: '0.78rem',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          transition: '0.12s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
                       >
                         <Sparkles size={13} color="#A78BFA" />
                         <span>Éditer</span>
@@ -1868,10 +1835,7 @@ export function GeneratedPostsView({
                           fontSize: '0.78rem',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          transition: '0.12s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
                       >
                         <ImageIcon size={13} color="#38BDF8" />
                         <span>Image</span>
@@ -1894,10 +1858,7 @@ export function GeneratedPostsView({
                           fontSize: '0.78rem',
                           fontWeight: 600,
                           cursor: 'pointer',
-                          transition: '0.12s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = cardData.scheduledAt ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.1)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = cardData.scheduledAt ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)' }}
                       >
                         <Clock size={13} />
                         <span>{cardData.scheduledAt ? 'Planifié' : 'Programmer'}</span>
@@ -1920,7 +1881,6 @@ export function GeneratedPostsView({
                           borderRadius: '8px',
                           fontSize: '0.84rem',
                           fontWeight: 700,
-                          cursor: isPublishing ? 'not-allowed' : 'pointer',
                         }}
                       >
                         {isPublishing ? (
@@ -1946,7 +1906,6 @@ export function GeneratedPostsView({
                           borderRadius: '8px',
                           fontSize: '0.84rem',
                           fontWeight: 700,
-                          cursor: isPublishing ? 'not-allowed' : 'pointer',
                         }}
                       >
                         {isPublishing ? (
