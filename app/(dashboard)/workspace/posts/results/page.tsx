@@ -59,8 +59,15 @@ export default function ResultsPage() {
     }).catch(() => {})
   }, [router])
 
-  const isUnified = (d: ResultsData | null) =>
-    d?.distributionMode === 'unified' && !d?.editPostId && (d?.platforms?.length ?? 0) > 1
+  const isUnified = (d: ResultsData | null) => {
+    if (!d || d.editPostId) return false
+    if (d.distributionMode === 'unified') return true
+    if ((d.platforms?.length ?? 0) > 1) {
+      const vals = Object.values(d.variants || {})
+      if (vals.length > 0 && vals.every(v => v === vals[0])) return true
+    }
+    return false
+  }
 
   // ── Crée un post (ou met à jour en mode édition) ──────────────────────────────
   async function savePost(
