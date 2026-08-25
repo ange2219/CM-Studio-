@@ -42,11 +42,11 @@ const GEMINI_TEXT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
 // Modèle image Gemini. Vide = auto-découverte via l'API (résiste aux renommages/retraits Google).
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || ''
 
-// Candidats essayés dans l'ordre (du plus récent au plus ancien) quand aucun modèle n'est configuré.
+// Candidats essayés dans l'ordre quand aucun modèle n'est configuré.
+// gemini-2.5-flash-image (« Nano Banana ») = seul modèle image confirmé disponible.
 const GEMINI_IMAGE_CANDIDATES = [
-  'gemini-3.6-flash-image',
   'gemini-2.5-flash-image',
-  'gemini-2.0-flash-preview-image-generation',
+  'gemini-3.6-flash-image',
 ]
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
