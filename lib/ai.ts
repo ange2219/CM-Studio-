@@ -35,10 +35,9 @@ const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null
 
-// Modèles Gemini — gemini-2.5-flash a été retiré par Google en 2026.
+// Modèle Gemini — gemini-2.5-flash a été retiré par Google en 2026.
 // Défaut sur 3.6 (recommandé par l'API), surchargeable via env sans redéploiement code.
 const GEMINI_TEXT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.6-flash-image'
 
 // ─── Contraintes par plateforme ────────────────────────────────────────────────
 
@@ -342,7 +341,7 @@ async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Pla
 
 // ─── Génération Simple avec repli en chaîne (Gemini → Claude → GPT) ───────────
 
-async function callSimpleAI(promptText: string, isJson: boolean = false): Promise<string> {
+export async function callSimpleAI(promptText: string, isJson: boolean = false): Promise<string> {
   const chain: { name: string; run: () => Promise<string> }[] = []
 
   if (gemini) {
@@ -429,39 +428,6 @@ Réponds UNIQUEMENT en JSON : {"hashtags": ["#tag1", "#tag2", ...]}`
     return JSON.parse(cleaned).hashtags || []
   } catch {
     return []
-  }
-}
-
-// ─── Génération d'image via Gemini 2.5 Flash Image ("Nano Banana") ────────────
-
-export async function generateImage(prompt: string): Promise<string | null> {
-  try {
-    if (!gemini) return null
-
-    const model = gemini.getGenerativeModel({
-      model: GEMINI_IMAGE_MODEL,
-    })
-
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: `Image professionnelle pour un post social media : ${prompt.slice(0, 800)}` }] }],
-      generationConfig: {
-        // @ts-expect-error responseModalities est un param Gemini image non encore typé dans le SDK
-        responseModalities: ['image', 'text'],
-      },
-    })
-
-    const parts = result.response.candidates?.[0]?.content?.parts || []
-    for (const part of parts) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const p = part as any
-      if (p.inlineData?.mimeType?.startsWith('image/')) {
-        return `data:${p.inlineData.mimeType};base64,${p.inlineData.data}`
-      }
-    }
-    return null
-  } catch (err) {
-    console.error('[generateImage] Gemini error:', err)
-    return null
   }
 }
 
