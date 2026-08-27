@@ -94,26 +94,15 @@ export function StrategySidePanel({
           onClick={onToggle}
           title={isOpen ? 'Fermer la stratégie (Glisser)' : 'Ouvrir la stratégie'}
           aria-label={isOpen ? 'Fermer le panneau Stratégie' : 'Ouvrir le panneau Stratégie'}
-          className={`absolute top-1/2 -translate-y-1/2 -left-8 sm:-left-9 w-8 sm:w-9 h-20 rounded-l-xl border-y border-l flex flex-col items-center justify-center gap-2 cursor-pointer shadow-[-4px_0_12px_rgba(0,0,0,0.12)] transition-all duration-200 group z-20 select-none ${
+          className={`absolute top-1/2 -translate-y-1/2 -left-8 sm:-left-8.5 w-8 sm:w-8.5 h-16 sm:h-18 rounded-l-xl border-y border-l flex items-center justify-center cursor-pointer shadow-[-4px_0_12px_rgba(0,0,0,0.12)] transition-all duration-200 group z-20 select-none ${
             darkMode
               ? 'bg-[#111A2E] border-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-800/90 hover:border-slate-600'
               : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300'
           }`}
         >
-          {/* Status Indicator Dot */}
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 transition-all ${
-              status === 'up_to_date'
-                ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]'
-                : status === 'to_review'
-                ? 'bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(245,158,11,0.6)]'
-                : 'bg-slate-400'
-            }`}
-          />
-
           {/* Chevron Arrow: Points left (<) when closed to pull open, rotates right (>) when open to push closed */}
           <ChevronLeft
-            className={`w-4.5 h-4.5 transition-transform duration-300 ease-in-out group-hover:scale-110 ${
+            className={`w-5 h-5 transition-transform duration-300 ease-in-out group-hover:scale-110 ${
               isOpen
                 ? 'rotate-180 text-slate-400 group-hover:text-slate-200'
                 : 'rotate-0 text-[#1677FF] dark:text-[#38BDF8]'
