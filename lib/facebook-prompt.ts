@@ -65,9 +65,16 @@ export function buildFacebookPrompt(req: GenerateRequest): string {
 - Mots à éviter : ${req.brand_avoid || 'Aucun'}
   `.trim()
 
-  return FACEBOOK_SYSTEM_PROMPT
+  const briefInstruction = req.brief
+    ? `CONSIGNES ÉDITORIALES & BRIEF UTILISATEUR (PRIORITÉ ABSOLUE) :
+"""
+${req.brief}
+"""
+RÈGLE D'OR : L'accroche, les arguments, la valeur et le CTA DOIVENT découler fidèlement de ce brief précis. Reste chirurgical et sur-mesure pour ce sujet spécifique.`
+    : `CONSIGNE : Aucun brief fourni. Rédige un post Facebook engageant directement lié au secteur de la marque.`
+
+  return `${briefInstruction}\n\n` + FACEBOOK_SYSTEM_PROMPT
     .replace('{{tone}}', toneDef)
     .replace('{{postType}}', req.post_type || 'Non spécifié')
     .replace('{{brandContext}}', brandContext)
-    + `\n\nSujet du post : ${req.brief || 'Génère un post performant.'}`;
 }

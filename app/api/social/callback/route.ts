@@ -37,9 +37,9 @@ export async function GET(req: NextRequest) {
       ) as any
 
       if (match) {
-        finalAccountId = finalAccountId || match._id || match.id || match.accountId
-        platformUsername = match.displayName || match.name || match.display_name || match.username || match.handle || platform
-        platformAvatarUrl = match.avatar || match.profilePicture || match.picture || match.avatarUrl || match.profile_picture_url || null
+        finalAccountId = finalAccountId || match._id || match.id || match.accountId || match.platformId
+        platformUsername = match.displayName || match.name || match.display_name || match.username || match.handle || match.profile?.username || match.profile?.name || platform
+        platformAvatarUrl = match.avatar || match.profilePicture || match.picture || match.avatarUrl || match.profile_picture_url || match.profile?.avatar || match.profile?.picture || null
       }
     } catch (err) {
       console.error('[social/callback] Erreur listAccounts:', err instanceof Error ? err.message : err)

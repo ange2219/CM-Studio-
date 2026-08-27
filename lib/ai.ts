@@ -211,7 +211,11 @@ function buildPrompt(req: GenerateRequest, targetPlatform?: Platform): string {
   const brandContext = buildBrandContext(req)
 
   const briefLine = req.brief
-    ? `Sujet / brief : ${req.brief}`
+    ? `CONSIGNES ÉDITORIALES & BRIEF UTILISATEUR (PRIORITÉ ABSOLUE) :
+"""
+${req.brief}
+"""
+RÈGLE D'OR : Les posts DOIVENT être conçus au millimètre et sur-mesure à partir de ce brief précis. L'accroche de chaque plateforme doit capter l'attention en lien direct avec le sujet, sans formule générique ou préconçue.`
     : `Aucun brief fourni. Choisis un sujet DIRECTEMENT lié à l'activité de cette marque${req.brand_industry ? ` (secteur : ${req.brand_industry})` : ''}. INTERDIT : nature, statistiques génériques, citations motivationnelles sans rapport, contenu lifestyle non lié à la marque. Reste 100% dans l'univers professionnel de la marque.`
 
   // Nouvelles instructions contextuelles
@@ -698,27 +702,34 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markd
 }
 
 function buildBriefPrompt(req: GenerateBriefRequest): string {
-  return `Tu es un stratège en contenu LinkedIn qui écrit exclusivement en français.
-
-IDÉE CHOISIE :
-- Angle : ${req.angle}
-- Type de post : ${req.post_type}
-- Accroche suggérée : ${req.accroche}
+  return `Tu es un stratège en contenu social media et copywriter d'élite qui écrit exclusivement en français.
 
 CONTEXTE DE LA MARQUE :
 - Nom : ${req.brand_name || 'Non spécifié'}
 - Secteur : ${req.brand_industry || 'Non spécifié'}
 - Description : ${req.brand_description || 'Non spécifié'}
 
+DONNÉES DU POST SOUHAITÉ :
+- Angle stratégique : ${req.angle}
+- Format / Typologie : ${req.post_type}
+- Sujet / Idée de base : ${req.accroche}
+
 MISSION :
-Génère un brief court et précis qui résume ce que le post va raconter. Ce brief sera lu par l'utilisateur avant la génération finale — il doit comprendre immédiatement l'angle, le ton et la direction du post.
+Rédige un brief éditorial complet, structuré, précis et millimétré.
+Ce brief servira de feuille de route absolue pour la génération de posts 100% sur-mesure.
+IMPORTANT : Ne fige PAS d'accroche mot pour mot. Décris plutôt la stratégie, les arguments et l'intention pour que chaque réseau social puisse ciseler une accroche et un corps parfaitement adaptés à son audience.
+
+STRUCTURE ATTENDUE DU BRIEF :
+• Objectif & Angle : L'intention centrale et la transformation pour le lecteur.
+• Problème ou Enjeu concret : La réalité ou le défi précis abordé, sans généralités.
+• Points clés à développer : 3 à 4 arguments, étapes ou faits concrets à inclure impérativement.
+• Direction de l'accroche : L'axe psychologique recommandé (question provocante, statistique clé, contre-pied, récit direct...) pour concevoir un hook sur-mesure.
+• Appel à l'action (CTA) : La conclusion et l'action précise attendue du lecteur.
 
 RÈGLES :
-- Maximum 5 phrases
-- Clair et direct — pas de jargon
-- Doit donner envie de générer le post immédiatement
-- Mentionne l'accroche de départ
-- Indique ce que le post va démontrer ou raconter
+- Reste précis, dense et professionnel.
+- Zéro blabla creux, zéro formule IA générique.
+- Le texte doit être prêt à l'emploi et directement modifiable par l'utilisateur.
 
 SORTIE :
 Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :

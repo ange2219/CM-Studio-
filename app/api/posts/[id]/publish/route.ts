@@ -138,15 +138,15 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       } else {
         const { data: zernioAccounts } = await admin
           .from('social_accounts')
-          .select('platform, zernio_account_id')
+          .select('platform, platform_user_id')
           .eq('organization_id', orgId)
           .in('platform', zernioPlatforms)
           .eq('is_active', true)
-          .not('zernio_account_id', 'is', null)
+          .not('platform_user_id', 'is', null)
 
         const platformAccounts = (zernioAccounts || [])
-          .filter(a => a.zernio_account_id)
-          .map(a => ({ platform: a.platform as Platform, accountId: a.zernio_account_id as string }))
+          .filter(a => a.platform_user_id)
+          .map(a => ({ platform: a.platform as Platform, accountId: a.platform_user_id as string }))
 
         if (!platformAccounts.length) {
           for (const p of zernioPlatforms) {

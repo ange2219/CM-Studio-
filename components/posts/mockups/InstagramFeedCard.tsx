@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Music, Repeat2 } from 'lucide-react'
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Repeat2 } from 'lucide-react'
 
 export interface InstagramFeedCardProps {
   content: string
@@ -17,7 +17,7 @@ export interface InstagramFeedCardProps {
 export function InstagramFeedCard({
   content,
   imageUrl,
-  userName = 'charme_bear',
+  userName = 'mon_profil',
   avatarUrl,
   onContentChange,
   readOnly = false,
@@ -27,7 +27,7 @@ export function InstagramFeedCard({
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const safeName = userName || 'charme_bear'
+  const safeName = userName || 'mon_profil'
   const igHandle = safeName.toLowerCase().replace(/[^a-z0-9._]/g, '_')
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function InstagramFeedCard({
         flexDirection: 'column',
       }}
     >
-      {/* ── 1. En-tête Instagram avec anneau Story dégradé & Audio ── */}
+      {/* ── 1. En-tête Instagram avec anneau Story dégradé ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px 8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Story gradient ring */}
@@ -74,10 +74,6 @@ export function InstagramFeedCard({
           <div>
             <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--t1)', lineHeight: 1.2 }}>
               {igHandle}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: 'var(--t3)' }}>
-              <Music size={9} />
-              <span>Son original · Tendances</span>
             </div>
           </div>
         </div>

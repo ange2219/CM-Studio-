@@ -37,6 +37,7 @@ export interface StudioLightboxEditorProps {
   cards: Record<string, CardState>
   objective: PostObjective | null
   userName?: string | null
+  userAvatar?: string | null
   socialAccounts?: SocialAccount[]
   isPro?: boolean
   onClose: () => void
@@ -77,6 +78,7 @@ export function StudioLightboxEditor({
   cards,
   objective,
   userName,
+  userAvatar,
   socialAccounts,
   isPro = true,
   onClose,
@@ -115,8 +117,8 @@ export function StudioLightboxEditor({
   }, [currentIdx, platforms.length, onClose])
 
   const platformAccount = socialAccounts?.find((a) => a.platform === currentPlatform)
-  const displayName = platformAccount?.platform_username || userName || 'Ange-Marie DAHOU'
-  const avatarUrl = platformAccount?.platform_avatar_url || null
+  const displayName = platformAccount?.platform_username || userName || 'Mon Profil'
+  const avatarUrl = platformAccount?.platform_avatar_url || userAvatar || null
 
   const isRewriting = loadingAction === `rewrite-${currentPlatform}`
   const isDrafting = loadingAction === `draft-${currentPlatform}`

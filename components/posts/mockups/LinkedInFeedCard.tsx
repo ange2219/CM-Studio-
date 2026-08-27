@@ -86,8 +86,8 @@ function LinkedInClapIcon() {
 export function LinkedInFeedCard({
   content,
   imageUrl,
-  userName = 'Ange-Marie DAHOU',
-  userHeadline = 'Futur Data Scientist | En formation continue en Machine Learning et ...',
+  userName = 'Mon Profil',
+  userHeadline = 'Créateur de contenu',
   avatarUrl,
   onContentChange,
   readOnly = false,
@@ -96,7 +96,7 @@ export function LinkedInFeedCard({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showFull, setShowFull] = useState(false)
 
-  const displayName = userName || 'Ange-Marie DAHOU'
+  const displayName = userName || 'Mon Profil'
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -147,11 +147,11 @@ export function LinkedInFeedCard({
                 textOverflow: 'ellipsis',
               }}
             >
-              {userHeadline || 'Expert en Stratégie & Communication Digitale'}
+              {userHeadline || 'Créateur de contenu'}
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--t3)' }}>
-              <span>1 an(s)</span>
+              <span>À l&apos;instant</span>
               <span>•</span>
               <Globe size={11} strokeWidth={2.2} />
             </div>

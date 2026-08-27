@@ -28,6 +28,12 @@ export default function ResultsPage() {
   const [data, setData]           = useState<ResultsData | null>(null)
   const [ready, setReady]         = useState(false)
   const [userName, setUserName]   = useState<string | null>(null)
+  const [userAvatar, setUserAvatar] = useState<string | null>(null)
+  const [brandProfile, setBrandProfile] = useState<{
+    brand_name?: string | null
+    industry?: string | null
+    description?: string | null
+  } | null>(null)
   const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([])
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const [leaveSaving, setLeaveSaving]       = useState(false)
@@ -47,16 +53,45 @@ export default function ResultsPage() {
       router.replace('/workspace/posts/create')
     }
     setReady(true)
-    fetch('/api/auth/me').then(r => r.json()).then(d => {
-      if (d?.full_name) setUserName(d.full_name)
-    }).catch(() => {})
-    fetch('/api/social/accounts').then(r => r.json()).then(d => {
-      if (Array.isArray(d)) setSocialAccounts(d.filter((a: any) => a.is_active).map((a: any) => ({
-        platform: a.platform,
-        platform_username: a.platform_username ?? null,
-        platform_avatar_url: a.platform_avatar_url ?? null,
-      })))
-    }).catch(() => {})
+
+    // Profil utilisateur réel
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(d => {
+        if (d?.full_name || d?.username) setUserName(d.full_name || d.username)
+        if (d?.avatar_url) setUserAvatar(d.avatar_url)
+      })
+      .catch(() => {})
+
+    // Profil de marque réel
+    fetch('/api/brand')
+      .then(r => r.json())
+      .then(b => {
+        if (b && (b.brand_name || b.industry || b.description)) {
+          setBrandProfile({
+            brand_name: b.brand_name || null,
+            industry: b.industry || null,
+            description: b.description || null,
+          })
+        }
+      })
+      .catch(() => {})
+
+    // Comptes sociaux réels connectés
+    fetch('/api/social/accounts')
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d)) {
+          setSocialAccounts(
+            d.filter((a: any) => a.is_active).map((a: any) => ({
+              platform: a.platform,
+              platform_username: a.platform_username ?? null,
+              platform_avatar_url: a.platform_avatar_url ?? null,
+            }))
+          )
+        }
+      })
+      .catch(() => {})
   }, [router])
 
   const isUnified = (d: ResultsData | null) => {
@@ -318,6 +353,8 @@ export default function ResultsPage() {
         quotaLimit={data.quotaLimit}
         isPro={data.isPro}
         userName={userName}
+        userAvatar={userAvatar}
+        brandProfile={brandProfile}
         socialAccounts={socialAccounts}
         initialImages={data.initialImages}
         initialScheduledAt={data.initialScheduledAt}

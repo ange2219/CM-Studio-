@@ -17,7 +17,7 @@ export interface FacebookFeedCardProps {
 export function FacebookFeedCard({
   content,
   imageUrl,
-  userName = 'Codjo Thimotée',
+  userName = 'Mon Profil',
   avatarUrl,
   onContentChange,
   readOnly = false,
@@ -26,7 +26,7 @@ export function FacebookFeedCard({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showFull, setShowFull] = useState(false)
 
-  const displayName = userName || 'Codjo Thimotée'
+  const displayName = userName || 'Mon Profil'
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -59,7 +59,7 @@ export function FacebookFeedCard({
           <div>
             <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--t1)' }}>{displayName}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', color: 'var(--t3)' }}>
-              <span>13 juin</span>
+              <span>À l&apos;instant</span>
               <span>·</span>
               <Globe size={11} />
             </div>

@@ -38,6 +38,12 @@ export interface GeneratedPostsViewProps {
   quotaLimit:            number | 'unlimited'
   isPro:                 boolean
   userName?:             string | null
+  userAvatar?:           string | null
+  brandProfile?: {
+    brand_name?: string | null
+    industry?: string | null
+    description?: string | null
+  } | null
   socialAccounts?:       SocialAccount[]
   initialImages?:        Partial<Record<Platform, string>>
   initialScheduledAt?:   string
@@ -309,7 +315,7 @@ function SchedulerSheet({
 
 export function GeneratedPostsView({
   platforms, variants, objective,
-  quotaUsed, quotaLimit, isPro: _isPro, userName, socialAccounts, initialImages, initialScheduledAt,
+  quotaUsed, quotaLimit, isPro: _isPro, userName, userAvatar, brandProfile, socialAccounts, initialImages, initialScheduledAt,
   allowPlatformToggle, unifiedMode,
   onSaveDraft, onPublish, onSchedule, onClose,
 }: GeneratedPostsViewProps) {
@@ -525,8 +531,12 @@ export function GeneratedPostsView({
   // ── Rendu de l'en-tête spécifique à une plateforme ─────────────────────────
   function renderPlatformHeader(platform: Platform) {
     const platformAccount = socialAccounts?.find(a => a.platform === platform)
-    const displayName = platformAccount?.platform_username || userName || 'Ange-Marie DAHOU'
-    const avatarUrl = platformAccount?.platform_avatar_url || null
+    // 1. Photo : compte connecté spécifique, ou vraie photo de l'utilisateur CM Studio
+    const avatarUrl = platformAccount?.platform_avatar_url || userAvatar || null
+    // 2. Nom : compte connecté, ou nom de marque, ou nom utilisateur
+    const realName = platformAccount?.platform_username || brandProfile?.brand_name || userName || 'Mon Profil'
+    // 3. Bio / Sous-titre : secteur/description de marque ou fallback
+    const realHeadline = brandProfile?.industry || brandProfile?.description || 'Créateur de contenu'
 
     switch (platform) {
       case 'linkedin':
@@ -536,15 +546,15 @@ export function GeneratedPostsView({
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>
-                  {displayName}
+                  {realName}
                 </span>
                 <span style={{ fontSize: '0.76rem', color: '#94A3B8' }}>• Vous</span>
               </div>
               <p style={{ fontSize: '0.7rem', color: '#94A3B8', lineHeight: 1.25, margin: '1px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Futur Data Scientist | Machine Learning & IA
+                {realHeadline}
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.66rem', color: '#64748B' }}>
-                <span>1 an(s)</span>
+                <span>À l&apos;instant</span>
                 <span>•</span>
                 <Globe size={10} />
               </div>
@@ -557,17 +567,20 @@ export function GeneratedPostsView({
             <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="#475569" iconSize={20} />
             <div>
               <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>
-                {displayName}
+                {realName}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#94A3B8', marginTop: '1px' }}>
-                <span>13 juin</span>
+                <span>À l&apos;instant</span>
                 <span>·</span>
                 <Globe size={10} />
               </div>
             </div>
           </div>
         )
-      case 'instagram':
+      case 'instagram': {
+        const handle = platformAccount?.platform_username
+          ? platformAccount.platform_username.toLowerCase().replace(/[^a-z0-9._]/g, '_')
+          : realName.toLowerCase().replace(/[^a-z0-9._]/g, '_')
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ padding: '2px', borderRadius: '50%', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4)' }}>
@@ -577,37 +590,39 @@ export function GeneratedPostsView({
             </div>
             <div>
               <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#FFFFFF' }}>
-                {displayName.toLowerCase().replace(/[^a-z0-9._]/g, '_')}
-              </div>
-              <div style={{ fontSize: '0.66rem', color: '#94A3B8' }}>
-                🎵 Son original · Tendances
+                {handle}
               </div>
             </div>
           </div>
         )
-      case 'twitter':
+      }
+      case 'twitter': {
+        const handle = platformAccount?.platform_username
+          ? `@${platformAccount.platform_username.toLowerCase().replace(/[^a-z0-9_]/g, '')}`
+          : `@${realName.toLowerCase().replace(/[^a-z0-9_]/g, '')}`
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <UserAvatar avatarUrl={avatarUrl} size={38} fallbackColor="#475569" iconSize={19} />
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{realName}</span>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#1D9BF0">
                   <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
                 </svg>
               </div>
               <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                @{displayName.toLowerCase().replace(/[^a-z0-9]/g, '')} · 2h
+                {handle} · À l&apos;instant
               </div>
             </div>
           </div>
         )
+      }
       default:
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <UserAvatar avatarUrl={avatarUrl} size={38} fallbackColor="#475569" iconSize={19} />
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{displayName}</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFFFFF' }}>{realName}</div>
               <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>{PLATFORM_NAMES[platform]}</div>
             </div>
           </div>
@@ -1039,9 +1054,9 @@ export function GeneratedPostsView({
             <div style={{ flex: 1, minWidth: 0 }}>
               {isUnifiedPost ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || null} size={40} fallbackColor="#475569" iconSize={20} />
+                  <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
                   <div>
-                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{userName || 'Ange-Marie DAHOU'}</div>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{brandProfile?.brand_name || userName || 'Mon Profil'}</div>
                     <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>Post unifié • {activePlatforms.length} réseaux</div>
                   </div>
                 </div>
@@ -1373,10 +1388,10 @@ export function GeneratedPostsView({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || null} size={40} fallbackColor="#475569" iconSize={20} />
+                    <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
                     <div>
                       <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>
-                        {userName || 'Ange-Marie DAHOU'}
+                        {brandProfile?.brand_name || userName || 'Mon Profil'}
                       </div>
                       <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '1px' }}>
                         Post unifié • {activePlatforms.length} plateformes

@@ -68,10 +68,11 @@ export async function getConnectUrl(profileId: string, platform: string, redirec
   return url as string
 }
 
-/** Liste les comptes connectés d'un profil Zernio */
-export async function listAccounts(profileId: string): Promise<Array<{ _id: string; platform: string }>> {
+/** Liste les comptes connectés d'un profil Zernio et extrait leurs informations */
+export async function listAccounts(profileId: string): Promise<Array<any>> {
   const data = await zernioRequest(`/accounts?profileId=${encodeURIComponent(profileId)}`)
-  return (data.accounts || []) as Array<{ _id: string; platform: string }>
+  const list = data.accounts || data.data || data.socialAccounts || (Array.isArray(data) ? data : [])
+  return list as Array<any>
 }
 
 // ─── Publication ──────────────────────────────────────────────────────────────

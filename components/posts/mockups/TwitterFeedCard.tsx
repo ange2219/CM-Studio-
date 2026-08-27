@@ -18,7 +18,7 @@ export interface TwitterFeedCardProps {
 export function TwitterFeedCard({
   content,
   imageUrl,
-  userName = 'Ange-Marie DAHOU',
+  userName = 'Mon Profil',
   userHandle,
   avatarUrl,
   onContentChange,
@@ -27,7 +27,7 @@ export function TwitterFeedCard({
 }: TwitterFeedCardProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const safeName = userName || 'Ange-Marie DAHOU'
+  const safeName = userName || 'Mon Profil'
   const handle = userHandle || `@${safeName.toLowerCase().replace(/[^a-z0-9]/g, '')}`
 
   useEffect(() => {
@@ -59,7 +59,8 @@ export function TwitterFeedCard({
         color: 'var(--t1, #0f172a)',
         padding: '12px 14px',
         display: 'flex',
-        gap: '10px',
+        gap: '12px',
+        position: 'relative',
       }}
     >
       <UserAvatar avatarUrl={avatarUrl} size={40} fallbackColor="var(--t3)" iconSize={20} />
@@ -69,10 +70,10 @@ export function TwitterFeedCard({
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--t1)' }}>{safeName}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#1D9BF0">
-              <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
+              <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.33 2.33 4.96-4.96 1.41 1.42-6.37 6.37z" />
             </svg>
             <span style={{ fontSize: '0.8rem', color: 'var(--t3)' }}>{handle}</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--t3)' }}>· 2h</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--t3)' }}>· À l&apos;instant</span>
           </div>
           <MoreHorizontal size={16} color="var(--t3)" style={{ cursor: 'pointer' }} />
         </div>
