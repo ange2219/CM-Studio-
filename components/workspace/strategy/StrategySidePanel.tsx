@@ -26,6 +26,7 @@ import type { Strategy, StrategyStatus, StrategyKPI, Platform } from '@/types'
 
 interface StrategySidePanelProps {
   isOpen: boolean
+  onToggle: () => void
   onClose: () => void
   onOpenFullModal: () => void
   strategy: Strategy | null
@@ -38,6 +39,7 @@ interface StrategySidePanelProps {
 
 export function StrategySidePanel({
   isOpen,
+  onToggle,
   onClose,
   onOpenFullModal,
   strategy,
@@ -60,8 +62,6 @@ export function StrategySidePanel({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
-
   const status = strategy?.status || 'to_review'
   const kpis: StrategyKPI[] = strategy?.kpis || []
   const completedKPIs = kpis.filter(k => k.current >= k.target && k.target > 0).length
@@ -70,19 +70,56 @@ export function StrategySidePanel({
   const priorities = editorialLine?.platform_priorities || []
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden pointer-events-auto select-none">
-      {/* Dark backdrop */}
+    <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none select-none">
+      {/* Dark backdrop (fades in/out smoothly) */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
+        className={`absolute inset-0 bg-black/25 backdrop-blur-[1px] transition-opacity duration-300 ease-in-out ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Slide-over Side Panel container */}
       <aside
-        className={`absolute inset-y-0 right-0 max-w-full w-[380px] sm:w-[420px] flex flex-col shadow-2xl border-l transition-transform duration-300 animate-in slide-in-from-right ${
+        className={`absolute inset-y-0 right-0 w-[380px] sm:w-[420px] max-w-[calc(100vw-36px)] flex flex-col border-l transition-transform duration-300 ease-in-out pointer-events-auto select-auto ${
+          isOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full shadow-none'
+        } ${
           darkMode ? 'bg-[#111A2E] border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
         }`}
       >
+        {/* Toggle Arrow Handle on the border */}
+        <button
+          type="button"
+          onClick={onToggle}
+          title={isOpen ? 'Fermer la stratégie (Glisser)' : 'Ouvrir la stratégie'}
+          aria-label={isOpen ? 'Fermer le panneau Stratégie' : 'Ouvrir le panneau Stratégie'}
+          className={`absolute top-1/2 -translate-y-1/2 -left-8 sm:-left-9 w-8 sm:w-9 h-20 rounded-l-xl border-y border-l flex flex-col items-center justify-center gap-2 cursor-pointer shadow-[-4px_0_12px_rgba(0,0,0,0.12)] transition-all duration-200 group z-20 select-none ${
+            darkMode
+              ? 'bg-[#111A2E] border-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-800/90 hover:border-slate-600'
+              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300'
+          }`}
+        >
+          {/* Status Indicator Dot */}
+          <span
+            className={`w-2 h-2 rounded-full shrink-0 transition-all ${
+              status === 'up_to_date'
+                ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]'
+                : status === 'to_review'
+                ? 'bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(245,158,11,0.6)]'
+                : 'bg-slate-400'
+            }`}
+          />
+
+          {/* Chevron Arrow: Points left (<) when closed to pull open, rotates right (>) when open to push closed */}
+          <ChevronLeft
+            className={`w-4.5 h-4.5 transition-transform duration-300 ease-in-out group-hover:scale-110 ${
+              isOpen
+                ? 'rotate-180 text-slate-400 group-hover:text-slate-200'
+                : 'rotate-0 text-[#1677FF] dark:text-[#38BDF8]'
+            }`}
+          />
+        </button>
         {/* Top Header */}
         <div
           className={`px-4.5 py-3.5 border-b flex items-center justify-between shrink-0 ${

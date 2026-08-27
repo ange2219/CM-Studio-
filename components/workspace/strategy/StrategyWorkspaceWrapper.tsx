@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { useStrategy } from '@/hooks/useStrategy'
 import { StrategySidePanel } from './StrategySidePanel'
 import { StrategyDetailModal } from './StrategyDetailModal'
-import { StrategyTriggerButton } from './StrategyTriggerButton'
 
 export function StrategyWorkspaceWrapper({ children }: { children: React.ReactNode }) {
   const [isPanelOpen, setIsPanelOpen] = useState(false)
@@ -29,16 +28,10 @@ export function StrategyWorkspaceWrapper({ children }: { children: React.ReactNo
       {/* Workspace Child Views */}
       {children}
 
-      {/* Global Strategy Trigger Button accessible anywhere in Workspace */}
-      <StrategyTriggerButton
-        onClick={() => setIsPanelOpen(true)}
-        strategy={currentStrategy}
-        selectedPeriod={selectedPeriod}
-      />
-
-      {/* Slide-over Side Panel */}
+      {/* Slide-over Side Panel with Border Toggle Handle */}
       <StrategySidePanel
         isOpen={isPanelOpen}
+        onToggle={() => setIsPanelOpen(prev => !prev)}
         onClose={() => setIsPanelOpen(false)}
         onOpenFullModal={() => {
           setIsPanelOpen(false)
