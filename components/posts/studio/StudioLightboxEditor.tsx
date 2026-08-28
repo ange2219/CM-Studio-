@@ -38,6 +38,12 @@ export interface StudioLightboxEditorProps {
   objective: PostObjective | null
   userName?: string | null
   userAvatar?: string | null
+  brandProfile?: {
+    brand_name?: string | null
+    industry?: string | null
+    description?: string | null
+    logo_url?: string | null
+  } | null
   socialAccounts?: SocialAccount[]
   isPro?: boolean
   onClose: () => void
@@ -79,6 +85,7 @@ export function StudioLightboxEditor({
   objective,
   userName,
   userAvatar,
+  brandProfile,
   socialAccounts,
   isPro = true,
   onClose,
@@ -117,8 +124,8 @@ export function StudioLightboxEditor({
   }, [currentIdx, platforms.length, onClose])
 
   const platformAccount = socialAccounts?.find((a) => a.platform === currentPlatform)
-  const displayName = platformAccount?.platform_username || userName || 'Mon Profil'
-  const avatarUrl = platformAccount?.platform_avatar_url || userAvatar || null
+  const displayName = platformAccount?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'
+  const avatarUrl = platformAccount?.platform_avatar_url || brandProfile?.logo_url || userAvatar || null
 
   const isRewriting = loadingAction === `rewrite-${currentPlatform}`
   const isDrafting = loadingAction === `draft-${currentPlatform}`

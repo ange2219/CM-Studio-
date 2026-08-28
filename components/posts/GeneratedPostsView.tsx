@@ -43,6 +43,7 @@ export interface GeneratedPostsViewProps {
     brand_name?: string | null
     industry?: string | null
     description?: string | null
+    logo_url?: string | null
   } | null
   socialAccounts?:       SocialAccount[]
   initialImages?:        Partial<Record<Platform, string>>
@@ -531,12 +532,24 @@ export function GeneratedPostsView({
   // ── Rendu de l'en-tête spécifique à une plateforme ─────────────────────────
   function renderPlatformHeader(platform: Platform) {
     const platformAccount = socialAccounts?.find(a => a.platform === platform)
-    // 1. Photo : compte connecté spécifique, ou vraie photo de l'utilisateur CM Studio
-    const avatarUrl = platformAccount?.platform_avatar_url || userAvatar || null
-    // 2. Nom : compte connecté, ou nom de marque, ou nom utilisateur
-    const realName = platformAccount?.platform_username || brandProfile?.brand_name || userName || 'Mon Profil'
-    // 3. Bio / Sous-titre : secteur/description de marque ou fallback
-    const realHeadline = brandProfile?.industry || brandProfile?.description || 'Créateur de contenu'
+    // 1. Photo : compte connecté spécifique en priorité.
+    //    Si non connecté : logo de la marque (brandProfile.logo_url)
+    //    Dernier recours : avatar utilisateur ou null
+    const avatarUrl = platformAccount?.platform_avatar_url 
+      || brandProfile?.logo_url 
+      || userAvatar 
+      || null
+
+    // 2. Nom : compte connecté en priorité.
+    //    Si non connecté : nom officiel de la marque (brandProfile.brand_name)
+    //    Dernier recours : nom utilisateur ou 'Ma Marque'
+    const realName = platformAccount?.platform_username 
+      || brandProfile?.brand_name 
+      || userName 
+      || 'Ma Marque'
+
+    // 3. Bio / Sous-titre : secteur/description de la marque ou fallback
+    const realHeadline = brandProfile?.industry || brandProfile?.description || 'Marque & Créateur'
 
     switch (platform) {
       case 'linkedin':
@@ -1054,9 +1067,9 @@ export function GeneratedPostsView({
             <div style={{ flex: 1, minWidth: 0 }}>
               {isUnifiedPost ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
+                  <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || brandProfile?.logo_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
                   <div>
-                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{brandProfile?.brand_name || userName || 'Mon Profil'}</div>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{socialAccounts?.[0]?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'}</div>
                     <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>Post unifié • {activePlatforms.length} réseaux</div>
                   </div>
                 </div>
@@ -1388,10 +1401,10 @@ export function GeneratedPostsView({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
+                    <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || brandProfile?.logo_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
                     <div>
                       <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>
-                        {brandProfile?.brand_name || userName || 'Mon Profil'}
+                        {socialAccounts?.[0]?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'}
                       </div>
                       <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '1px' }}>
                         Post unifié • {activePlatforms.length} plateformes

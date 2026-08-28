@@ -40,7 +40,30 @@ export async function GET() {
     .eq('organization_id', orgId)
     .maybeSingle()
 
-  return NextResponse.json(data || {})
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('name, avatar_url')
+    .eq('id', orgId)
+    .maybeSingle()
+
+  let logoUrl = org?.avatar_url || ''
+  if (data?.audience_location && data.audience_location.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(data.audience_location)
+      if (parsed.logo_url && !parsed.logo_url.startsWith('blob:')) {
+        logoUrl = parsed.logo_url
+      }
+    } catch {}
+  }
+  if (!logoUrl && (data as any)?.logo_url) {
+    logoUrl = (data as any).logo_url
+  }
+
+  return NextResponse.json({
+    ...(data || {}),
+    brand_name: data?.brand_name || org?.name || 'Ma Marque',
+    logo_url: logoUrl || null
+  })
 }
 
 export async function POST(req: NextRequest) {

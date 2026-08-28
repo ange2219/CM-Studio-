@@ -33,6 +33,7 @@ export default function ResultsPage() {
     brand_name?: string | null
     industry?: string | null
     description?: string | null
+    logo_url?: string | null
   } | null>(null)
   const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([])
   const [showLeaveModal, setShowLeaveModal] = useState(false)
@@ -63,15 +64,16 @@ export default function ResultsPage() {
       })
       .catch(() => {})
 
-    // Profil de marque réel
+    // Profil de marque réel (nom et logo de la marque)
     fetch('/api/brand')
       .then(r => r.json())
       .then(b => {
-        if (b && (b.brand_name || b.industry || b.description)) {
+        if (b && (b.brand_name || b.industry || b.description || b.logo_url)) {
           setBrandProfile({
             brand_name: b.brand_name || null,
             industry: b.industry || null,
             description: b.description || null,
+            logo_url: b.logo_url || null,
           })
         }
       })
