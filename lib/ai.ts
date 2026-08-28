@@ -35,9 +35,22 @@ const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null
 
-// Modèle Gemini — gemini-2.5-flash a été retiré par Google en 2026.
-// Défaut sur 3.6 (recommandé par l'API), surchargeable via env sans redéploiement code.
-const GEMINI_TEXT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
+// Modèles texte Gemini essayés dans l'ordre avec repli automatique (protège contre 503 high demand, 404, 429)
+const GEMINI_TEXT_CANDIDATES = Array.from(new Set([
+  process.env.GEMINI_MODEL,
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-2.5-flash',
+  'gemini-3.6-flash',
+  'gemini-1.5-pro',
+].filter(Boolean) as string[]))
+
+// Modèles OpenAI / GitHub Models essayés dans l'ordre (protège contre 410 / indisponibilité de modèles retirés)
+const OPENAI_CANDIDATES = Array.from(new Set([
+  process.env.OPENAI_MODEL,
+  'gpt-4o-mini',
+  'gpt-4o',
+].filter(Boolean) as string[]))
 
 // Modèle image Gemini. Vide = auto-découverte via l'API (résiste aux renommages/retraits Google).
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || ''
@@ -328,28 +341,61 @@ async function genViaAnthropic(req: GenerateRequest, targetPlatform?: Platform):
 
 async function genViaOpenAI(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
   const systemPrompt = targetPlatform ? PLATFORM_SYSTEM_PROMPTS[targetPlatform] : undefined
-  const response = await openaiClient.chat.completions.create({
-    model: GPT_MODEL,
-    messages: [
-      ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
-      { role: 'user' as const, content: buildPrompt(req, targetPlatform) },
-    ],
-  })
-  const text = response?.choices?.[0]?.message?.content || '{}'
-  return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
+  const prompt = buildPrompt(req, targetPlatform)
+  let lastErr: any = null
+
+  for (const modelName of OPENAI_CANDIDATES) {
+    try {
+      const response = await openaiClient.chat.completions.create({
+        model: modelName,
+        messages: [
+          ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
+          { role: 'user' as const, content: prompt },
+        ],
+      })
+      const text = response?.choices?.[0]?.message?.content || '{}'
+      return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
+    } catch (e: any) {
+      lastErr = e
+      console.warn(`[OpenAI] genViaOpenAI échec avec « ${modelName} » : ${e?.message}`)
+    }
+  }
+  throw lastErr || new Error('Échec génération OpenAI')
 }
 
-// ─── Génération via Gemini 2.5 Flash (fournisseur principal) ──────────────────
+// ─── Appel texte Gemini avec repli multi-modèles (2.0-flash → 1.5-flash → 2.5-flash...) ──
+
+async function callGeminiTextWithFallback(promptText: string, isJson: boolean = false): Promise<string> {
+  if (!gemini) throw new Error('GEMINI_API_KEY manquante côté serveur.')
+  const errors: string[] = []
+
+  for (const modelName of GEMINI_TEXT_CANDIDATES) {
+    try {
+      const model = gemini.getGenerativeModel({ model: modelName })
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: promptText }] }],
+        generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
+      })
+      const text = result.response.text()
+      if (text && text.trim()) {
+        return text
+      }
+      throw new Error('réponse vide')
+    } catch (err: any) {
+      const msg = err?.message || String(err)
+      errors.push(`${modelName} (${msg})`)
+      console.warn(`[Gemini] Le modèle « ${modelName} » a échoué : ${msg}. Tentative avec le modèle suivant...`)
+    }
+  }
+
+  throw new Error(`Tous les modèles Gemini ont échoué : ${errors.join(' ; ')}`)
+}
+
+// ─── Génération via Gemini (fournisseur principal avec repli automatique) ─────
 
 async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Platform): Promise<GenerateResponse> {
-  if (!gemini) throw new Error('GEMINI_API_KEY manquante.')
   const prompt = buildPrompt(req, targetPlatform)
-  const model = gemini.getGenerativeModel({ model: GEMINI_TEXT_MODEL })
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { responseMimeType: 'application/json' }
-  })
-  const text = result.response.text()
+  const text = await callGeminiTextWithFallback(prompt, true)
   const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
   const parsed = JSON.parse(cleaned)
   if (targetPlatform && parsed.post) {
@@ -364,35 +410,46 @@ export async function callSimpleAI(promptText: string, isJson: boolean = false):
   const chain: { name: string; run: () => Promise<string> }[] = []
 
   if (gemini) {
-    const g = gemini
-    chain.push({ name: 'Gemini', run: async () => {
-      const model = g.getGenerativeModel({ model: GEMINI_TEXT_MODEL })
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: promptText }] }],
-        generationConfig: isJson ? { responseMimeType: 'application/json' } : undefined,
-      })
-      return result.response.text()
-    } })
+    chain.push({
+      name: 'Gemini',
+      run: () => callGeminiTextWithFallback(promptText, isJson),
+    })
   }
   if (anthropicKey) {
-    chain.push({ name: 'Anthropic', run: async () => {
-      const msg = await anthropic.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: promptText }],
-      })
-      return msg.content[0]?.type === 'text' ? msg.content[0].text : ''
-    } })
+    chain.push({
+      name: 'Anthropic',
+      run: async () => {
+        const msg = await anthropic.messages.create({
+          model: CLAUDE_MODEL,
+          max_tokens: 2048,
+          messages: [{ role: 'user', content: promptText }],
+        })
+        return msg.content[0]?.type === 'text' ? msg.content[0].text : ''
+      },
+    })
   }
   if (openaiKey || process.env.GITHUB_TOKEN) {
-    chain.push({ name: 'OpenAI', run: async () => {
-      const res = await openaiClient.chat.completions.create({
-        model: GPT_MODEL,
-        messages: [{ role: 'user', content: promptText }],
-        ...(isJson ? { response_format: { type: 'json_object' } } : {}),
-      })
-      return res.choices[0]?.message?.content || ''
-    } })
+    chain.push({
+      name: 'OpenAI',
+      run: async () => {
+        let lastErr: any = null
+        for (const modelName of OPENAI_CANDIDATES) {
+          try {
+            const res = await openaiClient.chat.completions.create({
+              model: modelName,
+              messages: [{ role: 'user', content: promptText }],
+              ...(isJson ? { response_format: { type: 'json_object' } } : {}),
+            })
+            const content = res.choices[0]?.message?.content || ''
+            if (content.trim()) return content
+          } catch (e: any) {
+            lastErr = e
+            console.warn(`[OpenAI] callSimpleAI échec avec « ${modelName} » : ${e?.message}`)
+          }
+        }
+        throw lastErr || new Error('Tous les modèles OpenAI ont échoué')
+      },
+    })
   }
 
   if (chain.length === 0) {
@@ -702,34 +759,27 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markd
 }
 
 function buildBriefPrompt(req: GenerateBriefRequest): string {
-  return `Tu es un stratège en contenu social media et copywriter d'élite qui écrit exclusivement en français.
+  return `Tu es un stratège en contenu social media qui écrit exclusivement en français.
+
+IDÉE CHOISIE :
+- Angle : ${req.angle}
+- Type de post : ${req.post_type}
+- Accroche suggérée : ${req.accroche}
 
 CONTEXTE DE LA MARQUE :
 - Nom : ${req.brand_name || 'Non spécifié'}
 - Secteur : ${req.brand_industry || 'Non spécifié'}
 - Description : ${req.brand_description || 'Non spécifié'}
 
-DONNÉES DU POST SOUHAITÉ :
-- Angle stratégique : ${req.angle}
-- Format / Typologie : ${req.post_type}
-- Sujet / Idée de base : ${req.accroche}
-
 MISSION :
-Rédige un brief éditorial complet, structuré, précis et millimétré.
-Ce brief servira de feuille de route absolue pour la génération de posts 100% sur-mesure.
-IMPORTANT : Ne fige PAS d'accroche mot pour mot. Décris plutôt la stratégie, les arguments et l'intention pour que chaque réseau social puisse ciseler une accroche et un corps parfaitement adaptés à son audience.
-
-STRUCTURE ATTENDUE DU BRIEF :
-• Objectif & Angle : L'intention centrale et la transformation pour le lecteur.
-• Problème ou Enjeu concret : La réalité ou le défi précis abordé, sans généralités.
-• Points clés à développer : 3 à 4 arguments, étapes ou faits concrets à inclure impérativement.
-• Direction de l'accroche : L'axe psychologique recommandé (question provocante, statistique clé, contre-pied, récit direct...) pour concevoir un hook sur-mesure.
-• Appel à l'action (CTA) : La conclusion et l'action précise attendue du lecteur.
+Génère un résumé court, clair et précis de ce que le post va raconter.
+Ce résumé sert de brief pour l'utilisateur avant la génération : il doit comprendre immédiatement l'angle, l'idée principale et la direction du post.
 
 RÈGLES :
-- Reste précis, dense et professionnel.
-- Zéro blabla creux, zéro formule IA générique.
-- Le texte doit être prêt à l'emploi et directement modifiable par l'utilisateur.
+- Maximum 3 à 5 phrases au total (un court paragraphe fluide et percutant).
+- PAS de découpage à rallonge en multiples sous-sections (pas de liste à puces de détails 1, 2, 3, pas de sous-titres superflus ni de pavé interminable).
+- Clair, direct, sans jargon ni blabla inutile.
+- Mentionne l'idée de départ et ce que le post va démontrer ou apporter au lecteur.
 
 SORTIE :
 Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après, sans balises markdown :
