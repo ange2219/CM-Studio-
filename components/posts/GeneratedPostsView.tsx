@@ -12,7 +12,7 @@ import {
 } from '@/components/icons/BrandIcons'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import {
-  X, Sparkles, RotateCcw, Clock, Send, Upload, Trash2,
+  X, Sparkles, RotateCcw, Clock, Send, Upload, Trash2, Save,
   Image as ImageIcon, Globe, Heart, MessageCircle, Repeat2,
   Bookmark, BarChart2, Share2, ThumbsUp, ChevronLeft, ChevronRight
 } from 'lucide-react'
@@ -403,8 +403,12 @@ export function GeneratedPostsView({
     })
   }
 
-  // Quitter via la croix ✕ : enregistre directement tous les posts en brouillon et quitte
+  const isSavingDraftRef = useRef(false)
+
+  // Quitter via la croix ✕ ou Escape : enregistre directement tous les posts en brouillon une seule fois
   async function handleCloseAndSaveDraft() {
+    if (isSavingDraftRef.current) return
+    isSavingDraftRef.current = true
     try {
       if (isUnifiedPost) {
         const p = activePlatforms[0]
@@ -420,10 +424,33 @@ export function GeneratedPostsView({
           }
         }
       }
-      toast('Posts sauvegardés en brouillon', 'success')
       onClose?.()
     } catch {
       onClose?.()
+    } finally {
+      isSavingDraftRef.current = false
+    }
+  }
+
+  // Sauvegarde explicite en brouillon pour la plateforme courante
+  async function handleSingleDraft(platform: Platform) {
+    if (loadingAction || isSavingDraftRef.current) return
+    isSavingDraftRef.current = true
+    setLoadingAction(`draft-${platform}`)
+    try {
+      if (isUnifiedPost) {
+        const p = activePlatforms[0]
+        const c = cards[p]
+        await onSaveDraft(p, c?.content || '', c?.imageUrl || null)
+      } else {
+        const c = cards[platform]
+        await onSaveDraft(platform, c?.content || '', c?.imageUrl || null)
+      }
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : 'Erreur sauvegarde brouillon', 'error')
+    } finally {
+      setLoadingAction(null)
+      isSavingDraftRef.current = false
     }
   }
 
@@ -1189,7 +1216,7 @@ export function GeneratedPostsView({
             {renderPlatformSocialActions(curPlatform)}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 <button
                   type="button"
                   onClick={() => handleGenerateImage(curPlatform)}
@@ -1232,6 +1259,30 @@ export function GeneratedPostsView({
                 >
                   <Clock size={14} />
                   <span>{cardData.scheduledAt ? 'Planifié' : 'Programmer'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSingleDraft(curPlatform)}
+                  disabled={loadingAction !== null}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    padding: '9px 8px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'rgba(255,255,255,0.06)',
+                    color: '#E2E8F0',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: loadingAction !== null ? 'not-allowed' : 'pointer',
+                    opacity: loadingAction !== null ? 0.6 : 1,
+                  }}
+                >
+                  <Save size={14} />
+                  <span>Brouillon</span>
                 </button>
               </div>
 
@@ -1542,7 +1593,7 @@ export function GeneratedPostsView({
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                       {/* Bouton Éditer -> Ouvre la section d'édition */}
                       <button
                         type="button"
@@ -1609,7 +1660,32 @@ export function GeneratedPostsView({
                         }}
                       >
                         <Clock size={13} />
-                        <span>{cardData.scheduledAt ? 'Planifié' : 'Programmer'}</span>
+                        <span>{cardData.scheduledAt ? 'Planifié' : 'Prog.'}</span>
+                      </button>
+
+                      {/* Bouton Brouillon */}
+                      <button
+                        type="button"
+                        onClick={() => handleSingleDraft(mainPlatform)}
+                        disabled={loadingAction !== null}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          padding: '8px 4px',
+                          borderRadius: '7px',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          background: 'rgba(255,255,255,0.06)',
+                          color: '#E2E8F0',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: loadingAction !== null ? 'not-allowed' : 'pointer',
+                          opacity: loadingAction !== null ? 0.6 : 1,
+                        }}
+                      >
+                        <Save size={13} />
+                        <span>Brouillon</span>
                       </button>
                     </div>
 
@@ -1821,7 +1897,7 @@ export function GeneratedPostsView({
                   {renderPlatformSocialActions(platform)}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
 
                       {/* Bouton Éditer -> Ouvre la section d'édition */}
                       <button
@@ -1889,7 +1965,32 @@ export function GeneratedPostsView({
                         }}
                       >
                         <Clock size={13} />
-                        <span>{cardData.scheduledAt ? 'Planifié' : 'Programmer'}</span>
+                        <span>{cardData.scheduledAt ? 'Planifié' : 'Prog.'}</span>
+                      </button>
+
+                      {/* Bouton Brouillon */}
+                      <button
+                        type="button"
+                        onClick={() => handleSingleDraft(platform)}
+                        disabled={loadingAction !== null}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          padding: '8px 4px',
+                          borderRadius: '7px',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          background: 'rgba(255,255,255,0.06)',
+                          color: '#E2E8F0',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          cursor: loadingAction !== null ? 'not-allowed' : 'pointer',
+                          opacity: loadingAction !== null ? 0.6 : 1,
+                        }}
+                      >
+                        <Save size={13} />
+                        <span>Brouillon</span>
                       </button>
                     </div>
 

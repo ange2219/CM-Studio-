@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/Toast'
 import { GeneratedPostsView, type SocialAccount } from '@/components/posts/GeneratedPostsView'
@@ -172,17 +172,30 @@ export default function ResultsPage() {
     })
   }
 
+  const isDraftSavingRef = useRef(false)
+
+  function handleExit() {
+    clearResults()
+    router.replace('/workspace')
+  }
+
   async function handleSaveDraft(platform: Platform, content: string, imageUrl: string | null) {
-    if (isUnified(data)) {
-      await saveUnifiedPost(content, imageUrl, 'draft')
-      clearResults()
+    if (isDraftSavingRef.current) return
+    isDraftSavingRef.current = true
+    try {
+      if (isUnified(data)) {
+        await saveUnifiedPost(content, imageUrl, 'draft')
+        clearResults()
+        toast('Brouillon sauvegardé', 'success')
+        router.replace('/workspace')
+        return
+      }
+      await savePost(platform, content, imageUrl, 'draft')
       toast('Brouillon sauvegardé', 'success')
-      router.replace('/workspace')
-      return
+      markPlatformActed(platform)
+    } finally {
+      isDraftSavingRef.current = false
     }
-    await savePost(platform, content, imageUrl, 'draft')
-    toast('Brouillon sauvegardé', 'success')
-    markPlatformActed(platform)
   }
 
   async function handlePublish(platform: Platform, content: string, imageUrl: string | null) {
@@ -237,7 +250,8 @@ export default function ResultsPage() {
 
   // ── Popup retour ──────────────────────────────────────────────────────────────
   async function handleLeaveAsDraft() {
-    if (!data) return
+    if (!data || isDraftSavingRef.current) return
+    isDraftSavingRef.current = true
     setLeaveSaving(true)
     try {
       if (isUnified(data)) {
@@ -255,6 +269,7 @@ export default function ResultsPage() {
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Erreur', 'error')
       setLeaveSaving(false)
+      isDraftSavingRef.current = false
     }
   }
 
@@ -365,7 +380,7 @@ export default function ResultsPage() {
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         onSchedule={handleSchedule}
-        onClose={handleLeaveAsDraft}
+        onClose={handleExit}
       />
     </div>
   )
