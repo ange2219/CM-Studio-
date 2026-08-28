@@ -1123,7 +1123,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
       {/* ── HEADER WORKSPACE ── */}
       {!allPosts && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: darkMode ? '-.5rem' : '0', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '1.25rem' }}>
         
         {/* ── BANNIÈRE Bienvenue + Onde SVG (Mode Sombre & Mode Clair) ── */}
         <div style={{
@@ -1200,12 +1200,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
               background: darkMode
-                ? 'linear-gradient(145deg, rgba(29,78,216,0.5) 0%, rgba(11,17,32,0.97) 100%)'
-                : 'linear-gradient(180deg, rgba(24,119,242,0.03) 0%, #FFFFFF 100%)',
-              border: darkMode ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(24,119,242,0.18)',
+                ? 'linear-gradient(145deg, rgba(29,78,216,0.35) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(145deg, #F0F7FF 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(59,130,246,0.4)' : '1px solid #BAE6FD',
               boxShadow: darkMode
                 ? '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)'
-                : '0 2px 10px rgba(24,119,242,0.05)',
+                : '0 2px 10px rgba(24,119,242,0.06)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
             onMouseEnter={e => {
@@ -1218,7 +1218,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               e.currentTarget.style.transform = 'none'
               e.currentTarget.style.boxShadow = darkMode
                 ? '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)'
-                : '0 2px 10px rgba(24,119,242,0.05)'
+                : '0 2px 10px rgba(24,119,242,0.06)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
@@ -1230,12 +1230,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 style={{
                   width: '22px', height: '22px', borderRadius: '50%',
                   border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
-                  background: darkMode ? 'none' : '#F8FAFC',
-                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  background: darkMode ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+                  color: darkMode ? 'rgba(255,255,255,0.65)' : '#64748B',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#1877F2'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#1877F2' }}
-                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#1877F2'; e.currentTarget.style.borderColor = '#1877F2' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.65)' : '#64748B'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
               >
                 <Plus size={12} />
               </button>
@@ -1252,12 +1252,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
               background: darkMode
-                ? 'linear-gradient(145deg, rgba(13,148,136,0.5) 0%, rgba(11,17,32,0.97) 100%)'
-                : 'linear-gradient(180deg, rgba(13,148,136,0.03) 0%, #FFFFFF 100%)',
-              border: darkMode ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(13,148,136,0.2)',
+                ? 'linear-gradient(145deg, rgba(13,148,136,0.35) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(145deg, #F0FDFA 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(20,184,166,0.4)' : '1px solid #99F6E4',
               boxShadow: darkMode
                 ? '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)'
-                : '0 2px 10px rgba(13,148,136,0.05)',
+                : '0 2px 10px rgba(13,148,136,0.06)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
             onMouseEnter={e => {
@@ -1270,7 +1270,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               e.currentTarget.style.transform = 'none'
               e.currentTarget.style.boxShadow = darkMode
                 ? '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)'
-                : '0 2px 10px rgba(13,148,136,0.05)'
+                : '0 2px 10px rgba(13,148,136,0.06)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
@@ -1282,12 +1282,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 style={{
                   width: '22px', height: '22px', borderRadius: '50%',
                   border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
-                  background: darkMode ? 'none' : '#F8FAFC',
-                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  background: darkMode ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+                  color: darkMode ? 'rgba(255,255,255,0.65)' : '#64748B',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#0D9488'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#0D9488' }}
-                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#0D9488'; e.currentTarget.style.borderColor = '#0D9488' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.65)' : '#64748B'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
               >
                 <Plus size={12} />
               </button>
@@ -1304,12 +1304,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
               background: darkMode
-                ? 'linear-gradient(145deg, rgba(194,65,12,0.55) 0%, rgba(11,17,32,0.97) 100%)'
-                : 'linear-gradient(180deg, rgba(234,88,12,0.03) 0%, #FFFFFF 100%)',
-              border: darkMode ? '1px solid rgba(249,115,22,0.4)' : '1px solid rgba(234,88,12,0.2)',
+                ? 'linear-gradient(145deg, rgba(194,65,12,0.4) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(145deg, #FFF7ED 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(249,115,22,0.4)' : '1px solid #FED7AA',
               boxShadow: darkMode
                 ? '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)'
-                : '0 2px 10px rgba(234,88,12,0.05)',
+                : '0 2px 10px rgba(234,88,12,0.06)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
             onMouseEnter={e => {
@@ -1322,7 +1322,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               e.currentTarget.style.transform = 'none'
               e.currentTarget.style.boxShadow = darkMode
                 ? '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)'
-                : '0 2px 10px rgba(234,88,12,0.05)'
+                : '0 2px 10px rgba(234,88,12,0.06)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
@@ -1334,12 +1334,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 style={{
                   width: '22px', height: '22px', borderRadius: '50%',
                   border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
-                  background: darkMode ? 'none' : '#F8FAFC',
-                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  background: darkMode ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+                  color: darkMode ? 'rgba(255,255,255,0.65)' : '#64748B',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#EA580C'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#EA580C' }}
-                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#EA580C'; e.currentTarget.style.borderColor = '#EA580C' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.65)' : '#64748B'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
               >
                 <Plus size={12} />
               </button>
@@ -1356,12 +1356,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
               background: darkMode
-                ? 'linear-gradient(145deg, rgba(107,33,168,0.55) 0%, rgba(11,17,32,0.97) 100%)'
-                : 'linear-gradient(180deg, rgba(139,92,246,0.03) 0%, #FFFFFF 100%)',
-              border: darkMode ? '1px solid rgba(168,85,247,0.4)' : '1px solid rgba(139,92,246,0.2)',
+                ? 'linear-gradient(145deg, rgba(107,33,168,0.4) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(145deg, #FAF5FF 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(168,85,247,0.4)' : '1px solid #E9D5FF',
               boxShadow: darkMode
                 ? '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)'
-                : '0 2px 10px rgba(139,92,246,0.05)',
+                : '0 2px 10px rgba(139,92,246,0.06)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
             onMouseEnter={e => {
@@ -1374,7 +1374,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               e.currentTarget.style.transform = 'none'
               e.currentTarget.style.boxShadow = darkMode
                 ? '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)'
-                : '0 2px 10px rgba(139,92,246,0.05)'
+                : '0 2px 10px rgba(139,92,246,0.06)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
@@ -1386,12 +1386,12 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 style={{
                   width: '22px', height: '22px', borderRadius: '50%',
                   border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
-                  background: darkMode ? 'none' : '#F8FAFC',
-                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  background: darkMode ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+                  color: darkMode ? 'rgba(255,255,255,0.65)' : '#64748B',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#8B5CF6'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#8B5CF6' }}
-                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#8B5CF6'; e.currentTarget.style.borderColor = '#8B5CF6' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.65)' : '#64748B'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
               >
                 <Plus size={12} />
               </button>
