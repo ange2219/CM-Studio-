@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, FileImage, Lightbulb, Video, Award, Check, Users } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, ArrowLeft, FileImage, Lightbulb, Video, Award, Check, Users } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
@@ -605,7 +605,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
     ? baseFiltered.filter(p => p.platforms.includes(platformFilter))
     : baseFiltered
 
-  const displayPosts = filtered.slice(0, 5)
+  const displayPosts = allPosts ? filtered : filtered.slice(0, 5)
 
   const isDraft = selectedPost?.status === 'draft' || selectedPost?.status === 'failed'
   const isDeleted = selectedPost?.status === 'deleted'
@@ -1411,19 +1411,36 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         
         {/* Header & Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', marginBottom: '.75rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: allPosts ? '0' : '1.5rem', marginBottom: '1rem', gap: '.5rem', flexWrap: 'wrap' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>
-              {allPosts ? 'Mes Posts' : 'Posts récents'}
-            </h2>
-            <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
-            {!allPosts && displayPosts.length >= 5 && (
-              <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
-                Voir tout
+          {allPosts ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+              <button
+                onClick={() => router.push('/workspace')}
+                style={{ background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.4rem .8rem', borderRadius: '8px', cursor: 'pointer', fontSize: '.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.4rem', transition: 'all 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}
+              >
+                <ArrowLeft size={14} /> Workspace
               </button>
-            )}
-          </div>
+              <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--t1)', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif", display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                Mes Posts
+                <span style={{ background: 'var(--s2)', padding: '.15rem .45rem', borderRadius: '10px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600, border: '1px solid var(--b1)' }}>{nonDeletedCount}</span>
+              </h1>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>
+                Posts récents
+              </h2>
+              <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+              {filtered.length >= 5 && (
+                <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
+                  Voir tout
+                </button>
+              )}
+            </div>
+          )}
 
           {allPosts && (
           <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
@@ -1535,13 +1552,13 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 {group.label}
               </div>
               )}
-              <div className={allPosts ? '' : 'sb-scroll'} style={allPosts ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '.6rem' } : { display: 'flex', gap: '.6rem', overflowX: 'auto', paddingBottom: '1rem' }}>
+              <div className={allPosts ? '' : 'sb-scroll'} style={allPosts ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' } : { display: 'flex', gap: '.6rem', overflowX: 'auto', paddingBottom: '1rem' }}>
                 {group.posts.map(post => {
                   const isSelected = selectedIds.has(post.id)
                   return (
                   <div key={post.id}
                     onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '10px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', ...(allPosts ? {} : { width: '170px', flexShrink: 0 }) }}
+                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '12px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', ...(allPosts ? {} : { width: '170px', flexShrink: 0 }) }}
                     onMouseEnter={e => {
                       if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
                       const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
@@ -1687,7 +1704,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       )}
 
         {/* Bouton Voir Tout */}
-        {!loading && filtered.length > 5 && (
+        {!loading && !allPosts && filtered.length > 5 && (
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
             <button
               onClick={() => router.push('/workspace/posts')}
