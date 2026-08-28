@@ -17,7 +17,8 @@ import {
   TrendingUp,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Eye
 } from 'lucide-react'
 import { useTheme } from '@/components/context/ThemeContext'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
@@ -28,7 +29,7 @@ interface StrategySidePanelProps {
   isOpen: boolean
   onToggle: () => void
   onClose: () => void
-  onOpenFullModal: () => void
+  onOpenFullModal: (tab?: 'objectives' | 'editorial' | 'mockups' | 'kpis' | 'history') => void
   strategy: Strategy | null
   selectedPeriod: string
   onSelectPeriod: (period: string) => void
@@ -131,7 +132,7 @@ export function StrategySidePanel({
 
           <div className="flex items-center gap-1.5">
             <button
-              onClick={onOpenFullModal}
+              onClick={() => onOpenFullModal()}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-none bg-transparent"
               title="Ouvrir la vue complète"
             >
@@ -222,7 +223,7 @@ export function StrategySidePanel({
               </div>
               <button
                 type="button"
-                onClick={onOpenFullModal}
+                onClick={() => onOpenFullModal()}
                 className="mt-1 px-4 py-2 rounded-xl bg-[#1677FF] hover:bg-[#1266DF] text-white text-[12.5px] font-extrabold flex items-center gap-1.5 shadow-blue-glow transition-all cursor-pointer border-none"
               >
                 <Plus className="w-4 h-4" />
@@ -379,7 +380,20 @@ export function StrategySidePanel({
         >
           <button
             type="button"
-            onClick={onOpenFullModal}
+            onClick={() => onOpenFullModal('mockups')}
+            className={`w-full py-2 px-3 rounded-xl border text-[12.5px] font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              darkMode
+                ? 'bg-slate-800/90 hover:bg-slate-800 border-slate-700 text-white'
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-xs'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />
+            <span>Voir les rendus mockups</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onOpenFullModal('objectives')}
             className="w-full py-2.5 px-4 rounded-xl bg-[#1677FF] hover:bg-[#1266DF] text-white text-[13px] font-extrabold flex items-center justify-center gap-2 shadow-blue-glow transition-all cursor-pointer border-none"
           >
             <span>Vue complète & Édition</span>

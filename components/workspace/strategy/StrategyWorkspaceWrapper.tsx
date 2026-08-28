@@ -8,6 +8,7 @@ import { StrategyDetailModal } from './StrategyDetailModal'
 export function StrategyWorkspaceWrapper({ children }: { children: React.ReactNode }) {
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [initialModalTab, setInitialModalTab] = useState<'objectives' | 'editorial' | 'mockups' | 'kpis' | 'history'>('objectives')
 
   const {
     selectedPeriod,
@@ -33,8 +34,9 @@ export function StrategyWorkspaceWrapper({ children }: { children: React.ReactNo
         isOpen={isPanelOpen}
         onToggle={() => setIsPanelOpen(prev => !prev)}
         onClose={() => setIsPanelOpen(false)}
-        onOpenFullModal={() => {
+        onOpenFullModal={(tab) => {
           setIsPanelOpen(false)
+          setInitialModalTab(tab || 'objectives')
           setIsModalOpen(true)
         }}
         strategy={currentStrategy}
@@ -49,6 +51,7 @@ export function StrategyWorkspaceWrapper({ children }: { children: React.ReactNo
       <StrategyDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        initialTab={initialModalTab}
         strategy={currentStrategy}
         selectedPeriod={selectedPeriod}
         onSelectPeriod={setSelectedPeriod}

@@ -19,10 +19,18 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
-  FileText
+  FileText,
+  Eye,
+  RefreshCw,
+  LayoutTemplate
 } from 'lucide-react'
 import { useTheme } from '@/components/context/ThemeContext'
+import { useOrg } from '@/components/context/OrgContext'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
+import { LinkedInFeedCard } from '@/components/posts/mockups/LinkedInFeedCard'
+import { InstagramFeedCard } from '@/components/posts/mockups/InstagramFeedCard'
+import { FacebookFeedCard } from '@/components/posts/mockups/FacebookFeedCard'
+import { TwitterFeedCard } from '@/components/posts/mockups/TwitterFeedCard'
 import { formatPeriodLabel, getAdjacentPeriod } from '@/hooks/useStrategy'
 import type { Strategy, StrategyStatus, StrategyKPI, EditorialLine, Platform } from '@/types'
 
@@ -55,9 +63,10 @@ interface StrategyDetailModalProps {
   onDuplicate?: (targetPeriod: string, sourcePeriod?: string) => Promise<any>
   isOwnerOrCM: boolean
   saving: boolean
+  initialTab?: TabType
 }
 
-type TabType = 'objectives' | 'editorial' | 'kpis' | 'history'
+type TabType = 'objectives' | 'editorial' | 'mockups' | 'kpis' | 'history'
 
 export function StrategyDetailModal({
   isOpen,
@@ -70,10 +79,56 @@ export function StrategyDetailModal({
   onDelete,
   onDuplicate,
   isOwnerOrCM,
-  saving
+  saving,
+  initialTab
 }: StrategyDetailModalProps) {
   const { darkMode } = useTheme()
-  const [activeTab, setActiveTab] = useState<TabType>('objectives')
+  const { activeOrganization } = useOrg()
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'objectives')
+
+  // Brand data & Social accounts for real mockups
+  const [brandData, setBrandData] = useState<{ brand_name: string; logo_url: string | null; industry: string | null } | null>(null)
+  const [socialAccounts, setSocialAccounts] = useState<Array<{ platform: string; platform_username: string | null; platform_avatar_url: string | null }>>([])
+  const [mockupFilter, setMockupFilter] = useState<'all' | 'linkedin' | 'instagram' | 'twitter' | 'facebook'>('all')
+  const [mockupContents, setMockupContents] = useState<Record<string, string>>({})
+  const [includeSampleImage, setIncludeSampleImage] = useState<Record<string, boolean>>({
+    linkedin: true,
+    instagram: true,
+    twitter: false,
+    facebook: true,
+  })
+
+  // Sync initialTab when modal opens or tab prop changes
+  useEffect(() => {
+    if (initialTab && isOpen) {
+      setActiveTab(initialTab)
+    }
+  }, [initialTab, isOpen])
+
+  // Fetch real brand and social accounts when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/brand')
+        .then(r => r.json())
+        .then(b => {
+          if (b) {
+            setBrandData({
+              brand_name: b.brand_name || activeOrganization?.name || 'Ma Marque',
+              logo_url: b.logo_url || activeOrganization?.avatar_url || null,
+              industry: b.industry || null,
+            })
+          }
+        })
+        .catch(() => {})
+
+      fetch('/api/social/accounts')
+        .then(r => r.json())
+        .then(data => {
+          if (Array.isArray(data)) setSocialAccounts(data)
+        })
+        .catch(() => {})
+    }
+  }, [isOpen, activeOrganization])
 
   // Form State
   const [period, setPeriod] = useState<string>(selectedPeriod)
@@ -85,6 +140,41 @@ export function StrategyDetailModal({
   const [newPillarInput, setNewPillarInput] = useState<string>('')
   const [platformPriorities, setPlatformPriorities] = useState<EditorialLine['platform_priorities']>([])
   const [kpis, setKpis] = useState<StrategyKPI[]>([])
+
+  // Dynamically sync sample copy for mockups based on strategy inputs
+  useEffect(() => {
+    const brandName = brandData?.brand_name || activeOrganization?.name || 'Notre Marque'
+    const objText = monthlyObjective || 'Renforcer notre visibilité et créer du lien avec notre communauté'
+    const firstPillar = pillars[0] || 'Conseils & Expertise'
+    const secondPillar = pillars[1] || 'Coulisses & Nouveautés'
+
+    setMockupContents(prev => ({
+      linkedin: prev.linkedin || `🚀 [Focus du mois] ${objText}\n\nEn tant qu'acteurs engagés, nous croyons qu'une marque forte repose sur 3 piliers essentiels :\n1. ${firstPillar} : Apporter une valeur concrète et mesurable à chaque publication.\n2. ${secondPillar} : Partager nos apprentissages et coulisses en toute transparence.\n3. L'écoute continue des besoins de notre communauté.\n\nQuelle est votre plus grande priorité stratégique ce mois-ci ? Discutons-en en commentaire ! 👇\n\n#stratégie #croissance #b2b #${brandName.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+
+      instagram: prev.instagram || `✨ Nouvelle étape pour ${brandName} !\n\nCe mois-ci, notre focus stratégique est clair : ${objText.toLowerCase()}.\n\nOn vous embarque dans les coulisses de notre méthode pour vous offrir le meilleur au quotidien 💡\n\n👉 Dites-nous en commentaire ce que vous aimeriez voir en priorité !\n\n📌 Enregistrez ce post pour vous en inspirer plus tard.\n\n#inspiration #strategiedemarque #coulisses #création #${brandName.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+
+      twitter: prev.twitter || `Une stratégie de contenu réussie n'a pas besoin d'être compliquée.\n\nElle doit juste être alignée sur un objectif clair :\n🎯 ${objText.length > 85 ? objText.slice(0, 82) + '...' : objText}\n\nMoins de bruit, plus de valeur.\n\nPrêts pour cette nouvelle étape avec ${brandName} ? 🔥`,
+
+      facebook: prev.facebook || `👋 Chère communauté ${brandName} !\n\nCe mois-ci, notre focus principal est : ${objText}.\n\nNotre mission reste la même : vous accompagner avec des contenus utiles, concrets et adaptés à vos besoins réels.\n\nPartagez vos retours et vos questions en commentaire, nous répondons à chacun d'entre vous ! 👇\n\n#communauté #actualités #${brandName.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+    }))
+  }, [monthlyObjective, tone, pillars, brandData, activeOrganization])
+
+  const handleRegenerateSamples = () => {
+    const brandName = brandData?.brand_name || activeOrganization?.name || 'Notre Marque'
+    const objText = monthlyObjective || 'Renforcer notre visibilité et créer du lien avec notre communauté'
+    const firstPillar = pillars[0] || 'Conseils & Expertise'
+    const secondPillar = pillars[1] || 'Coulisses & Nouveautés'
+
+    setMockupContents({
+      linkedin: `🚀 [Focus du mois] ${objText}\n\nEn tant qu'acteurs engagés, nous croyons qu'une marque forte repose sur 3 piliers essentiels :\n1. ${firstPillar} : Apporter une valeur concrète et mesurable à chaque publication.\n2. ${secondPillar} : Partager nos apprentissages et coulisses en toute transparence.\n3. L'écoute continue des besoins de notre communauté.\n\nQuelle est votre plus grande priorité stratégique ce mois-ci ? Discutons-en en commentaire ! 👇\n\n#stratégie #croissance #b2b #${brandName.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+
+      instagram: `✨ Nouvelle étape pour ${brandName} !\n\nCe mois-ci, notre focus stratégique est clair : ${objText.toLowerCase()}.\n\nOn vous embarque dans les coulisses de notre méthode pour vous offrir le meilleur au quotidien 💡\n\n👉 Dites-nous en commentaire ce que vous aimeriez voir en priorité !\n\n📌 Enregistrez ce post pour vous en inspirer plus tard.\n\n#inspiration #strategiedemarque #coulisses #création #${brandName.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+
+      twitter: `Une stratégie de contenu réussie n'a pas besoin d'être compliquée.\n\nElle doit juste être alignée sur un objectif clair :\n🎯 ${objText.length > 85 ? objText.slice(0, 82) + '...' : objText}\n\nMoins de bruit, plus de valeur.\n\nPrêts pour cette nouvelle étape avec ${brandName} ? 🔥`,
+
+      facebook: `👋 Chère communauté ${brandName} !\n\nCe mois-ci, notre focus principal est : ${objText}.\n\nNotre mission reste la même : vous accompagner avec des contenus utiles, concrets et adaptés à vos besoins réels.\n\nPartagez vos retours et vos questions en commentaire, nous répondons à chacun d'entre vous ! 👇\n\n#communauté #actualités #${brandName.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+    })
+  }
 
   // Synchronize state when strategy or selectedPeriod changes
   useEffect(() => {
@@ -223,7 +313,7 @@ export function StrategyDetailModal({
       }}
     >
       <div
-        className={`w-full max-w-4xl max-h-[92vh] flex flex-col rounded-xl shadow-2xl border overflow-hidden transition-all duration-200 ${
+        className={`w-full max-w-5xl max-h-[92vh] flex flex-col rounded-xl shadow-2xl border overflow-hidden transition-all duration-200 ${
           darkMode ? 'bg-[#131E31] border-slate-700/90 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
         }`}
       >
@@ -315,6 +405,22 @@ export function StrategyDetailModal({
           >
             <Layers className="w-4 h-4" />
             <span>Ligne Éditoriale</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('mockups')}
+            className={`flex items-center gap-2 px-3.5 py-3 text-[13px] font-bold border-b-2 transition-all cursor-pointer bg-transparent ${
+              activeTab === 'mockups'
+                ? 'border-[#1677FF] text-[#1677FF] dark:text-[#38BDF8] dark:border-[#38BDF8]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            <span>Rendus & Mockups</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold border border-emerald-500/20">
+              Live
+            </span>
           </button>
 
           <button
@@ -605,16 +711,35 @@ export function StrategyDetailModal({
                           </div>
                         </div>
 
-                        {isOwnerOrCM && (
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
-                            onClick={() => handleTogglePlatform(p.platform)}
-                            className="text-slate-400 hover:text-red-500 p-1 border-none bg-transparent cursor-pointer shrink-0"
-                            title="Retirer"
+                            onClick={() => {
+                              setMockupFilter(p.platform as any)
+                              setActiveTab('mockups')
+                            }}
+                            className={`px-2.5 py-1.5 rounded-lg text-[11.5px] font-bold flex items-center gap-1.5 transition-colors border cursor-pointer ${
+                              darkMode
+                                ? 'bg-blue-500/10 hover:bg-blue-500/20 text-[#38BDF8] border-blue-500/30'
+                                : 'bg-blue-50 hover:bg-blue-100 text-[#1677FF] border-blue-200'
+                            }`}
+                            title="Voir le mockup pour cette plateforme"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Mockup</span>
                           </button>
-                        )}
+
+                          {isOwnerOrCM && (
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePlatform(p.platform)}
+                              className="text-slate-400 hover:text-red-500 p-1 border-none bg-transparent cursor-pointer"
+                              title="Retirer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))
                   )}
@@ -623,7 +748,229 @@ export function StrategyDetailModal({
             </div>
           )}
 
-          {/* TAB 3 : KPIS & MÉTRIQUES */}
+          {/* TAB 3 : RENDUS & MOCKUPS DES RÉSEAUX */}
+          {activeTab === 'mockups' && (
+            <div className="flex flex-col gap-4.5 animate-in fade-in duration-150 pb-4">
+              {/* Header bar of Mockups Tab */}
+              <div
+                className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                  darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-slate-50/90 border-slate-200/90'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-extrabold flex items-center gap-1.5">
+                      <LayoutTemplate className="w-4 h-4 text-[#1677FF] dark:text-[#38BDF8]" />
+                      <span>Rendus & Simulations en conditions réelles</span>
+                    </span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#1677FF]/10 text-[#1677FF] dark:text-[#38BDF8]">
+                      {brandData?.brand_name || activeOrganization?.name || 'Ma Marque'}
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-slate-500 dark:text-slate-400 m-0 mt-1">
+                    Visualisez le rendu de vos publications selon votre tonalité (<span className="font-semibold">{tone || 'Professionnel'}</span>) et votre focus stratégique.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRegenerateSamples}
+                    className={`px-3 py-1.5 rounded-xl border text-[12px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      darkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-xs'
+                    }`}
+                    title="Régénérer les exemples selon les objectifs et piliers actuels"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-[#1677FF] dark:text-[#38BDF8]" />
+                    <span>Réinitialiser textes</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Platform filters bar */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { id: 'all', label: 'Tous les réseaux' },
+                  { id: 'linkedin', label: 'LinkedIn', icon: 'linkedin' as Platform },
+                  { id: 'instagram', label: 'Instagram', icon: 'instagram' as Platform },
+                  { id: 'twitter', label: 'Twitter / X', icon: 'twitter' as Platform },
+                  { id: 'facebook', label: 'Facebook', icon: 'facebook' as Platform },
+                ].map(item => {
+                  const isSelected = mockupFilter === item.id
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setMockupFilter(item.id as any)}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[12px] font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? darkMode
+                            ? 'bg-[#1677FF] text-white border-[#1677FF] shadow-xs'
+                            : 'bg-[#1677FF] text-white border-[#1677FF] shadow-xs'
+                          : darkMode
+                          ? 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs'
+                      }`}
+                    >
+                      {item.icon && <PlatformIcon platform={item.icon} size={14} />}
+                      <span>{item.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Mockup Cards Grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {/* 1. LINKEDIN */}
+                {(mockupFilter === 'all' || mockupFilter === 'linkedin') && (
+                  <div className={`rounded-xl border p-3.5 flex flex-col gap-2.5 ${darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50/60 border-slate-200/80 shadow-xs'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-[#0A66C2] flex items-center justify-center text-white">
+                          <PlatformIcon platform="linkedin" size={14} />
+                        </div>
+                        <span className="text-[13px] font-bold">LinkedIn</span>
+                        {platformPriorities.find(p => p.platform === 'linkedin') && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-md bg-blue-500/10 text-[#38BDF8] font-bold">
+                            {platformPriorities.find(p => p.platform === 'linkedin')?.frequency || '3x / sem'}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeSampleImage(prev => ({ ...prev, linkedin: !prev.linkedin }))}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md border cursor-pointer transition-colors ${
+                          includeSampleImage.linkedin ? 'bg-[#0A66C2]/10 text-[#0A66C2] dark:text-[#38BDF8] border-[#0A66C2]/20' : 'bg-slate-200/50 dark:bg-slate-800 text-slate-500 border-transparent'
+                        }`}
+                      >
+                        {includeSampleImage.linkedin ? '🖼️ Avec visuel' : '📝 Texte seul'}
+                      </button>
+                    </div>
+
+                    <LinkedInFeedCard
+                      content={mockupContents.linkedin || ''}
+                      imageUrl={includeSampleImage.linkedin ? (brandData?.logo_url || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80') : null}
+                      userName={socialAccounts.find(a => a.platform === 'linkedin')?.platform_username || brandData?.brand_name || activeOrganization?.name || 'Ma Marque'}
+                      userHeadline={brandData?.industry || 'Marque & Entreprise innovante'}
+                      avatarUrl={socialAccounts.find(a => a.platform === 'linkedin')?.platform_avatar_url || brandData?.logo_url || activeOrganization?.avatar_url || null}
+                      onContentChange={v => setMockupContents(prev => ({ ...prev, linkedin: v }))}
+                    />
+                  </div>
+                )}
+
+                {/* 2. INSTAGRAM */}
+                {(mockupFilter === 'all' || mockupFilter === 'instagram') && (
+                  <div className={`rounded-xl border p-3.5 flex flex-col gap-2.5 ${darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50/60 border-slate-200/80 shadow-xs'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white">
+                          <PlatformIcon platform="instagram" size={14} />
+                        </div>
+                        <span className="text-[13px] font-bold">Instagram</span>
+                        {platformPriorities.find(p => p.platform === 'instagram') && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-500 font-bold">
+                            {platformPriorities.find(p => p.platform === 'instagram')?.frequency || '4x / sem'}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeSampleImage(prev => ({ ...prev, instagram: !prev.instagram }))}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md border cursor-pointer transition-colors ${
+                          includeSampleImage.instagram ? 'bg-pink-500/10 text-pink-500 border-pink-500/20' : 'bg-slate-200/50 dark:bg-slate-800 text-slate-500 border-transparent'
+                        }`}
+                      >
+                        {includeSampleImage.instagram ? '🖼️ Avec visuel' : '📝 Texte seul'}
+                      </button>
+                    </div>
+
+                    <InstagramFeedCard
+                      content={mockupContents.instagram || ''}
+                      imageUrl={includeSampleImage.instagram ? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80' : null}
+                      userName={socialAccounts.find(a => a.platform === 'instagram')?.platform_username || (brandData?.brand_name || activeOrganization?.name || 'mamarque').toLowerCase().replace(/[^a-z0-9_]/g, '')}
+                      avatarUrl={socialAccounts.find(a => a.platform === 'instagram')?.platform_avatar_url || brandData?.logo_url || activeOrganization?.avatar_url || null}
+                      onContentChange={v => setMockupContents(prev => ({ ...prev, instagram: v }))}
+                    />
+                  </div>
+                )}
+
+                {/* 3. TWITTER / X */}
+                {(mockupFilter === 'all' || mockupFilter === 'twitter') && (
+                  <div className={`rounded-xl border p-3.5 flex flex-col gap-2.5 ${darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50/60 border-slate-200/80 shadow-xs'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-black dark:bg-slate-800 flex items-center justify-center text-white">
+                          <PlatformIcon platform="twitter" size={14} />
+                        </div>
+                        <span className="text-[13px] font-bold">Twitter / X</span>
+                        {platformPriorities.find(p => p.platform === 'twitter') && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-500 font-bold">
+                            {platformPriorities.find(p => p.platform === 'twitter')?.frequency || '5x / sem'}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeSampleImage(prev => ({ ...prev, twitter: !prev.twitter }))}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md border cursor-pointer transition-colors ${
+                          includeSampleImage.twitter ? 'bg-sky-500/10 text-sky-500 border-sky-500/20' : 'bg-slate-200/50 dark:bg-slate-800 text-slate-500 border-transparent'
+                        }`}
+                      >
+                        {includeSampleImage.twitter ? '🖼️ Avec média' : '📝 Tweet seul'}
+                      </button>
+                    </div>
+
+                    <TwitterFeedCard
+                      content={mockupContents.twitter || ''}
+                      imageUrl={includeSampleImage.twitter ? 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80' : null}
+                      userName={socialAccounts.find(a => a.platform === 'twitter')?.platform_username || brandData?.brand_name || activeOrganization?.name || 'Ma Marque'}
+                      userHandle={`@${(socialAccounts.find(a => a.platform === 'twitter')?.platform_username || brandData?.brand_name || activeOrganization?.name || 'mamarque').toLowerCase().replace(/[^a-z0-9_]/g, '')}`}
+                      avatarUrl={socialAccounts.find(a => a.platform === 'twitter')?.platform_avatar_url || brandData?.logo_url || activeOrganization?.avatar_url || null}
+                      onContentChange={v => setMockupContents(prev => ({ ...prev, twitter: v }))}
+                    />
+                  </div>
+                )}
+
+                {/* 4. FACEBOOK */}
+                {(mockupFilter === 'all' || mockupFilter === 'facebook') && (
+                  <div className={`rounded-xl border p-3.5 flex flex-col gap-2.5 ${darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50/60 border-slate-200/80 shadow-xs'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-[#1877F2] flex items-center justify-center text-white">
+                          <PlatformIcon platform="facebook" size={14} />
+                        </div>
+                        <span className="text-[13px] font-bold">Facebook</span>
+                        {platformPriorities.find(p => p.platform === 'facebook') && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-md bg-blue-500/10 text-[#1877F2] font-bold">
+                            {platformPriorities.find(p => p.platform === 'facebook')?.frequency || '2x / sem'}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeSampleImage(prev => ({ ...prev, facebook: !prev.facebook }))}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md border cursor-pointer transition-colors ${
+                          includeSampleImage.facebook ? 'bg-blue-500/10 text-[#1877F2] border-blue-500/20' : 'bg-slate-200/50 dark:bg-slate-800 text-slate-500 border-transparent'
+                        }`}
+                      >
+                        {includeSampleImage.facebook ? '🖼️ Avec visuel' : '📝 Texte seul'}
+                      </button>
+                    </div>
+
+                    <FacebookFeedCard
+                      content={mockupContents.facebook || ''}
+                      imageUrl={includeSampleImage.facebook ? 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80' : null}
+                      userName={socialAccounts.find(a => a.platform === 'facebook')?.platform_username || brandData?.brand_name || activeOrganization?.name || 'Ma Marque'}
+                      avatarUrl={socialAccounts.find(a => a.platform === 'facebook')?.platform_avatar_url || brandData?.logo_url || activeOrganization?.avatar_url || null}
+                      onContentChange={v => setMockupContents(prev => ({ ...prev, facebook: v }))}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4 : KPIS & MÉTRIQUES */}
           {activeTab === 'kpis' && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
               <div className="flex items-center justify-between">
