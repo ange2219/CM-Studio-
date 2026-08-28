@@ -324,7 +324,7 @@ export function GeneratedPostsView({
   const { toast } = useToast()
 
   const activePlatforms = platforms
-  const isUnifiedPost = !!unifiedMode || (
+  const isUnifiedPost = (!!unifiedMode && activePlatforms.length > 1) || (
     activePlatforms.length > 1 &&
     Object.values(variants).length > 0 &&
     Object.values(variants).every(v => v === Object.values(variants)[0])
@@ -1097,7 +1097,7 @@ export function GeneratedPostsView({
                   <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || brandProfile?.logo_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
                   <div>
                     <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{socialAccounts?.[0]?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>Post unifié • {activePlatforms.length} réseaux</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>{brandProfile?.industry || brandProfile?.description || 'À l\'instant • 🌐'}</div>
                   </div>
                 </div>
               ) : (
@@ -1458,7 +1458,7 @@ export function GeneratedPostsView({
                         {socialAccounts?.[0]?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'}
                       </div>
                       <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '1px' }}>
-                        Post unifié • {activePlatforms.length} plateformes
+                        {brandProfile?.industry || brandProfile?.description || 'À l\'instant • 🌐'}
                       </div>
                     </div>
                   </div>
@@ -1500,7 +1500,7 @@ export function GeneratedPostsView({
                     ref={el => { textareaRefs.current[mainPlatform] = el }}
                     value={cardData.content}
                     onChange={e => updateCard(mainPlatform, { content: e.target.value })}
-                    placeholder={`Rédigez votre post unifié...`}
+                    placeholder="Rédigez votre post..."
                     style={{
                       width: '100%',
                       flex: 1,

@@ -98,11 +98,10 @@ export default function ResultsPage() {
 
   const isUnified = (d: ResultsData | null) => {
     if (!d || d.editPostId) return false
+    if ((d.platforms?.length ?? 0) <= 1) return false
     if (d.distributionMode === 'unified') return true
-    if ((d.platforms?.length ?? 0) > 1) {
-      const vals = Object.values(d.variants || {})
-      if (vals.length > 0 && vals.every(v => v === vals[0])) return true
-    }
+    const vals = Object.values(d.variants || {})
+    if (vals.length > 0 && vals.every(v => v === vals[0])) return true
     return false
   }
 
