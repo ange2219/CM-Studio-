@@ -282,11 +282,26 @@ export default function OnboardingPage() {
     reader.readAsDataURL(file)
   }
 
-  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    update('logo_url', URL.createObjectURL(file))
+    const previewUrl = URL.createObjectURL(file)
+    update('logo_url', previewUrl)
     extractDominantColors(file)
+
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      const resData = await res.json()
+      if (res.ok && resData.url) {
+        update('logo_url', resData.url)
+      } else {
+        console.error('Erreur upload logo onboarding:', resData.error)
+      }
+    } catch (err) {
+      console.error('Erreur upload logo onboarding:', err)
+    }
   }
 
   function canNext(): boolean {

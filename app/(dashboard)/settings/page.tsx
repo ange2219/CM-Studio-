@@ -70,6 +70,7 @@ function SettingsContent() {
   const [colorSecondary, setColorSecondary] = useState('#059669')
   const [platforms, setPlatforms] = useState<string[]>([])
   const [savingBrand, setSavingBrand] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
   // --- Org context ---
   const { activeOrganization, organizations, switchOrganization } = useOrg()
@@ -168,6 +169,7 @@ function SettingsContent() {
           if (brand.audience_location && brand.audience_location.startsWith('{')) {
             const parsed = JSON.parse(brand.audience_location)
             logo = parsed.logo_url || ''
+            if (logo.startsWith('blob:')) logo = ''
             primary = parsed.color_primary || '#1E57CD'
             secondary = parsed.color_secondary || '#059669'
             platArr = parsed.platforms || []
@@ -311,7 +313,12 @@ function SettingsContent() {
 
   async function handleCreateBrandForm() {
     if (!newBrandName.trim()) return
+    if (uploadingLogo) {
+      toast('Veuillez patienter pendant l\'upload du logo...', 'info')
+      return
+    }
     setCreatingBrand(true)
+    const finalLogoUrl = newLogoUrl?.startsWith('blob:') ? '' : (newLogoUrl || '')
     try {
       const res = await fetch('/api/brand/create', {
         method: 'POST',
@@ -329,7 +336,7 @@ function SettingsContent() {
           platforms:         newPlatforms,
           avoid_words:       newAvoidWords,
           posts_per_week:    newPostsPerWeek,
-          logo_url:          newLogoUrl,
+          logo_url:          finalLogoUrl,
           color_primary:     newColorPrimary,
           color_secondary:   newColorSecondary,
         }),
@@ -439,41 +446,51 @@ function SettingsContent() {
   }
 
   async function saveBrand() {
+    if (uploadingLogo) {
+      toast('Veuillez patienter pendant l\'upload du logo...', 'info')
+      return
+    }
     setSavingBrand(true)
+    const finalLogoUrl = logoUrl?.startsWith('blob:') ? (initialBrand.logoUrl || '') : (logoUrl || '')
     const audienceLocationJson = JSON.stringify({
-      logo_url: logoUrl || '',
+      logo_url: finalLogoUrl,
       color_primary: colorPrimary || '',
       color_secondary: colorSecondary || '',
       platforms: platforms || [],
     })
-    const res = await fetch('/api/brand', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        brand_name: brandName, description: brandDesc, sector,
-        default_tone: defaultTone, posts_per_week: postsPerWeek,
-        website, target_audience: targetAudience,
-        audience_interests: valueProposition, // Stores value proposition
-        audience_location: audienceLocationJson, // Stores logo, colors, platforms JSON
-        content_pillars: contentPillars,
-        avoid_words: avoidWords, objectives,
-      }),
-    })
-    setSavingBrand(false)
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/brand', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_name: brandName, description: brandDesc, sector,
+          default_tone: defaultTone, posts_per_week: postsPerWeek,
+          website, target_audience: targetAudience,
+          audience_interests: valueProposition,
+          audience_location: audienceLocationJson,
+          content_pillars: contentPillars,
+          avoid_words: avoidWords, objectives,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur lors de la sauvegarde du profil')
+      }
       setInitialBrand({
         brandName, brandDesc, sector, defaultTone, postsPerWeek, website,
         targetAudience, contentPillars, avoidWords, objectives,
-        valueProposition, logoUrl, colorPrimary, colorSecondary, platforms
+        valueProposition, logoUrl: finalLogoUrl, colorPrimary, colorSecondary, platforms
       })
+      setLogoUrl(finalLogoUrl)
       setIsEditingBrand(false)
       toast('Profil de marque sauvegardé', 'success')
-      // Recharger pour mettre à jour instantanément les noms d'organisation dans tout le layout
       setTimeout(() => {
         window.location.reload()
       }, 1000)
-    } else {
-      toast('Erreur', 'error')
+    } catch (err: any) {
+      toast(err.message || 'Erreur lors de la sauvegarde', 'error')
+    } finally {
+      setSavingBrand(false)
     }
   }
 
@@ -526,15 +543,18 @@ function SettingsContent() {
   }
 
   async function uploadLogo(file: File): Promise<string | null> {
+    setUploadingLogo(true)
     try {
       const fd = new FormData(); fd.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) throw new Error(data.error || 'Erreur upload')
       return data.url as string
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Erreur upload logo', 'error')
       return null
+    } finally {
+      setUploadingLogo(false)
     }
   }
 
@@ -734,7 +754,21 @@ function SettingsContent() {
                   <div className="anim-fade-up" style={{ padding: '1.25rem', background: 'var(--card-bg)', border: '1.5px solid var(--accent)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '.5rem', paddingBottom: '.5rem', borderBottom: '1px solid var(--b1)' }}>
                       <div style={{ width: 36, height: 36, borderRadius: 9, background: newColorPrimary + '22', border: `1px solid ${newColorPrimary}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                        {newLogoUrl ? <img src={newLogoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Logo" /> : <Building2 size={16} color={newColorPrimary} />}
+                        {newLogoUrl ? (
+                          <img
+                            src={newLogoUrl}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            alt="Logo"
+                            onError={e => {
+                              e.currentTarget.style.display = 'none'
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
+                              if (fallback) fallback.style.display = 'flex'
+                            }}
+                          />
+                        ) : null}
+                        <span style={{ display: !newLogoUrl ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                          <Building2 size={16} color={newColorPrimary} />
+                        </span>
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -787,7 +821,21 @@ function SettingsContent() {
                       <Row label="Logo de la marque">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--b1)', flexShrink: 0 }}>
-                            {newLogoUrl ? <img src={newLogoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Upload size={16} style={{ color: 'var(--t3)' }} />}
+                            {newLogoUrl ? (
+                              <img
+                                src={newLogoUrl}
+                                alt="Logo"
+                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                onError={e => {
+                                  e.currentTarget.style.display = 'none'
+                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
+                                  if (fallback) fallback.style.display = 'flex'
+                                }}
+                              />
+                            ) : null}
+                            <span style={{ display: !newLogoUrl ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center' }}>
+                              <Upload size={16} style={{ color: 'var(--t3)' }} />
+                            </span>
                           </div>
                           <div>
                             <input type="file" accept="image/*" id="new-logo-settings" style={{ display: 'none' }} onChange={async (e) => {
@@ -824,7 +872,12 @@ function SettingsContent() {
                                 reader.readAsDataURL(file)
                                 // Upload réel vers Supabase Storage
                                 const uploadedUrl = await uploadLogo(file)
-                                if (uploadedUrl) setNewLogoUrl(uploadedUrl)
+                                if (uploadedUrl) {
+                                  setNewLogoUrl(uploadedUrl)
+                                } else {
+                                  setNewLogoUrl('')
+                                  toast('Échec de l\'upload du logo. Veuillez réessayer.', 'error')
+                                }
                               }
                             }} />
                             <label htmlFor="new-logo-settings" style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer', padding: '.3rem .6rem', background: 'var(--accent-light)', borderRadius: '6px', border: '1px solid var(--accent)', display: 'inline-block' }}>Choisir le logo</label>
@@ -923,7 +976,21 @@ function SettingsContent() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: 36, height: 36, borderRadius: 9, background: colorPrimary ? colorPrimary + '22' : 'var(--s2)', border: `1px solid ${colorPrimary ? colorPrimary + '40' : 'var(--b1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                          {logoUrl ? <img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Logo" /> : <Building2 size={16} color={colorPrimary || 'var(--t3)'} />}
+                          {logoUrl && !logoUrl.startsWith('blob:') ? (
+                            <img
+                              src={logoUrl}
+                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                              alt="Logo"
+                              onError={e => {
+                                e.currentTarget.style.display = 'none'
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
+                                if (fallback) fallback.style.display = 'flex'
+                              }}
+                            />
+                          ) : null}
+                          <span style={{ display: (!logoUrl || logoUrl.startsWith('blob:')) ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                            <Building2 size={16} color={colorPrimary || 'var(--t3)'} />
+                          </span>
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1041,7 +1108,21 @@ function SettingsContent() {
                         <Row label="Logo de la marque">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--b1)', flexShrink: 0 }}>
-                              {logoUrl ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Upload size={16} style={{ color: 'var(--t3)' }} />}
+                              {logoUrl ? (
+                                <img
+                                  src={logoUrl}
+                                  alt="Logo"
+                                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                  onError={e => {
+                                    e.currentTarget.style.display = 'none'
+                                    const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
+                                    if (fallback) fallback.style.display = 'flex'
+                                  }}
+                                />
+                              ) : null}
+                              <span style={{ display: !logoUrl ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center' }}>
+                                <Upload size={16} style={{ color: 'var(--t3)' }} />
+                              </span>
                             </div>
                             <div>
                               <input type="file" accept="image/*" id="logo-settings" style={{ display: 'none' }} onChange={async (e) => {
@@ -1078,7 +1159,12 @@ function SettingsContent() {
                                   reader.readAsDataURL(file)
                                   // Upload réel vers Supabase Storage
                                   const uploadedUrl = await uploadLogo(file)
-                                  if (uploadedUrl) setLogoUrl(uploadedUrl)
+                                  if (uploadedUrl) {
+                                    setLogoUrl(uploadedUrl)
+                                  } else {
+                                    setLogoUrl(initialBrand.logoUrl || '')
+                                    toast('Échec de l\'upload du logo. Veuillez réessayer.', 'error')
+                                  }
                                 }
                               }} />
                               <label htmlFor="logo-settings" style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer', padding: '.3rem .6rem', background: 'var(--accent-light)', borderRadius: '6px', border: '1px solid var(--accent)', display: 'inline-block' }}>Changer le logo</label>
