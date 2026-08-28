@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/context/UserContext';
+import { FeatherLogo } from '@/components/FeatherLogo';
 
 export function SidebarLeft({
   darkMode,
@@ -88,7 +89,20 @@ export function SidebarLeft({
   return (
     <aside className="w-[200px] xl:w-[220px] shrink-0 hidden md:flex flex-col h-full justify-between overflow-y-auto no-scrollbar pb-4 select-none">
       {/* Top Section: Navigation Menu */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
+        {/* Brand / Logo dans son cadre */}
+        <Link
+          href="/workspace"
+          className="flex items-center gap-2.5 px-2 py-1.5 mb-1 rounded-xl transition-all cursor-pointer select-none group hover:opacity-90"
+        >
+          <FeatherLogo darkMode={darkMode} size={36} />
+          <span className={`font-bold text-[15.5px] tracking-tight font-['Inter'] ${
+            darkMode ? 'text-white' : 'text-[#0F172A]'
+          }`}>
+            CM Studio
+          </span>
+        </Link>
+
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;

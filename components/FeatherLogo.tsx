@@ -17,11 +17,11 @@ export function FeatherLogo({
 }: FeatherLogoProps) {
   return (
     <div
-      className={`relative flex items-center justify-center shrink-0 w-8 h-8 rounded-lg p-1 backdrop-blur-sm transition-all duration-200 ${
+      className={`relative flex items-center justify-center shrink-0 w-9 h-9 rounded-xl p-1.5 backdrop-blur-sm transition-all duration-200 ${
         containerClassName || (
           darkMode
-            ? 'bg-white/[0.07] border border-white/[0.1] shadow-sm'
-            : 'bg-slate-100/90 border border-slate-200/70 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
+            ? 'bg-slate-800/90 border border-slate-700/80 shadow-xs'
+            : 'bg-white border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
         )
       }`}
       style={size ? { width: size, height: size } : undefined}
