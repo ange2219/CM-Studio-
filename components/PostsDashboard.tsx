@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
 import { useTheme } from '@/components/context/ThemeContext'
+import { useOrg } from '@/components/context/OrgContext'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
   switch (platform) {
@@ -139,6 +140,19 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const router = useRouter()
   const { toast } = useToast()
   const { darkMode } = useTheme()
+  const { activeOrganization, organizations, switchOrganization } = useOrg()
+  const [brandSelectorOpen, setBrandSelectorOpen] = useState(false)
+  const brandSelectorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (brandSelectorRef.current && !brandSelectorRef.current.contains(event.target as Node)) {
+        setBrandSelectorOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const [posts, setPosts] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
@@ -1157,26 +1171,119 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       {!allPosts && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '1.25rem' }}>
           
-          {/* Message en haut (sans cadre, sans fond dégradé, sans onde SVG) */}
-          <div>
-            <h1 style={{
-              fontSize: '1.45rem',
-              fontWeight: 800,
-              color: 'var(--t1)',
-              margin: '0 0 .25rem 0',
-              lineHeight: 1.2,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '.5rem',
-              fontFamily: "'Bricolage Grotesque', sans-serif",
-              letterSpacing: '-0.01em'
-            }}>
-              <span style={{ color: '#38BDF8' }}>✨</span>
-              Bienvenue dans votre workspace 👋
-            </h1>
-            <p style={{ fontSize: '.82rem', color: 'var(--t2)', margin: 0 }}>
-              Votre centre de création, de planification et d&apos;analyse.
-            </p>
+          {/* Titre à gauche + Carte Sélecteur de Marque à droite */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h1 style={{
+                fontSize: '1.45rem',
+                fontWeight: 800,
+                color: 'var(--t1)',
+                margin: '0 0 .25rem 0',
+                lineHeight: 1.2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '.5rem',
+                fontFamily: "'Bricolage Grotesque', sans-serif",
+                letterSpacing: '-0.01em'
+              }}>
+                <span style={{ color: '#38BDF8' }}>✨</span>
+                Bienvenue dans votre workspace 👋
+              </h1>
+              <p style={{ fontSize: '.82rem', color: 'var(--t2)', margin: 0 }}>
+                Votre centre de création, de planification et d&apos;analyse.
+              </p>
+            </div>
+
+            {/* Carte / Badge Sélecteur de Marque */}
+            <div ref={brandSelectorRef} style={{ position: 'relative', flexShrink: 0 }}>
+              <button
+                onClick={() => setBrandSelectorOpen(prev => !prev)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.55rem',
+                  padding: '0.5rem 0.95rem',
+                  borderRadius: '12px',
+                  border: '1px solid var(--b1)',
+                  background: 'var(--card)',
+                  color: 'var(--t1)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: 'var(--shadow)'
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                onMouseLeave={e => {
+                  if (!brandSelectorOpen) {
+                    e.currentTarget.style.borderColor = 'var(--b1)'
+                  }
+                }}
+              >
+                <Award className="w-4 h-4 text-[#1677FF]" />
+                <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {activeOrganization?.name || 'Ma Marque'}
+                </span>
+                <ChevronDown size={14} style={{ color: 'var(--t3)', transition: 'transform .2s', transform: brandSelectorOpen ? 'rotate(180deg)' : 'none' }} />
+              </button>
+
+              {brandSelectorOpen && organizations && organizations.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  right: 0,
+                  zIndex: 200,
+                  background: 'var(--card)',
+                  border: '1px solid var(--b1)',
+                  borderRadius: '12px',
+                  padding: '0.4rem',
+                  minWidth: '190px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,.35)'
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--t3)', marginBottom: '4px', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Mes Marques
+                  </div>
+                  {organizations.map((org: any) => (
+                    <button
+                      key={org.id}
+                      onClick={() => {
+                        switchOrganization(org.id)
+                        setBrandSelectorOpen(false)
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: activeOrganization?.id === org.id ? 'rgba(22, 119, 255, 0.08)' : 'transparent',
+                        color: activeOrganization?.id === org.id ? 'var(--accent)' : 'var(--t1)',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        textAlign: 'left',
+                        transition: 'all 0.15s'
+                      }}
+                      onMouseEnter={e => {
+                        if (activeOrganization?.id !== org.id) {
+                          e.currentTarget.style.background = 'var(--s2)'
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (activeOrganization?.id !== org.id) {
+                          e.currentTarget.style.background = 'transparent'
+                        }
+                      }}
+                    >
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
+                      {activeOrganization?.id === org.id && <Check size={14} className="text-[#1677FF]" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── 4 CARTES D'ACTION ── */}
