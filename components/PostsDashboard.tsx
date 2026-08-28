@@ -1121,79 +1121,9 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         </div>
       )}
 
-      {/* ── HEADER WORKSPACE ── */}
+      {/* ── HEADER WORKSPACE (4 CARTES D'ACTION) ── */}
       {!allPosts && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '1.25rem' }}>
-        
-        {/* ── BANNIÈRE Bienvenue + Onde SVG (Mode Sombre & Mode Clair) ── */}
-        <div style={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: '14px',
-          padding: '1.1rem 1.4rem',
-          background: darkMode
-            ? 'linear-gradient(135deg, #070C1B 0%, #0D1230 55%, #160C2C 100%)'
-            : 'linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 50%, #F0F7FF 100%)',
-          border: darkMode
-            ? '1px solid rgba(255,255,255,0.07)'
-            : '1px solid #E2E8F0',
-          boxShadow: darkMode
-            ? '0 6px 24px rgba(0,0,0,0.4)'
-            : '0 2px 12px rgba(15,23,42,0.04)',
-        }}>
-          {/* Onde lumineuse SVG */}
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-            <svg width="100%" height="100%" viewBox="0 0 1000 120" preserveAspectRatio="none" fill="none" style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '55%' }}>
-              <defs>
-                <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3B82F6" stopOpacity={darkMode ? "0.18" : "0.08"} />
-                  <stop offset="60%" stopColor="#8B5CF6" stopOpacity={darkMode ? "0.22" : "0.09"} />
-                  <stop offset="100%" stopColor="#EC4899" stopOpacity={darkMode ? "0.1" : "0.05"} />
-                </linearGradient>
-                <linearGradient id="ws1" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#38BDF8" stopOpacity={darkMode ? "1" : "0.5"} />
-                  <stop offset="50%" stopColor="#A855F7" stopOpacity={darkMode ? "1" : "0.5"} />
-                  <stop offset="100%" stopColor="#EC4899" stopOpacity={darkMode ? "1" : "0.5"} />
-                </linearGradient>
-                <linearGradient id="ws2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#60A5FA" stopOpacity={darkMode ? "0.7" : "0.35"} />
-                  <stop offset="50%" stopColor="#C084FC" stopOpacity={darkMode ? "0.7" : "0.35"} />
-                  <stop offset="100%" stopColor="#F472B6" stopOpacity={darkMode ? "0.7" : "0.35"} />
-                </linearGradient>
-              </defs>
-              <path d="M 0,60 C 200,10 600,110 1000,30 L 1000,0 L 0,0 Z" fill="url(#wg1)" />
-              <path d="M 50,80 C 280,10 620,115 1050,40" stroke="url(#ws1)" strokeWidth="2.5" opacity={darkMode ? "0.5" : "0.4"} />
-              <path d="M 0,95 C 300,20 650,100 1100,50" stroke="url(#ws2)" strokeWidth="1.5" opacity={darkMode ? "0.45" : "0.35"} />
-            </svg>
-          </div>
-
-          {/* Contenu bannière */}
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-            <div>
-              <h1 style={{
-                fontSize: '1.45rem',
-                fontWeight: 800,
-                color: darkMode ? '#fff' : '#0F172A',
-                margin: '0 0 .2rem 0',
-                lineHeight: 1.2,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '.5rem',
-                fontFamily: "'Bricolage Grotesque', sans-serif",
-                letterSpacing: '-0.01em'
-              }}>
-                <span style={{ color: '#38BDF8' }}>✨</span>
-                Votre Workspace
-              </h1>
-              <p style={{ fontSize: '.82rem', color: darkMode ? '#94A3B8' : '#64748B', margin: 0 }}>
-                Votre centre de création, de planification et d&apos;analyse.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ── 4 CARTES D'ACTION ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }} className="workspace-action-cards">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '1.25rem' }} className="workspace-action-cards">
           
           {/* Carte 1 : Nouveau post — Bleu */}
           <div
@@ -1404,7 +1334,6 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           </div>
 
         </div>
-      </div>
       )}
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
