@@ -1183,7 +1183,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 letterSpacing: '-0.01em'
               }}>
                 <span style={{ color: '#38BDF8' }}>✨</span>
-                Bienvenue dans votre workspace 👋
+                Votre Workspace
               </h1>
               <p style={{ fontSize: '.82rem', color: darkMode ? '#94A3B8' : '#64748B', margin: 0 }}>
                 Votre centre de création, de planification et d&apos;analyse.
