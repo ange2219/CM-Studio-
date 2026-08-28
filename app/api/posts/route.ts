@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
-  const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '20')), 100)
+  const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '50')), 500)
   const offset = Math.max(0, parseInt(searchParams.get('offset') || '0'))
 
   const includeDeleted = searchParams.get('includeDeleted') === 'true'

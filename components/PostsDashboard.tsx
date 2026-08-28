@@ -317,9 +317,14 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
   function loadPosts(): Promise<void> {
     setLoading(true)
-    return fetch('/api/posts?limit=20')
+    const limit = allPosts ? 200 : 50
+    return fetch(`/api/posts?limit=${limit}`)
       .then(r => r.json())
-      .then(d => { setPosts(d.posts || []); setTotal(d.total || 0); setLoading(false) })
+      .then(d => {
+        setPosts(d.posts || [])
+        setTotal(typeof d.total === 'number' ? d.total : (d.posts || []).length)
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }
 
@@ -330,6 +335,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       if (!res.ok) throw new Error('Erreur restauration')
       toast('Post restauré en brouillon', 'success')
       setPosts(prev => prev.map(p => p.id === id ? { ...p, status: 'draft' } : p))
+      setTotal(prev => prev + 1)
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Erreur', 'error')
     } finally {
@@ -341,7 +347,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
     try {
       await fetch(`/api/posts/${id}/destroy`, { method: 'DELETE' })
       setPosts(prev => prev.filter(p => p.id !== id))
-      setTotal(prev => prev - 1)
+      setTotal(prev => Math.max(0, prev - 1))
       if (selectedPost?.id === id) closePost()
       toast('Post supprimé définitivement', 'success')
     } catch { /* ignore */ }
@@ -375,7 +381,32 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
     try {
       if (sessionStorage.getItem('social_ia_results')) setHasPendingResults(true)
     } catch {}
-  }, [])
+
+    // Auto refresh when returning to tab/window
+    const onFocus = () => { loadPosts() }
+    window.addEventListener('focus', onFocus)
+
+    // Realtime Supabase updates on posts table
+    let channel: any = null
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      const supabase = createClient()
+      channel = supabase
+        .channel('posts_realtime_count')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
+          loadPosts()
+        })
+        .subscribe()
+    }).catch(() => {})
+
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      if (channel) {
+        import('@/lib/supabase/client').then(({ createClient }) => {
+          createClient().removeChannel(channel)
+        }).catch(() => {})
+      }
+    }
+  }, [allPosts])
 
   function openPost(post: Post) {
     if (post.status === 'draft' || post.status === 'failed' || post.status === 'scheduled') {
@@ -610,7 +641,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const isDraft = selectedPost?.status === 'draft' || selectedPost?.status === 'failed'
   const isDeleted = selectedPost?.status === 'deleted'
   const draftCount = posts.filter(p => p.status === 'draft' || p.status === 'failed').length
-  const nonDeletedCount = posts.filter(p => p.status !== 'deleted').length
+  const isFiltered = filter !== 'all' || !!platformFilter
+  const postCount = isFiltered ? filtered.length : (total > 0 ? total : posts.filter(p => p.status !== 'deleted').length)
 
   return (
     <div style={{ padding: '1.5rem 2rem 3rem' }}>
@@ -1354,7 +1386,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               </button>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--t1)', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif", display: 'flex', alignItems: 'center', gap: '.5rem' }}>
                 Mes Posts
-                <span style={{ background: 'var(--s2)', padding: '.15rem .45rem', borderRadius: '10px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600, border: '1px solid var(--b1)' }}>{nonDeletedCount}</span>
+                <span style={{ background: 'var(--s2)', padding: '.15rem .45rem', borderRadius: '10px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600, border: '1px solid var(--b1)' }}>{postCount}</span>
               </h1>
             </div>
           ) : (
@@ -1362,7 +1394,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>
                 Posts récents
               </h2>
-              <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{nonDeletedCount}</span>
+              <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{postCount}</span>
               {filtered.length >= 5 && (
                 <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
                   Voir tout
