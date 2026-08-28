@@ -17,10 +17,10 @@ export function FeatherLogo({
 }: FeatherLogoProps) {
   return (
     <div
-      className={`relative flex items-center justify-center shrink-0 w-9 h-9 rounded-xl p-1.5 transition-all duration-200 ${
+      className={`relative flex items-center justify-center shrink-0 w-9 h-9 rounded-xl p-1.5 backdrop-blur-sm transition-all duration-200 ${
         containerClassName || (
           darkMode
-            ? 'bg-white border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.2)]'
+            ? 'bg-slate-800/90 border border-slate-700/80 shadow-xs'
             : 'bg-white border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
         )
       }`}
