@@ -71,23 +71,40 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
   try {
     const postPlatforms = post.platforms as Platform[]
-    const metaPlatforms  = postPlatforms.filter(p => META_PLATFORMS.has(p))
-    const zernioPlatforms = postPlatforms.filter(p => !META_PLATFORMS.has(p))
+
+    // Récupère tous les comptes sociaux actifs pour cette organisation
+    const { data: allActiveAccounts } = await admin
+      .from('social_accounts')
+      .select('*')
+      .eq('organization_id', orgId)
+      .in('platform', postPlatforms)
+      .eq('is_active', true)
+
+    const accountsByPlatform = new Map((allActiveAccounts || []).map(a => [a.platform, a]))
+
+    // Séparer les comptes selon le mode de connexion :
+    // - Direct Meta : UNIQUEMENT si un token direct chiffré existe (différent de 'zernio_managed')
+    // - Zernio : toutes les autres plateformes, y compris Facebook / Instagram connectés via Zernio !
+    const metaDirectPlatforms: Platform[] = []
+    const zernioPlatforms: Platform[] = []
+
+    for (const p of postPlatforms) {
+      const acc = accountsByPlatform.get(p)
+      if (acc && META_PLATFORMS.has(p) && acc.access_token && acc.access_token !== 'zernio_managed') {
+        metaDirectPlatforms.push(p)
+      } else {
+        zernioPlatforms.push(p)
+      }
+    }
 
     const publishedIds: Record<string, string> = {}
     const platformErrors: Record<string, string> = {}
 
-    // ── Meta API (Facebook + Instagram) ──────────────────────────────────────
-    if (metaPlatforms.length > 0) {
-      const { data: metaAccounts } = await admin
-        .from('social_accounts')
-        .select('*')
-        .eq('organization_id', orgId)
-        .in('platform', metaPlatforms)
-        .eq('is_active', true)
-        .neq('access_token', 'zernio_managed')
+    // ── Meta API Direct (uniquement si token direct Meta présent) ─────────────
+    if (metaDirectPlatforms.length > 0) {
+      const metaAccounts = (allActiveAccounts || []).filter(a => metaDirectPlatforms.includes(a.platform as Platform))
 
-      for (const account of metaAccounts || []) {
+      for (const account of metaAccounts) {
         let token: string
         try {
           token = decryptToken(account.access_token)

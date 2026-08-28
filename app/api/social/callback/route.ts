@@ -12,7 +12,13 @@ export async function GET(req: NextRequest) {
   const accountId = searchParams.get('accountId') || searchParams.get('account_id') || searchParams.get('id')
 
   if (!platform || !userId || !orgId) {
-    return NextResponse.redirect(new URL('/profile?error=callback_params_manquants', req.url))
+    const html = `<!DOCTYPE html><html><body><script>
+      var d = { type: 'zernio_oauth', success: false, error: 'Paramètres de callback manquants' };
+      try { window.opener.postMessage(d, '*') } catch(e) {}
+      try { localStorage.setItem('_oauth_result', JSON.stringify(d)) } catch(e) {}
+      window.close()
+    </script></body></html>`
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
   }
 
   const admin = createAdminClient()
@@ -48,7 +54,13 @@ export async function GET(req: NextRequest) {
 
   if (!finalAccountId) {
     console.error('[social/callback] accountId introuvable pour', platform)
-    return NextResponse.redirect(new URL(`/profile?error=compte+${platform}+introuvable+dans+Zernio`, req.url))
+    const html = `<!DOCTYPE html><html><body><script>
+      var d = { type: 'zernio_oauth', success: false, error: 'Compte ${platform} introuvable dans Zernio' };
+      try { window.opener.postMessage(d, '*') } catch(e) {}
+      try { localStorage.setItem('_oauth_result', JSON.stringify(d)) } catch(e) {}
+      window.close()
+    </script></body></html>`
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
   }
 
   // Vérifie si un token Meta direct existe déjà pour cette plateforme
@@ -85,19 +97,24 @@ export async function GET(req: NextRequest) {
 
   if (error) {
     console.error('[social/callback] DB upsert error:', error.message)
-    return NextResponse.redirect(new URL('/profile?error=erreur_base_de_données', req.url))
+    const html = `<!DOCTYPE html><html><body><script>
+      var d = { type: 'zernio_oauth', success: false, error: 'Erreur d\\'enregistrement base de données' };
+      try { window.opener.postMessage(d, '*') } catch(e) {}
+      try { localStorage.setItem('_oauth_result', JSON.stringify(d)) } catch(e) {}
+      window.close()
+    </script></body></html>`
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
   }
 
   // Réponse popup : ferme la fenêtre et notifie le parent
-  const appOrigin = process.env.NEXT_PUBLIC_APP_URL || ''
   const payload = JSON.stringify({ type: 'zernio_oauth', success: true, platform })
     .replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
   const html = `<!DOCTYPE html><html><body><script>
     var d = ${payload};
-    try { window.opener.postMessage(d, ${JSON.stringify(appOrigin)}) } catch(e) {}
+    try { window.opener.postMessage(d, '*') } catch(e) {}
     try { localStorage.setItem('_oauth_result', JSON.stringify(d)) } catch(e) {}
     window.close()
-  <\/script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion en cours...</p></body></html>`
+  <\/script><p style="font-family:sans-serif;color:#aaa;text-align:center;margin-top:40px">Connexion réussie...</p></body></html>`
   return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
 }
 

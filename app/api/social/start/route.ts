@@ -39,7 +39,19 @@ export async function GET(req: NextRequest) {
 
   if (!process.env.ZERNIO_API_KEY) {
     console.error('[social/start] ZERNIO_API_KEY non configurée')
-    return NextResponse.redirect(new URL('/profile?error=ZERNIO_API_KEY+manquante+dans+Vercel', req.url))
+    const payload = JSON.stringify({ type: 'zernio_oauth', success: false, error: 'ZERNIO_API_KEY manquante dans les variables d\'environnement', platform })
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
+    const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:24px;text-align:center;color:#ef4444">
+      <h3>Configuration manquante</h3>
+      <p style="color:#666;font-size:14px">ZERNIO_API_KEY n'est pas configurée dans les variables d'environnement.</p>
+      <script>
+        var d = ${payload};
+        try { window.opener.postMessage(d, '*') } catch(e) {}
+        try { localStorage.setItem('_oauth_result', JSON.stringify(d)) } catch(e) {}
+        setTimeout(function() { window.close() }, 3000);
+      </script>
+    </body></html>`
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
   }
 
   try {
@@ -52,7 +64,7 @@ export async function GET(req: NextRequest) {
       await admin.from('organizations').update({ zernio_profile_id: profileId } as any).eq('id', orgId)
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL!
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '')
     const redirectUrl = `${appUrl}/api/social/callback?platform=${platform}&userId=${user.id}&orgId=${orgId}`
 
     console.log('[social/start] Récupération URL OAuth Zernio pour', platform)
@@ -63,7 +75,19 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erreur de connexion'
     console.error('[social/start] Erreur:', msg)
-    return NextResponse.redirect(new URL(`/profile?error=${encodeURIComponent(msg)}`, req.url))
+    const payload = JSON.stringify({ type: 'zernio_oauth', success: false, error: msg, platform })
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
+    const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:24px;text-align:center;color:#ef4444">
+      <h3>Erreur de connexion ${platform}</h3>
+      <p style="color:#666;font-size:14px">${msg}</p>
+      <script>
+        var d = ${payload};
+        try { window.opener.postMessage(d, '*') } catch(e) {}
+        try { localStorage.setItem('_oauth_result', JSON.stringify(d)) } catch(e) {}
+        setTimeout(function() { window.close() }, 4000);
+      </script>
+    </body></html>`
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
   }
 }
 

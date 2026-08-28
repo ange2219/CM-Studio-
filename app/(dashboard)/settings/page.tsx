@@ -283,13 +283,7 @@ function SettingsContent() {
   }
 
   function openPlatformOAuth(platform: Platform) {
-    if (platform === 'facebook') {
-      window.open('/api/auth/meta/start', 'meta_oauth', `width=600,height=700,left=${Math.round(window.screen.width/2-300)},top=${Math.round(window.screen.height/2-350)}`)
-    } else if (platform === 'instagram') {
-      window.open('/api/auth/instagram/start', 'instagram_oauth', `width=600,height=700,left=${Math.round(window.screen.width/2-300)},top=${Math.round(window.screen.height/2-350)}`)
-    } else {
-      openOAuthPopup(platform)
-    }
+    openOAuthPopup(platform)
   }
 
   function resetNewBrandForm() {
