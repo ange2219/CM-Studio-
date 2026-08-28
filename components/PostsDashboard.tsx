@@ -1153,9 +1153,34 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
         </div>
       )}
 
-      {/* ── HEADER WORKSPACE (4 CARTES D'ACTION) ── */}
+      {/* ── HEADER WORKSPACE ── */}
       {!allPosts && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '1.25rem' }} className="workspace-action-cards">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '1.25rem' }}>
+          
+          {/* Message en haut (sans cadre, sans fond dégradé, sans onde SVG) */}
+          <div>
+            <h1 style={{
+              fontSize: '1.45rem',
+              fontWeight: 800,
+              color: 'var(--t1)',
+              margin: '0 0 .25rem 0',
+              lineHeight: 1.2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '.5rem',
+              fontFamily: "'Bricolage Grotesque', sans-serif",
+              letterSpacing: '-0.01em'
+            }}>
+              <span style={{ color: '#38BDF8' }}>✨</span>
+              Bienvenue dans votre workspace 👋
+            </h1>
+            <p style={{ fontSize: '.82rem', color: 'var(--t2)', margin: 0 }}>
+              Votre centre de création, de planification et d&apos;analyse.
+            </p>
+          </div>
+
+          {/* ── 4 CARTES D'ACTION ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }} className="workspace-action-cards">
           
           {/* Carte 1 : Nouveau post — Bleu */}
           <div
@@ -1366,6 +1391,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           </div>
 
         </div>
+      </div>
       )}
 
       {/* ── SECTION VOS POSTS EXISTANTS ── */}
