@@ -6,6 +6,7 @@ import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, Rotate
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
+import { useTheme } from '@/components/context/ThemeContext'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
   switch (platform) {
@@ -137,6 +138,7 @@ function InsightsBadge({ a }: { a: PostAnalytics | null }) {
 export default function PostsDashboard({ allPosts = false }: { allPosts?: boolean }) {
   const router = useRouter()
   const { toast } = useToast()
+  const { darkMode } = useTheme()
 
   const [posts, setPosts] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
@@ -1121,57 +1123,59 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
 
       {/* ── HEADER WORKSPACE ── */}
       {!allPosts && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '-.5rem', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: darkMode ? '-.5rem' : '0', marginBottom: '1.25rem' }}>
         
-        {/* ── BANNIÈRE Bienvenue + Onde SVG ── */}
-        <div style={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: '14px',
-          padding: '1.1rem 1.4rem',
-          background: 'linear-gradient(135deg, #070C1B 0%, #0D1230 55%, #160C2C 100%)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
-        }}>
-          {/* Onde lumineuse SVG */}
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-            <svg width="100%" height="100%" viewBox="0 0 1000 120" preserveAspectRatio="none" fill="none" style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '55%' }}>
-              <defs>
-                <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.18" />
-                  <stop offset="60%" stopColor="#8B5CF6" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="#EC4899" stopOpacity="0.1" />
-                </linearGradient>
-                <linearGradient id="ws1" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#38BDF8" />
-                  <stop offset="50%" stopColor="#A855F7" />
-                  <stop offset="100%" stopColor="#EC4899" />
-                </linearGradient>
-                <linearGradient id="ws2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.7" />
-                  <stop offset="50%" stopColor="#C084FC" stopOpacity="0.7" />
-                  <stop offset="100%" stopColor="#F472B6" stopOpacity="0.7" />
-                </linearGradient>
-              </defs>
-              <path d="M 0,60 C 200,10 600,110 1000,30 L 1000,0 L 0,0 Z" fill="url(#wg1)" />
-              <path d="M 50,80 C 280,10 620,115 1050,40" stroke="url(#ws1)" strokeWidth="2.5" opacity="0.5" />
-              <path d="M 0,95 C 300,20 650,100 1100,50" stroke="url(#ws2)" strokeWidth="1.5" opacity="0.45" />
-            </svg>
-          </div>
+        {/* ── BANNIÈRE Bienvenue + Onde SVG (Mode Sombre uniquement) ── */}
+        {darkMode && (
+          <div style={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '14px',
+            padding: '1.1rem 1.4rem',
+            background: 'linear-gradient(135deg, #070C1B 0%, #0D1230 55%, #160C2C 100%)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
+          }}>
+            {/* Onde lumineuse SVG */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+              <svg width="100%" height="100%" viewBox="0 0 1000 120" preserveAspectRatio="none" fill="none" style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '55%' }}>
+                <defs>
+                  <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.18" />
+                    <stop offset="60%" stopColor="#8B5CF6" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="#EC4899" stopOpacity="0.1" />
+                  </linearGradient>
+                  <linearGradient id="ws1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#38BDF8" />
+                    <stop offset="50%" stopColor="#A855F7" />
+                    <stop offset="100%" stopColor="#EC4899" />
+                  </linearGradient>
+                  <linearGradient id="ws2" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.7" />
+                    <stop offset="50%" stopColor="#C084FC" stopOpacity="0.7" />
+                    <stop offset="100%" stopColor="#F472B6" stopOpacity="0.7" />
+                  </linearGradient>
+                </defs>
+                <path d="M 0,60 C 200,10 600,110 1000,30 L 1000,0 L 0,0 Z" fill="url(#wg1)" />
+                <path d="M 50,80 C 280,10 620,115 1050,40" stroke="url(#ws1)" strokeWidth="2.5" opacity="0.5" />
+                <path d="M 0,95 C 300,20 650,100 1100,50" stroke="url(#ws2)" strokeWidth="1.5" opacity="0.45" />
+              </svg>
+            </div>
 
-          {/* Contenu bannière */}
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-            <div>
-              <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', margin: '0 0 .2rem 0', lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '.5rem', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.01em' }}>
-                <span style={{ color: '#38BDF8' }}>✨</span>
-                Bienvenue dans votre workspace 👋
-              </h1>
-              <p style={{ fontSize: '.82rem', color: '#94A3B8', margin: 0 }}>
-                Votre centre de création, de planification et d&apos;analyse.
-              </p>
+            {/* Contenu bannière */}
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div>
+                <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', margin: '0 0 .2rem 0', lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '.5rem', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.01em' }}>
+                  <span style={{ color: '#38BDF8' }}>✨</span>
+                  Bienvenue dans votre workspace 👋
+                </h1>
+                <p style={{ fontSize: '.82rem', color: '#94A3B8', margin: 0 }}>
+                  Votre centre de création, de planification et d&apos;analyse.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* ── 4 CARTES D'ACTION ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }} className="workspace-action-cards">
@@ -1180,24 +1184,49 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           <div
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
-              background: 'linear-gradient(145deg, rgba(29,78,216,0.5) 0%, rgba(11,17,32,0.97) 100%)',
-              border: '1px solid rgba(59,130,246,0.4)',
-              boxShadow: '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)',
+              background: darkMode
+                ? 'linear-gradient(145deg, rgba(29,78,216,0.5) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(180deg, rgba(24,119,242,0.03) 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(24,119,242,0.18)',
+              boxShadow: darkMode
+                ? '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)'
+                : '0 2px 10px rgba(24,119,242,0.05)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(29,78,216,0.4), inset 0 1px 0 rgba(59,130,246,0.35)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 10px 28px -4px rgba(29,78,216,0.4), inset 0 1px 0 rgba(59,130,246,0.35)'
+                : '0 8px 20px -2px rgba(24,119,242,0.12)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 6px 20px -4px rgba(29,78,216,0.3), inset 0 1px 0 rgba(59,130,246,0.35)'
+                : '0 2px 10px rgba(24,119,242,0.05)'
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#1D4ED8', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(29,78,216,0.65)' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(24,119,242,0.4)' }}>
                 <PenLine size={17} color="#fff" />
               </div>
-              <button onClick={() => setCreateModalOpen(true)} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+              <button
+                onClick={() => setCreateModalOpen(true)}
+                style={{
+                  width: '22px', height: '22px', borderRadius: '50%',
+                  border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
+                  background: darkMode ? 'none' : '#F8FAFC',
+                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#1877F2'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#1877F2' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+              >
                 <Plus size={12} />
               </button>
             </div>
-            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Nouveau post</h3>
-            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Créez du contenu engageant en un clin d&apos;œil.</p>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: darkMode ? '#fff' : '#0F172A', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Nouveau post</h3>
+            <p style={{ fontSize: '.7rem', color: darkMode ? '#94A3B8' : '#64748B', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Créez du contenu engageant en un clin d&apos;œil.</p>
             <button onClick={() => setCreateModalOpen(true)} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#1877F2', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#166FE5'} onMouseLeave={e => e.currentTarget.style.background = '#1877F2'}>
               Créer <ArrowRight size={12} />
             </button>
@@ -1207,24 +1236,49 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           <div
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
-              background: 'linear-gradient(145deg, rgba(13,148,136,0.5) 0%, rgba(11,17,32,0.97) 100%)',
-              border: '1px solid rgba(20,184,166,0.4)',
-              boxShadow: '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)',
+              background: darkMode
+                ? 'linear-gradient(145deg, rgba(13,148,136,0.5) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(180deg, rgba(13,148,136,0.03) 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(20,184,166,0.4)' : '1px solid rgba(13,148,136,0.2)',
+              boxShadow: darkMode
+                ? '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)'
+                : '0 2px 10px rgba(13,148,136,0.05)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(13,148,136,0.4), inset 0 1px 0 rgba(20,184,166,0.35)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 10px 28px -4px rgba(13,148,136,0.4), inset 0 1px 0 rgba(20,184,166,0.35)'
+                : '0 8px 20px -2px rgba(13,148,136,0.12)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 6px 20px -4px rgba(13,148,136,0.3), inset 0 1px 0 rgba(20,184,166,0.35)'
+                : '0 2px 10px rgba(13,148,136,0.05)'
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(13,148,136,0.65)' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(13,148,136,0.4)' }}>
                 <Calendar size={17} color="#fff" />
               </div>
-              <button onClick={() => router.push('/workspace/calendrier')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+              <button
+                onClick={() => router.push('/workspace/calendrier')}
+                style={{
+                  width: '22px', height: '22px', borderRadius: '50%',
+                  border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
+                  background: darkMode ? 'none' : '#F8FAFC',
+                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#0D9488'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#0D9488' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+              >
                 <Plus size={12} />
               </button>
             </div>
-            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Calendrier</h3>
-            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Planifiez et programmez vos publications.</p>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: darkMode ? '#fff' : '#0F172A', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Calendrier</h3>
+            <p style={{ fontSize: '.7rem', color: darkMode ? '#94A3B8' : '#64748B', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Planifiez et programmez vos publications.</p>
             <button onClick={() => router.push('/workspace/calendrier')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#0D9488', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#0F766E'} onMouseLeave={e => e.currentTarget.style.background = '#0D9488'}>
               Ouvrir <ArrowRight size={12} />
             </button>
@@ -1234,25 +1288,50 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           <div
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
-              background: 'linear-gradient(145deg, rgba(194,65,12,0.55) 0%, rgba(11,17,32,0.97) 100%)',
-              border: '1px solid rgba(249,115,22,0.4)',
-              boxShadow: '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)',
+              background: darkMode
+                ? 'linear-gradient(145deg, rgba(194,65,12,0.55) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(180deg, rgba(234,88,12,0.03) 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(249,115,22,0.4)' : '1px solid rgba(234,88,12,0.2)',
+              boxShadow: darkMode
+                ? '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)'
+                : '0 2px 10px rgba(234,88,12,0.05)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(194,65,12,0.4), inset 0 1px 0 rgba(249,115,22,0.35)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 10px 28px -4px rgba(194,65,12,0.4), inset 0 1px 0 rgba(249,115,22,0.35)'
+                : '0 8px 20px -2px rgba(234,88,12,0.12)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 6px 20px -4px rgba(194,65,12,0.3), inset 0 1px 0 rgba(249,115,22,0.35)'
+                : '0 2px 10px rgba(234,88,12,0.05)'
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#C2410C', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(194,65,12,0.65)' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#EA580C', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(234,88,12,0.4)' }}>
                 <BarChart3 size={17} color="#fff" />
               </div>
-              <button onClick={() => router.push('/workspace/analytics')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+              <button
+                onClick={() => router.push('/workspace/analytics')}
+                style={{
+                  width: '22px', height: '22px', borderRadius: '50%',
+                  border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
+                  background: darkMode ? 'none' : '#F8FAFC',
+                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#EA580C'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#EA580C' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+              >
                 <Plus size={12} />
               </button>
             </div>
-            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Analytique</h3>
-            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Suivez vos performances et votre croissance.</p>
-            <button onClick={() => router.push('/workspace/analytics')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#C2410C', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#9A3412'} onMouseLeave={e => e.currentTarget.style.background = '#C2410C'}>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: darkMode ? '#fff' : '#0F172A', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Analytique</h3>
+            <p style={{ fontSize: '.7rem', color: darkMode ? '#94A3B8' : '#64748B', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Suivez vos performances et votre croissance.</p>
+            <button onClick={() => router.push('/workspace/analytics')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#EA580C', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#C2410C'} onMouseLeave={e => e.currentTarget.style.background = '#EA580C'}>
               Voir <ArrowRight size={12} />
             </button>
           </div>
@@ -1261,25 +1340,50 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
           <div
             style={{
               borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column',
-              background: 'linear-gradient(145deg, rgba(107,33,168,0.55) 0%, rgba(11,17,32,0.97) 100%)',
-              border: '1px solid rgba(168,85,247,0.4)',
-              boxShadow: '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)',
+              background: darkMode
+                ? 'linear-gradient(145deg, rgba(107,33,168,0.55) 0%, rgba(11,17,32,0.97) 100%)'
+                : 'linear-gradient(180deg, rgba(139,92,246,0.03) 0%, #FFFFFF 100%)',
+              border: darkMode ? '1px solid rgba(168,85,247,0.4)' : '1px solid rgba(139,92,246,0.2)',
+              boxShadow: darkMode
+                ? '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)'
+                : '0 2px 10px rgba(139,92,246,0.05)',
               transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px -4px rgba(107,33,168,0.4), inset 0 1px 0 rgba(168,85,247,0.35)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 10px 28px -4px rgba(107,33,168,0.4), inset 0 1px 0 rgba(168,85,247,0.35)'
+                : '0 8px 20px -2px rgba(139,92,246,0.12)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = darkMode
+                ? '0 6px 20px -4px rgba(107,33,168,0.3), inset 0 1px 0 rgba(168,85,247,0.35)'
+                : '0 2px 10px rgba(139,92,246,0.05)'
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#7E22CE', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(107,33,168,0.65)' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(139,92,246,0.4)' }}>
                 <ImageIcon size={17} color="#fff" />
               </div>
-              <button onClick={() => router.push('/workspace/media')} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', background: 'none', color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}>
+              <button
+                onClick={() => router.push('/workspace/media')}
+                style={{
+                  width: '22px', height: '22px', borderRadius: '50%',
+                  border: darkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #E2E8F0',
+                  background: darkMode ? 'none' : '#F8FAFC',
+                  color: darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = darkMode ? '#fff' : '#8B5CF6'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.5)' : '#8B5CF6' }}
+                onMouseLeave={e => { e.currentTarget.style.color = darkMode ? 'rgba(255,255,255,0.55)' : '#94A3B8'; e.currentTarget.style.borderColor = darkMode ? 'rgba(255,255,255,0.2)' : '#E2E8F0' }}
+              >
                 <Plus size={12} />
               </button>
             </div>
-            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: '#fff', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Média</h3>
-            <p style={{ fontSize: '.7rem', color: '#94A3B8', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Gérez vos images, vidéos et ressources.</p>
-            <button onClick={() => router.push('/workspace/media')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#7E22CE', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#6B21A8'} onMouseLeave={e => e.currentTarget.style.background = '#7E22CE'}>
+            <h3 style={{ fontSize: '.92rem', fontWeight: 700, color: darkMode ? '#fff' : '#0F172A', margin: '0 0 .25rem 0', fontFamily: "'Bricolage Grotesque', sans-serif" }}>Média</h3>
+            <p style={{ fontSize: '.7rem', color: darkMode ? '#94A3B8' : '#64748B', lineHeight: 1.4, flex: 1, margin: '0 0 .85rem 0' }}>Gérez vos images, vidéos et ressources.</p>
+            <button onClick={() => router.push('/workspace/media')} style={{ width: '100%', padding: '.5rem', borderRadius: '8px', border: 'none', background: '#8B5CF6', color: '#fff', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.4rem', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#7C3AED'} onMouseLeave={e => e.currentTarget.style.background = '#8B5CF6'}>
               Gérer <ArrowRight size={12} />
             </button>
           </div>
