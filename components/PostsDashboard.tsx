@@ -6,7 +6,6 @@ import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, Rotate
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
-import { useOrg } from '@/components/context/OrgContext'
 
 function PlatformIcon({ platform, size = 18 }: { platform: string; size?: number }) {
   switch (platform) {
@@ -138,21 +137,6 @@ function InsightsBadge({ a }: { a: PostAnalytics | null }) {
 export default function PostsDashboard({ allPosts = false }: { allPosts?: boolean }) {
   const router = useRouter()
   const { toast } = useToast()
-  
-  const { activeOrganization, organizations, switchOrganization } = useOrg()
-  const [brandSelectorOpen, setBrandSelectorOpen] = useState(false)
-  const brandSelectorRef = useRef<HTMLDivElement>(null)
-
-  // Handle click outside to close brand selector
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (brandSelectorRef.current && !brandSelectorRef.current.contains(event.target as Node)) {
-        setBrandSelectorOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   const [posts, setPosts] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
@@ -1180,61 +1164,11 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             <div>
               <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#fff', margin: '0 0 .2rem 0', lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '.5rem', fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.01em' }}>
                 <span style={{ color: '#38BDF8' }}>✨</span>
-                {activeOrganization?.name?.split(' ')[0] || 'Ange'} — votre Workspace 👋
+                Bienvenue dans votre workspace 👋
               </h1>
               <p style={{ fontSize: '.82rem', color: '#94A3B8', margin: 0 }}>
                 Votre centre de création, de planification et d&apos;analyse.
               </p>
-            </div>
-
-            {/* Brand Selector */}
-            <div ref={brandSelectorRef} style={{ position: 'relative', flexShrink: 0 }}>
-              <button
-                onClick={() => setBrandSelectorOpen(prev => !prev)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '0.45rem',
-                  padding: '0.45rem 0.9rem',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  background: 'rgba(13,21,39,0.85)',
-                  color: '#fff', fontSize: '12px', fontWeight: 600,
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(56,189,248,0.5)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
-              >
-                <Users size={13} style={{ color: '#38BDF8' }} />
-                <span style={{ maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeOrganization?.name || 'OKLM'}</span>
-                <ChevronDown size={13} style={{ color: '#94A3B8', transition: 'transform .2s', transform: brandSelectorOpen ? 'rotate(180deg)' : 'none' }} />
-              </button>
-
-              {brandSelectorOpen && organizations && organizations.length > 0 && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 200,
-                  background: '#0D1527', border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '12px', padding: '0.4rem', minWidth: '180px',
-                  boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
-                }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', marginBottom: '4px', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Mes Marques</div>
-                  {organizations.map((org: any) => (
-                    <button key={org.id}
-                      onClick={() => { switchOrganization(org.id); setBrandSelectorOpen(false) }}
-                      style={{
-                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '8px 10px', borderRadius: '8px', border: 'none',
-                        background: activeOrganization?.id === org.id ? 'rgba(24,119,242,0.18)' : 'transparent',
-                        color: activeOrganization?.id === org.id ? '#38BDF8' : '#E2E8F0',
-                        cursor: 'pointer', fontSize: '12px', fontWeight: 600, textAlign: 'left', transition: 'all 0.15s',
-                      }}
-                      onMouseEnter={e => { if (activeOrganization?.id !== org.id) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
-                      onMouseLeave={e => { if (activeOrganization?.id !== org.id) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{org.name}</span>
-                      {activeOrganization?.id === org.id && <Check size={13} style={{ color: '#38BDF8', flexShrink: 0 }} />}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
