@@ -292,26 +292,6 @@ RÈGLE D'OR : Les posts DOIVENT être conçus au millimètre et sur-mesure à pa
     ? `PROFIL DE MARQUE (respecte-le strictement) :\n${brandContext}`
     : `ATTENTION : Aucun profil de marque défini. Génère un contenu professionnel générique sur la productivité ou la croissance des entreprises.`
 
-  // En mode unifié pour plusieurs plateformes, générer UN SEUL post harmonisé
-  if (req.distributionMode === 'unified' && req.platforms.length > 1 && !targetPlatform) {
-    return `Tu es un expert Community Manager d'élite. Génère UN SEUL post unifié, parfaitement dosé pour être diffusé simultanément sur l'ensemble de ces plateformes : ${platforms.map(p => p.toUpperCase()).join(', ')}.
-
-${brandSection}
-
-${briefLine}
-${contextLines}
-
-RÈGLE ABSOLUE : Tout contenu généré DOIT être directement lié à l'activité et au secteur de la marque.
-Format universel : longueur équilibrée (environ 600-1200 caractères), accroche forte, structure aérée avec sauts de ligne, et 3 à 5 hashtags professionnels.
-
-Réponds UNIQUEMENT en JSON valide avec ce format exact :
-{
-  "post": "texte unique du post unifié"
-}
-
-Aucun texte avant ou après le JSON.`
-  }
-
   return `Tu es un expert Community Manager. Génère des posts pour les réseaux sociaux suivants.
 
 ${brandSection}

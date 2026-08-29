@@ -1088,17 +1088,7 @@ export function GeneratedPostsView({
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              {isUnifiedPost ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || brandProfile?.logo_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
-                  <div>
-                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>{socialAccounts?.[0]?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>{brandProfile?.industry || brandProfile?.description || 'À l\'instant • 🌐'}</div>
-                  </div>
-                </div>
-              ) : (
-                renderPlatformHeader(curPlatform)
-              )}
+              {renderPlatformHeader(curPlatform)}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
@@ -1421,16 +1411,8 @@ export function GeneratedPostsView({
                     flexShrink: 0,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <UserAvatar avatarUrl={socialAccounts?.[0]?.platform_avatar_url || brandProfile?.logo_url || userAvatar || null} size={40} fallbackColor="#475569" iconSize={20} />
-                    <div>
-                      <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#FFFFFF' }}>
-                        {socialAccounts?.[0]?.platform_username || brandProfile?.brand_name || userName || 'Ma Marque'}
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '1px' }}>
-                        {brandProfile?.industry || brandProfile?.description || 'À l\'instant • 🌐'}
-                      </div>
-                    </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {renderPlatformHeader(mainPlatform)}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
@@ -1529,23 +1511,7 @@ export function GeneratedPostsView({
                     gap: '10px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', fontSize: '0.78rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                        <ThumbsUp size={14} />
-                        <span>J&apos;aime</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                        <MessageCircle size={14} />
-                        <span>Commenter</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                        <Share2 size={14} />
-                        <span>Partager</span>
-                      </div>
-                    </div>
-                    <Bookmark size={15} style={{ cursor: 'pointer' }} />
-                  </div>
+                  {renderPlatformSocialActions(mainPlatform)}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
