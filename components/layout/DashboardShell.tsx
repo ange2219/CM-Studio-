@@ -44,7 +44,7 @@ function DashboardShellContent({
       />
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 w-full flex justify-between gap-0 md:gap-6 p-0 md:p-6 max-w-[1536px] mx-auto overflow-hidden">
+      <div className="flex-1 w-full flex justify-between gap-0 md:gap-4 px-3 md:px-5 max-w-[1536px] mx-auto overflow-hidden">
         {/* Left Sidebar Column */}
         <SidebarLeft 
           darkMode={darkMode} 
@@ -52,7 +52,7 @@ function DashboardShellContent({
         />
 
         {/* Center / Main View */}
-        <main className="flex-1 min-w-0 h-full overflow-y-auto no-scrollbar pb-24 md:pb-0">
+        <main className="flex-1 min-w-0 h-full overflow-y-auto no-scrollbar py-2 pb-24 md:pb-4">
           {children}
         </main>
       </div>

@@ -697,7 +697,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   }
 
   return (
-    <div style={{ padding: '1.5rem 2rem 3rem' }}>
+    <div style={{ padding: '0.5rem 0.5rem 2rem' }}>
 
       {/* ── Modal visualisation / édition ── */}
       {selectedPost && (

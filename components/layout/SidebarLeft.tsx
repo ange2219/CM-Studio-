@@ -86,7 +86,7 @@ export function SidebarLeft({
   ];
 
   return (
-    <aside className="w-[200px] xl:w-[220px] shrink-0 hidden md:flex flex-col h-full justify-between overflow-y-auto no-scrollbar pb-4 select-none">
+    <aside className="w-[200px] xl:w-[220px] shrink-0 hidden md:flex flex-col h-full justify-between overflow-y-auto no-scrollbar py-2 pb-4 select-none">
       {/* Top Section: Navigation Menu */}
       <div className="flex flex-col gap-2">
         <nav className="flex flex-col gap-1">
