@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   X,
   Target,
@@ -22,7 +23,14 @@ import {
   FileText,
   Eye,
   RefreshCw,
-  LayoutTemplate
+  LayoutTemplate,
+  LayoutGrid,
+  List,
+  Filter,
+  Heart,
+  MessageCircle,
+  Repeat2,
+  MoreHorizontal
 } from 'lucide-react'
 import { useTheme } from '@/components/context/ThemeContext'
 import { useOrg } from '@/components/context/OrgContext'
@@ -98,6 +106,15 @@ export function StrategyDetailModal({
     facebook: true,
   })
 
+  const router = useRouter()
+
+  // Existing posts state for bottom section
+  const [existingPosts, setExistingPosts] = useState<any[]>([])
+  const [postsLoading, setPostsLoading] = useState(false)
+  const [postStatusFilter, setPostStatusFilter] = useState<'all' | 'published' | 'draft' | 'scheduled' | 'archived'>('all')
+  const [postViewMode, setPostViewMode] = useState<'grid' | 'list'>('grid')
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([])
+
   // Sync initialTab when modal opens or tab prop changes
   useEffect(() => {
     if (initialTab && isOpen) {
@@ -105,7 +122,7 @@ export function StrategyDetailModal({
     }
   }, [initialTab, isOpen])
 
-  // Fetch real brand and social accounts when modal opens
+  // Fetch real brand and social accounts and existing posts when modal opens
   useEffect(() => {
     if (isOpen) {
       fetch('/api/brand')
@@ -127,6 +144,15 @@ export function StrategyDetailModal({
           if (Array.isArray(data)) setSocialAccounts(data)
         })
         .catch(() => {})
+
+      setPostsLoading(true)
+      fetch('/api/posts?limit=50')
+        .then(r => r.json())
+        .then(data => {
+          if (Array.isArray(data?.posts)) setExistingPosts(data.posts)
+        })
+        .catch(() => {})
+        .finally(() => setPostsLoading(false))
     }
   }, [isOpen, activeOrganization])
 
@@ -220,6 +246,48 @@ export function StrategyDetailModal({
   }, [strategy, selectedPeriod, isOpen])
 
   if (!isOpen) return null
+
+  const DEFAULT_POST_IMAGES = [
+    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80',
+  ]
+
+  function getPostImage(post: any, idx: number) {
+    if (post.media_urls && post.media_urls.length > 0 && post.media_urls[0]) {
+      return post.media_urls[0]
+    }
+    return DEFAULT_POST_IMAGES[idx % DEFAULT_POST_IMAGES.length]
+  }
+
+  function formatPostDate(p: any) {
+    const rawDate = p.scheduled_at || p.published_at || p.created_at
+    if (!rawDate) return ''
+    try {
+      const d = new Date(rawDate)
+      const formatted = d.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+      const hours = d.getHours().toString().padStart(2, '0')
+      const mins = d.getMinutes().toString().padStart(2, '0')
+      if (p.status === 'draft') {
+        return `Modifié le ${formatted}`
+      }
+      return `${formatted} à ${hours}:${mins}`
+    } catch {
+      return ''
+    }
+  }
+
+  function toggleSelectPost(id: string) {
+    setSelectedPostIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
 
   // Handle Pillar management
   const handleAddPillar = () => {
@@ -966,6 +1034,372 @@ export function StrategyDetailModal({
                     />
                   </div>
                 )}
+              </div>
+
+              {/* ── SECTION EN BAS DES 4 CARTES : VOS POSTS EXISTANTS ── */}
+              <div className={`mt-6 pt-6 border-t ${darkMode ? 'border-slate-800' : 'border-slate-200'} flex flex-col gap-4`}>
+                {/* Header bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Title + Count */}
+                  <div className="flex items-center gap-2.5">
+                    <h3 className={`text-[15px] font-extrabold m-0 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                      Vos posts existants
+                    </h3>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      darkMode ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}>
+                      {existingPosts.filter(p => p.status !== 'deleted').length}
+                    </span>
+                  </div>
+
+                  {/* Filter Pills + Right Controls */}
+                  <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 flex-1">
+                    {/* Status Filters */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+                      {[
+                        { id: 'all', label: 'Tous' },
+                        { id: 'published', label: 'Publiés' },
+                        { id: 'draft', label: 'Brouillons' },
+                        { id: 'scheduled', label: 'Programmés' },
+                        { id: 'archived', label: 'Archivés' },
+                      ].map(tab => {
+                        const isSel = postStatusFilter === tab.id
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setPostStatusFilter(tab.id as any)}
+                            className={`px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer border ${
+                              isSel
+                                ? 'bg-[#1677FF] text-white border-[#1677FF] shadow-xs'
+                                : darkMode
+                                ? 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/60'
+                                : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Right Controls: Grid/List switch & Filters */}
+                    <div className="flex items-center gap-1.5">
+                      <div className={`flex items-center p-0.5 rounded-xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+                        <button
+                          type="button"
+                          onClick={() => setPostViewMode('grid')}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
+                            postViewMode === 'grid'
+                              ? 'bg-[#1677FF] text-white shadow-xs'
+                              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+                          }`}
+                          title="Vue Grille"
+                        >
+                          <LayoutGrid size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPostViewMode('list')}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
+                            postViewMode === 'list'
+                              ? 'bg-[#1677FF] text-white shadow-xs'
+                              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+                          }`}
+                          title="Vue Liste"
+                        >
+                          <List size={14} />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        className={`px-2.5 py-1.5 rounded-xl text-[12px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                          darkMode
+                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
+                            : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 shadow-xs'
+                        }`}
+                      >
+                        <Filter size={13} />
+                        <span>Filtres</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Posts Content */}
+                {postsLoading ? (
+                  <div className="py-12 flex items-center justify-center text-slate-400 text-[13px] gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#1677FF]" />
+                    <span>Chargement de vos posts existants...</span>
+                  </div>
+                ) : existingPosts.filter(p => {
+                    if (postStatusFilter === 'all') return p.status !== 'deleted'
+                    if (postStatusFilter === 'published') return p.status === 'published' || p.status === 'partial'
+                    if (postStatusFilter === 'draft') return p.status === 'draft' || p.status === 'failed'
+                    if (postStatusFilter === 'scheduled') return p.status === 'scheduled'
+                    if (postStatusFilter === 'archived') return p.status === 'archived' || p.status === 'deleted'
+                    return true
+                  }).length === 0 ? (
+                  <div className={`p-8 rounded-xl border text-center flex flex-col items-center justify-center gap-2.5 ${
+                    darkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    <LayoutTemplate className="w-8 h-8 text-slate-500" />
+                    <div className="text-[13px] font-bold text-slate-300">Aucun post existant dans cette catégorie</div>
+                    <p className="text-[11.5px] text-slate-500 max-w-sm m-0">
+                      Les posts créés, programmés ou publiés apparaîtront ici avec leurs statistiques en direct.
+                    </p>
+                  </div>
+                ) : postViewMode === 'grid' ? (
+                  /* Grille des posts */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+                    {existingPosts
+                      .filter(p => {
+                        if (postStatusFilter === 'all') return p.status !== 'deleted'
+                        if (postStatusFilter === 'published') return p.status === 'published' || p.status === 'partial'
+                        if (postStatusFilter === 'draft') return p.status === 'draft' || p.status === 'failed'
+                        if (postStatusFilter === 'scheduled') return p.status === 'scheduled'
+                        if (postStatusFilter === 'archived') return p.status === 'archived' || p.status === 'deleted'
+                        return true
+                      })
+                      .slice(0, 10)
+                      .map((post, idx) => {
+                        const isSelected = selectedPostIds.includes(post.id)
+                        const primaryPlat = (post.platforms?.[0] || 'linkedin') as Platform
+
+                        return (
+                          <div
+                            key={post.id || idx}
+                            className={`rounded-xl border overflow-hidden flex flex-col transition-all group hover:border-slate-600 ${
+                              darkMode ? 'bg-[#0E1524] border-slate-800/80 shadow-xs' : 'bg-white border-slate-200/90 shadow-xs'
+                            }`}
+                          >
+                            {/* Media Preview on top */}
+                            <div className="relative w-full h-[145px] bg-slate-800/80 overflow-hidden flex items-center justify-center">
+                              <img
+                                src={getPostImage(post, idx)}
+                                alt=""
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+
+                              {/* Checkbox top-left */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggleSelectPost(post.id)
+                                }}
+                                className={`absolute top-2.5 left-2.5 w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs ${
+                                  isSelected
+                                    ? 'bg-[#1677FF] border-[#1677FF] text-white shadow-xs'
+                                    : 'bg-black/40 border-white/30 text-transparent hover:border-white/60 hover:bg-black/60'
+                                }`}
+                              >
+                                <Check size={12} strokeWidth={3} className={isSelected ? 'block text-white' : 'hidden'} />
+                              </button>
+
+                              {/* Platform Badge top-right */}
+                              <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+                                {primaryPlat === 'linkedin' && (
+                                  <div className="w-6 h-6 rounded-md bg-[#0A66C2] flex items-center justify-center text-white shadow-md">
+                                    <PlatformIcon platform="linkedin" size={14} />
+                                  </div>
+                                )}
+                                {primaryPlat === 'instagram' && (
+                                  <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white shadow-md">
+                                    <PlatformIcon platform="instagram" size={14} />
+                                  </div>
+                                )}
+                                {primaryPlat === 'facebook' && (
+                                  <div className="w-6 h-6 rounded-md bg-[#1877F2] flex items-center justify-center text-white shadow-md">
+                                    <PlatformIcon platform="facebook" size={14} />
+                                  </div>
+                                )}
+                                {primaryPlat === 'twitter' && (
+                                  <div className="w-6 h-6 rounded-md bg-black flex items-center justify-center text-white shadow-md border border-white/10">
+                                    <PlatformIcon platform="twitter" size={14} />
+                                  </div>
+                                )}
+                                {primaryPlat === 'tiktok' && (
+                                  <div className="w-6 h-6 rounded-md bg-black flex items-center justify-center text-white shadow-md border border-white/10">
+                                    <PlatformIcon platform="tiktok" size={14} />
+                                  </div>
+                                )}
+                                {!['linkedin', 'instagram', 'facebook', 'twitter', 'tiktok'].includes(primaryPlat) && (
+                                  <div className="w-6 h-6 rounded-md bg-[#1677FF] flex items-center justify-center text-white shadow-md">
+                                    <PlatformIcon platform={primaryPlat} size={14} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Card Content */}
+                            <div className="p-3 flex flex-col gap-2 flex-1 justify-between">
+                              <div className="flex flex-col gap-1.5">
+                                <p className={`text-[12.5px] font-semibold line-clamp-2 leading-snug m-0 ${
+                                  darkMode ? 'text-slate-100' : 'text-slate-800'
+                                }`}>
+                                  {post.content || 'Publication sans texte'}
+                                </p>
+
+                                {/* Status pill */}
+                                <div className="pt-0.5">
+                                  {(post.status === 'published' || post.status === 'partial') && (
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 inline-block">
+                                      Publié
+                                    </span>
+                                  )}
+                                  {(post.status === 'draft' || post.status === 'failed') && (
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/25 inline-block">
+                                      Brouillon
+                                    </span>
+                                  )}
+                                  {post.status === 'scheduled' && (
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/25 inline-block">
+                                      Programmé
+                                    </span>
+                                  )}
+                                  {(post.status === 'archived' || post.status === 'deleted') && (
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-500/15 text-slate-400 border border-slate-500/25 inline-block">
+                                      Archivé
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Date */}
+                                <span className="text-[11px] text-slate-400 font-medium">
+                                  {formatPostDate(post)}
+                                </span>
+                              </div>
+
+                              {/* Footer metrics / actions */}
+                              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-slate-400 text-[11px]">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-1 hover:text-slate-200">
+                                    <Heart size={11} />
+                                    <span>{post.analytics?.likes ? post.analytics.likes : '-'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 hover:text-slate-200">
+                                    <MessageCircle size={11} />
+                                    <span>{post.analytics?.comments ? post.analytics.comments : '-'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 hover:text-slate-200">
+                                    <Repeat2 size={11} />
+                                    <span>{post.analytics?.shares ? post.analytics.shares : '-'}</span>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="text-slate-400 hover:text-white p-0.5 rounded transition-colors cursor-pointer border-none bg-transparent"
+                                >
+                                  <MoreHorizontal size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                ) : (
+                  /* Vue Liste des posts */
+                  <div className="flex flex-col gap-2">
+                    {existingPosts
+                      .filter(p => {
+                        if (postStatusFilter === 'all') return p.status !== 'deleted'
+                        if (postStatusFilter === 'published') return p.status === 'published' || p.status === 'partial'
+                        if (postStatusFilter === 'draft') return p.status === 'draft' || p.status === 'failed'
+                        if (postStatusFilter === 'scheduled') return p.status === 'scheduled'
+                        if (postStatusFilter === 'archived') return p.status === 'archived' || p.status === 'deleted'
+                        return true
+                      })
+                      .slice(0, 10)
+                      .map((post, idx) => {
+                        const primaryPlat = (post.platforms?.[0] || 'linkedin') as Platform
+
+                        return (
+                          <div
+                            key={post.id || idx}
+                            className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
+                              darkMode ? 'bg-[#0E1524] border-slate-800/80' : 'bg-white border-slate-200 shadow-xs'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="relative w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-800">
+                                <img
+                                  src={getPostImage(post, idx)}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded bg-black/60 flex items-center justify-center">
+                                  <PlatformIcon platform={primaryPlat} size={10} />
+                                </div>
+                              </div>
+                              <div className="min-w-0 flex flex-col gap-0.5">
+                                <p className={`text-[12.5px] font-semibold truncate m-0 ${
+                                  darkMode ? 'text-slate-200' : 'text-slate-800'
+                                }`}>
+                                  {post.content || 'Sans contenu'}
+                                </p>
+                                <span className="text-[11px] text-slate-400">{formatPostDate(post)}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 flex-shrink-0">
+                              {(post.status === 'published' || post.status === 'partial') && (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                                  Publié
+                                </span>
+                              )}
+                              {(post.status === 'draft' || post.status === 'failed') && (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                                  Brouillon
+                                </span>
+                              )}
+                              {post.status === 'scheduled' && (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/25">
+                                  Programmé
+                                </span>
+                              )}
+                              {(post.status === 'archived' || post.status === 'deleted') && (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-500/15 text-slate-400 border border-slate-500/25">
+                                  Archivé
+                                </span>
+                              )}
+
+                              <div className="flex items-center gap-3 text-slate-400 text-[11px]">
+                                <span className="flex items-center gap-1"><Heart size={11} /> {post.analytics?.likes ?? '-'}</span>
+                                <span className="flex items-center gap-1"><MessageCircle size={11} /> {post.analytics?.comments ?? '-'}</span>
+                                <span className="flex items-center gap-1"><Repeat2 size={11} /> {post.analytics?.shares ?? '-'}</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="text-slate-400 hover:text-white p-1 rounded transition-colors cursor-pointer border-none bg-transparent"
+                              >
+                                <MoreHorizontal size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                )}
+
+                {/* Bottom Action Button: Voir tous les posts */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose()
+                    router.push('/workspace')
+                  }}
+                  className={`w-full py-2.5 rounded-xl text-[12.5px] font-bold text-center border transition-all cursor-pointer ${
+                    darkMode
+                      ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/60 hover:border-slate-700'
+                      : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 shadow-xs'
+                  }`}
+                >
+                  Voir tous les posts
+                </button>
               </div>
             </div>
           )}
