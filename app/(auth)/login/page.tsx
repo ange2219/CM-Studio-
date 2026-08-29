@@ -138,11 +138,11 @@ export default function LoginPage() {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          background-image: url('/images/login-background.jpg');
+          background-image: url('/images/login-background.jpg?v=3');
           background-size: cover;
           background-position: center left;
           background-repeat: no-repeat;
-          background-color: #0B1120;
+          background-color: #0F172A;
           box-sizing: border-box;
           padding: 30px 10%;
         }
