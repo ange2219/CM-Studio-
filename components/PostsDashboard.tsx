@@ -1625,14 +1625,20 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               )}
             </div>
           ) : view === 'grid' ? (
-            /* Grille de cartes moderne identique au modèle */
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: allPosts
-                ? 'repeat(auto-fill, minmax(210px, 1fr))'
-                : 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '12px',
-            }}>
+            /* Grille de cartes avec les dimensions d'origine (170px, carré) */
+            <div
+              className={allPosts ? '' : 'sb-scroll'}
+              style={allPosts ? {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
+                gap: '12px',
+              } : {
+                display: 'flex',
+                gap: '.6rem',
+                overflowX: 'auto',
+                paddingBottom: '.75rem',
+              }}
+            >
               {displayPosts.map((post, idx) => {
                 const isSelected = selectedIds.has(post.id)
                 const primaryPlat = post.platforms[0] || 'linkedin'
@@ -1651,6 +1657,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                       transition: 'all 0.18s ease',
                       cursor: 'pointer',
                       boxShadow: isSelected ? '0 0 0 1px #1677FF' : '0 1px 3px rgba(0,0,0,0.05)',
+                      ...(allPosts ? {} : { width: '170px', flexShrink: 0 }),
                     }}
                     onMouseEnter={e => {
                       if (!isSelected) e.currentTarget.style.borderColor = '#1677FF'
@@ -1661,8 +1668,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                       e.currentTarget.style.transform = 'none'
                     }}
                   >
-                    {/* Media Preview on top */}
-                    <div style={{ position: 'relative', width: '100%', height: '145px', background: 'var(--s2)', overflow: 'hidden' }}>
+                    {/* Media Preview on top - Aspect Ratio 1:1 Carré d'origine */}
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '1', background: 'var(--s2)', overflow: 'hidden' }}>
                       <img
                         src={getPostImage(post, idx)}
                         alt=""
@@ -1676,8 +1683,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                           toggleSelect(post.id)
                         }}
                         style={{
-                          position: 'absolute', top: '8px', left: '8px', zIndex: 10, cursor: 'pointer',
-                          width: '22px', height: '22px', borderRadius: '5px',
+                          position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer',
+                          width: '20px', height: '20px', borderRadius: '5px',
                           border: isSelected ? '1px solid #1677FF' : '1px solid rgba(255,255,255,0.4)',
                           background: isSelected ? '#1677FF' : 'rgba(0,0,0,0.4)',
                           backdropFilter: 'blur(4px)',
@@ -1685,50 +1692,50 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                           transition: 'all 0.15s',
                         }}
                       >
-                        {isSelected && <Check size={13} color="#fff" strokeWidth={3} />}
+                        {isSelected && <Check size={12} color="#fff" strokeWidth={3} />}
                       </div>
 
                       {/* Platform Badge top-right */}
-                      <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 10, display: 'flex', gap: '4px' }}>
+                      <div style={{ position: 'absolute', top: '6px', right: '6px', zIndex: 10, display: 'flex', gap: '3px' }}>
                         {primaryPlat === 'linkedin' && (
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#0A66C2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                            <PlatformIcon platform="linkedin" size={14} />
+                          <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: '#0A66C2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="linkedin" size={13} />
                           </div>
                         )}
                         {primaryPlat === 'instagram' && (
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                            <PlatformIcon platform="instagram" size={14} />
+                          <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="instagram" size={13} />
                           </div>
                         )}
                         {primaryPlat === 'facebook' && (
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                            <PlatformIcon platform="facebook" size={14} />
+                          <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="facebook" size={13} />
                           </div>
                         )}
                         {primaryPlat === 'twitter' && (
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#000', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                            <PlatformIcon platform="twitter" size={14} />
+                          <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: '#000', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="twitter" size={13} />
                           </div>
                         )}
                         {primaryPlat === 'tiktok' && (
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#000', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                            <PlatformIcon platform="tiktok" size={14} />
+                          <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: '#000', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="tiktok" size={13} />
                           </div>
                         )}
                         {!['linkedin', 'instagram', 'facebook', 'twitter', 'tiktok'].includes(primaryPlat) && (
-                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#1677FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                            <PlatformIcon platform={primaryPlat} size={14} />
+                          <div style={{ width: '22px', height: '22px', borderRadius: '5px', background: '#1677FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform={primaryPlat} size={13} />
                           </div>
                         )}
                       </div>
                     </div>
 
                     {/* Card Content */}
-                    <div style={{ padding: '.75rem', display: 'flex', flexDirection: 'column', gap: '.45rem', flex: 1, justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
+                    <div style={{ padding: '.55rem .6rem', display: 'flex', flexDirection: 'column', gap: '.35rem', flex: 1, justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
                         <div style={{
-                          fontSize: '.78rem', fontWeight: 600, color: 'var(--t1)', lineHeight: 1.4,
-                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.2rem'
+                          fontSize: '.74rem', fontWeight: 600, color: 'var(--t1)', lineHeight: 1.4,
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2rem'
                         }}>
                           {post.content || 'Publication sans texte'}
                         </div>
@@ -1736,29 +1743,29 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                         {/* Status pill */}
                         <div>
                           {(post.status === 'published' || post.status === 'partial') && (
-                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(16,185,129,0.15)', color: '#34D399', border: '1px solid rgba(16,185,129,0.25)' }}>
+                            <span style={{ display: 'inline-block', fontSize: '.62rem', fontWeight: 700, padding: '.1rem .4rem', borderRadius: '5px', background: 'rgba(16,185,129,0.15)', color: '#34D399', border: '1px solid rgba(16,185,129,0.25)' }}>
                               Publié
                             </span>
                           )}
                           {(post.status === 'draft' || post.status === 'failed') && (
-                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(245,158,11,0.15)', color: '#FBBF24', border: '1px solid rgba(245,158,11,0.25)' }}>
+                            <span style={{ display: 'inline-block', fontSize: '.62rem', fontWeight: 700, padding: '.1rem .4rem', borderRadius: '5px', background: 'rgba(245,158,11,0.15)', color: '#FBBF24', border: '1px solid rgba(245,158,11,0.25)' }}>
                               Brouillon
                             </span>
                           )}
                           {post.status === 'scheduled' && (
-                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(59,130,246,0.15)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.25)' }}>
+                            <span style={{ display: 'inline-block', fontSize: '.62rem', fontWeight: 700, padding: '.1rem .4rem', borderRadius: '5px', background: 'rgba(59,130,246,0.15)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.25)' }}>
                               Programmé
                             </span>
                           )}
                           {(post.status === 'archived' || post.status === 'deleted') && (
-                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(148,163,184,0.15)', color: '#94A3B8', border: '1px solid rgba(148,163,184,0.25)' }}>
+                            <span style={{ display: 'inline-block', fontSize: '.62rem', fontWeight: 700, padding: '.1rem .4rem', borderRadius: '5px', background: 'rgba(148,163,184,0.15)', color: '#94A3B8', border: '1px solid rgba(148,163,184,0.25)' }}>
                               Archivé
                             </span>
                           )}
                         </div>
 
                         {/* Date */}
-                        <span style={{ fontSize: '.7rem', color: 'var(--t3)', fontWeight: 500 }}>
+                        <span style={{ fontSize: '.65rem', color: 'var(--t3)', fontWeight: 500 }}>
                           {formatPostDate(post)}
                         </span>
                       </div>
@@ -1767,21 +1774,21 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                       <div style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         borderTop: darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #F1F5F9',
-                        paddingTop: '.5rem', marginTop: '.25rem', color: 'var(--t3)', fontSize: '.72rem'
+                        paddingTop: '.35rem', marginTop: '.15rem', color: 'var(--t3)', fontSize: '.68rem'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <Heart size={11} /> {post.analytics?.likes ? post.analytics.likes : '-'}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <Heart size={10} /> {post.analytics?.likes ? post.analytics.likes : '-'}
                           </span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <MessageCircle size={11} /> {post.analytics?.comments ? post.analytics.comments : '-'}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <MessageCircle size={10} /> {post.analytics?.comments ? post.analytics.comments : '-'}
                           </span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <Repeat2 size={11} /> {post.analytics?.shares ? post.analytics.shares : '-'}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <Repeat2 size={10} /> {post.analytics?.shares ? post.analytics.shares : '-'}
                           </span>
                         </div>
-                        <span style={{ cursor: 'pointer', padding: '2px' }}>
-                          <MoreHorizontal size={13} />
+                        <span style={{ cursor: 'pointer', padding: '1px' }}>
+                          <MoreHorizontal size={12} />
                         </span>
                       </div>
                     </div>
