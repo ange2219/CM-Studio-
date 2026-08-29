@@ -34,7 +34,15 @@ async function zernioRequest(path: string, options: RequestInit = {}) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: res.statusText }))
-      throw new Error(err.message || `Zernio error ${res.status}`)
+      const errorMsg = (typeof err.error === 'string' ? err.error : err.error?.message)
+        || err.message
+        || (typeof err.detail === 'string' ? err.detail : null)
+        || (err.code ? `Zernio error ${res.status}: ${err.code}` : `Zernio error ${res.status}`)
+      console.error(`[zernio] Request failed (${res.status} ${res.statusText}):`, JSON.stringify(err))
+      const customErr: any = new Error(errorMsg)
+      customErr.status = res.status
+      customErr.data = err
+      throw customErr
     }
 
     return res.json()
@@ -51,11 +59,28 @@ async function zernioRequest(path: string, options: RequestInit = {}) {
 
 /** Crée un profil Zernio pour un utilisateur */
 export async function createProfile(userId: string, name: string): Promise<string> {
-  const data = await zernioRequest('/profiles', {
-    method: 'POST',
-    body: JSON.stringify({ name, description: `User ${userId}` }),
-  })
-  return data.profile._id as string
+  try {
+    const data = await zernioRequest('/profiles', {
+      method: 'POST',
+      body: JSON.stringify({ name, description: `User ${userId}` }),
+    })
+    const id = data.profile?._id || data.profile?.id || data._id || data.id
+    if (!id) throw new Error('Profil Zernio créé sans identifiant retourné')
+    return id as string
+  } catch (err: any) {
+    // Si un profil avec ce nom existe déjà (409 conflict), récupérer l'ID existant
+    if (err.data?.details?.existingProfileId) {
+      return err.data.details.existingProfileId as string
+    }
+    try {
+      const list = await zernioRequest(`/profiles?name=${encodeURIComponent(name)}`)
+      const existing = list.profiles?.[0]
+      if (existing?._id || existing?.id) {
+        return (existing._id || existing.id) as string
+      }
+    } catch {}
+    throw err
+  }
 }
 
 /** Retourne l'URL OAuth Zernio pour connecter un réseau social */

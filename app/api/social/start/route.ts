@@ -64,11 +64,24 @@ export async function GET(req: NextRequest) {
       await admin.from('organizations').update({ zernio_profile_id: profileId } as any).eq('id', orgId)
     }
 
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '')
+    // Récupère l'URL exacte du domaine actuel (ex: https://cms12.vercel.app)
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host
+    const proto = req.headers.get('x-forwarded-proto') || (req.nextUrl.protocol.replace(':', '') || 'https')
+    const appUrl = `${proto}://${host}`.replace(/\/$/, '')
     const redirectUrl = `${appUrl}/api/social/callback?platform=${platform}&userId=${user.id}&orgId=${orgId}`
 
-    console.log('[social/start] Récupération URL OAuth Zernio pour', platform)
-    const connectUrl = await getConnectUrl(profileId, platform, redirectUrl)
+    console.log('[social/start] Récupération URL OAuth Zernio pour', platform, 'avec profileId:', profileId, 'redirectUrl:', redirectUrl)
+    let connectUrl: string
+    try {
+      connectUrl = await getConnectUrl(profileId, platform, redirectUrl)
+    } catch (connectErr: any) {
+      console.warn('[social/start] Échec connectUrl avec profileId existant:', connectErr.message, 'Tentative de recréation de profil...')
+      // Si le profileId en base est invalide ou expiré côté Zernio, régénérer un profil valide
+      profileId = await createProfile(orgId, `${activeOrg.organization?.name || 'Workspace'}-${orgId.slice(0, 6)}`)
+      console.log('[social/start] Nouveau profil Zernio créé avec succès:', profileId)
+      await admin.from('organizations').update({ zernio_profile_id: profileId } as any).eq('id', orgId)
+      connectUrl = await getConnectUrl(profileId, platform, redirectUrl)
+    }
     console.log('[social/start] Redirection vers:', connectUrl.slice(0, 80))
 
     return NextResponse.redirect(connectUrl)
