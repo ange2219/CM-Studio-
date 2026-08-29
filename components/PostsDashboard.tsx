@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, ArrowLeft, FileImage, Lightbulb, Video, Award, Check, Users } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, ArrowLeft, FileImage, Lightbulb, Video, Award, Check, Users, Heart, MessageCircle, Repeat2, MoreHorizontal, LayoutGrid } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
@@ -157,7 +157,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const [posts, setPosts] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'scheduled'>('all')
+  const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'scheduled' | 'archived'>('all')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [publishing, setPublishing] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -644,6 +644,8 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
     filter === 'all'       ? posts.filter(p => p.status !== 'deleted') :
     filter === 'draft'     ? posts.filter(p => p.status === 'draft' || p.status === 'failed') :
     filter === 'published' ? posts.filter(p => p.status === 'published' || p.status === 'partial') :
+    filter === 'scheduled' ? posts.filter(p => p.status === 'scheduled') :
+    (filter as string) === 'archived'  ? posts.filter(p => p.status === 'archived' || p.status === 'deleted') :
     posts.filter(p => p.status === filter)
 
   const filtered = platformFilter
@@ -657,6 +659,42 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
   const draftCount = posts.filter(p => p.status === 'draft' || p.status === 'failed').length
   const isFiltered = filter !== 'all' || !!platformFilter
   const postCount = isFiltered ? filtered.length : (total > 0 ? total : posts.filter(p => p.status !== 'deleted').length)
+
+  const DEFAULT_POST_IMAGES = [
+    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80',
+  ]
+
+  function getPostImage(post: Post, idx: number) {
+    if (post.media_urls && post.media_urls.length > 0 && post.media_urls[0]) {
+      return post.media_urls[0]
+    }
+    return DEFAULT_POST_IMAGES[idx % DEFAULT_POST_IMAGES.length]
+  }
+
+  function formatPostDate(p: Post) {
+    const rawDate = p.scheduled_at || (p as any).published_at || p.created_at
+    if (!rawDate) return ''
+    try {
+      const d = new Date(rawDate)
+      const formatted = d.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+      const hours = d.getHours().toString().padStart(2, '0')
+      const mins = d.getMinutes().toString().padStart(2, '0')
+      if (p.status === 'draft' || p.status === 'failed') {
+        return `Modifié le ${formatted}`
+      }
+      return `${formatted} à ${hours}:${mins}`
+    } catch {
+      return ''
+    }
+  }
 
   return (
     <div style={{ padding: '1.5rem 2rem 3rem' }}>
@@ -1505,7 +1543,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         
         {/* Header & Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: allPosts ? '0' : '1.5rem', marginBottom: '1rem', gap: '.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: allPosts ? '0' : '1.5rem', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
           
           {allPosts ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
@@ -1518,86 +1556,103 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 <ArrowLeft size={14} /> Workspace
               </button>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--t1)', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif", display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                Mes Posts
+                Vos posts existants
                 <span style={{ background: 'var(--s2)', padding: '.15rem .45rem', borderRadius: '10px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600, border: '1px solid var(--b1)' }}>{postCount}</span>
               </h1>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-              <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--t1)', margin: 0 }}>
-                Posts récents
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--t1)', margin: 0, fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                Vos posts existants
               </h2>
-              <span style={{ background: 'var(--s2)', padding: '.1rem .4rem', borderRadius: '10px', fontSize: '.7rem', color: 'var(--t3)', fontWeight: 600 }}>{postCount}</span>
-              {filtered.length >= 5 && (
-                <button onClick={() => router.push('/workspace/posts')} style={{ marginLeft: '.5rem', padding: '.25rem .75rem', borderRadius: '8px', border: '1px solid var(--b1)', background: 'var(--s2)', color: 'var(--t1)', cursor: 'pointer', fontSize: '.75rem', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--s2)'}>
-                  Voir tout
-                </button>
-              )}
+              <span style={{ background: 'var(--s2)', padding: '.15rem .5rem', borderRadius: '10px', fontSize: '.75rem', color: 'var(--t3)', fontWeight: 600, border: '1px solid var(--b1)' }}>
+                {postCount}
+              </span>
             </div>
           )}
 
-          {allPosts && (
-          <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
-            {(['grid', 'list'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)} style={{
-                padding: '.4rem .6rem', borderRadius: '8px',
-                border: view === v ? '1px solid #4646FF' : '1px solid var(--b1)',
-                background: view === v ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                color: view === v ? 'var(--accent)' : 'var(--t3)', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              }}>
-                {v === 'grid' ? <Grid3X3 size={15} /> : <List size={15} />}
-              </button>
-            ))}
-            
-            {/* Filtres dropdown */}
-            <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
-              <button
-                onClick={() => setPfMenuOpen(o => !o)}
-                style={{
-                  padding: '.3rem .6rem', borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer',
-                  border: platformFilter || filter !== 'all' ? '1px solid #4646FF' : '1px solid var(--b1)',
-                  background: platformFilter || filter !== 'all' ? 'rgba(var(--accent-rgb),.12)' : 'var(--card)',
-                  color: platformFilter || filter !== 'all' ? 'var(--accent)' : 'var(--t2)', transition: '.15s',
-                  display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
-                }}
-              >
-                <Filter size={13} /> Filtres
-                {(platformFilter || filter !== 'all') && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setFilter('all'); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
-              </button>
+          {/* Filter Pills + Right Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+            {/* Status Filters */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.35rem', overflowX: 'auto', padding: '2px 0' }}>
+              {[
+                { id: 'all', label: 'Tous' },
+                { id: 'published', label: 'Publiés' },
+                { id: 'draft', label: 'Brouillons' },
+                { id: 'scheduled', label: 'Programmés' },
+                { id: 'archived', label: 'Archivés' },
+              ].map(tab => {
+                const isSel = filter === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setFilter(tab.id as any)}
+                    style={{
+                      padding: '.4rem .85rem', borderRadius: '10px', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s',
+                      background: isSel ? '#1677FF' : 'var(--card)',
+                      color: isSel ? '#FFFFFF' : 'var(--t3)',
+                      border: isSel ? '1px solid #1677FF' : '1px solid var(--b1)',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
 
-              {pfMenuOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 5px)', right: 0, zIndex: 200, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.5rem', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
-                  
-                  <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.3rem', padding: '0 .3rem' }}>STATUT</div>
-                  {(['all', 'published', 'draft', 'scheduled'] as const).map(f => {
-                    const label = f === 'all' ? 'Tous' : f === 'published' ? 'Publiés' : f === 'draft' ? 'Brouillons' : 'Programmés';
-                    return (
-                      <button key={f} onClick={() => { setFilter(f); setPfMenuOpen(false) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: filter === f ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: filter === f ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem', textAlign: 'left' }}
-                        onMouseEnter={e => { if (filter !== f) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (filter !== f) e.currentTarget.style.background = 'transparent' }}
+            {/* Right controls: View Toggle & Filters */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem' }}>
+              {(['grid', 'list'] as const).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  style={{
+                    padding: '.45rem .65rem', borderRadius: '8px',
+                    border: view === v ? '1px solid #1677FF' : '1px solid var(--b1)',
+                    background: view === v ? (darkMode ? 'rgba(22,119,255,0.2)' : 'rgba(22,119,255,0.1)') : 'var(--card)',
+                    color: view === v ? '#1677FF' : 'var(--t3)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  }}
+                  title={v === 'grid' ? 'Vue Grille' : 'Vue Liste'}
+                >
+                  {v === 'grid' ? <Grid3X3 size={15} /> : <List size={15} />}
+                </button>
+              ))}
+
+              {/* Filtres dropdown */}
+              <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
+                <button
+                  onClick={() => setPfMenuOpen(o => !o)}
+                  style={{
+                    padding: '.45rem .75rem', borderRadius: '8px', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer',
+                    border: platformFilter || filter !== 'all' ? '1px solid #1677FF' : '1px solid var(--b1)',
+                    background: platformFilter || filter !== 'all' ? (darkMode ? 'rgba(22,119,255,0.18)' : 'rgba(22,119,255,0.08)') : 'var(--card)',
+                    color: platformFilter || filter !== 'all' ? '#1677FF' : 'var(--t2)', transition: '.15s',
+                    display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Filter size={13} /> Filtres
+                  {(platformFilter || filter !== 'all') && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setFilter('all'); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
+                </button>
+
+                {pfMenuOpen && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 5px)', right: 0, zIndex: 200, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.5rem', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
+                    <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.3rem', padding: '0 .3rem' }}>PLATEFORMES</div>
+                    {availablePlatforms.map(p => (
+                      <button key={p} onClick={() => { setPlatformFilter(platformFilter === p ? null : p); setPfMenuOpen(false) }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: platformFilter === p ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem' }}
+                        onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
                       >
-                        {label}
+                        <PlatformIcon platform={p} size={14} /> {PLATFORM_SHORT[p] || p}
                       </button>
-                    )
-                  })}
-
-                  <div style={{ margin: '.5rem 0', borderTop: '1px solid var(--b1)' }} />
-                  <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.3rem', padding: '0 .3rem' }}>PLATEFORMES</div>
-                  
-                  {availablePlatforms.map(p => (
-                    <button key={p} onClick={() => { setPlatformFilter(p); setPfMenuOpen(false) }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: platformFilter === p ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem' }}
-                      onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <PlatformIcon platform={p} size={14} /> {PLATFORM_SHORT[p] || p}
-                    </button>
-                  ))}
-                  {availablePlatforms.length === 0 && <div style={{ fontSize: '.75rem', color: 'var(--t3)', padding: '0 .3rem', marginTop: '.2rem' }}>Aucune plateforme</div>}
-                </div>
-              )}
+                    ))}
+                    {availablePlatforms.length === 0 && <div style={{ fontSize: '.75rem', color: 'var(--t3)', padding: '0 .3rem', marginTop: '.2rem' }}>Aucune plateforme</div>}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          )}
         </div>
 
         {/* Content (Scrollable part) */}
@@ -1614,6 +1669,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                 {filter === 'published' && 'Aucun post publié'}
                 {filter === 'draft'     && 'Aucun post dans les brouillons'}
                 {filter === 'scheduled' && 'Aucun post programmé'}
+                {filter === 'archived'  && 'Aucun post archivé'}
               </h3>
               {filter === 'all' && (
                 <>
@@ -1623,193 +1679,290 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', width: '100%', maxWidth: '260px' }}>
                     <button 
                       onClick={() => setCreateModalOpen(true)} 
-                      style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '.85rem', borderRadius: '12px', fontSize: '.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', cursor: 'pointer' }}
+                      style={{ background: '#1677FF', color: '#fff', border: 'none', padding: '.85rem', borderRadius: '12px', fontSize: '.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', cursor: 'pointer' }}
                     >
                       <Sparkles size={16} /> Créer mon premier post
-                    </button>
-                    <button 
-                      onClick={() => toast('Inspiration disponible bientôt !', 'info')}
-                      style={{ background: 'transparent', color: 'var(--t2)', border: '1px solid rgba(255,255,255,0.1)', padding: '.85rem', borderRadius: '12px', fontSize: '.85rem', fontWeight: 500, cursor: 'pointer' }}
-                    >
-                      Découvrir des idées
                     </button>
                   </div>
                 </>
               )}
             </div>
-      ) : view === 'grid' ? (
-        <div>
-          {(allPosts ? groupPostsByDate(displayPosts) : [{ label: '', posts: displayPosts.slice(0, 5) }]).map((group, idx) => (
-            <div key={group.label || idx} style={{ marginBottom: allPosts ? '1.5rem' : '0' }}>
-              {allPosts && (
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.6rem', paddingLeft: '.1rem' }}>
-                {group.label}
-              </div>
-              )}
-              <div className={allPosts ? '' : 'sb-scroll'} style={allPosts ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' } : { display: 'flex', gap: '.6rem', overflowX: 'auto', paddingBottom: '1rem' }}>
-                {group.posts.map(post => {
-                  const isSelected = selectedIds.has(post.id)
-                  return (
-                  <div key={post.id}
+          ) : view === 'grid' ? (
+            /* Grille de cartes moderne identique au modèle */
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: allPosts
+                ? 'repeat(auto-fill, minmax(210px, 1fr))'
+                : 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '12px',
+            }}>
+              {displayPosts.map((post, idx) => {
+                const isSelected = selectedIds.has(post.id)
+                const primaryPlat = post.platforms[0] || 'linkedin'
+
+                return (
+                  <div
+                    key={post.id || idx}
                     onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '12px', overflow: 'hidden', transition: '.15s', cursor: 'pointer', position: 'relative', ...(allPosts ? {} : { width: '170px', flexShrink: 0 }) }}
+                    style={{
+                      background: darkMode ? '#0F1523' : '#FFFFFF',
+                      border: isSelected ? '1px solid #1677FF' : (darkMode ? '1px solid #1E293B' : '1px solid #E2E8F0'),
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.18s ease',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? '0 0 0 1px #1677FF' : '0 1px 3px rgba(0,0,0,0.05)',
+                    }}
                     onMouseEnter={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
-                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
-                      if (overlay) overlay.style.opacity = '1'
+                      if (!isSelected) e.currentTarget.style.borderColor = '#1677FF'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
                     }}
                     onMouseLeave={e => {
-                      if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)'
-                      const overlay = e.currentTarget.querySelector('.insights-overlay') as HTMLElement | null
-                      if (overlay) overlay.style.opacity = '0'
+                      if (!isSelected) e.currentTarget.style.borderColor = darkMode ? '#1E293B' : '#E2E8F0'
+                      e.currentTarget.style.transform = 'none'
                     }}
                   >
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
-                      style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 10, cursor: 'pointer' }}
-                    >
-                      {isSelected
-                        ? <CheckSquare size={18} color="var(--accent)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
-                        : <Square size={18} color="rgba(255,255,255,.45)" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.8))' }} />
-                      }
-                    </div>
-                    <div style={{ aspectRatio: '1', background: 'var(--s2)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.media_urls?.[0]
-                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        : <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                          </svg>
-                      }
-                      {post.status === 'published' && <InsightsBadge a={post.analytics} />}
-                      <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '3px', zIndex: 6 }}>
-                        {post.platforms.slice(0, 3).map(p => {
-                          const hasErr = !!post.platform_errors?.[p]
-                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                          return (
-                            <div key={p} title={title} style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                              <PlatformIcon platform={p} size={18} />
-                            </div>
-                          )
-                        })}
+                    {/* Media Preview on top */}
+                    <div style={{ position: 'relative', width: '100%', height: '145px', background: 'var(--s2)', overflow: 'hidden' }}>
+                      <img
+                        src={getPostImage(post, idx)}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+
+                      {/* Checkbox top-left */}
+                      <div
+                        onClick={e => {
+                          e.stopPropagation()
+                          toggleSelect(post.id)
+                        }}
+                        style={{
+                          position: 'absolute', top: '8px', left: '8px', zIndex: 10, cursor: 'pointer',
+                          width: '22px', height: '22px', borderRadius: '5px',
+                          border: isSelected ? '1px solid #1677FF' : '1px solid rgba(255,255,255,0.4)',
+                          background: isSelected ? '#1677FF' : 'rgba(0,0,0,0.4)',
+                          backdropFilter: 'blur(4px)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {isSelected && <Check size={13} color="#fff" strokeWidth={3} />}
                       </div>
-                    </div>
-                    <div style={{ padding: '.55rem .6rem' }}>
-                      <div style={{ fontSize: '.72rem', color: 'var(--t3)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '.45rem' }}>
-                        {post.content}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span className={stClass(post.status)} style={{ fontSize: '.62rem' }}>{stLabel(post.status)}</span>
-                        {(post.status === 'draft' || post.status === 'failed') && (
-                          <div style={{ display: 'flex', gap: '.25rem' }} onClick={e => e.stopPropagation()}>
-                            <button onClick={() => publishPost(post)} disabled={publishing === post.id} title="Publier"
-                              style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '5px', padding: '.2rem .35rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>
-                              {publishing === post.id
-                                ? <div style={{ width: '10px', height: '10px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                                : <Send size={10} />}
-                            </button>
+
+                      {/* Platform Badge top-right */}
+                      <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 10, display: 'flex', gap: '4px' }}>
+                        {primaryPlat === 'linkedin' && (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#0A66C2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="linkedin" size={14} />
+                          </div>
+                        )}
+                        {primaryPlat === 'instagram' && (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="instagram" size={14} />
+                          </div>
+                        )}
+                        {primaryPlat === 'facebook' && (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="facebook" size={14} />
+                          </div>
+                        )}
+                        {primaryPlat === 'twitter' && (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#000', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="twitter" size={14} />
+                          </div>
+                        )}
+                        {primaryPlat === 'tiktok' && (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#000', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform="tiktok" size={14} />
+                          </div>
+                        )}
+                        {!['linkedin', 'instagram', 'facebook', 'twitter', 'tiktok'].includes(primaryPlat) && (
+                          <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#1677FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                            <PlatformIcon platform={primaryPlat} size={14} />
                           </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                )})}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div>
-          {(allPosts ? groupPostsByDate(displayPosts) : [{ label: '', posts: displayPosts.slice(0, 5) }]).map((group, idx) => (
-            <div key={group.label || idx} style={{ marginBottom: allPosts ? '1.5rem' : '0' }}>
-              {allPosts && (
-              <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '.5rem', paddingLeft: '.1rem' }}>
-                {group.label}
-              </div>
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-                {group.posts.map(post => {
-                  const isSelected = selectedIds.has(post.id)
-                  return (
-                  <div key={post.id}
-                    onClick={() => openPost(post)}
-                    style={{ background: 'var(--card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--b1)'}`, borderRadius: '8px', padding: '.75rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: '.15s', cursor: 'pointer' }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)' }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--b1)' }}
-                  >
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
-                      style={{ flexShrink: 0, cursor: 'pointer' }}
-                    >
-                      {isSelected ? <CheckSquare size={17} color="var(--accent)" /> : <Square size={17} color="#52525C" />}
-                    </div>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '6px', background: 'var(--s2)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.media_urls?.[0]
-                        ? <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <svg width="22" height="22" viewBox="0 0 36 36" fill="none" style={{ opacity: .25 }}>
-                            <rect x="4" y="6" width="28" height="24" rx="3" stroke="var(--t3)" strokeWidth="1.8"/>
-                            <circle cx="13" cy="15" r="3" stroke="var(--t3)" strokeWidth="1.5"/>
-                            <path d="M4 24l7-7 5 5 4-4 8 7" stroke="var(--t3)" strokeWidth="1.5" strokeLinejoin="round"/>
-                          </svg>
-                      }
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '.8rem', color: 'var(--t1)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.content}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.3rem' }}>
-                        {post.platforms.map(p => {
-                          const hasErr = !!post.platform_errors?.[p]
-                          const title = hasErr ? (post.platform_errors![p] === 'removed_externally' ? `Supprimé de ${p}` : `Erreur sur ${p}`) : p
-                          return (
-                            <div key={p} title={title} style={{ width: '16px', height: '16px', borderRadius: '3px', overflow: 'hidden', flexShrink: 0, opacity: hasErr ? 0.35 : 1, filter: hasErr ? 'grayscale(1)' : 'none' }}>
-                              <PlatformIcon platform={p} size={16} />
-                            </div>
-                          )
-                        })}
-                        <span style={{ fontSize: '.7rem', color: '#3f3f46' }}>
-                          {new Date(post.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+
+                    {/* Card Content */}
+                    <div style={{ padding: '.75rem', display: 'flex', flexDirection: 'column', gap: '.45rem', flex: 1, justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
+                        <div style={{
+                          fontSize: '.78rem', fontWeight: 600, color: 'var(--t1)', lineHeight: 1.4,
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.2rem'
+                        }}>
+                          {post.content || 'Publication sans texte'}
+                        </div>
+
+                        {/* Status pill */}
+                        <div>
+                          {(post.status === 'published' || post.status === 'partial') && (
+                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(16,185,129,0.15)', color: '#34D399', border: '1px solid rgba(16,185,129,0.25)' }}>
+                              Publié
+                            </span>
+                          )}
+                          {(post.status === 'draft' || post.status === 'failed') && (
+                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(245,158,11,0.15)', color: '#FBBF24', border: '1px solid rgba(245,158,11,0.25)' }}>
+                              Brouillon
+                            </span>
+                          )}
+                          {post.status === 'scheduled' && (
+                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(59,130,246,0.15)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.25)' }}>
+                              Programmé
+                            </span>
+                          )}
+                          {(post.status === 'archived' || post.status === 'deleted') && (
+                            <span style={{ display: 'inline-block', fontSize: '.68rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: '6px', background: 'rgba(148,163,184,0.15)', color: '#94A3B8', border: '1px solid rgba(148,163,184,0.25)' }}>
+                              Archivé
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Date */}
+                        <span style={{ fontSize: '.7rem', color: 'var(--t3)', fontWeight: 500 }}>
+                          {formatPostDate(post)}
+                        </span>
+                      </div>
+
+                      {/* Footer reactions / actions */}
+                      <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        borderTop: darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #F1F5F9',
+                        paddingTop: '.5rem', marginTop: '.25rem', color: 'var(--t3)', fontSize: '.72rem'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Heart size={11} /> {post.analytics?.likes ? post.analytics.likes : '-'}
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <MessageCircle size={11} /> {post.analytics?.comments ? post.analytics.comments : '-'}
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Repeat2 size={11} /> {post.analytics?.shares ? post.analytics.shares : '-'}
+                          </span>
+                        </div>
+                        <span style={{ cursor: 'pointer', padding: '2px' }}>
+                          <MoreHorizontal size={13} />
                         </span>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                      {post.analytics && post.status === 'published' && (
-                        <div style={{ display: 'flex', gap: '.6rem', fontSize: '.7rem', color: 'var(--t3)' }}>
-                          <span title="Likes">❤️ {post.analytics.likes}</span>
-                          <span title="Commentaires">💬 {post.analytics.comments}</span>
-                          <span title="Impressions">👁️ {post.analytics.impressions > 1000 ? (post.analytics.impressions/1000).toFixed(1)+'K' : post.analytics.impressions}</span>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            /* Vue Liste des posts */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+              {displayPosts.map((post, idx) => {
+                const isSelected = selectedIds.has(post.id)
+                const primaryPlat = post.platforms[0] || 'linkedin'
+
+                return (
+                  <div
+                    key={post.id || idx}
+                    onClick={() => openPost(post)}
+                    style={{
+                      background: darkMode ? '#0F1523' : '#FFFFFF',
+                      border: isSelected ? '1px solid #1677FF' : (darkMode ? '1px solid #1E293B' : '1px solid #E2E8F0'),
+                      borderRadius: '10px',
+                      padding: '.65rem .85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                      cursor: 'pointer',
+                      transition: 'all .15s',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', minWidth: 0 }}>
+                      <div
+                        onClick={e => { e.stopPropagation(); toggleSelect(post.id) }}
+                        style={{
+                          width: '18px', height: '18px', borderRadius: '4px',
+                          border: isSelected ? '1px solid #1677FF' : '1px solid rgba(255,255,255,0.4)',
+                          background: isSelected ? '#1677FF' : 'transparent',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', flexShrink: 0,
+                        }}
+                      >
+                        {isSelected && <Check size={12} color="#fff" strokeWidth={3} />}
+                      </div>
+
+                      <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--s2)' }}>
+                        <img src={getPostImage(post, idx)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', bottom: '1px', right: '1px', width: '14px', height: '14px', borderRadius: '3px', background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <PlatformIcon platform={primaryPlat} size={10} />
                         </div>
+                      </div>
+
+                      <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {post.content || 'Publication sans texte'}
+                        </div>
+                        <span style={{ fontSize: '.68rem', color: 'var(--t3)' }}>
+                          {formatPostDate(post)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+                      {(post.status === 'published' || post.status === 'partial') && (
+                        <span style={{ fontSize: '.65rem', fontWeight: 700, padding: '.15rem .45rem', borderRadius: '6px', background: 'rgba(16,185,129,0.15)', color: '#34D399', border: '1px solid rgba(16,185,129,0.25)' }}>
+                          Publié
+                        </span>
                       )}
-                      <span className={stClass(post.status)} style={{ fontSize: '.68rem' }}>{stLabel(post.status)}</span>
                       {(post.status === 'draft' || post.status === 'failed') && (
-                        <button onClick={() => publishPost(post)} disabled={publishing === post.id}
-                          style={{ background: 'rgba(var(--accent-rgb),.15)', border: '1px solid rgba(59,123,246,.3)', borderRadius: '6px', padding: '.3rem .6rem', cursor: 'pointer', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.72rem', fontWeight: 500 }}>
-                          {publishing === post.id
-                            ? <div style={{ width: '11px', height: '11px', border: '1.5px solid rgba(59,123,246,.3)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'rot .7s linear infinite' }} />
-                            : <Send size={11} />} Publier
-                        </button>
+                        <span style={{ fontSize: '.65rem', fontWeight: 700, padding: '.15rem .45rem', borderRadius: '6px', background: 'rgba(245,158,11,0.15)', color: '#FBBF24', border: '1px solid rgba(245,158,11,0.25)' }}>
+                          Brouillon
+                        </span>
                       )}
+                      {post.status === 'scheduled' && (
+                        <span style={{ fontSize: '.65rem', fontWeight: 700, padding: '.15rem .45rem', borderRadius: '6px', background: 'rgba(59,130,246,0.15)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.25)' }}>
+                          Programmé
+                        </span>
+                      )}
+                      {(post.status === 'archived' || post.status === 'deleted') && (
+                        <span style={{ fontSize: '.65rem', fontWeight: 700, padding: '.15rem .45rem', borderRadius: '6px', background: 'rgba(148,163,184,0.15)', color: '#94A3B8', border: '1px solid rgba(148,163,184,0.25)' }}>
+                          Archivé
+                        </span>
+                      )}
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem', color: 'var(--t3)', fontSize: '.72rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Heart size={11} /> {post.analytics?.likes ?? '-'}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MessageCircle size={11} /> {post.analytics?.comments ?? '-'}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Repeat2 size={11} /> {post.analytics?.shares ?? '-'}</span>
+                      </div>
+
+                      <MoreHorizontal size={14} style={{ color: 'var(--t3)', cursor: 'pointer' }} />
                     </div>
                   </div>
-                )})}
-              </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-        {/* Bouton Voir Tout */}
-        {!loading && !allPosts && filtered.length > 5 && (
-          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
-            <button
-              onClick={() => router.push('/workspace/posts')}
-              style={{ background: 'var(--card)', border: '1px solid var(--b1)', color: 'var(--t1)', padding: '.7rem 2rem', borderRadius: '10px', cursor: 'pointer', fontSize: '.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.5rem', transition: '.15s', boxShadow: '0 4px 12px rgba(0,0,0,.05)' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--s2)'; e.currentTarget.style.borderColor = 'var(--accent)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--b1)' }}
-            >
-              Voir tout ({filtered.length})
-            </button>
-          </div>
-        )}
+          {/* Bouton Voir tous les posts */}
+          {!loading && !allPosts && (
+            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', paddingBottom: '1rem' }}>
+              <button
+                onClick={() => router.push('/workspace/posts')}
+                style={{
+                  width: '100%', background: darkMode ? 'rgba(15,21,35,0.6)' : '#FFFFFF',
+                  border: darkMode ? '1px solid #1E293B' : '1px solid #E2E8F0',
+                  color: 'var(--t1)', padding: '.75rem 1rem', borderRadius: '12px',
+                  cursor: 'pointer', fontSize: '.84rem', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem',
+                  transition: 'all .15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#1677FF'; e.currentTarget.style.background = 'var(--card)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = darkMode ? '#1E293B' : '#E2E8F0'; e.currentTarget.style.background = darkMode ? 'rgba(15,21,35,0.6)' : '#FFFFFF' }}
+              >
+                Voir tous les posts
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
