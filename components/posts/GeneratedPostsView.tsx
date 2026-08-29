@@ -1105,12 +1105,10 @@ export function GeneratedPostsView({
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
               {isUnifiedPost ? (
                 activePlatforms.map(p => (
-                  <div key={p} title={PLATFORM_NAMES[p]} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '5px', background: 'rgba(255,255,255,0.08)' }}>
-                    <PlatformIcon platform={p} size={14} />
-                  </div>
+                  <PlatformIcon key={p} platform={p} size={20} />
                 ))
               ) : (
                 <PlatformIcon platform={curPlatform} size={22} />
@@ -1463,24 +1461,9 @@ export function GeneratedPostsView({
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0, marginLeft: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
                     {activePlatforms.map(p => (
-                      <div
-                        key={p}
-                        title={`Publié sur ${PLATFORM_NAMES[p]}`}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '26px',
-                          height: '26px',
-                          borderRadius: '6px',
-                          background: 'rgba(255,255,255,0.08)',
-                          border: '1px solid rgba(255,255,255,0.12)',
-                        }}
-                      >
-                        <PlatformIcon platform={p} size={15} />
-                      </div>
+                      <PlatformIcon key={p} platform={p} size={20} />
                     ))}
                   </div>
                 </div>
