@@ -1052,76 +1052,32 @@ export function StrategyDetailModal({
                     </span>
                   </div>
 
-                  {/* Filter Pills + Right Controls */}
-                  <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 flex-1">
-                    {/* Status Filters */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-                      {[
-                        { id: 'all', label: 'Tous' },
-                        { id: 'published', label: 'Publiés' },
-                        { id: 'draft', label: 'Brouillons' },
-                        { id: 'scheduled', label: 'Programmés' },
-                        { id: 'archived', label: 'Archivés' },
-                      ].map(tab => {
-                        const isSel = postStatusFilter === tab.id
-                        return (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setPostStatusFilter(tab.id as any)}
-                            className={`px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer border ${
-                              isSel
-                                ? 'bg-[#1677FF] text-white border-[#1677FF] shadow-xs'
-                                : darkMode
-                                ? 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/60'
-                                : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                            }`}
-                          >
-                            {tab.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    {/* Right Controls: Grid/List switch & Filters */}
-                    <div className="flex items-center gap-1.5">
-                      <div className={`flex items-center p-0.5 rounded-xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
-                        <button
-                          type="button"
-                          onClick={() => setPostViewMode('grid')}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
-                            postViewMode === 'grid'
-                              ? 'bg-[#1677FF] text-white shadow-xs'
-                              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
-                          }`}
-                          title="Vue Grille"
-                        >
-                          <LayoutGrid size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPostViewMode('list')}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
-                            postViewMode === 'list'
-                              ? 'bg-[#1677FF] text-white shadow-xs'
-                              : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
-                          }`}
-                          title="Vue Liste"
-                        >
-                          <List size={14} />
-                        </button>
-                      </div>
-
+                  {/* Right Controls: Grid/List switch */}
+                  <div className="flex items-center gap-1.5">
+                    <div className={`flex items-center p-0.5 rounded-xl border ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
                       <button
                         type="button"
-                        className={`px-2.5 py-1.5 rounded-xl text-[12px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
-                          darkMode
-                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
-                            : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 shadow-xs'
+                        onClick={() => setPostViewMode('grid')}
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
+                          postViewMode === 'grid'
+                            ? 'bg-[#1677FF] text-white shadow-xs'
+                            : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
                         }`}
+                        title="Vue Grille"
                       >
-                        <Filter size={13} />
-                        <span>Filtres</span>
+                        <LayoutGrid size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPostViewMode('list')}
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
+                          postViewMode === 'list'
+                            ? 'bg-[#1677FF] text-white shadow-xs'
+                            : darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+                        }`}
+                        title="Vue Liste"
+                      >
+                        <List size={14} />
                       </button>
                     </div>
                   </div>

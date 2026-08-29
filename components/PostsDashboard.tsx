@@ -1571,87 +1571,24 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
             </div>
           )}
 
-          {/* Filter Pills + Right Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
-            {/* Status Filters */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.35rem', overflowX: 'auto', padding: '2px 0' }}>
-              {[
-                { id: 'all', label: 'Tous' },
-                { id: 'published', label: 'Publiés' },
-                { id: 'draft', label: 'Brouillons' },
-                { id: 'scheduled', label: 'Programmés' },
-                { id: 'archived', label: 'Archivés' },
-              ].map(tab => {
-                const isSel = filter === tab.id
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setFilter(tab.id as any)}
-                    style={{
-                      padding: '.4rem .85rem', borderRadius: '10px', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s',
-                      background: isSel ? '#1677FF' : 'var(--card)',
-                      color: isSel ? '#FFFFFF' : 'var(--t3)',
-                      border: isSel ? '1px solid #1677FF' : '1px solid var(--b1)',
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Right controls: View Toggle & Filters */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem' }}>
-              {(['grid', 'list'] as const).map(v => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  style={{
-                    padding: '.45rem .65rem', borderRadius: '8px',
-                    border: view === v ? '1px solid #1677FF' : '1px solid var(--b1)',
-                    background: view === v ? (darkMode ? 'rgba(22,119,255,0.2)' : 'rgba(22,119,255,0.1)') : 'var(--card)',
-                    color: view === v ? '#1677FF' : 'var(--t3)',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center',
-                  }}
-                  title={v === 'grid' ? 'Vue Grille' : 'Vue Liste'}
-                >
-                  {v === 'grid' ? <Grid3X3 size={15} /> : <List size={15} />}
-                </button>
-              ))}
-
-              {/* Filtres dropdown */}
-              <div ref={pfMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
-                <button
-                  onClick={() => setPfMenuOpen(o => !o)}
-                  style={{
-                    padding: '.45rem .75rem', borderRadius: '8px', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer',
-                    border: platformFilter || filter !== 'all' ? '1px solid #1677FF' : '1px solid var(--b1)',
-                    background: platformFilter || filter !== 'all' ? (darkMode ? 'rgba(22,119,255,0.18)' : 'rgba(22,119,255,0.08)') : 'var(--card)',
-                    color: platformFilter || filter !== 'all' ? '#1677FF' : 'var(--t2)', transition: '.15s',
-                    display: 'flex', alignItems: 'center', gap: '.4rem', whiteSpace: 'nowrap',
-                  }}
-                >
-                  <Filter size={13} /> Filtres
-                  {(platformFilter || filter !== 'all') && <span onClick={e => { e.stopPropagation(); setPlatformFilter(null); setFilter('all'); setPfMenuOpen(false) }} style={{ marginLeft: '.25rem', opacity: .7, cursor: 'pointer' }}>×</span>}
-                </button>
-
-                {pfMenuOpen && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 5px)', right: 0, zIndex: 200, background: 'var(--card)', border: '1px solid var(--b1)', borderRadius: '10px', padding: '.5rem', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,.5)' }}>
-                    <div style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--t3)', marginBottom: '.3rem', padding: '0 .3rem' }}>PLATEFORMES</div>
-                    {availablePlatforms.map(p => (
-                      <button key={p} onClick={() => { setPlatformFilter(platformFilter === p ? null : p); setPfMenuOpen(false) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.45rem .65rem', borderRadius: '7px', border: 'none', background: platformFilter === p ? 'rgba(var(--accent-rgb),.1)' : 'transparent', color: platformFilter === p ? 'var(--accent)' : 'var(--t1)', cursor: 'pointer', fontSize: '.78rem' }}
-                        onMouseEnter={e => { if (platformFilter !== p) e.currentTarget.style.background = 'var(--s2)' }} onMouseLeave={e => { if (platformFilter !== p) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <PlatformIcon platform={p} size={14} /> {PLATFORM_SHORT[p] || p}
-                      </button>
-                    ))}
-                    {availablePlatforms.length === 0 && <div style={{ fontSize: '.75rem', color: 'var(--t3)', padding: '0 .3rem', marginTop: '.2rem' }}>Aucune plateforme</div>}
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Right controls: View Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem' }}>
+            {(['grid', 'list'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                style={{
+                  padding: '.45rem .65rem', borderRadius: '8px',
+                  border: view === v ? '1px solid #1677FF' : '1px solid var(--b1)',
+                  background: view === v ? (darkMode ? 'rgba(22,119,255,0.2)' : 'rgba(22,119,255,0.1)') : 'var(--card)',
+                  color: view === v ? '#1677FF' : 'var(--t3)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center',
+                }}
+                title={v === 'grid' ? 'Vue Grille' : 'Vue Liste'}
+              >
+                {v === 'grid' ? <Grid3X3 size={15} /> : <List size={15} />}
+              </button>
+            ))}
           </div>
         </div>
 
