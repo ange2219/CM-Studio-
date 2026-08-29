@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, FileText, Database, Settings, Zap, ArrowRight, ArrowLeft, FileImage, Lightbulb, Video, Award, Check, Users, Heart, MessageCircle, Repeat2, MoreHorizontal, LayoutGrid } from 'lucide-react'
+import { Plus, Grid3X3, List, Send, Trash2, Eye, EyeOff, X, Save, Pencil, RotateCcw, RefreshCw, Upload, CheckSquare, Square, Sparkles, PenLine, ChevronDown, Calendar, BarChart3, Filter, Image as ImageIcon, ImageOff, FileText, Database, Settings, Zap, ArrowRight, ArrowLeft, FileImage, Lightbulb, Video, Award, Check, Users, Heart, MessageCircle, Repeat2, MoreHorizontal, LayoutGrid } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { DashboardSkeleton, PostsListSkeleton } from '@/components/ui/Skeleton'
 import { IconInstagram, IconFacebook, IconTikTok, IconTwitterX, IconLinkedIn, IconYouTube, IconPinterest } from '@/components/icons/BrandIcons'
@@ -1667,11 +1667,36 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                   >
                     {/* Media Preview on top */}
                     <div style={{ position: 'relative', width: '100%', height: '135px', background: 'var(--s2)', overflow: 'hidden' }}>
-                      <img
-                        src={getPostImage(post, idx)}
-                        alt=""
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      />
+                      {post.media_urls && post.media_urls.length > 0 && post.media_urls[0] ? (
+                        <img
+                          src={post.media_urls[0]}
+                          alt=""
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: '100%', height: '100%',
+                          background: darkMode ? 'linear-gradient(135deg, #0B1120 0%, #151F32 100%)' : 'linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%)',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                          gap: '6px', padding: '12px', textAlign: 'center',
+                        }}>
+                          <div style={{
+                            width: '32px', height: '32px', borderRadius: '8px',
+                            background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                            border: darkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: darkMode ? '#64748B' : '#94A3B8',
+                          }}>
+                            <ImageOff size={16} />
+                          </div>
+                          <span style={{
+                            fontSize: '.65rem', fontWeight: 600,
+                            color: darkMode ? '#94A3B8' : '#64748B',
+                          }}>
+                            Publication sans image
+                          </span>
+                        </div>
+                      )}
 
                       {/* Checkbox top-left */}
                       <div
@@ -1818,7 +1843,18 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                       </div>
 
                       <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--s2)' }}>
-                        <img src={getPostImage(post, idx)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {post.media_urls && post.media_urls.length > 0 && post.media_urls[0] ? (
+                          <img src={post.media_urls[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{
+                            width: '100%', height: '100%',
+                            background: darkMode ? '#151F32' : '#E2E8F0',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: darkMode ? '#64748B' : '#94A3B8',
+                          }}>
+                            <ImageOff size={16} />
+                          </div>
+                        )}
                         <div style={{ position: 'absolute', bottom: '1px', right: '1px', display: 'flex', gap: '1px' }}>
                           {post.platforms.slice(0, 1).map(p => (
                             <div key={p} style={{ width: '14px', height: '14px', borderRadius: '3px', overflow: 'hidden' }}>

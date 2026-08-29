@@ -13,7 +13,7 @@ import {
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import {
   X, Sparkles, RotateCcw, Clock, Send, Upload, Trash2,
-  Image as ImageIcon, Globe, Heart, MessageCircle, Repeat2,
+  Image as ImageIcon, ImageOff, Globe, Heart, MessageCircle, Repeat2,
   Bookmark, BarChart2, Share2, ThumbsUp, ChevronLeft, ChevronRight
 } from 'lucide-react'
 
@@ -1457,6 +1457,112 @@ export function GeneratedPostsView({
                     }}
                   />
 
+                  {/* Visuel du post OU Placeholder "Publication texte seule" */}
+                  {cardData.imageUrl ? (
+                    <div style={{ position: 'relative', width: '100%', borderRadius: '10px', overflow: 'hidden', margin: '8px 0', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <img src={cardData.imageUrl} alt="" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => triggerImportImage(mainPlatform)}
+                          style={{
+                            padding: '4px 8px', borderRadius: '6px',
+                            background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(4px)',
+                            border: '1px solid rgba(255,255,255,0.2)', color: '#fff',
+                            fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                          }}
+                        >
+                          <Upload size={11} />
+                          <span>Remplacer</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateCard(mainPlatform, { imageUrl: null })}
+                          style={{
+                            padding: '4px 8px', borderRadius: '6px',
+                            background: 'rgba(239,68,68,0.85)', backdropFilter: 'blur(4px)',
+                            border: 'none', color: '#fff',
+                            fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                          }}
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        borderRadius: '10px',
+                        background: 'rgba(15, 23, 42, 0.45)',
+                        border: '1px dashed rgba(255, 255, 255, 0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        margin: '8px 0 4px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <div style={{
+                          width: '32px', height: '32px', borderRadius: '8px',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#94A3B8', flexShrink: 0,
+                        }}>
+                          <ImageOff size={15} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>Publication texte seule</span>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: 'rgba(148, 163, 184, 0.15)', color: '#94A3B8' }}>
+                              Sans image
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '1px' }}>
+                            Ce post sera publié sans média visuel
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleGenerateImage(mainPlatform)}
+                          disabled={cardData.imageLoading}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            padding: '5px 8px', borderRadius: '6px',
+                            background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)',
+                            color: '#38BDF8', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                          }}
+                        >
+                          {cardData.imageLoading ? (
+                            <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                          ) : (
+                            <Sparkles size={11} />
+                          )}
+                          <span>Générer IA</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => triggerImportImage(mainPlatform)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            padding: '5px 8px', borderRadius: '6px',
+                            background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)',
+                            color: '#CBD5E1', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                          }}
+                        >
+                          <Upload size={11} />
+                          <span>Importer</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div
                     style={{
                       display: 'flex',
@@ -1735,6 +1841,112 @@ export function GeneratedPostsView({
                       margin: 0,
                     }}
                   />
+
+                  {/* Visuel du post OU Placeholder "Publication texte seule" */}
+                  {cardData.imageUrl ? (
+                    <div style={{ position: 'relative', width: '100%', borderRadius: '10px', overflow: 'hidden', margin: '8px 0', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <img src={cardData.imageUrl} alt="" style={{ width: '100%', maxHeight: '260px', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => triggerImportImage(platform)}
+                          style={{
+                            padding: '4px 8px', borderRadius: '6px',
+                            background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(4px)',
+                            border: '1px solid rgba(255,255,255,0.2)', color: '#fff',
+                            fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                          }}
+                        >
+                          <Upload size={11} />
+                          <span>Remplacer</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateCard(platform, { imageUrl: null })}
+                          style={{
+                            padding: '4px 8px', borderRadius: '6px',
+                            background: 'rgba(239,68,68,0.85)', backdropFilter: 'blur(4px)',
+                            border: 'none', color: '#fff',
+                            fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                          }}
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        borderRadius: '10px',
+                        background: 'rgba(15, 23, 42, 0.45)',
+                        border: '1px dashed rgba(255, 255, 255, 0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        margin: '8px 0 4px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <div style={{
+                          width: '32px', height: '32px', borderRadius: '8px',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#94A3B8', flexShrink: 0,
+                        }}>
+                          <ImageOff size={15} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>Publication texte seule</span>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: 'rgba(148, 163, 184, 0.15)', color: '#94A3B8' }}>
+                              Sans image
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '1px' }}>
+                            Ce post sera publié sans média visuel
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleGenerateImage(platform)}
+                          disabled={cardData.imageLoading}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            padding: '5px 8px', borderRadius: '6px',
+                            background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)',
+                            color: '#38BDF8', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                          }}
+                        >
+                          {cardData.imageLoading ? (
+                            <div style={{ width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'rot 0.7s linear infinite' }} />
+                          ) : (
+                            <Sparkles size={11} />
+                          )}
+                          <span>Générer IA</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => triggerImportImage(platform)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            padding: '5px 8px', borderRadius: '6px',
+                            background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)',
+                            color: '#CBD5E1', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                          }}
+                        >
+                          <Upload size={11} />
+                          <span>Importer</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div
                     style={{

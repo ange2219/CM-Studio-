@@ -30,7 +30,8 @@ import {
   Heart,
   MessageCircle,
   Repeat2,
-  MoreHorizontal
+  MoreHorizontal,
+  ImageOff
 } from 'lucide-react'
 import { useTheme } from '@/components/context/ThemeContext'
 import { useOrg } from '@/components/context/OrgContext'
@@ -1132,11 +1133,26 @@ export function StrategyDetailModal({
                           >
                             {/* Media Preview on top */}
                             <div className="relative w-full h-[145px] bg-slate-800/80 overflow-hidden flex items-center justify-center">
-                              <img
-                                src={getPostImage(post, idx)}
-                                alt=""
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
+                              {post.media_urls && post.media_urls.length > 0 && post.media_urls[0] ? (
+                                <img
+                                  src={post.media_urls[0]}
+                                  alt=""
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className={`w-full h-full flex flex-col items-center justify-center gap-1.5 p-3 text-center ${
+                                  darkMode ? 'bg-gradient-to-br from-[#0B1120] to-[#151F32]' : 'bg-gradient-to-br from-slate-100 to-slate-200'
+                                }`}>
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
+                                    darkMode ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-black/5 border-black/5 text-slate-500'
+                                  }`}>
+                                    <ImageOff size={16} />
+                                  </div>
+                                  <span className={`text-[11px] font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                    Publication sans image
+                                  </span>
+                                </div>
+                              )}
 
                               {/* Checkbox top-left */}
                               <button
