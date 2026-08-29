@@ -437,7 +437,14 @@ export function GeneratedPostsView({
     if (loadingAction) return
     setLoadingAction(`publish-${platform}`)
     try {
-      await onPublish(platform, cards[platform]?.content || '', cards[platform]?.imageUrl || null)
+      if (isUnifiedPost) {
+        const p = activePlatforms[0]
+        const c = cards[p]
+        await onPublish(p, c?.content || '', c?.imageUrl || null)
+      } else {
+        await onPublish(platform, cards[platform]?.content || '', cards[platform]?.imageUrl || null)
+      }
+      setEditingPlatform(null)
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Erreur de publication', 'error')
     } finally { setLoadingAction(null) }
@@ -1272,7 +1279,7 @@ export function GeneratedPostsView({
                   ) : (
                     <Clock size={16} />
                   )}
-                  <span>Valider la programmation</span>
+                  <span>Valider la programmation {isUnifiedPost ? `(${activePlatforms.length} réseaux)` : ''}</span>
                 </button>
               ) : (
                 <button

@@ -292,6 +292,26 @@ RÈGLE D'OR : Les posts DOIVENT être conçus au millimètre et sur-mesure à pa
     ? `PROFIL DE MARQUE (respecte-le strictement) :\n${brandContext}`
     : `ATTENTION : Aucun profil de marque défini. Génère un contenu professionnel générique sur la productivité ou la croissance des entreprises.`
 
+  // En mode unifié pour plusieurs plateformes, générer UN SEUL post harmonisé
+  if (req.distributionMode === 'unified' && req.platforms.length > 1 && !targetPlatform) {
+    return `Tu es un expert Community Manager d'élite. Génère UN SEUL post unifié, parfaitement dosé pour être diffusé simultanément sur l'ensemble de ces plateformes : ${platforms.map(p => p.toUpperCase()).join(', ')}.
+
+${brandSection}
+
+${briefLine}
+${contextLines}
+
+RÈGLE ABSOLUE : Tout contenu généré DOIT être directement lié à l'activité et au secteur de la marque.
+Format universel : longueur équilibrée (environ 600-1200 caractères), accroche forte, structure aérée avec sauts de ligne, et 3 à 5 hashtags professionnels.
+
+Réponds UNIQUEMENT en JSON valide avec ce format exact :
+{
+  "post": "texte unique du post unifié"
+}
+
+Aucun texte avant ou après le JSON.`
+  }
+
   return `Tu es un expert Community Manager. Génère des posts pour les réseaux sociaux suivants.
 
 ${brandSection}
@@ -361,9 +381,16 @@ function extractJsonObject(raw: string): string {
   return (first !== -1 && last !== -1) ? cleaned.slice(first, last + 1) : cleaned
 }
 
-function shapeGenerateResponse(parsed: any, targetPlatform?: Platform): GenerateResponse {
+function shapeGenerateResponse(parsed: any, targetPlatform?: Platform, req?: GenerateRequest): GenerateResponse {
   if (targetPlatform && parsed?.post) {
     return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
+  }
+  if (parsed?.post && req?.platforms?.length) {
+    const unifiedVariants: Record<string, string> = {}
+    for (const p of req.platforms) {
+      unifiedVariants[p] = parsed.post
+    }
+    return { variants: unifiedVariants, post: parsed.post, ...parsed } as any
   }
   return parsed as GenerateResponse
 }
@@ -379,7 +406,7 @@ async function genViaAnthropic(req: GenerateRequest, targetPlatform?: Platform):
     messages: [{ role: 'user', content: buildPrompt(req, targetPlatform) }],
   })
   const text = message.content?.[0]?.type === 'text' ? message.content[0].text : ''
-  return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
+  return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform, req)
 }
 
 // ─── Génération via OpenAI / GPT (clé OpenAI directe ou GitHub Models) ────────
@@ -399,7 +426,7 @@ async function genViaOpenAI(req: GenerateRequest, targetPlatform?: Platform): Pr
         ],
       })
       const text = response?.choices?.[0]?.message?.content || '{}'
-      return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform)
+      return shapeGenerateResponse(JSON.parse(extractJsonObject(text)), targetPlatform, req)
     } catch (e: any) {
       lastErr = e
       console.warn(`[OpenAI] genViaOpenAI échec avec « ${modelName} » : ${e?.message}`)
@@ -453,9 +480,16 @@ async function generateWithGeminiFree(req: GenerateRequest, targetPlatform?: Pla
   const prompt = buildPrompt(req, targetPlatform)
   const text = await callGeminiTextWithFallback(prompt, true)
   const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim()
-  const parsed = JSON.parse(cleaned)
+  const parsed = JSON.parse(extractJsonObject(cleaned))
   if (targetPlatform && parsed.post) {
     return { variants: { [targetPlatform]: parsed.post }, ...parsed } as any
+  }
+  if (parsed.post && req.platforms?.length) {
+    const unifiedVariants: Record<string, string> = {}
+    for (const p of req.platforms) {
+      unifiedVariants[p] = parsed.post
+    }
+    return { variants: unifiedVariants, post: parsed.post, ...parsed } as any
   }
   return parsed as GenerateResponse
 }
