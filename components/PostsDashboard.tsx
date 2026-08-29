@@ -1625,14 +1625,18 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
               )}
             </div>
           ) : view === 'grid' ? (
-            /* Grille de cartes moderne identique au modèle */
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: allPosts
-                ? 'repeat(auto-fill, minmax(220px, 1fr))'
-                : 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: '12px',
-            }}>
+            /* Grille de cartes moderne identique au modèle - 5 cartes sur 1 seule ligne */
+            <div
+              className={allPosts ? '' : 'sb-scroll'}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: allPosts
+                  ? 'repeat(auto-fill, minmax(220px, 1fr))'
+                  : 'repeat(5, minmax(140px, 1fr))',
+                gap: '12px',
+                ...(allPosts ? {} : { overflowX: 'auto', paddingBottom: '.5rem' }),
+              }}
+            >
               {displayPosts.map((post, idx) => {
                 const isSelected = selectedIds.has(post.id)
 
@@ -1649,6 +1653,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                       flexDirection: 'column',
                       transition: 'all 0.18s ease',
                       cursor: 'pointer',
+                      minWidth: 0,
                       boxShadow: isSelected ? '0 0 0 1px #1677FF' : '0 1px 3px rgba(0,0,0,0.05)',
                     }}
                     onMouseEnter={e => {
@@ -1661,7 +1666,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                     }}
                   >
                     {/* Media Preview on top */}
-                    <div style={{ position: 'relative', width: '100%', height: '145px', background: 'var(--s2)', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', width: '100%', height: '135px', background: 'var(--s2)', overflow: 'hidden' }}>
                       <img
                         src={getPostImage(post, idx)}
                         alt=""
@@ -1710,7 +1715,7 @@ export default function PostsDashboard({ allPosts = false }: { allPosts?: boolea
                     </div>
 
                     {/* Card Content */}
-                    <div style={{ padding: '.75rem', display: 'flex', flexDirection: 'column', gap: '.45rem', flex: 1, justifyContent: 'space-between' }}>
+                    <div style={{ padding: '.65rem .7rem', display: 'flex', flexDirection: 'column', gap: '.4rem', flex: 1, justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
                         <div style={{
                           fontSize: '.78rem', fontWeight: 600, color: 'var(--t1)', lineHeight: 1.4,
