@@ -7,9 +7,10 @@ const ALLOWED_PLATFORMS = ['instagram', 'facebook', 'twitter', 'linkedin', 'tikt
 const CreatePostSchema = z.object({
   content:          z.string().min(1).max(10000),
   platforms:        z.array(z.enum(ALLOWED_PLATFORMS)).min(1).max(7),
-  media_urls:       z.array(z.string().url()).max(10).optional(),
+  media_urls:       z.array(z.string()).max(10).optional(),
   ai_generated:     z.boolean().optional(),
-  status:           z.enum(['draft', 'failed']).optional(),
+  status:           z.enum(['draft', 'failed', 'scheduled', 'published']).optional(),
+  scheduled_at:     z.string().nullable().optional(),
   content_variants: z.record(z.string()).optional(),
 })
 
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
   }
-  const { content, platforms, media_urls, ai_generated, status, content_variants } = parsed.data
+  const { content, platforms, media_urls, ai_generated, status, scheduled_at, content_variants } = parsed.data
   const insertStatus = status ?? 'draft'
 
   console.log('[API POSTS] Inserting post content length:', content.length, 'platforms:', platforms, 'status:', insertStatus)
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
       media_urls: media_urls || [],
       ai_generated: ai_generated || false,
       status: insertStatus,
+      ...(scheduled_at ? { scheduled_at: new Date(scheduled_at).toISOString() } : {}),
       ...(content_variants ? { content_variants } : {}),
     })
     .select()

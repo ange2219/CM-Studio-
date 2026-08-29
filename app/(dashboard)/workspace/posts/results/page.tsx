@@ -158,14 +158,14 @@ export default function ResultsPage() {
     try { sessionStorage.removeItem('social_ia_results') } catch {}
   }
 
-  function markPlatformActed(platform: Platform) {
+  function markPlatformActed(platform: Platform, isScheduled: boolean = false) {
     setActedPlatforms(prev => {
       const next = new Set(prev)
       next.add(platform)
-      const remaining = (data?.platforms || []).filter(p => !!data?.variants[p] && !next.has(p))
+      const remaining = (data?.platforms || []).filter(p => !next.has(p))
       if (remaining.length === 0) {
         clearResults()
-        router.replace('/workspace')
+        router.replace(isScheduled ? '/workspace/calendrier' : '/workspace')
       }
       return next
     })
@@ -199,8 +199,6 @@ export default function ResultsPage() {
 
   async function handlePublish(platform: Platform, content: string, imageUrl: string | null) {
     if (isUnified(data)) {
-      // En mode unifié le post va sur toutes les plateformes sélectionnées —
-      // bloquer si Instagram est inclus et qu'il n'y a pas d'image.
       if ((data!.platforms.includes('instagram') || data!.platforms.includes('tiktok')) && !imageUrl) {
         toast('Veuillez ajouter un média — Instagram et TikTok n\'acceptent pas les posts sans image ou vidéo.', 'warning')
         return
@@ -226,25 +224,25 @@ export default function ResultsPage() {
   async function handleSchedule(platform: Platform, content: string, imageUrl: string | null, scheduledAt: string) {
     if (new Date(scheduledAt) <= new Date()) throw new Error('La date doit être dans le futur')
     if (isUnified(data)) {
-      const id = await saveUnifiedPost(content, imageUrl, 'draft')
+      const id = await saveUnifiedPost(content, imageUrl, 'scheduled', scheduledAt)
       const res = await fetch(`/api/posts/${id}/schedule`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scheduledAt }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
       clearResults()
-      toast('Post programmé !', 'success')
-      router.replace('/workspace')
+      toast('Post programmé avec succès !', 'success')
+      router.replace('/workspace/calendrier')
       return
     }
-    const id = await savePost(platform, content, imageUrl, 'draft')
+    const id = await savePost(platform, content, imageUrl, 'scheduled', scheduledAt)
     const res = await fetch(`/api/posts/${id}/schedule`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ scheduledAt }),
     })
     if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-    toast('Post programmé !', 'success')
-    markPlatformActed(platform)
+    toast('Post programmé avec succès !', 'success')
+    markPlatformActed(platform, true)
   }
 
   // ── Popup retour ──────────────────────────────────────────────────────────────

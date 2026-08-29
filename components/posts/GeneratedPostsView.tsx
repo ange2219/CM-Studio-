@@ -304,7 +304,8 @@ function SchedulerSheet({
             className="btn-primary"
             style={{ flex: 2, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.7rem', borderRadius: '10px', fontSize: '.88rem' }}
           >
-            Terminé
+            <Clock size={15} />
+            <span>Confirmer la programmation</span>
           </button>
         </div>
       </div>
@@ -442,11 +443,32 @@ export function GeneratedPostsView({
     } finally { setLoadingAction(null) }
   }
 
+  async function handlePublishScheduled(platform: Platform, directScheduledAt?: string) {
+    const scheduled = directScheduledAt || cards[platform]?.scheduledAt
+    if (!scheduled || loadingAction) return
+    setLoadingAction(`schedule-${platform}`)
+    try {
+      if (isUnifiedPost) {
+        const p = activePlatforms[0]
+        const c = cards[p]
+        await onSchedule(p, c?.content || '', c?.imageUrl || null, scheduled)
+      } else {
+        await onSchedule(platform, cards[platform]?.content || '', cards[platform]?.imageUrl || null, scheduled)
+      }
+      setEditingPlatform(null)
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : 'Erreur de programmation', 'error')
+    } finally {
+      setLoadingAction(null)
+    }
+  }
+
   function handleScheduleConfirm(scheduledAt: string) {
     const platform = schedulerPlatform
     setSchedulerPlatform(null)
     if (!platform) return
     updateCard(platform, { scheduledAt })
+    handlePublishScheduled(platform, scheduledAt)
   }
 
   function handleScheduleDeactivate() {
@@ -454,17 +476,6 @@ export function GeneratedPostsView({
     setSchedulerPlatform(null)
     if (!platform) return
     updateCard(platform, { scheduledAt: null })
-  }
-
-  async function handlePublishScheduled(platform: Platform) {
-    const scheduled = cards[platform]?.scheduledAt
-    if (!scheduled || loadingAction) return
-    setLoadingAction(`schedule-${platform}`)
-    try {
-      await onSchedule(platform, cards[platform]?.content || '', cards[platform]?.imageUrl || null, scheduled)
-    } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Erreur de programmation', 'error')
-    } finally { setLoadingAction(null) }
   }
 
   async function handleRewrite(platform: Platform) {

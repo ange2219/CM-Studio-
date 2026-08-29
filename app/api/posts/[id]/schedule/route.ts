@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'La date ne peut pas dépasser 1 an dans le futur' }, { status: 400 })
   }
 
-  const { data: post, error } = await supabase
+  const { data: post, error } = await admin
     .from('posts')
     .update({ status: 'scheduled', scheduled_at: scheduledDate.toISOString() })
     .eq('id', params.id)

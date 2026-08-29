@@ -92,6 +92,7 @@ interface ActionModalProps {
 }
 
 function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }: ActionModalProps) {
+  const router = useRouter()
   const { toast } = useToast()
   const [view, setView] = useState<'main' | 'schedule'>('main')
   const [schedDate, setSchedDate] = useState('')
@@ -111,8 +112,13 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
 
   async function handleDraft() {
     setLoading(true)
-    try { await savePost(); toast('Post sauvegardé en brouillon', 'success'); onClose() }
-    catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur', 'error') }
+    try {
+      await savePost()
+      toast('Post sauvegardé en brouillon', 'success')
+      try { sessionStorage.removeItem('social_ia_create_draft') } catch {}
+      onClose()
+      router.push('/workspace')
+    } catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur', 'error') }
     finally { setLoading(false) }
   }
 
@@ -131,7 +137,10 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
       const id = await savePost()
       const res = await fetch(`/api/posts/${id}/publish`, { method: 'POST' })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      toast('Post publié avec succès !', 'success'); onClose()
+      toast('Post publié avec succès !', 'success')
+      try { sessionStorage.removeItem('social_ia_create_draft') } catch {}
+      onClose()
+      router.push('/workspace')
     } catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur de publication', 'error') }
     finally { setLoading(false) }
   }
@@ -149,7 +158,10 @@ function PostActionModal({ content, platforms, mediaUrls, aiGenerated, onClose }
         body: JSON.stringify({ scheduledAt }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      toast('Post programmé avec succès !', 'success'); onClose()
+      toast('Post programmé avec succès !', 'success')
+      try { sessionStorage.removeItem('social_ia_create_draft') } catch {}
+      onClose()
+      router.push('/workspace/calendrier')
     } catch (err: unknown) { toast(err instanceof Error ? err.message : 'Erreur de programmation', 'error') }
     finally { setLoading(false) }
   }
