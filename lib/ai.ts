@@ -35,15 +35,63 @@ const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null
 
-// Modèles texte Gemini essayés dans l'ordre avec repli automatique (protège contre 503 high demand, 404, 429)
-const GEMINI_TEXT_CANDIDATES = Array.from(new Set([
-  process.env.GEMINI_MODEL,
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-2.5-flash',
-  'gemini-3.6-flash',
-  'gemini-1.5-pro',
-].filter(Boolean) as string[]))
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+
+// Cache pour les modèles texte Gemini dynamiquement découverts
+let cachedGeminiTextModels: string[] | null = null
+let lastGeminiTextDiscoveryTime = 0
+
+async function discoverGeminiTextModels(key: string): Promise<string[]> {
+  const now = Date.now()
+  if (cachedGeminiTextModels && cachedGeminiTextModels.length > 0 && (now - lastGeminiTextDiscoveryTime < 10 * 60 * 1000)) {
+    return cachedGeminiTextModels
+  }
+
+  try {
+    const res = await fetch(`${GEMINI_API_BASE}/models?key=${key}&pageSize=1000`)
+    if (res.ok) {
+      const data: any = await res.json()
+      if (Array.isArray(data.models)) {
+        const textModels = data.models
+          .filter((m: any) => (m.supportedGenerationMethods || []).includes('generateContent'))
+          .map((m: any) => String(m.name || '').replace('models/', ''))
+          .filter((m: string) =>
+            !m.includes('image') &&
+            !m.includes('embedding') &&
+            !m.includes('aqa') &&
+            !m.includes('search') &&
+            !m.includes('bison')
+          )
+
+        if (textModels.length > 0) {
+          const envModel = process.env.GEMINI_MODEL
+          const flash = textModels.filter((m: string) => m.includes('flash'))
+          const others = textModels.filter((m: string) => !m.includes('flash'))
+          const sorted = Array.from(new Set([
+            envModel,
+            ...flash,
+            ...others,
+            'gemini-3.6-flash',
+          ].filter(Boolean) as string[]))
+
+          cachedGeminiTextModels = sorted
+          lastGeminiTextDiscoveryTime = now
+          console.log('[Gemini] Modèles texte actifs découverts via API :', sorted)
+          return sorted
+        }
+      }
+    }
+  } catch (err: any) {
+    console.warn('[Gemini] Erreur lors de la découverte des modèles texte :', err?.message)
+  }
+
+  return Array.from(new Set([
+    process.env.GEMINI_MODEL,
+    'gemini-3.6-flash',
+    'gemini-3.6-pro',
+    'gemini-3.6-flash-lite',
+  ].filter(Boolean) as string[]))
+}
 
 // Modèles OpenAI / GitHub Models essayés dans l'ordre (protège contre 410 / indisponibilité de modèles retirés)
 const OPENAI_CANDIDATES = Array.from(new Set([
@@ -56,13 +104,10 @@ const OPENAI_CANDIDATES = Array.from(new Set([
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || ''
 
 // Candidats essayés dans l'ordre quand aucun modèle n'est configuré.
-// gemini-2.5-flash-image (« Nano Banana ») = seul modèle image confirmé disponible.
 const GEMINI_IMAGE_CANDIDATES = [
   'gemini-2.5-flash-image',
   'gemini-3.6-flash-image',
 ]
-
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
 // Mémorise le modèle image qui a fonctionné (évite de re-tester à chaque appel sur la même instance).
 let cachedGeminiImageModel: string | null = null
@@ -366,10 +411,13 @@ async function genViaOpenAI(req: GenerateRequest, targetPlatform?: Platform): Pr
 // ─── Appel texte Gemini avec repli multi-modèles (2.0-flash → 1.5-flash → 2.5-flash...) ──
 
 async function callGeminiTextWithFallback(promptText: string, isJson: boolean = false): Promise<string> {
-  if (!gemini) throw new Error('GEMINI_API_KEY manquante côté serveur.')
-  const errors: string[] = []
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey || !gemini) throw new Error('GEMINI_API_KEY manquante côté serveur.')
 
-  for (const modelName of GEMINI_TEXT_CANDIDATES) {
+  const candidateModels = await discoverGeminiTextModels(apiKey)
+  const errors: { model: string; message: string; is429: boolean }[] = []
+
+  for (const modelName of candidateModels) {
     try {
       const model = gemini.getGenerativeModel({ model: modelName })
       const result = await model.generateContent({
@@ -383,12 +431,20 @@ async function callGeminiTextWithFallback(promptText: string, isJson: boolean = 
       throw new Error('réponse vide')
     } catch (err: any) {
       const msg = err?.message || String(err)
-      errors.push(`${modelName} (${msg})`)
-      console.warn(`[Gemini] Le modèle « ${modelName} » a échoué : ${msg}. Tentative avec le modèle suivant...`)
+      const is429 = msg.includes('429') || msg.includes('Quota exceeded') || msg.includes('rate-limit') || msg.includes('Too Many Requests')
+      errors.push({ model: modelName, message: msg, is429 })
+      console.warn(`[Gemini] Le modèle « ${modelName} » a échoué : ${msg.slice(0, 160)}. Tentative avec le modèle suivant...`)
     }
   }
 
-  throw new Error(`Tous les modèles Gemini ont échoué : ${errors.join(' ; ')}`)
+  const has429 = errors.some(e => e.is429)
+  if (has429) {
+    const delayMatch = errors.find(e => e.is429)?.message.match(/retry in ([0-9.]+)s/i)
+    const delaySec = delayMatch ? Math.ceil(parseFloat(delayMatch[1])) : 40
+    throw new Error(`Quota temporaire Google Gemini atteint (limite du forfait gratuit). Veuillez patienter ${delaySec} secondes avant de relancer.`)
+  }
+
+  throw new Error(`Tous les modèles Gemini ont échoué : ${errors.map(e => `${e.model} (${e.message.slice(0, 80)})`).join(' ; ')}`)
 }
 
 // ─── Génération via Gemini (fournisseur principal avec repli automatique) ─────
