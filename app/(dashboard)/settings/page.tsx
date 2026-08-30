@@ -213,6 +213,19 @@ function SettingsContent() {
 
       if (searchParams.get('action') === 'delete') {
         setActive('danger')
+        // L'utilisateur vient de se ré-authentifier via Google → déclencher la suppression
+        setTimeout(async () => {
+          setDeleting(true)
+          const res = await fetch('/api/auth/delete-account', { method: 'DELETE' })
+          if (res.ok) { await supabase.auth.signOut(); window.location.href = '/login' }
+          else { 
+            const d = await res.json()
+            toast(d.error || 'Erreur lors de la suppression', 'error')
+            setDeleting(false) 
+          }
+          // Nettoyer l'URL pour éviter de re-déclencher
+          window.history.replaceState({}, '', '/settings?tab=security')
+        }, 600)
       }
       if (searchParams.get('action') === 'delete_brand') {
         const targetId = searchParams.get('target_id')
