@@ -83,14 +83,59 @@ export async function createProfile(userId: string, name: string): Promise<strin
   }
 }
 
-/** Retourne l'URL OAuth Zernio pour connecter un réseau social */
-export async function getConnectUrl(profileId: string, platform: string, redirectUrl: string): Promise<string> {
-  const params = new URLSearchParams({ profileId, redirect_url: redirectUrl })
+/** Retourne l'URL OAuth Zernio pour connecter un réseau social (mode headless par défaut pour marque blanche) */
+export async function getConnectUrl(profileId: string, platform: string, redirectUrl: string, headless = true): Promise<string> {
+  const params = new URLSearchParams({ 
+    profileId, 
+    redirect_url: redirectUrl,
+    headless: String(headless)
+  })
   const data = await zernioRequest(`/connect/${platform}?${params}`)
-  console.log('[zernio] getConnectUrl response:', JSON.stringify(data))
+  console.log('[zernio] getConnectUrl response (headless=' + headless + '):', JSON.stringify(data))
   const url = data.url || data.connectUrl || data.authUrl || data.link || data.redirectUrl || data.oauth_url
   if (!url) throw new Error(`Zernio: champ URL introuvable dans la réponse: ${JSON.stringify(data)}`)
   return url as string
+}
+
+/** Liste les pages Facebook disponibles pour un profil en mode headless */
+export async function listFacebookPages(profileId: string, tempToken: string): Promise<Array<{ id: string; name: string; category?: string }>> {
+  const data = await zernioRequest(`/connect/facebook/select-page?profileId=${encodeURIComponent(profileId)}&tempToken=${encodeURIComponent(tempToken)}`)
+  return data.pages || []
+}
+
+/** Sélectionne et lie une page Facebook en mode headless */
+export async function selectFacebookPage(params: {
+  profileId: string
+  pageId: string
+  tempToken: string
+  userProfile: any
+}): Promise<{ account: any }> {
+  const data = await zernioRequest('/connect/facebook/select-page', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+  return data
+}
+
+/** Liste les organisations LinkedIn disponibles pour un profil en mode headless */
+export async function listLinkedInOrganizations(profileId: string, tempToken: string): Promise<Array<{ id: string; urn: string; name: string; logoUrl?: string }>> {
+  const data = await zernioRequest(`/connect/linkedin/select-organization?profileId=${encodeURIComponent(profileId)}&tempToken=${encodeURIComponent(tempToken)}`)
+  return data.organizations || []
+}
+
+/** Sélectionne et lie un compte ou organisation LinkedIn en mode headless */
+export async function selectLinkedInOrganization(params: {
+  profileId: string
+  tempToken: string
+  userProfile: any
+  accountType: 'personal' | 'organization'
+  selectedOrganization?: any
+}): Promise<{ account: any }> {
+  const data = await zernioRequest('/connect/linkedin/select-organization', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+  return data
 }
 
 /** Liste les comptes connectés d'un profil Zernio et extrait leurs informations */
