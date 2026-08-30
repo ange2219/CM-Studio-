@@ -176,13 +176,26 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
             platformAccounts.splice(platformAccounts.findIndex(a => a.platform === 'tiktok'), 1)
           }
 
-          const contentVariants = post.content_variants as Partial<Record<Platform, string>> | null
+          const contentVariants = { ...(post.content_variants as Partial<Record<Platform, string>> || {}) }
+
+          // TikTok photo posts : le contenu sert de titre slideshow, limité à 90 caractères
+          // On tronque automatiquement pour éviter l'erreur Zernio
+          const hasTiktok = platformAccounts.some(a => a.platform === 'tiktok')
+          const hasVideo = post.media_urls?.some((url: string) => /\.(mp4|mov|avi|webm)$/i.test(url))
+          if (hasTiktok && !hasVideo) {
+            const tiktokContent = contentVariants.tiktok || post.content
+            if (tiktokContent.length > 90) {
+              contentVariants.tiktok = tiktokContent.slice(0, 87) + '...'
+              console.log('[publish] TikTok photo post: contenu tronqué à 90 chars')
+            }
+          }
+
           if (platformAccounts.length > 0) try {
             const result = await zernioPublish({
               platforms: platformAccounts,
               content: post.content,
               mediaUrls: post.media_urls || undefined,
-              contentVariants: contentVariants || undefined,
+              contentVariants: Object.keys(contentVariants).length > 0 ? contentVariants : undefined,
             })
             Object.assign(publishedIds, result.postIds)
             // Store Zernio post _id for future sync checks
