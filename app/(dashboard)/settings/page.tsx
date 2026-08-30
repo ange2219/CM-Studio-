@@ -1052,7 +1052,10 @@ function SettingsContent() {
                                   </>
                                 ) : (
                                   <>
-                                    <div style={{ fontSize: '.7rem', color: 'var(--t3)', marginBottom: '8px' }}>Non connecté</div>
+                                    <div style={{ fontSize: '.7rem', color: 'var(--t3)', marginBottom: '6px' }}>Non connecté</div>
+                                    <div style={{ fontSize: '.65rem', color: 'var(--t3)', marginBottom: '8px', lineHeight: 1.4, opacity: 0.7 }}>
+                                      🔒 Connexion sécurisée via notre partenaire certifié
+                                    </div>
                                     <button onClick={() => { openPlatformOAuth(platform); setPlatformPopup(null) }} style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: '.73rem', fontWeight: 600 }}>
                                       Connecter
                                     </button>
