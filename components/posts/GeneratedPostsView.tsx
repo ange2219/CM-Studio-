@@ -345,17 +345,25 @@ export function GeneratedPostsView({
     return init
   })
 
-  // Sync content when variants change
+  // Initialise les nouvelles plateformes sans écraser les modifications de l'utilisateur
   useEffect(() => {
     setCards(prev => {
       const next = { ...prev }
+      let hasChanges = false
       for (const p of platforms) {
-        if (!next[p]) next[p] = { content: lowercaseHashtags(variants[p] || ''), imageUrl: null, imageLoading: false, scheduledAt: null }
-        else next[p] = { ...next[p], content: lowercaseHashtags(variants[p] || next[p].content) }
+        if (!next[p]) {
+          next[p] = {
+            content: lowercaseHashtags(variants[p] || ''),
+            imageUrl: initialImages?.[p] || null,
+            imageLoading: false,
+            scheduledAt: initialScheduledAt || null,
+          }
+          hasChanges = true
+        }
       }
-      return next
+      return hasChanges ? next : prev
     })
-  }, [variants, platforms])
+  }, [platforms, variants, initialImages, initialScheduledAt])
 
   // ── Mode Édition Plein Écran (Section d'Édition Lightbox avec Zone Média) ──
   const [editingPlatform, setEditingPlatform] = useState<Platform | null>(null)
