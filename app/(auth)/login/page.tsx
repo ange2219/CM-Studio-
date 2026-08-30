@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { 
   Mail, 
   Lock, 
@@ -144,13 +143,13 @@ export default function LoginPage() {
           background-repeat: no-repeat;
           background-color: #0F172A;
           box-sizing: border-box;
-          padding: 30px 10%;
+          padding: 24px 6%;
         }
 
         /* Conteneur de positionnement pour la carte */
         .login-card-container {
           width: 100%;
-          max-width: 420px;
+          max-width: 365px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -158,13 +157,13 @@ export default function LoginPage() {
           z-index: 10;
         }
 
-        /* ── La Carte Blanche Flottante ── */
+        /* ── La Carte Blanche Flottante (Compacte & Épurée) ── */
         .floating-auth-card {
           width: 100%;
           background: #FFFFFF;
-          border-radius: 16px;
-          padding: 36px 32px 28px;
-          box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2);
+          border-radius: 14px;
+          padding: 28px 24px 22px;
+          box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2);
           box-sizing: border-box;
           animation: cardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
@@ -176,45 +175,19 @@ export default function LoginPage() {
 
         .auth-card-header {
           text-align: center;
-          margin-bottom: 24px;
-        }
-
-        .auth-card-logo {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 12px;
-          text-decoration: none;
-        }
-        .auth-card-logo img {
-          width: 28px;
-          height: 28px;
-          object-fit: contain;
-        }
-        .auth-card-logo span.logo-title {
-          font-family: 'Outfit', sans-serif;
-          font-size: 21px;
-          color: #0F172A;
-          letter-spacing: -0.02em;
-        }
-        .auth-card-logo span.logo-bold {
-          font-weight: 900;
-        }
-        .auth-card-logo span.logo-regular {
-          font-weight: 500;
-          color: #475569;
+          margin-bottom: 20px;
         }
 
         .auth-card-header h2 {
           font-family: 'Outfit', sans-serif;
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 800;
           color: #0F172A;
-          margin: 0 0 6px 0;
+          margin: 0 0 4px 0;
           letter-spacing: -0.02em;
         }
         .auth-card-header p {
-          font-size: 13.5px;
+          font-size: 13px;
           color: #64748B;
           margin: 0;
         }
@@ -459,15 +432,8 @@ export default function LoginPage() {
         <div className="login-card-container">
           <div className="floating-auth-card">
             
-            {/* Header avec Logo CM Studio */}
+            {/* Header sans logo, épuré comme la référence */}
             <div className="auth-card-header">
-              <Link href="/" className="auth-card-logo">
-                <img src="/logo-blue.png?v=15" alt="CM Studio" />
-                <span className="logo-title">
-                  <span className="logo-bold">CM S</span><span className="logo-regular">tudio</span>
-                </span>
-              </Link>
-
               {mode === 'forgot' ? (
                 <>
                   <h2>Mot de passe oublié</h2>
