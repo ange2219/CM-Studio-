@@ -186,15 +186,51 @@ export async function publishPost(params: {
     })
   }
 
-  // TikTok settings au niveau racine (obligatoire pour Direct Post)
+  // TikTok settings au niveau racine (format spécifique Photo vs Video)
   if (params.platforms.some(p => p.platform === 'tiktok')) {
-    body.tiktokSettings = {
-      privacy_level: 'PUBLIC_TO_EVERYONE',
-      allow_comment: true,
-      allow_duet: true,
-      allow_stitch: true,
-      content_preview_confirmed: true,
-      express_consent_given: true,
+    const isVideo = params.mediaUrls?.some(url => /\.(mp4|mov|webm|avi|mkv)$/i.test(url))
+    const fullText = params.contentVariants?.tiktok || params.content || ''
+
+    if (!isVideo && params.mediaUrls?.length) {
+      // Photo Post TikTok (carrousel / image) :
+      // 1. Le titre du slideshow (content) est limité à 90 caractères (sans hashtags ni URLs)
+      // 2. La légende complète (jusqu'à 4 000 caractères avec hashtags) est envoyée dans tiktokSettings.description
+      const cleanTitle = fullText
+        .replace(/#[\w\u00C0-\u017F]+/g, '')
+        .replace(/https?:\/\/\S+/g, '')
+        .trim()
+      const photoTitle = (cleanTitle || fullText).slice(0, 85).trim()
+
+      if (!body.contentVariants) body.contentVariants = {}
+      ;(body.contentVariants as Record<string, string>).tiktok = photoTitle || 'Publication'
+
+      if (params.platforms.length === 1 && params.platforms[0].platform === 'tiktok') {
+        body.content = photoTitle || 'Publication'
+      }
+
+      body.tiktokSettings = {
+        media_type: 'photo',
+        photo_cover_index: 0,
+        description: fullText, // Légende complète avec tous les hashtags (max 4000 chars)
+        auto_add_music: true,
+        privacy_level: 'PUBLIC_TO_EVERYONE',
+        allow_comment: true,
+        allow_duet: true,
+        allow_stitch: true,
+        content_preview_confirmed: true,
+        express_consent_given: true,
+      }
+    } else {
+      // Vidéo TikTok
+      body.tiktokSettings = {
+        media_type: 'video',
+        privacy_level: 'PUBLIC_TO_EVERYONE',
+        allow_comment: true,
+        allow_duet: true,
+        allow_stitch: true,
+        content_preview_confirmed: true,
+        express_consent_given: true,
+      }
     }
   }
 
