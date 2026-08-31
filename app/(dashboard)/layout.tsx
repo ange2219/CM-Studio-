@@ -31,6 +31,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .map((m: any) => m.organization)
     .filter(Boolean)
 
+  // Si l'utilisateur n'a pas encore créé d'organisation / marque, le rediriger vers l'onboarding
+  if (initialOrganizations.length === 0) {
+    redirect('/onboarding')
+  }
+
   let initialActiveOrg = null
   let initialMembership = null
 
